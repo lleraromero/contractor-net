@@ -1,0 +1,159 @@
+
+Microsoft (R) .NET Contract Checker Version 1.4.40314.1
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+usage: <general-option>* [<analysis> <analysis-options>]+ <assembly>+
+
+where <general-option> is one of
+   -warninglevel (low | medium | full) (default=full) : Filters the warnings according to their score
+   -ca (default=true)              : Check assertions
+   -checkassumptions               : Check assumptions, and suggest those that can be discharged
+   -checkfalseassumptions          : Check assumptions, suggest those that can be discharged, and those that are false
+   -trace (dfa + heap + expressions + egraph + partitions + wp + arrays + numerical + timings + cache + checks) (default=)
+   -show (progress + il + errors + validations + unreached + progressnum + progressbar + obligations + paths + invariants + warnranks + analysisphases) (default=errors)
+   -stats (valid + time + mem + perMethod + arithmetic + asserts + methodasserts + slowmethods + abstractdomains + program + egraph + phases) (default=valid,time)
+   -infer (requires + propertyensures + methodensures + nonnullreturn + arrayrequires) (default=propertyensures,nonnullreturn)
+   -suggest (requires + propertyensures + methodensures + nonnullreturn + arrayrequires) (default=requires)
+   -adaptive                       : Adaptive analyses (Use weaker domains for huge methods)
+   -timeout <int-arg> (default=60) : Analysis timeout per method in seconds
+   -prefrompost                    : Infer preconditions from exit states
+   -thresholds <int-arg>           : Hints to infer bounds for the analysis
+   -rep (time | mem | exp) (default=time) : Optimized representation
+   -expcache (None | Mem | Time) (default=Time) : Caching of expressions during fixpoint computation
+   -wp (default=true)              : Use weakest preconditions
+   -useZ3                          : Use Z3 to check assertions
+   -define <string-arg>           
+   -libPaths <string-arg>          : Search paths for reference assemblies
+   -resolvedPaths <string-arg>     : Candidate paths to dlls/exes for resolving references
+   -cclib <string-arg> (default=Microsoft.Contracts) : Shared contract class library
+   -nologo                        
+   -outFile <string-arg>          
+   -baseLine <string-arg>          : use baseline file, or create if absent
+   -xml                            : Write xml output
+   -benigni                        : Generate the equations for the termination checker
+   -analyzeIteratorMethods         : Analyze an iterator method if true
+   -BENIGNI_DIR <string-arg> (default=Benigni)
+   -cachesize <int-arg> (default=16) : Internal cache size
+   -joinsBeforeWiden <int-arg> (default=1) : Number of joins before applying the widening
+   -enforceFairJoin                : Enforce the at lease one join for each loop path
+   -maxVarsForOctagon <int-arg> (default=8) : Threshold to for Octagonal constraints
+   -select <int-arg>               : Analyze only selected methods (adds dependencies).
+   -analyzeFrom <int-arg> (default=0)
+   -analyzeTo <int-arg> (default=2147483647)
+   -memberNameSelect <string-arg>  : Analyse only the members with this full name (adds dependencies).
+   -typeNameSelect <string-arg>    : Analyse only the methods in this type, given its full name (adds dependencies).
+   -namespaceSelect <string-arg>   : Analyse only the methods in this namespace (adds dependencies).
+   -breakAt <int-arg>              : Break at selected methods
+   -includeCompilerGenerated       : Analyze compiler generated code
+   -focus <int-arg>                : Show il for focused methods
+   -contract <string-arg>          : Use contract reference assembly
+   -nobox                          : Don't pop-up IDE boxes
+   -platform <string-arg>          : Set .NET core library (must be first option)
+   -regression                     : Run regression test on input assemblies
+   -includesuggestionsinregression : Include suggestions in regression
+   -sortwarns (default=true)       : Prioritize the warnings
+   -maskwarns (default=true)       : Enable suppression of warnings
+   -outputwarnmasks                : Outputs the masks to suppress warnings
+   -nopex                          : Don't try to talk to VS Pex
+   -maxPathSize <int-arg> (default=50) : Limit backward WP computation length
+   -maxWarnings <int-arg> (default=2147483647) : Limit number of issued warnings overall
+   -remote                         : Write output formatted for remoting
+   -outputPrettycs                 : Output inferred contracts as C# code
+   -outputPrettycsFolder <string-arg> (default=.) : Output folder for inferred contracts as C# code
+   -outputPrettyFileClass          : Output contracts as C# code, one file per class (default)
+   -outputPrettyFileNamespace      : Output contracts as C# code, one file per namespace
+   -outputPrettyFileToplevelClass  : Output contracts as C# code, one file per toplevel classes (other classes nested)
+   -outputPrettyFull               : Output all members as C# code, not just members visible outside assembly
+   -assemblyMode (standard | legacy) (default=legacy) : Select whether legacy if-then-throw or Requires<E> are supported
+   -repro                          : Write repro.bat for debugging
+   -clearCache                     : Clear the warnings cache
+   -useCache                       : Use the cache to avoid analysis when possible.
+   -saveToCache                    : Write the outcome of the analysis to the cache, so it can be used in a future analysis.
+   -cacheFileName <string-arg>     : The filename for the cache database
+   -emitErrorOnCacheLookup         : Emit an error when we read the cache (for regressions purposes)
+   -incrementalEgraphJoin          : Use incremental joins in egraph computation (internal)
+
+To clear a list, use -<option>=!!
+To remove an item from a list, use -<option> !<item>
+
+where derived options are of
+   -statsOnly is '-show=!! -suggest=!!'
+   -ide is '-stats=!! -trace=!!'
+   -silent is '-show=!! -stats=!! -trace=!! -nologo'
+   -cache is '-useCache -saveToCache'
+
+where <analysis> is one of
+   -arithmetic[:<comma-separated-options>]
+     -obl (arithmeticOverflow + div0 + divOverflow + negMin + floatEq) (default=div0,negMin,floatEq,divOverflow) : Set of obligations to produce
+     -fp (default=true)              : Enable analysis of floats
+     -type (Intervals | Disintervals | Leq | Karr | Pentagons | PentagonsKarr | PentagonsKarrLeq | PentagonsKarrLeqOctagons | SubPolyhedra | Octagons | WeakUpperBounds | Top) (default=Pentagons)
+     -reduction (Fast | Complete | Simplex | SimplexFast | SimplexOptima | None) (default=Simplex) : Reduction algorithm used by subpolyhedra
+     -steps <int-arg> (default=1)    : Number of closure steps while checking assertions
+     -maxeqpairs <int-arg> (default=25) : Max number of pair of equalities that can be propagated by karr
+     -ch                             : SubPolyhedra only : use 2D convex hulls to infer constraints
+     -infOct                         : SubPolyhedra only : infer octagonal constraints
+     -mpw (default=true)             : Use widening with thresholds
+     -tp                             : Use trace partitioning
+     -diseq (default=true)           : Track Numerical Disequalities
+     -noObl                          : No proof obligations for bounds
+
+To clear a list, use -<option>=!!
+To remove an item from a list, use -<option> !<item>
+
+   -arrays[:<comma-separated-options>]
+     -refineArrays (default=true)    : Refine symbolic expressions to array
+     -arrayPurity                    : Infer array segments not written by the method
+     -type (Intervals | Disintervals | Leq | Karr | Pentagons | PentagonsKarr | PentagonsKarrLeq | PentagonsKarrLeqOctagons | SubPolyhedra | Octagons | WeakUpperBounds | Top) (default=PentagonsKarrLeq)
+     -reduction (Fast | Complete | Simplex | SimplexFast | SimplexOptima | None) (default=Simplex) : Reduction algorithm used by subpolyhedra
+     -steps <int-arg> (default=1)    : Number of closure steps while checking assertions
+     -maxeqpairs <int-arg> (default=25) : Max number of pair of equalities that can be propagated by karr
+     -ch                             : SubPolyhedra only : use 2D convex hulls to infer constraints
+     -infOct                         : SubPolyhedra only : infer octagonal constraints
+     -mpw (default=true)             : Use widening with thresholds
+     -tp                             : Use trace partitioning
+     -diseq (default=true)           : Track Numerical Disequalities
+     -noObl                          : No proof obligations for bounds
+
+To clear a list, use -<option>=!!
+To remove an item from a list, use -<option> !<item>
+
+   -bounds[:<comma-separated-options>]
+     -type (Intervals | Disintervals | Leq | Karr | Pentagons | PentagonsKarr | PentagonsKarrLeq | PentagonsKarrLeqOctagons | SubPolyhedra | Octagons | WeakUpperBounds | Top) (default=PentagonsKarrLeq)
+     -reduction (Fast | Complete | Simplex | SimplexFast | SimplexOptima | None) (default=Simplex) : Reduction algorithm used by subpolyhedra
+     -steps <int-arg> (default=1)    : Number of closure steps while checking assertions
+     -maxeqpairs <int-arg> (default=25) : Max number of pair of equalities that can be propagated by karr
+     -ch                             : SubPolyhedra only : use 2D convex hulls to infer constraints
+     -infOct                         : SubPolyhedra only : infer octagonal constraints
+     -mpw (default=true)             : Use widening with thresholds
+     -tp                             : Use trace partitioning
+     -diseq (default=true)           : Track Numerical Disequalities
+     -noObl                          : No proof obligations for bounds
+
+To clear a list, use -<option>=!!
+To remove an item from a list, use -<option> !<item>
+
+   -enum[:<comma-separated-options>]
+     -type (Intervals | Disintervals | Leq | Karr | Pentagons | PentagonsKarr | PentagonsKarrLeq | PentagonsKarrLeqOctagons | SubPolyhedra | Octagons | WeakUpperBounds | Top) (default=PentagonsKarrLeq)
+     -reduction (Fast | Complete | Simplex | SimplexFast | SimplexOptima | None) (default=Simplex) : Reduction algorithm used by subpolyhedra
+     -steps <int-arg> (default=1)    : Number of closure steps while checking assertions
+     -maxeqpairs <int-arg> (default=25) : Max number of pair of equalities that can be propagated by karr
+     -ch                             : SubPolyhedra only : use 2D convex hulls to infer constraints
+     -infOct                         : SubPolyhedra only : infer octagonal constraints
+     -mpw (default=true)             : Use widening with thresholds
+     -tp                             : Use trace partitioning
+     -diseq (default=true)           : Track Numerical Disequalities
+     -noObl                          : No proof obligations for bounds
+
+To clear a list, use -<option>=!!
+To remove an item from a list, use -<option> !<item>
+
+   -nonnull[:<comma-separated-options>]
+     -noObl                          : Don't generate proof obligations
+
+To clear a list, use -<option>=!!
+To remove an item from a list, use -<option> !<item>
+
+   -classinit[:<comma-separated-options>]
+
+To clear a list, use -<option>=!!
+To remove an item from a list, use -<option> !<item>

@@ -1,0 +1,60 @@
+@codeContracts = C:\Program Files (x86)\Microsoft\Contracts
+@programFiles = C:\Program Files (x86)
+@windows = C:\Windows
+
+> .net 4.0:
+
+-libPaths:
+@programFiles\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\;
+@programFiles\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\CodeContracts;
+@codeContracts\Contracts\.NETFramework\v4.0
+
+--------------------------
+> .net 4.0 client profile:
+
+-libPaths:
+@programFiles\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client\;
+@programFiles\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client\CodeContracts;
+@codeContracts\Contracts\.NETFramework\v4.0
+
+--------------------------
+> .net 3.5:
+
+-libPaths:
+@windows\Microsoft.NET\Framework\v2.0.50727\;
+@windows\Microsoft.NET\Framework\v2.0.50727\CodeContracts;
+@programFiles\Reference Assemblies\Microsoft\Framework\v3.5\;
+@programFiles\Reference Assemblies\Microsoft\Framework\v3.5\CodeContracts;
+@codeContracts\PublicAssemblies\v3.5\;
+@codeContracts\PublicAssemblies\v3.5\CodeContracts;
+@codeContracts\Contracts\v3.5
+
+--------------------------
+> .net 3.5 client profile:
+
+-libPaths:
+@programFiles\Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client\;
+@programFiles\Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client\CodeContracts;
+@codeContracts\PublicAssemblies\v3.5\;
+@codeContracts\PublicAssemblies\v3.5\CodeContracts;
+@codeContracts\Contracts\v3.5
+
+--------------------------
+> .net 3.0:
+
+-libPaths:
+@windows\Microsoft.NET\Framework\v2.0.50727\;
+@windows\Microsoft.NET\Framework\v2.0.50727\CodeContracts;
+@codeContracts\PublicAssemblies\v3.5\;
+@codeContracts\PublicAssemblies\v3.5\CodeContracts;
+@codeContracts\Contracts\v3.5
+
+--------------------------
+> .net 2.0:
+
+-libPaths:
+@windows\Microsoft.NET\Framework\v2.0.50727\;
+@windows\Microsoft.NET\Framework\v2.0.50727\CodeContracts;
+@codeContracts\PublicAssemblies\v3.5\;
+@codeContracts\PublicAssemblies\v3.5\CodeContracts;
+@codeContracts\Contracts\v3.5

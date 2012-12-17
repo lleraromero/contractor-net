@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Vsix xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="1.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2010">
+	<Identifier Id="6fcfab98-b090-4f07-9c9d-e4d16e08a4fd">
+		<Name>Contractor.NET</Name>
+		<Author>LaFHIS - UBA</Author>
+		<Version>1.4</Version>
+		<Description xml:space="preserve">A .NET validation and specification strengthening tool</Description>
+		<Locale>1033</Locale>
+		<MoreInfoUrl>http://lafhis.dc.uba.ar/contractor.net</MoreInfoUrl>
+		<License>Resources\License.rtf</License>
+		<GettingStartedGuide>http://lafhis.dc.uba.ar/contractor.net/install.html</GettingStartedGuide>
+		<Icon>Resources\Package.ico</Icon>
+		<PreviewImage>Resources\Preview.png</PreviewImage>
+		<InstalledByMsi>false</InstalledByMsi>
+		<SupportedProducts>
+			<VisualStudio Version="10.0">
+				<Edition>Pro</Edition>
+			</VisualStudio>
+		</SupportedProducts>
+		<SupportedFrameworkRuntimeEdition MinVersion="4.0" MaxVersion="4.0" />
+	</Identifier>
+	<References>
+		<Reference Id="Microsoft.VisualStudio.MPF" MinVersion="10.0">
+			<Name>Visual Studio MPF</Name>
+		</Reference>
+	</References>
+	<Content>
+		<VsPackage>Contractor.VSExtension.pkgdef</VsPackage>
+	</Content>
+</Vsix>
