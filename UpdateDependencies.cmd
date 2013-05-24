@@ -1,6 +1,6 @@
 @echo off
 
-set config=Release
+set config=Debug
 set dependency_path=.\Dependencies\
 set cci_namespace=Microsoft.Cci
 set cci_path=C:\CCI\
@@ -15,6 +15,7 @@ set ast_files=%ast_files% CodeModelToIL
 set ast_files=%ast_files% ContractExtractor
 set ast_files=%ast_files% ILToCodeModel
 set ast_files=%ast_files% MutableCodeModel
+set ast_files=%ast_files% NewILToCodeModel
 
 set metadata_files=
 set metadata_files=%metadata_files% ILGenerator

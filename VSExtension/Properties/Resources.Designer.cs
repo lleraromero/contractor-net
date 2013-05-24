@@ -61,7 +61,7 @@ namespace Contractor.VSExtension.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Can not create tool window..
+        ///   Looks up a localized string similar to Cannot create tool window..
         /// </summary>
         internal static string CanNotCreateWindow {
             get {

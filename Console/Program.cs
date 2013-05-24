@@ -20,6 +20,16 @@ namespace Contractor.Console
 
 		public static int Main(string[] args)
 		{
+#if DEBUG
+			args = new string[]
+			{
+				"-i", @"C:\Program Files (x86)\Microsoft\Contracts\Contracts\.NETFramework\v4.0\System.Contracts.dll",
+				"-g", @"C:\Users\Eddy\Documents\Tesis\graphs",
+				"-tmp", @"C:\Users\Eddy\Documents\Tesis\temp",
+				"-il=false",
+				"-t", "System.Collections.Specialized.StringCollection"
+			};
+#endif
 			var assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName();
 			var options = new Options();
 

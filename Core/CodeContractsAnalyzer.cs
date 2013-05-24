@@ -286,6 +286,10 @@ namespace Contractor.Core
 		private BlockStatement inlineMethodBody(IMethodDefinition action, MethodDefinition method)
 		{
 			var block = new BlockStatement();
+
+			if (method.Parameters == null)
+				method.Parameters = new List<IParameterDefinition>();
+
 			method.Parameters.AddRange(action.Parameters);
 			IMethodContract mc = contractProvider.GetMethodContractFor(action);
 
@@ -584,9 +588,13 @@ namespace Contractor.Core
 		{
 			foreach (var staticType in module.AllTypes)
 			{
-				var type = staticType as NamespaceTypeDefinition;
-				var invariantMethod = type.Methods.Find(m => m.Name.Value == "$InvariantMethod$");
-				type.Methods.Remove(invariantMethod);
+				var type = staticType as NamedTypeDefinition;
+
+				if (type != null && type.Methods != null && type.Methods.Exists(m => m.Name.Value == "$InvariantMethod$"))
+				{
+					var invariantMethod = type.Methods.Find(m => m.Name.Value == "$InvariantMethod$");
+					type.Methods.Remove(invariantMethod);
+				}
 			}
 
 			string pdbName = Path.ChangeExtension(assemblyName, "pdb");
