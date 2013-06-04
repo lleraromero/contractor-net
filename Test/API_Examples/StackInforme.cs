@@ -24,6 +24,10 @@ namespace API_Examples
             count = 0;
             data = new T[capacity];
         }
+        public int Count
+        {
+            get { return count; }
+        }
         public void Push(T item)
         {
             Contract.Requires(count < capacity);

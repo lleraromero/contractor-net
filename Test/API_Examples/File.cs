@@ -24,6 +24,20 @@ namespace API_Examples
             open = false;
 		}
 
+        public bool IsOpen
+        {
+            get { return open; }
+        }
+
+        public FileOpenMode Mode
+        {
+            get
+            {
+                Contract.Requires(open);
+                return mode;
+            }
+        }
+
         public void Open(FileOpenMode mode)
         {
             Contract.Requires(!open);

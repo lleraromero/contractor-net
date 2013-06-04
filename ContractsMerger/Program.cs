@@ -15,11 +15,11 @@ namespace ContractsMerger
 	{
 		private struct AssemblyInfo
 		{
-			public IContractAwareHost Host;
+			public MetadataReaderHost Host;
 			public Module Module;
 			public PdbReader PdbReader;
 
-			public AssemblyInfo(IContractAwareHost host, Module module, PdbReader pdbReader)
+			public AssemblyInfo(MetadataReaderHost host, Module module, PdbReader pdbReader)
 				: this()
 			{
 				this.Host = host;
@@ -33,13 +33,13 @@ namespace ContractsMerger
 
 		static void Main(string[] args)
 		{
-			//var assemblyFileName = @"C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.dll";
-			//var assemblyWithContractsFileName = @"C:\Program Files (x86)\Microsoft\Contracts\Contracts\.NETFramework\v4.0\System.Contracts.dll";
-			//var outputFileName = @"C:\Users\Eddy\Documents\Tesis\temp\System.dll";
+			var assemblyFileName = @"C:\Windows\Microsoft.NET\Framework\v4.0.30319\System.dll";
+			var assemblyWithContractsFileName = @"C:\Program Files (x86)\Microsoft\Contracts\Contracts\.NETFramework\v4.0\System.Contracts.dll";
+			var outputFileName = @"C:\Users\Eddy\Documents\Tesis\temp\System.dll";
 
-			var assemblyFileName = @"C:\Users\Eddy\Documents\Tesis\Contractor\Test\API_Examples\bin\Debug\API_Examples.dll";
-			var assemblyWithContractsFileName = @"C:\Users\Eddy\Documents\Tesis\Contractor\Test\API_Examples\bin\Debug\CodeContracts\API_Examples.Contracts.dll";
-			var outputFileName = @"C:\Users\Eddy\Documents\Tesis\temp\API_Examples_merged.dll";
+			//var assemblyFileName = @"C:\Users\Eddy\Documents\Tesis\Contractor\Test\API_Examples\bin\Debug\API_Examples.dll";
+			//var assemblyWithContractsFileName = @"C:\Users\Eddy\Documents\Tesis\Contractor\Test\API_Examples\bin\Debug\CodeContracts\API_Examples.Contracts.dll";
+			//var outputFileName = @"C:\Users\Eddy\Documents\Tesis\temp\API_Examples_merged.dll";
 
 			var program = new Program(assemblyFileName, assemblyWithContractsFileName);
 			program.InjectContracts(outputFileName);
@@ -109,7 +109,7 @@ namespace ContractsMerger
 			host.Dispose();
 		}
 
-		private static AssemblyInfo loadAssembly(IContractAwareHost host, string assemblyFileName)
+		private static AssemblyInfo loadAssembly(MetadataReaderHost host, string assemblyFileName)
 		{
 			var staticModule = host.LoadUnitFrom(assemblyFileName) as IModule;
 

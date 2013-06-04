@@ -824,30 +824,47 @@ namespace Contractor.VSExtension
 			using (var sw = File.CreateText(fileName))
 			{
 				var nodes = graphViewer.Graph.GeometryGraph.CollectAllNodes();
+				var initialNodes = nodes.Where(n => ((n.UserData as Node).UserData as IState).IsInitial);
+				var otherNodes = nodes.Where(n => !((n.UserData as Node).UserData as IState).IsInitial);
 
 				sw.WriteLine("digraph \"{0}\"", typeFullName);
 				sw.WriteLine("{");
 				sw.WriteLine("\trankdir=LR;");
+				sw.WriteLine("\tnode [style = filled, fillcolor = aliceblue, fontname = \"{0}\"];", "Cambria");
+				
+				sw.WriteLine();
+				sw.WriteLine("\tnode [shape = doublecircle];");
 
-				foreach (var n in nodes)
+				foreach (var n in initialNodes)
 				{
 					var node = n.UserData as Node;
-					var state = node.UserData as IState;
 					var name = node.LabelText.Replace(sw.NewLine, @"\n");
-					var shape = (state.IsInitial ? "doublecircle" : "circle");
-					var font = node.Label.FontName;
 
-					sw.WriteLine("\tnode [shape = {0}, style = filled, fillcolor = aliceblue, fontname = \"{1}\", label = \"{2}\"]; \"{3}\";", shape, font, name, node.Id);
+					sw.WriteLine("\tnode [label = \"{0}\"]; \"{1}\";", name, node.Id);
 				}
+
+				sw.WriteLine();
+				sw.WriteLine("\tnode [shape = circle];");
+
+				foreach (var n in otherNodes)
+				{
+					var node = n.UserData as Node;
+					var name = node.LabelText.Replace(sw.NewLine, @"\n");
+
+					sw.WriteLine("\tnode [label = \"{0}\"]; \"{1}\";", name, node.Id);
+				}
+
+				sw.WriteLine();
+				sw.WriteLine("\tedge [fontname = \"{0}\"];", "Cambria");
+				sw.WriteLine();
 
 				foreach (var edge in graphViewer.Graph.Edges)
 				{
 					var from = edge.SourceNode.Id;
 					var to = edge.TargetNode.Id;
 					var label = edge.LabelText.Replace(sw.NewLine, @"\n");
-					var font = edge.Label.FontName;
 
-					sw.WriteLine("\tedge \"{0}\" -> \"{1}\" [ fontname = \"{2}\", label = \"{3}\" ];", from, to, font, label);
+					sw.WriteLine("\tedge [label = \"{0}\"] \"{1}\" -> \"{2}\";", label, from, to);
 				}
 
 				sw.WriteLine("}");

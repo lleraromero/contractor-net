@@ -27,8 +27,8 @@ namespace Contractor.Core
 		}
 
 		private const string notPrefix = ".Not.";
-		private const string pattern = @"^ Method \W* \d+ \W* : \W* (?<MethodName> [^(]+) \( [^)]* \) |" +
-							   @"^ [^(]* \( [^)]* \) \W* (\[ [^]]* \])? \W* : \W* ([^:]+ :)? \W* (?<Message> [^\r]+)";
+		private const string methodNameDelimiter = "~";
+		private const string pattern = @"^ Method \W* \d+ \W* : \W* (?<MethodName> [^(\r]+) (\( [^)]* \))? \r | ^ [^(]* \( [^)]* \) \W* (\[ [^]]* \])? \W* : \W* ([^:]+ :)? \W* (?<Message> [^\r]+) \r";
 
 		private IContractAwareHost host;
 		private Module module;
@@ -196,7 +196,7 @@ namespace Contractor.Core
 			}
 
 			string prefix = negative ? notPrefix : string.Empty;
-			var methodName = string.Format("{0}_{1}_{2}{3}", state.Name, action.Name, prefix, target.Name);
+			var methodName = string.Format("{1}{0}{2}{0}{3}{4}", methodNameDelimiter, state.Name, action.Name, prefix, target.Name);
 			MethodDefinition method = generateQuery(methodName, action);
 
 			contractProvider.AssociateMethodWithContract(method, contracts);
@@ -351,7 +351,7 @@ namespace Contractor.Core
 					entry.Value.Contains(ResultKind.UnprovenEnsures))
 				{
 					var query = entry.Key;
-					var actionName = query.Substring(query.LastIndexOf('_') + 1);
+					var actionName = query.Substring(query.LastIndexOf(methodNameDelimiter) + 1);
 					var isNegative = actionName.StartsWith(notPrefix);
 
 					if (isNegative)
@@ -424,7 +424,8 @@ namespace Contractor.Core
 //#endif
 			}
 
-			MatchCollection matches = outputParser.Matches(output.ToString());
+			string outputString = output.ToString();
+			MatchCollection matches = outputParser.Matches(outputString);
 			output = null;
 
 			Dictionary<string, List<ResultKind>> result = new Dictionary<string, List<ResultKind>>();
@@ -549,7 +550,7 @@ namespace Contractor.Core
 			contracts.Postconditions.AddRange(typeInvPost);
 			contracts.Postconditions.Add(postcondition);
 
-			var methodName = string.Format("{0}_{1}_{2}", state.Name, action.Name, target.Name);
+			var methodName = string.Format("{1}{0}{2}{0}{3}", methodNameDelimiter, state.Name, action.Name, target.Name);
 			MethodDefinition method = generateQuery(methodName, action);
 
 			contractProvider.AssociateMethodWithContract(method, contracts);
@@ -566,7 +567,7 @@ namespace Contractor.Core
 					entry.Value.Contains(ResultKind.UnprovenEnsures))
 				{
 					var query = entry.Key;
-					var actionName = query.Substring(query.LastIndexOf('_') + 1);
+					var actionName = query.Substring(query.LastIndexOf(methodNameDelimiter) + 1);
 					var target = targets.Find(s => s.Name == actionName);
 					var isUnproven = entry.Value.Contains(ResultKind.UnprovenEnsures);
 

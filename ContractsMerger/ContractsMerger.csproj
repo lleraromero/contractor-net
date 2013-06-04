@@ -34,6 +34,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Cci.Analysis.ControlAndDataFlowGraph">
+      <HintPath>..\Dependencies\Microsoft.Cci.Analysis.ControlAndDataFlowGraph.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Cci.AssertionAdder">
       <HintPath>..\Dependencies\Microsoft.Cci.AssertionAdder.dll</HintPath>
     </Reference>
@@ -52,9 +55,6 @@
     <Reference Include="Microsoft.Cci.ILGenerator">
       <HintPath>..\Dependencies\Microsoft.Cci.ILGenerator.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Cci.ILToCodeModel">
-      <HintPath>..\Dependencies\Microsoft.Cci.ILToCodeModel.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Cci.MetadataHelper">
       <HintPath>..\Dependencies\Microsoft.Cci.MetadataHelper.dll</HintPath>
     </Reference>
@@ -66,6 +66,10 @@
     </Reference>
     <Reference Include="Microsoft.Cci.MutableMetadataModel">
       <HintPath>..\Dependencies\Microsoft.Cci.MutableMetadataModel.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Cci.NewILToCodeModel, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Dependencies\Microsoft.Cci.NewILToCodeModel.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Cci.PdbReader">
       <HintPath>..\Dependencies\Microsoft.Cci.PdbReader.dll</HintPath>
