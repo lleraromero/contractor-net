@@ -587,16 +587,16 @@ namespace Contractor.Core
 
 		private void saveAssembly(string assemblyName)
 		{
-			foreach (var staticType in module.AllTypes)
-			{
-				var type = staticType as NamedTypeDefinition;
+			//foreach (var staticType in module.AllTypes)
+			//{
+			//    var type = staticType as NamedTypeDefinition;
 
-				if (type != null && type.Methods != null && type.Methods.Exists(m => m.Name.Value == "$InvariantMethod$"))
-				{
-					var invariantMethod = type.Methods.Find(m => m.Name.Value == "$InvariantMethod$");
-					type.Methods.Remove(invariantMethod);
-				}
-			}
+			//    if (type != null && type.Methods != null && type.Methods.Exists(m => m.Name.Value == "$InvariantMethod$"))
+			//    {
+			//        var invariantMethod = type.Methods.Find(m => m.Name.Value == "$InvariantMethod$");
+			//        type.Methods.Remove(invariantMethod);
+			//    }
+			//}
 
 			string pdbName = Path.ChangeExtension(assemblyName, "pdb");
 

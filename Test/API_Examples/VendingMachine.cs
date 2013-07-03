@@ -14,7 +14,8 @@ namespace API_Examples
         [ContractInvariantMethod]
         private void Invariant()
         {
-            Contract.Invariant(change == 0 || selling);
+            //Contract.Invariant(change == 0 || selling);
+            Contract.Invariant(change > 0 ? selling : true);
         }
 
         public VendingMachine()
@@ -46,8 +47,8 @@ namespace API_Examples
 
         public void ReturnItem()
         {
-            Contract.Requires(selling);
             Contract.Requires(change == 0);
+            Contract.Requires(selling);
 
             selling = false;
         }

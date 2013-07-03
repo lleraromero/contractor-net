@@ -17,6 +17,7 @@ namespace API_Examples
         {
             Contract.Invariant(count >= 0);
             Contract.Invariant(count <= capacity);
+            Contract.Invariant(data.Length == capacity);
         }
 
         public StackInforme()
