@@ -598,9 +598,9 @@ namespace Contractor.Core
 			//    }
 			//}
 
-			string pdbName = Path.ChangeExtension(assemblyName, "pdb");
+			var pdbName = Path.ChangeExtension(assemblyName, "pdb");
 
-			using (Stream peStream = File.Create(assemblyName))
+			using (var peStream = File.Create(assemblyName))
 			{
 				if (pdbReader == null)
 				{

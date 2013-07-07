@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Contractor.VSExtension")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("A .NET validation and specification strengthening tool.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: CLSCompliant(false)]
 

@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Contractor.Console")]
-[assembly: AssemblyDescription("A .NET validation and specification strengthening tool")]
+[assembly: AssemblyDescription("A .NET validation and specification strengthening tool.")]
 [assembly: AssemblyConfiguration("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 

@@ -119,8 +119,10 @@ namespace Contractor.Core
 				// Se actualiza el $state en un finally porque los if de adentro
 				// del switch tienen que ser ejecutados despues del cuerpo de este metodo 
 
-				//El -1 es para no borrar el ultimo return implicito
-				var stmtsCount = actionBodyBlock.Statements.Count - insertAtIndex - 1; 
+				////El -1 es para no borrar el ultimo return implicito
+				//var stmtsCount = actionBodyBlock.Statements.Count - insertAtIndex - 1;
+
+				var stmtsCount = actionBodyBlock.Statements.Count - insertAtIndex; 
 				var tryBlock = new BlockStatement();
 				var bodyStmts = actionBodyBlock.Statements.GetRange(insertAtIndex, stmtsCount);
 				tryBlock.Statements.AddRange(bodyStmts);

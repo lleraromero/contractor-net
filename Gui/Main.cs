@@ -1,0 +1,1031 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.Threading.Tasks;
+using Microsoft.Cci;
+using Microsoft.Cci.MutableCodeModel;
+using Contractor.Core;
+using System.Threading;
+using Microsoft.Msagl.Drawing;
+using System.Drawing.Drawing2D;
+using System.Diagnostics;
+using System.IO;
+using Microsoft.Msagl.GraphViewerGdi;
+using System.Drawing.Imaging;
+using System.Drawing.Text;
+using System.Xml;
+
+namespace Contractor.Gui
+{
+	public partial class Main : Form
+	{
+		private AssemblyInfo _AssemblyInfo;
+		private INamespaceTypeDefinition _AnalizedType;
+		private EpaGenerator _EpaGenerator;
+		private Thread _AnalisisThread;
+		private Graph _Graph;
+		private IViewerNode _SelectedGraphNode;
+		private Options _Options;
+		private string _EnvironmentInfo;
+
+		public Main()
+		{
+			InitializeComponent();
+
+			graphViewer.OutsideAreaBrush = Brushes.White;
+			splitcontainerOutput.Panel2Collapsed = true;
+
+			_AssemblyInfo = new AssemblyInfo();
+			_Options = new Options();
+		}
+
+		#region Event Handlers
+
+		private void OnLoad(object sender, EventArgs e)
+		{
+			try
+			{
+				Configuration.Initialize();
+			}
+			catch (Exception ex)
+			{
+				this.HandleException(ex);
+			}
+		}
+
+		private void OnQuit(object sender, EventArgs e)
+		{
+			this.Close();
+		}
+
+		private void OnAbout(object sender, EventArgs e)
+		{
+			var aboutDialog = new AboutDialog();
+			aboutDialog.ShowDialog(this);
+		}
+
+		private void OnOutput(object sender, EventArgs e)
+		{
+			splitcontainerOutput.Panel2Collapsed = !menuitemOutput.Checked;
+		}
+
+		private void OnOutputClose(object sender, EventArgs e)
+		{
+			splitcontainerOutput.Panel2Collapsed = true;
+			menuitemOutput.Checked = false;
+		}
+
+		private void OnBeforeCollapseTreeNode(object sender, TreeViewCancelEventArgs e)
+		{
+			e.Node.StateImageKey = "collapsed";
+		}
+
+		private void OnBeforeExpandTreeNode(object sender, TreeViewCancelEventArgs e)
+		{
+			e.Node.StateImageKey = "expanded";
+		}
+
+		private void OnTreeNodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+		{
+			var rect = e.Node.Bounds;
+			rect.Width = imagelist.ImageSize.Width;
+			rect.X -= imagelist.ImageSize.Width * 2 + 3;
+
+			if (rect.Contains(e.Location))
+				e.Node.Toggle();
+		}
+
+		private void OnTreeNodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
+		{
+			if (!buttonStartAnalysis.Enabled) return;
+			this.StartAnalisis();
+		}
+
+		private void OnBeforeSelectTreeNode(object sender, TreeViewCancelEventArgs e)
+		{
+			this.UpdateStartAnalisisCommand(e.Node);
+		}
+
+		private void OnGraphChanged(object sender, EventArgs e)
+		{
+			this.UpdateCommands();
+		}
+
+		private void OnLoadAssembly(object sender, EventArgs e)
+		{
+			this.LoadAssembly();
+		}
+
+		private void OnStartAnalysis(object sender, EventArgs e)
+		{
+			this.StartAnalisis();
+		}
+
+		private void OnStopAnalysis(object sender, EventArgs e)
+		{
+			this.StopAnalisis();
+		}
+
+		private void OnZoomIn(object sender, EventArgs e)
+		{
+			this.ZoomIn();
+		}
+
+		private void OnZoomOut(object sender, EventArgs e)
+		{
+			this.ZoomOut();
+		}
+
+		private void OnZoomBestFit(object sender, EventArgs e)
+		{
+			this.ZoomBestFit();
+		}
+
+		private void OnResetLayout(object sender, EventArgs e)
+		{
+			this.ResetLayout();
+		}
+
+		private void OnPan(object sender, EventArgs e)
+		{
+			this.Pan();
+		}
+
+		private void OnUndo(object sender, EventArgs e)
+		{
+			this.Undo();
+		}
+
+		private void OnRedo(object sender, EventArgs e)
+		{
+			this.Redo();
+		}
+
+		private void OnExportGraph(object sender, EventArgs e)
+		{
+			this.ExportGraph();
+		}
+
+		private void OnGenerateAssembly(object sender, EventArgs e)
+		{
+			this.GenerateAssembly();
+		}
+
+		private void OnTypeAnalysisStarted(object sender, TypeAnalysisStartedEventArgs e)
+		{
+			this.BeginInvoke(new Action(this.UpdateAnalysisStart));
+		}
+
+		private void OnTypeAnalysisDone(object sender, TypeAnalysisDoneEventArgs e)
+		{
+			this.BeginInvoke(new Action<TypeAnalysisResult>(this.UpdateAnalysisEnd), e.AnalysisResult);
+		}
+
+		private void OnStateAdded(object sender, StateAddedEventArgs e)
+		{
+			if (this.InvokeRequired)
+			{
+				this.BeginInvoke(new EventHandler<StateAddedEventArgs>(this.OnStateAdded), sender, e);
+				return;
+			}
+
+			var n = _Graph.AddNode(e.State.Name);
+
+			n.UserData = e.State;
+			n.DrawNodeDelegate += this.OnDrawNode;
+			n.Attr.Shape = Shape.Circle;
+			n.Attr.LabelMargin = 7;
+			n.Label.FontName = "Cambria";
+			n.Label.FontSize = 6;
+
+			if (_Options.StateDescription)
+			{
+				n.LabelText = string.Join<string>(Environment.NewLine, e.State.EnabledActions);
+			}
+			else
+			{
+				n.LabelText = string.Format("S{0}", _Graph.NodeCount);
+			}
+
+			this.UpdateAnalysisProgress();
+		}
+
+		private void OnTransitionAdded(object sender, TransitionAddedEventArgs e)
+		{
+			if (this.InvokeRequired)
+			{
+				this.BeginInvoke(new EventHandler<TransitionAddedEventArgs>(this.OnTransitionAdded), sender, e);
+				return;
+			}
+
+			var label = e.Transition.Name;
+			var createEdge = true;
+
+			if (_Options.CollapseTransitions)
+			{
+				var n = _Graph.FindNode(e.Transition.SourceState.Name);
+
+				if (_Options.UnprovenTransitions && e.Transition.IsUnproven)
+					label = string.Format("{0}?", label);
+
+				if (n != null)
+				{
+					var edges = n.OutEdges.Union(n.SelfEdges);
+
+					foreach (var ed in edges)
+					{
+						if (ed.Target == e.Transition.TargetState.Name)
+						{
+							ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
+							createEdge = false;
+							break;
+						}
+					}
+				}
+			}
+
+			if (createEdge)
+			{
+				var edge = _Graph.AddEdge(e.Transition.SourceState.Name, label, e.Transition.TargetState.Name);
+
+				edge.Label.FontName = "Cambria";
+				edge.Label.FontSize = 6;
+			}
+
+			this.UpdateAnalysisProgress();
+		}
+
+		private bool OnDrawNode(Node node, object graphics)
+		{
+			var g = graphics as Graphics;
+			var w = node.Attr.Width;
+			var h = node.Attr.Height;
+			var x = node.Attr.Pos.X - (w / 2.0);
+			var y = node.Attr.Pos.Y - (h / 2.0);
+
+			g.FillEllipse(Brushes.AliceBlue, (float)x, (float)y, (float)w, (float)h);
+
+			var penWidth = (_SelectedGraphNode != null && _SelectedGraphNode.Node == node ? 2f : 1f);
+			using (var pen = new Pen(System.Drawing.Color.Black, penWidth))
+				g.DrawEllipse(pen, (float)x, (float)y, (float)w, (float)h);
+
+			if ((node.UserData as IState).IsInitial)
+			{
+				const double offset = 3.1;
+				x += offset / 2.0;
+				y += offset / 2.0;
+				w -= offset;
+				h -= offset;
+
+				g.DrawEllipse(Pens.Black, (float)x, (float)y, (float)w, (float)h);
+			}
+
+			using (var m = g.Transform)
+			using (var saveM = m.Clone())
+			{
+				var c = (float)(2.0 * node.Label.Center.Y);
+				x = node.Label.Center.X;
+				y = node.Label.Center.Y;
+
+				using (var m2 = new Matrix(1f, 0f, 0f, -1f, 0f, c))
+					m.Multiply(m2);
+
+				g.Transform = m;
+
+				using (var font = new Font(node.Label.FontName, node.Label.FontSize))
+				using (var format = new StringFormat(StringFormat.GenericTypographic))
+				{
+					format.Alignment = StringAlignment.Center;
+					format.LineAlignment = StringAlignment.Center;
+
+					g.DrawString(node.LabelText, font, Brushes.Black, (float)x, (float)y, format);
+				}
+
+				g.Transform = saveM;
+			}
+
+			return true;
+		}
+
+		private void OnNodeMarkedForDragging(object sender, EventArgs e)
+		{
+			_SelectedGraphNode = sender as IViewerNode;
+			var state = _SelectedGraphNode.Node.UserData as IState;
+			var info = this.GetStateInfo(state);
+			richtextboxInformation.Rtf = info;
+		}
+
+		private void OnNodeUnmarkedForDragging(object sender, EventArgs e)
+		{
+			_SelectedGraphNode = null;
+			richtextboxInformation.Clear();
+
+			this.OnObjectUnmarkedForDragging(sender, e);
+		}
+
+		private void OnObjectUnmarkedForDragging(object sender, EventArgs e)
+		{
+			buttonUndo.Enabled = graphViewer.CanUndo();
+			menuitemUndo.Enabled = graphViewer.CanUndo();
+
+			buttonRedo.Enabled = graphViewer.CanRedo();
+			menuitemRedo.Enabled = graphViewer.CanRedo();
+		}
+
+		#endregion
+
+		#region Private Methods
+
+		private void StartAnalisis()
+		{
+			_AnalizedType = treeviewTypes.SelectedNode.Tag as INamespaceTypeDefinition;
+
+			if (_EpaGenerator != null)
+				_EpaGenerator.Dispose();
+
+			_EpaGenerator = new EpaGenerator(_AssemblyInfo.FileName);
+			_EpaGenerator.TypeAnalysisStarted += this.OnTypeAnalysisStarted;
+			_EpaGenerator.TypeAnalysisDone += this.OnTypeAnalysisDone;
+			_EpaGenerator.StateAdded += this.OnStateAdded;
+			_EpaGenerator.TransitionAdded += this.OnTransitionAdded;
+
+			_AnalisisThread = new Thread(this.GenerateGraph);
+			_AnalisisThread.Name = "GenerateGraph";
+			_AnalisisThread.IsBackground = true;
+			_AnalisisThread.Start();
+		}
+
+		private void GenerateGraph()
+		{
+			try
+			{
+				var typeFullName = _AnalizedType.ToString();
+				_EpaGenerator.GenerateEpa(typeFullName);
+			}
+			catch (ThreadAbortException)
+			{
+				this.BeginInvoke(new Action<TypeAnalysisResult>(this.UpdateAnalysisEnd), (object)null);
+			}
+			catch (Exception ex)
+			{
+				this.BeginInvoke(new Action<Exception>(this.HandleException), ex);
+				this.BeginInvoke(new Action<TypeAnalysisResult>(this.UpdateAnalysisEnd), (object)null);
+			}
+			finally
+			{
+				_EpaGenerator.UnloadAssembly();
+			}
+		}
+
+		private void UpdateAnalysisStart()
+		{
+			var typeFullName = _AnalizedType.ToString();
+			statusLabel.Text = string.Format("Generating contractor graph for {0}", typeFullName);
+			progressBar.Visible = true;
+
+			_Graph = new Graph();
+			_Graph.Attr.OptimizeLabelPositions = true;
+			_Graph.Attr.LayerDirection = LayerDirection.LR;
+			graphViewer.Graph = _Graph;
+
+			_SelectedGraphNode = null;
+			richtextboxInformation.Clear();
+
+			buttonStartAnalysis.Enabled = false;
+			menuitemStartAnalysis.Enabled = false;
+
+			buttonLoadAssembly.Enabled = false;
+			menuitemLoadAssembly.Enabled = false;
+
+			buttonExportGraph.Enabled = false;
+			menuitemExportGraph.Enabled = false;
+
+			buttonGenerateAssembly.Enabled = false;
+			menuitemGenerateAssembly.Enabled = false;
+
+			buttonStopAnalysis.Enabled = true;
+			menuitemStopAnalysis.Enabled = true;
+		}
+
+		private void UpdateAnalysisEnd(TypeAnalysisResult analysisResult)
+		{
+			var typeFullName = _AnalizedType.ToString();
+			var msg = string.Format("Analysis for {0}", typeFullName);
+
+			if (analysisResult == null)
+			{
+				msg = string.Format("{0} aborted", msg);
+			}
+			else
+			{
+				var seconds = Math.Ceiling(analysisResult.TotalDuration.TotalSeconds);
+				var statesCount = analysisResult.States.Count;
+				var transitionsCount = analysisResult.Transitions.Count;
+
+				msg = string.Format("{0} done in {1} seconds: {2} states, {3} transitions", msg, seconds, statesCount, transitionsCount);
+			}
+
+			progressBar.Visible = false;
+			statusLabel.Text = msg;
+
+			_AnalisisThread = null;
+			_Graph = null;
+
+			buttonStopAnalysis.Enabled = false;
+			menuitemStopAnalysis.Enabled = false;
+
+			buttonLoadAssembly.Enabled = true;
+			menuitemLoadAssembly.Enabled = true;
+
+			buttonExportGraph.Enabled = true;
+			menuitemExportGraph.Enabled = true;
+
+			buttonGenerateAssembly.Enabled = true;
+			menuitemGenerateAssembly.Enabled = true;
+
+			this.UpdateStartAnalisisCommand(treeviewTypes.SelectedNode);
+		}
+
+		private void UpdateAnalysisProgress()
+		{
+			var typeFullName = _AnalizedType.ToString();
+			var msg = "Performing analysis for {0}: {1} states, {2} transitions";
+			statusLabel.Text = string.Format(msg, typeFullName, _Graph.NodeCount, _Graph.EdgeCount);
+
+			//_Graph.Attr.AspectRatio = (double)graphViewer.ClientSize.Width / graphViewer.ClientSize.Height;
+			graphViewer.Graph = _Graph;
+			graphViewer.Enabled = true;
+
+			foreach (var obj in graphViewer.Entities)
+			{
+				if (obj is IViewerNode)
+				{
+					obj.MarkedForDraggingEvent += this.OnNodeMarkedForDragging;
+					obj.UnmarkedForDraggingEvent += this.OnNodeUnmarkedForDragging;
+				}
+				else
+				{
+					obj.UnmarkedForDraggingEvent += this.OnObjectUnmarkedForDragging;
+				}
+			}
+		}
+
+		private void GenerateAssembly()
+		{
+			if (graphViewer.Graph == null) return;
+			var result = generateOutputDialog.ShowDialog(this);
+
+			if (result == DialogResult.OK)
+			{
+				var fileName = generateOutputDialog.FileName;
+				Task.Factory.StartNew(() => this.GenerateAssembly(fileName));
+			}
+		}
+
+		private void GenerateAssembly(string fileName)
+		{
+			this.BeginInvoke((Action)delegate
+			{
+				progressBar.Visible = true;
+				statusLabel.Text = string.Format("Generating assembly...");
+			});
+
+			try
+			{
+				_EpaGenerator.GenerateOutputAssembly(fileName);
+			}
+			catch (Exception ex)
+			{
+				this.BeginInvoke(new Action<Exception>(this.HandleException), ex);
+			}
+			finally
+			{
+				_EpaGenerator.UnloadAssembly();
+			}
+
+			this.BeginInvoke((Action)delegate
+			{
+				statusLabel.Text = "Ready";
+				progressBar.Visible = false;
+			});
+		}
+
+		public void HandleException(Exception ex)
+		{
+			if (string.IsNullOrEmpty(_EnvironmentInfo))
+			{
+				_EnvironmentInfo = this.GetEnvironmentInfo();
+			}
+
+			textboxOutput.AppendText(_EnvironmentInfo);
+			textboxOutput.AppendText(ex.ToString());
+			textboxOutput.AppendText(Environment.NewLine);
+			textboxOutput.AppendText(Environment.NewLine);
+
+			var msg = string.Format("{0}\n\nFor more information check the output window.", ex.Message);
+			MessageBox.Show(msg, this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+		}
+
+		private string GetEnvironmentInfo()
+		{
+			var sb = new StringBuilder();
+			sb.AppendLine("========================================");
+
+			sb.Append("Operating System: ");
+			sb.Append(Environment.OSVersion.ToString());
+			sb.AppendLine(Environment.Is64BitOperatingSystem ? " (64 bits)" : " (32 bits)");
+
+			sb.Append("CLR Version: ");
+			sb.AppendLine(Environment.Version.ToString());
+
+			var codeContractsVersion = "Code Contracts is not installed.";
+			var checkerFileName = Contractor.Core.Configuration.CheckerFileName;
+
+			if (!string.IsNullOrEmpty(checkerFileName))
+			{
+				var vi = FileVersionInfo.GetVersionInfo(checkerFileName);
+				codeContractsVersion = vi.ProductVersion;
+			}
+
+			sb.Append("Code Contracts Version: ");
+			sb.AppendLine(codeContractsVersion);
+
+			var assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName();
+
+			sb.Append("Contractor.NET Version: ");
+			sb.AppendLine(assemblyName.Version.ToString());
+
+			sb.AppendLine("----------------------------------------");
+			return sb.ToString();
+		}
+
+		private string GetStateInfo(IState state)
+		{
+			var info = new StringBuilder();
+			info.Append(@"{\rtf1\ansi\fs8\par\fs18");
+
+			if (state.IsInitial)
+			{
+				info.Append(@" \b Initial State \b0 \fs8\par\par\fs18");
+			}
+
+			if (state.EnabledActions.Any())
+			{
+				info.Append(@" \b Enabled Actions \b0 \par ");
+				var text = string.Join<string>(@" \par ", state.EnabledActions);
+				info.Append(text);
+			}
+
+			if (state.DisabledActions.Any())
+			{
+				info.Append(@" \fs8\par\par\fs18 \b Disabled Actions \b0 \par ");
+				var text = string.Join<string>(@" \par ", state.DisabledActions);
+				info.Append(text);
+			}
+
+			info.Append(@"}");
+			return info.ToString();
+		}
+
+		private void StopAnalisis()
+		{
+			if (_AnalisisThread != null && _AnalisisThread.IsAlive)
+				_AnalisisThread.Abort();
+		}
+
+		private void ZoomIn()
+		{
+			if (graphViewer.Graph == null) return;
+			graphViewer.ZoomInPressed();
+		}
+
+		private void ZoomOut()
+		{
+			if (graphViewer.Graph == null) return;
+			graphViewer.ZoomOutPressed();
+		}
+
+		private void ZoomBestFit()
+		{
+			if (graphViewer.Graph == null) return;
+			graphViewer.FitGraphBoundingBox();
+			graphViewer.ZoomF = 1.0;
+		}
+
+		private void ResetLayout()
+		{
+			if (graphViewer.Graph == null) return;
+			graphViewer.Graph = graphViewer.Graph;
+		}
+
+		private void Pan()
+		{
+			if (graphViewer.Graph == null) return;
+			graphViewer.PanButtonPressed = !graphViewer.PanButtonPressed;
+
+			buttonPan.Checked = graphViewer.PanButtonPressed;
+			menuitemPan.Checked = graphViewer.PanButtonPressed;
+		}
+
+		private void Undo()
+		{
+			if (graphViewer.Graph == null) return;
+			graphViewer.Undo();
+
+			buttonUndo.Enabled = graphViewer.CanUndo();
+			menuitemUndo.Enabled = graphViewer.CanUndo();
+
+			buttonRedo.Enabled = true;
+			menuitemRedo.Enabled = true;
+		}
+
+		private void Redo()
+		{
+			if (graphViewer.Graph == null) return;
+			graphViewer.Redo();
+
+			buttonUndo.Enabled = true;
+			menuitemUndo.Enabled = true;
+
+			buttonRedo.Enabled = graphViewer.CanRedo();
+			menuitemRedo.Enabled = graphViewer.CanRedo();
+		}
+
+		private void ExportGraph()
+		{
+			if (graphViewer.Graph == null) return;
+			var result = exportGraphDialog.ShowDialog(this);
+
+			if (result == DialogResult.OK)
+			{
+				var fileName = exportGraphDialog.FileName;
+				Task.Factory.StartNew(() => this.ExportGraph(fileName));
+			}
+		}
+
+		private void ExportGraph(string fileName)
+		{
+			this.BeginInvoke((Action)delegate
+			{
+				progressBar.Visible = true;
+				statusLabel.Text = string.Format("Exporting graph...");
+			});
+
+			try
+			{
+				var ext = Path.GetExtension(fileName);
+
+				switch (ext.ToLower())
+				{
+					case ".xml":
+						this.ExportXmlGraph(fileName);
+						break;
+
+					case ".gv":
+						this.ExportGraphvizGraph(fileName);
+						break;
+
+					case ".emf":
+					case ".wmf":
+						this.ExportVectorGraph(fileName);
+						break;
+
+					default:
+						this.ExportImageGraph(fileName);
+						break;
+				}
+			}
+			catch (Exception ex)
+			{
+				this.BeginInvoke(new Action<Exception>(this.HandleException), ex);
+			}
+
+			this.BeginInvoke((Action)delegate
+			{
+				statusLabel.Text = "Ready";
+				progressBar.Visible = false;
+			});
+		}
+
+		private void ExportXmlGraph(string fileName)
+		{
+			using (var xml = new XmlTextWriter(fileName, Encoding.UTF8))
+			{
+				var typeFullName = _AnalizedType.ToString();
+				var nodes = graphViewer.Graph.GeometryGraph.CollectAllNodes();
+
+				xml.Formatting = Formatting.Indented;
+				xml.WriteStartDocument();
+				xml.WriteStartElement("graph");
+				xml.WriteAttributeString("type", typeFullName);
+				xml.WriteStartElement("states");
+
+				foreach (var n in nodes)
+				{
+					var node = n.UserData as Node;
+					var state = node.UserData as IState;
+					var name = node.LabelText.Replace(Environment.NewLine, @"\n");
+
+					xml.WriteStartElement("state");
+					xml.WriteAttributeString("name", node.Id);
+
+					if (state.IsInitial)
+					{
+						xml.WriteAttributeString("initial", "true");
+					}
+
+					xml.WriteString(name);
+					xml.WriteEndElement();
+				}
+
+				xml.WriteEndElement();
+				xml.WriteStartElement("transitions");
+
+				foreach (var edge in graphViewer.Graph.Edges)
+				{
+					var from = edge.SourceNode.Id;
+					var to = edge.TargetNode.Id;
+					var label = edge.LabelText.Replace(Environment.NewLine, @"\n");
+
+					xml.WriteStartElement("transition");
+					xml.WriteAttributeString("from", from);
+					xml.WriteAttributeString("to", to);
+					xml.WriteString(label);
+					xml.WriteEndElement();
+				}
+
+				xml.WriteEndElement();
+				xml.WriteEndElement();
+			}
+		}
+
+		private void ExportGraphvizGraph(string fileName)
+		{
+			using (var sw = File.CreateText(fileName))
+			{
+				var typeFullName = _AnalizedType.ToString();
+				var nodes = graphViewer.Graph.GeometryGraph.CollectAllNodes();
+				var initialNodes = nodes.Where(n => ((n.UserData as Node).UserData as IState).IsInitial);
+				var otherNodes = nodes.Where(n => !((n.UserData as Node).UserData as IState).IsInitial);
+
+				sw.WriteLine("digraph \"{0}\"", typeFullName);
+				sw.WriteLine("{");
+				sw.WriteLine("\trankdir=LR;");
+				sw.WriteLine("\tnode [style = filled, fillcolor = aliceblue, fontname = \"{0}\"];", "Cambria");
+
+				sw.WriteLine();
+				sw.WriteLine("\tnode [shape = doublecircle];");
+
+				foreach (var n in initialNodes)
+				{
+					var node = n.UserData as Node;
+					var name = node.LabelText.Replace(sw.NewLine, @"\n");
+
+					sw.WriteLine("\tnode [label = \"{0}\"]; \"{1}\";", name, node.Id);
+				}
+
+				sw.WriteLine();
+				sw.WriteLine("\tnode [shape = circle];");
+
+				foreach (var n in otherNodes)
+				{
+					var node = n.UserData as Node;
+					var name = node.LabelText.Replace(sw.NewLine, @"\n");
+
+					sw.WriteLine("\tnode [label = \"{0}\"]; \"{1}\";", name, node.Id);
+				}
+
+				sw.WriteLine();
+				sw.WriteLine("\tedge [fontname = \"{0}\"];", "Cambria");
+				sw.WriteLine();
+
+				foreach (var edge in graphViewer.Graph.Edges)
+				{
+					var from = edge.SourceNode.Id;
+					var to = edge.TargetNode.Id;
+					var label = edge.LabelText.Replace(sw.NewLine, @"\n");
+
+					sw.WriteLine("\tedge [label = \"{0}\"] \"{1}\" -> \"{2}\";", label, from, to);
+				}
+
+				sw.WriteLine("}");
+			}
+		}
+
+		private void ExportVectorGraph(string fileName)
+		{
+			var scale = 6.0f;
+			var w = (int)(graphViewer.Graph.Width * scale);
+			var h = (int)(graphViewer.Graph.Height * scale);
+
+			using (var temp = base.CreateGraphics())
+			{
+				var hdc = temp.GetHdc();
+
+				using (var img = new Metafile(fileName, hdc, EmfType.EmfOnly))
+				{
+					temp.ReleaseHdc(hdc);
+
+					using (var g = Graphics.FromImage(img))
+					{
+						g.SmoothingMode = SmoothingMode.HighQuality;
+						g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+						g.CompositingQuality = CompositingQuality.HighQuality;
+						g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+
+						this.DrawGraph(g, w, h, scale);
+					}
+				}
+			}
+		}
+
+		private void ExportImageGraph(string fileName)
+		{
+			var scale = 6.0f;
+			var w = (int)(graphViewer.Graph.Width * scale);
+			var h = (int)(graphViewer.Graph.Height * scale);
+
+			using (var img = new Bitmap(w, h, PixelFormat.Format32bppPArgb))
+			using (var g = Graphics.FromImage(img))
+			{
+				g.SmoothingMode = SmoothingMode.HighQuality;
+				g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+				g.CompositingQuality = CompositingQuality.HighQuality;
+				g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+
+				this.DrawGraph(g, w, h, scale);
+				img.Save(fileName);
+			}
+		}
+
+		private void DrawGraph(Graphics g, int w, int h, float scale)
+		{
+			var graph = graphViewer.Graph;
+
+			var num1 = (float)((0.5 * w) - (scale * (graph.Left + (0.5 * graph.Width))));
+			var num2 = (float)((0.5 * h) + (scale * (graph.Bottom + (0.5 * graph.Height))));
+
+			using (var brush = new SolidBrush(Draw.MsaglColorToDrawingColor(graph.Attr.BackgroundColor)))
+				g.FillRectangle(brush, 0, 0, w, h);
+
+			using (var matrix = new Matrix(scale, 0f, 0f, -scale, num1, num2))
+			{
+				g.Transform = matrix;
+				Draw.DrawPrecalculatedLayoutObject(g, graphViewer.ViewerGraph);
+			}
+		}
+
+		private void UpdateCommands()
+		{
+			var graphGenerated = graphViewer.Graph != null;
+			var analisisRunning = _AnalisisThread != null;
+
+			buttonExportGraph.Enabled = graphGenerated && !analisisRunning;
+			menuitemExportGraph.Enabled = graphGenerated && !analisisRunning;
+
+			buttonGenerateAssembly.Enabled = graphGenerated && !analisisRunning;
+			menuitemGenerateAssembly.Enabled = graphGenerated && !analisisRunning;
+
+			buttonPan.Enabled = graphGenerated;
+			menuitemPan.Enabled = graphGenerated;
+
+			buttonResetLayout.Enabled = graphGenerated;
+			menuitemResetLayout.Enabled = graphGenerated;
+
+			buttonZoomBestFit.Enabled = graphGenerated;
+			menuitemZoomBestFit.Enabled = graphGenerated;
+
+			buttonZoomIn.Enabled = graphGenerated;
+			menuitemZoomIn.Enabled = graphGenerated;
+
+			buttonZoomOut.Enabled = graphGenerated;
+			menuitemZoomOut.Enabled = graphGenerated;
+
+			buttonRedo.Enabled = false;
+			menuitemRedo.Enabled = false;
+
+			buttonUndo.Enabled = false;
+			menuitemUndo.Enabled = false;
+		}
+
+		private void UpdateStartAnalisisCommand(TreeNode selectedNode)
+		{
+			var isClassNode = selectedNode != null && selectedNode.Nodes.Count == 0;
+			var analisisRunning = _AnalisisThread != null;
+
+			buttonStartAnalysis.Enabled = isClassNode && !analisisRunning;
+			menuitemStartAnalysis.Enabled = isClassNode && !analisisRunning;
+		}
+
+		private void LoadAssembly()
+		{
+			var result = loadAssemblyDialog.ShowDialog(this);
+
+			if (result == DialogResult.OK)
+			{
+				this.UnloadAssembly();
+				var fileName = loadAssemblyDialog.FileName;
+				Task.Factory.StartNew(() => this.LoadAssembly(fileName));
+			}
+		}
+
+		private void LoadAssembly(string fileName)
+		{
+			this.BeginInvoke((Action)delegate
+			{
+				progressBar.Visible = true;
+				statusLabel.Text = "Loading assembly...";
+			});
+
+			_AssemblyInfo.Load(fileName);
+			var root = this.LoadAssemblyTypes();
+
+			this.BeginInvoke((Action)delegate
+			{
+				treeviewTypes.Nodes.Add(root);
+				statusLabel.Text = "Ready";
+				progressBar.Visible = false;
+			});
+		}
+
+		private void UnloadAssembly()
+		{
+			treeviewTypes.Nodes.Clear();
+			graphViewer.Enabled = false;
+			graphViewer.Graph = null;
+			_AssemblyInfo.Dispose();
+		}
+
+		private TreeNode LoadAssemblyTypes()
+		{
+			var namespaces = new Dictionary<INamespaceDefinition, TreeNode>();
+			var allTypes = _AssemblyInfo.Module.GetAllTypes();
+			var root = new TreeNode()
+			{
+				Text = _AssemblyInfo.Module.Name.Value,
+				ImageKey = "assembly",
+				SelectedImageKey = "assembly",
+				StateImageKey = "collapsed"
+			};
+
+			foreach (var type in allTypes)
+			{
+				var member = type as INamespaceMember;
+				if (member == null) continue;
+
+				var containingNamespace = member.ContainingNamespace;
+				if (containingNamespace is IRootUnitNamespace) continue;
+
+				if (type == null) continue;
+				if (!type.IsClass && !type.IsStruct) continue;
+				if (type.Name.Value == "<Module>") continue;
+				TreeNode parent;
+
+				if (namespaces.ContainsKey(containingNamespace))
+				{
+					parent = namespaces[containingNamespace];
+				}
+				else
+				{
+					parent = this.CreateTreeNode(root, containingNamespace.ToString(), "namespace", "collapsed");
+					namespaces.Add(containingNamespace, parent);
+				}
+
+				var name = this.GetTypeName(type);
+				var node = this.CreateTreeNode(parent, name, "class", "none");
+				node.Tag = type;
+			}
+
+			return root;
+		}
+
+		private string GetTypeName(INamedTypeDefinition type)
+		{
+			var name = type.Name.Value;
+
+			if (type.IsGeneric)
+			{
+				var genericParams = string.Join(",", type.GenericParameters);
+				return string.Format("{0}<{1}>", name, genericParams);
+			}
+
+			return name;
+		}
+
+		private TreeNode CreateTreeNode(TreeNode rootNode, string name, string image, string state)
+		{
+			var node = rootNode.Nodes.Add(name);
+			node.ImageKey = image;
+			node.SelectedImageKey = image;
+			node.StateImageKey = state;
+			return node;
+		}
+
+		#endregion
+	}
+}

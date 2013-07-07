@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContractsMerger", "ContractsMerger\ContractsMerger.csproj", "{CD4DD380-2148-4C8C-B646-D0405F22D9DE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gui", "Gui\Gui.csproj", "{84CDCF2E-CF8F-4381-93E6-CD204D50F8C5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,16 @@ Global
 		{CD4DD380-2148-4C8C-B646-D0405F22D9DE}.Release|Mixed Platforms.Build.0 = Release|x86
 		{CD4DD380-2148-4C8C-B646-D0405F22D9DE}.Release|x86.ActiveCfg = Release|x86
 		{CD4DD380-2148-4C8C-B646-D0405F22D9DE}.Release|x86.Build.0 = Release|x86
+		{84CDCF2E-CF8F-4381-93E6-CD204D50F8C5}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{84CDCF2E-CF8F-4381-93E6-CD204D50F8C5}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{84CDCF2E-CF8F-4381-93E6-CD204D50F8C5}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{84CDCF2E-CF8F-4381-93E6-CD204D50F8C5}.Debug|x86.ActiveCfg = Debug|x86
+		{84CDCF2E-CF8F-4381-93E6-CD204D50F8C5}.Debug|x86.Build.0 = Debug|x86
+		{84CDCF2E-CF8F-4381-93E6-CD204D50F8C5}.Release|Any CPU.ActiveCfg = Release|x86
+		{84CDCF2E-CF8F-4381-93E6-CD204D50F8C5}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{84CDCF2E-CF8F-4381-93E6-CD204D50F8C5}.Release|Mixed Platforms.Build.0 = Release|x86
+		{84CDCF2E-CF8F-4381-93E6-CD204D50F8C5}.Release|x86.ActiveCfg = Release|x86
+		{84CDCF2E-CF8F-4381-93E6-CD204D50F8C5}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

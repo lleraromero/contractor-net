@@ -475,7 +475,7 @@ namespace Contractor.VSExtension
 					foreach (var ed in edges)
 						if (ed.Target == e.Transition.TargetState.Name)
 						{
-							ed.LabelText = string.Format("{0}\n{1}", ed.LabelText, label);
+							ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
 							createEdge = false;
 							break;
 						}
