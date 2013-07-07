@@ -22,7 +22,7 @@ using System.Xml;
 
 namespace Contractor.Gui
 {
-	public partial class Main : Form
+	partial class Main : Form
 	{
 		private AssemblyInfo _AssemblyInfo;
 		private INamespaceTypeDefinition _AnalizedType;
@@ -67,6 +67,15 @@ namespace Contractor.Gui
 		{
 			var aboutDialog = new AboutDialog();
 			aboutDialog.ShowDialog(this);
+		}
+
+		private void OnOptions(object sender, EventArgs e)
+		{
+			var optionsDialog = new OptionsDialog(_Options);
+			var result = optionsDialog.ShowDialog(this);
+
+			if (result == DialogResult.OK)
+				_Options = optionsDialog.Options;
 		}
 
 		private void OnOutput(object sender, EventArgs e)

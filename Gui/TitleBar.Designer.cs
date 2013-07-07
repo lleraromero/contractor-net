@@ -48,7 +48,7 @@
 			this.buttonClose.Margin = new System.Windows.Forms.Padding(0);
 			this.buttonClose.Name = "buttonClose";
 			this.buttonClose.Size = new System.Drawing.Size(16, 14);
-			this.buttonClose.TabIndex = 3;
+			this.buttonClose.TabIndex = 1;
 			this.buttonClose.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this.buttonClose.UseVisualStyleBackColor = false;
 			this.buttonClose.Click += new System.EventHandler(this.buttonClose_Click);
@@ -64,7 +64,7 @@
 			this.labelTitle.Name = "labelTitle";
 			this.labelTitle.Padding = new System.Windows.Forms.Padding(1, 1, 1, 2);
 			this.labelTitle.Size = new System.Drawing.Size(191, 18);
-			this.labelTitle.TabIndex = 4;
+			this.labelTitle.TabIndex = 0;
 			this.labelTitle.Text = "Title";
 			this.labelTitle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			// 

@@ -82,11 +82,11 @@
 			this.loadAssemblyDialog = new System.Windows.Forms.OpenFileDialog();
 			this.textboxOutput = new System.Windows.Forms.TextBox();
 			this.splitcontainerV = new System.Windows.Forms.SplitContainer();
-			this.graphViewer = new Microsoft.Msagl.GraphViewerGdi.GViewer();
 			this.splitcontainerH = new System.Windows.Forms.SplitContainer();
-			this.richtextboxInformation = new System.Windows.Forms.RichTextBox();
 			this.treeviewTypes = new System.Windows.Forms.TreeView();
+			this.richtextboxInformation = new System.Windows.Forms.RichTextBox();
 			this.splitcontainerOutput = new System.Windows.Forms.SplitContainer();
+			this.graphViewer = new Microsoft.Msagl.GraphViewerGdi.GViewer();
 			this.titlebarStateInfo = new Contractor.Gui.TitleBar();
 			this.titlebarOutput = new Contractor.Gui.TitleBar();
 			this.statusStrip.SuspendLayout();
@@ -182,7 +182,7 @@
 			this.toolStrip.Location = new System.Drawing.Point(0, 24);
 			this.toolStrip.Name = "toolStrip";
 			this.toolStrip.Size = new System.Drawing.Size(532, 25);
-			this.toolStrip.TabIndex = 5;
+			this.toolStrip.TabIndex = 1;
 			// 
 			// buttonOptions
 			// 
@@ -192,6 +192,7 @@
 			this.buttonOptions.Name = "buttonOptions";
 			this.buttonOptions.Size = new System.Drawing.Size(23, 22);
 			this.buttonOptions.Text = "Options";
+			this.buttonOptions.Click += new System.EventHandler(this.OnOptions);
 			// 
 			// toolStripSeparator4
 			// 
@@ -355,7 +356,7 @@
 			this.menuStrip.Location = new System.Drawing.Point(0, 0);
 			this.menuStrip.Name = "menuStrip";
 			this.menuStrip.Size = new System.Drawing.Size(532, 24);
-			this.menuStrip.TabIndex = 6;
+			this.menuStrip.TabIndex = 0;
 			this.menuStrip.Text = "menuStrip1";
 			// 
 			// menuitemFile
@@ -542,6 +543,7 @@
 			this.menuitemOptions.Name = "menuitemOptions";
 			this.menuitemOptions.Size = new System.Drawing.Size(210, 22);
 			this.menuitemOptions.Text = "&Op&tions...";
+			this.menuitemOptions.Click += new System.EventHandler(this.OnOptions);
 			// 
 			// menuitemAnalyze
 			// 
@@ -607,7 +609,7 @@
 			this.textboxOutput.ReadOnly = true;
 			this.textboxOutput.ScrollBars = System.Windows.Forms.ScrollBars.Both;
 			this.textboxOutput.Size = new System.Drawing.Size(329, 124);
-			this.textboxOutput.TabIndex = 0;
+			this.textboxOutput.TabIndex = 1;
 			this.textboxOutput.WordWrap = false;
 			// 
 			// splitcontainerV
@@ -628,8 +630,90 @@
 			this.splitcontainerV.Panel2MinSize = 200;
 			this.splitcontainerV.Size = new System.Drawing.Size(532, 298);
 			this.splitcontainerV.SplitterDistance = 197;
-			this.splitcontainerV.TabIndex = 4;
+			this.splitcontainerV.TabIndex = 0;
 			this.splitcontainerV.TabStop = false;
+			// 
+			// splitcontainerH
+			// 
+			this.splitcontainerH.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.splitcontainerH.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.splitcontainerH.Location = new System.Drawing.Point(0, 0);
+			this.splitcontainerH.Name = "splitcontainerH";
+			this.splitcontainerH.Orientation = System.Windows.Forms.Orientation.Horizontal;
+			// 
+			// splitcontainerH.Panel1
+			// 
+			this.splitcontainerH.Panel1.Controls.Add(this.treeviewTypes);
+			// 
+			// splitcontainerH.Panel2
+			// 
+			this.splitcontainerH.Panel2.Controls.Add(this.richtextboxInformation);
+			this.splitcontainerH.Panel2.Controls.Add(this.titlebarStateInfo);
+			this.splitcontainerH.Size = new System.Drawing.Size(197, 298);
+			this.splitcontainerH.SplitterDistance = 149;
+			this.splitcontainerH.TabIndex = 0;
+			this.splitcontainerH.TabStop = false;
+			// 
+			// treeviewTypes
+			// 
+			this.treeviewTypes.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this.treeviewTypes.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.treeviewTypes.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.treeviewTypes.HideSelection = false;
+			this.treeviewTypes.ImageIndex = 0;
+			this.treeviewTypes.ImageList = this.imagelist;
+			this.treeviewTypes.Indent = 18;
+			this.treeviewTypes.Location = new System.Drawing.Point(0, 0);
+			this.treeviewTypes.Name = "treeviewTypes";
+			this.treeviewTypes.SelectedImageIndex = 0;
+			this.treeviewTypes.ShowLines = false;
+			this.treeviewTypes.ShowNodeToolTips = true;
+			this.treeviewTypes.ShowPlusMinus = false;
+			this.treeviewTypes.Size = new System.Drawing.Size(195, 147);
+			this.treeviewTypes.StateImageList = this.imagelist;
+			this.treeviewTypes.TabIndex = 0;
+			this.treeviewTypes.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.OnBeforeCollapseTreeNode);
+			this.treeviewTypes.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.OnBeforeExpandTreeNode);
+			this.treeviewTypes.BeforeSelect += new System.Windows.Forms.TreeViewCancelEventHandler(this.OnBeforeSelectTreeNode);
+			this.treeviewTypes.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.OnTreeNodeMouseClick);
+			this.treeviewTypes.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.OnTreeNodeMouseDoubleClick);
+			// 
+			// richtextboxInformation
+			// 
+			this.richtextboxInformation.BackColor = System.Drawing.SystemColors.Info;
+			this.richtextboxInformation.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this.richtextboxInformation.DetectUrls = false;
+			this.richtextboxInformation.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.richtextboxInformation.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.richtextboxInformation.Location = new System.Drawing.Point(0, 19);
+			this.richtextboxInformation.Name = "richtextboxInformation";
+			this.richtextboxInformation.ReadOnly = true;
+			this.richtextboxInformation.ShowSelectionMargin = true;
+			this.richtextboxInformation.Size = new System.Drawing.Size(195, 124);
+			this.richtextboxInformation.TabIndex = 1;
+			this.richtextboxInformation.TabStop = false;
+			this.richtextboxInformation.Text = "";
+			// 
+			// splitcontainerOutput
+			// 
+			this.splitcontainerOutput.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.splitcontainerOutput.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.splitcontainerOutput.Location = new System.Drawing.Point(0, 0);
+			this.splitcontainerOutput.Name = "splitcontainerOutput";
+			this.splitcontainerOutput.Orientation = System.Windows.Forms.Orientation.Horizontal;
+			// 
+			// splitcontainerOutput.Panel1
+			// 
+			this.splitcontainerOutput.Panel1.Controls.Add(this.graphViewer);
+			// 
+			// splitcontainerOutput.Panel2
+			// 
+			this.splitcontainerOutput.Panel2.Controls.Add(this.textboxOutput);
+			this.splitcontainerOutput.Panel2.Controls.Add(this.titlebarOutput);
+			this.splitcontainerOutput.Size = new System.Drawing.Size(331, 298);
+			this.splitcontainerOutput.SplitterDistance = 149;
+			this.splitcontainerOutput.TabIndex = 0;
+			this.splitcontainerOutput.TabStop = false;
 			// 
 			// graphViewer
 			// 
@@ -656,91 +740,12 @@
 			this.graphViewer.SaveGraphButtonVisible = true;
 			this.graphViewer.SaveInVectorFormatEnabled = true;
 			this.graphViewer.Size = new System.Drawing.Size(329, 147);
-			this.graphViewer.TabIndex = 5;
+			this.graphViewer.TabIndex = 0;
 			this.graphViewer.ToolBarIsVisible = false;
 			this.graphViewer.ZoomF = 1D;
 			this.graphViewer.ZoomFraction = 0.5D;
 			this.graphViewer.ZoomWindowThreshold = 0.05D;
 			this.graphViewer.GraphChanged += new System.EventHandler(this.OnGraphChanged);
-			// 
-			// splitcontainerH
-			// 
-			this.splitcontainerH.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.splitcontainerH.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.splitcontainerH.Location = new System.Drawing.Point(0, 0);
-			this.splitcontainerH.Name = "splitcontainerH";
-			this.splitcontainerH.Orientation = System.Windows.Forms.Orientation.Horizontal;
-			// 
-			// splitcontainerH.Panel1
-			// 
-			this.splitcontainerH.Panel1.Controls.Add(this.treeviewTypes);
-			// 
-			// splitcontainerH.Panel2
-			// 
-			this.splitcontainerH.Panel2.Controls.Add(this.richtextboxInformation);
-			this.splitcontainerH.Panel2.Controls.Add(this.titlebarStateInfo);
-			this.splitcontainerH.Size = new System.Drawing.Size(197, 298);
-			this.splitcontainerH.SplitterDistance = 149;
-			this.splitcontainerH.TabIndex = 0;
-			// 
-			// richtextboxInformation
-			// 
-			this.richtextboxInformation.BackColor = System.Drawing.SystemColors.Info;
-			this.richtextboxInformation.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			this.richtextboxInformation.DetectUrls = false;
-			this.richtextboxInformation.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.richtextboxInformation.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.richtextboxInformation.Location = new System.Drawing.Point(0, 19);
-			this.richtextboxInformation.Name = "richtextboxInformation";
-			this.richtextboxInformation.ReadOnly = true;
-			this.richtextboxInformation.ShowSelectionMargin = true;
-			this.richtextboxInformation.Size = new System.Drawing.Size(195, 124);
-			this.richtextboxInformation.TabIndex = 0;
-			this.richtextboxInformation.Text = "";
-			// 
-			// treeviewTypes
-			// 
-			this.treeviewTypes.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			this.treeviewTypes.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.treeviewTypes.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.treeviewTypes.HideSelection = false;
-			this.treeviewTypes.ImageIndex = 0;
-			this.treeviewTypes.ImageList = this.imagelist;
-			this.treeviewTypes.Indent = 18;
-			this.treeviewTypes.Location = new System.Drawing.Point(0, 0);
-			this.treeviewTypes.Name = "treeviewTypes";
-			this.treeviewTypes.SelectedImageIndex = 0;
-			this.treeviewTypes.ShowLines = false;
-			this.treeviewTypes.ShowNodeToolTips = true;
-			this.treeviewTypes.ShowPlusMinus = false;
-			this.treeviewTypes.Size = new System.Drawing.Size(195, 147);
-			this.treeviewTypes.StateImageList = this.imagelist;
-			this.treeviewTypes.TabIndex = 3;
-			this.treeviewTypes.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.OnBeforeCollapseTreeNode);
-			this.treeviewTypes.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.OnBeforeExpandTreeNode);
-			this.treeviewTypes.BeforeSelect += new System.Windows.Forms.TreeViewCancelEventHandler(this.OnBeforeSelectTreeNode);
-			this.treeviewTypes.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.OnTreeNodeMouseClick);
-			this.treeviewTypes.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.OnTreeNodeMouseDoubleClick);
-			// 
-			// splitcontainerOutput
-			// 
-			this.splitcontainerOutput.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.splitcontainerOutput.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.splitcontainerOutput.Location = new System.Drawing.Point(0, 0);
-			this.splitcontainerOutput.Name = "splitcontainerOutput";
-			this.splitcontainerOutput.Orientation = System.Windows.Forms.Orientation.Horizontal;
-			// 
-			// splitcontainerOutput.Panel1
-			// 
-			this.splitcontainerOutput.Panel1.Controls.Add(this.graphViewer);
-			// 
-			// splitcontainerOutput.Panel2
-			// 
-			this.splitcontainerOutput.Panel2.Controls.Add(this.textboxOutput);
-			this.splitcontainerOutput.Panel2.Controls.Add(this.titlebarOutput);
-			this.splitcontainerOutput.Size = new System.Drawing.Size(331, 298);
-			this.splitcontainerOutput.SplitterDistance = 149;
-			this.splitcontainerOutput.TabIndex = 8;
 			// 
 			// titlebarStateInfo
 			// 
@@ -754,7 +759,8 @@
 			this.titlebarStateInfo.ShowBottomBorder = true;
 			this.titlebarStateInfo.ShowCloseButton = false;
 			this.titlebarStateInfo.Size = new System.Drawing.Size(195, 19);
-			this.titlebarStateInfo.TabIndex = 7;
+			this.titlebarStateInfo.TabIndex = 0;
+			this.titlebarStateInfo.TabStop = false;
 			this.titlebarStateInfo.Text = "State Info";
 			// 
 			// titlebarOutput
@@ -769,7 +775,7 @@
 			this.titlebarOutput.ShowBottomBorder = true;
 			this.titlebarOutput.ShowCloseButton = true;
 			this.titlebarOutput.Size = new System.Drawing.Size(329, 19);
-			this.titlebarOutput.TabIndex = 6;
+			this.titlebarOutput.TabIndex = 0;
 			this.titlebarOutput.Text = "Output";
 			this.titlebarOutput.Close += new System.EventHandler(this.OnOutputClose);
 			// 
