@@ -7,6 +7,7 @@ using System.IO;
 using Microsoft.Cci;
 using Microsoft.Cci.MutableContracts;
 using Microsoft.Cci.MutableCodeModel;
+using Microsoft.Cci.ILToCodeModel;
 
 namespace Contractor.Core
 {
@@ -101,7 +102,7 @@ namespace Contractor.Core
 			if (staticModule == null || staticModule == Dummy.Module || staticModule == Dummy.Assembly)
 				throw new Exception("The input is not a valid CLR module or assembly.");
 
-			string pdbFileName = Path.ChangeExtension(assemblyFileName, "pdb");
+			var pdbFileName = Path.ChangeExtension(assemblyFileName, "pdb");
 
 			if (File.Exists(pdbFileName))
 			{
@@ -109,7 +110,7 @@ namespace Contractor.Core
 					pdbReader = new PdbReader(pdbStream, host);
 			}
 
-			module = Microsoft.Cci.ILToCodeModel.Decompiler.GetCodeModelFromMetadataModel(host, staticModule, pdbReader);
+			module = Decompiler.GetCodeModelFromMetadataModel(host, staticModule, pdbReader);
 			assemblyLoaded = true;
 		}
 

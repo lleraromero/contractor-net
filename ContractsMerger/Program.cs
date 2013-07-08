@@ -60,10 +60,10 @@ namespace ContractsMerger
 			var host = new CodeContractAwareHostEnvironment(true);
 
 			Console.WriteLine("Loading assembly...");
-			var assembly = loadAssembly(host, _AssemblyFileName);
+			var assembly = LoadAssembly(host, _AssemblyFileName);
 
 			Console.WriteLine("Loading contract reference assembly...");
-			var assemblyWithContracts = loadAssembly(host, _AssemblyWithContractsFileName);
+			var assemblyWithContracts = LoadAssembly(host, _AssemblyWithContractsFileName);
 
 			Console.WriteLine("Extracting contracts from contract reference assembly...");
 			var contractsProviderForAssemblyWithContracts = ContractHelper.ExtractContracts(host, assemblyWithContracts.Module, assemblyWithContracts.PdbReader, assemblyWithContracts.PdbReader);
@@ -89,7 +89,7 @@ namespace ContractsMerger
 				ContractHelper.InjectContractCalls(host, assembly.Module, contractsProviderForAssembly, assembly.PdbReader);
 
 				Console.WriteLine("Saving output assembly...");
-				saveAssembly(assembly, outputFileName);
+				SaveAssembly(assembly, outputFileName);
 			}
 
 			if (assembly.PdbReader != null)
@@ -106,10 +106,10 @@ namespace ContractsMerger
 			var host = new CodeContractAwareHostEnvironment(true);
 
 			Console.WriteLine("Loading assembly...");
-			var assembly = loadAssembly(host, _AssemblyFileName);
+			var assembly = LoadAssembly(host, _AssemblyFileName);
 
 			Console.WriteLine("Loading contract reference assembly...");
-			var assemblyWithContracts = loadAssembly(host, _AssemblyWithContractsFileName);
+			var assemblyWithContracts = LoadAssembly(host, _AssemblyWithContractsFileName);
 
 			Console.WriteLine("Extracting contracts from contract reference assembly...");
 			var contractsProviderForAssemblyWithContracts = ContractHelper.ExtractContracts(host, assemblyWithContracts.Module, assemblyWithContracts.PdbReader, assemblyWithContracts.PdbReader);
@@ -138,7 +138,7 @@ namespace ContractsMerger
 			ContractHelper.InjectContractCalls(host, assembly.Module, contractsProviderForAssembly, assembly.PdbReader);
 
 			Console.WriteLine("Saving output assembly...");
-			saveAssembly(assembly, outputFileName);
+			SaveAssembly(assembly, outputFileName);
 
 			if (assembly.PdbReader != null)
 				assembly.PdbReader.Dispose();
@@ -177,7 +177,7 @@ namespace ContractsMerger
 			}
 		}
 
-		private static AssemblyInfo loadAssembly(MetadataReaderHost host, string assemblyFileName)
+		private static AssemblyInfo LoadAssembly(MetadataReaderHost host, string assemblyFileName)
 		{
 			var staticModule = host.LoadUnitFrom(assemblyFileName) as IModule;
 
@@ -197,7 +197,7 @@ namespace ContractsMerger
 			return new AssemblyInfo(host, module, pdbReader);
 		}
 
-		private static void saveAssembly(AssemblyInfo assembly, string assemblyFileName)
+		private static void SaveAssembly(AssemblyInfo assembly, string assemblyFileName)
 		{
 			var pdbName = Path.ChangeExtension(assemblyFileName, "pdb");
 

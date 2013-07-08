@@ -2,23 +2,23 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using System.Threading.Tasks;
-using Microsoft.Cci;
-using Microsoft.Cci.MutableCodeModel;
-using Contractor.Core;
-using System.Threading;
-using Microsoft.Msagl.Drawing;
-using System.Drawing.Drawing2D;
 using System.Diagnostics;
-using System.IO;
-using Microsoft.Msagl.GraphViewerGdi;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Xml;
+using Microsoft.Cci;
+using Microsoft.Cci.MutableCodeModel;
+using Microsoft.Msagl.Drawing;
+using Microsoft.Msagl.GraphViewerGdi;
+using Contractor.Core;
 
 namespace Contractor.Gui
 {
@@ -183,11 +183,6 @@ namespace Contractor.Gui
 		private void OnGenerateAssembly(object sender, EventArgs e)
 		{
 			this.GenerateAssembly();
-		}
-
-		private void OnTypeAnalysisStarted(object sender, TypeAnalysisStartedEventArgs e)
-		{
-			this.BeginInvoke(new Action(this.UpdateAnalysisStart));
 		}
 
 		private void OnTypeAnalysisDone(object sender, TypeAnalysisDoneEventArgs e)
@@ -358,7 +353,6 @@ namespace Contractor.Gui
 				_EpaGenerator.Dispose();
 
 			_EpaGenerator = new EpaGenerator(_AssemblyInfo.FileName);
-			_EpaGenerator.TypeAnalysisStarted += this.OnTypeAnalysisStarted;
 			_EpaGenerator.TypeAnalysisDone += this.OnTypeAnalysisDone;
 			_EpaGenerator.StateAdded += this.OnStateAdded;
 			_EpaGenerator.TransitionAdded += this.OnTransitionAdded;
@@ -371,6 +365,8 @@ namespace Contractor.Gui
 
 		private void GenerateGraph()
 		{
+			this.BeginInvoke(new Action(this.UpdateAnalysisStart));
+
 			try
 			{
 				var typeFullName = _AnalizedType.ToString();
@@ -394,8 +390,7 @@ namespace Contractor.Gui
 		private void UpdateAnalysisStart()
 		{
 			var typeFullName = _AnalizedType.ToString();
-			statusLabel.Text = string.Format("Generating contractor graph for {0}", typeFullName);
-			progressBar.Visible = true;
+			this.StartBackgroundTask("Generating contractor graph for {0}...", typeFullName);
 
 			_Graph = new Graph();
 			_Graph.Attr.OptimizeLabelPositions = true;
@@ -439,8 +434,7 @@ namespace Contractor.Gui
 				msg = string.Format("{0} done in {1} seconds: {2} states, {3} transitions", msg, seconds, statesCount, transitionsCount);
 			}
 
-			progressBar.Visible = false;
-			statusLabel.Text = msg;
+			this.EndBackgroundTask(msg);
 
 			_AnalisisThread = null;
 			_Graph = null;
@@ -500,8 +494,8 @@ namespace Contractor.Gui
 		{
 			this.BeginInvoke((Action)delegate
 			{
-				progressBar.Visible = true;
-				statusLabel.Text = string.Format("Generating assembly...");
+				var name = Path.GetFileName(fileName);
+				this.StartBackgroundTask("Generating assembly {0}...", name);
 			});
 
 			try
@@ -519,8 +513,7 @@ namespace Contractor.Gui
 
 			this.BeginInvoke((Action)delegate
 			{
-				statusLabel.Text = "Ready";
-				progressBar.Visible = false;
+				this.EndBackgroundTask();
 			});
 		}
 
@@ -604,7 +597,15 @@ namespace Contractor.Gui
 		private void StopAnalisis()
 		{
 			if (_AnalisisThread != null && _AnalisisThread.IsAlive)
+			{
 				_AnalisisThread.Abort();
+
+				buttonStopAnalysis.Enabled = false;
+				menuitemStopAnalysis.Enabled = false;
+
+				var typeFullName = _AnalizedType.ToString();
+				statusLabel.Text = string.Format("Aborting analysis for {0}...", typeFullName);
+			}
 		}
 
 		private void ZoomIn()
@@ -681,8 +682,8 @@ namespace Contractor.Gui
 		{
 			this.BeginInvoke((Action)delegate
 			{
-				progressBar.Visible = true;
-				statusLabel.Text = string.Format("Exporting graph...");
+				var name = Path.GetFileName(fileName);
+				this.StartBackgroundTask("Exporting graph to {0}...", name);
 			});
 
 			try
@@ -716,8 +717,7 @@ namespace Contractor.Gui
 
 			this.BeginInvoke((Action)delegate
 			{
-				statusLabel.Text = "Ready";
-				progressBar.Visible = false;
+				this.EndBackgroundTask();
 			});
 		}
 
@@ -947,8 +947,8 @@ namespace Contractor.Gui
 		{
 			this.BeginInvoke((Action)delegate
 			{
-				progressBar.Visible = true;
-				statusLabel.Text = "Loading assembly...";
+				var name = Path.GetFileName(fileName);
+				this.StartBackgroundTask("Loading assembly {0}...", name);
 			});
 
 			_AssemblyInfo.Load(fileName);
@@ -957,8 +957,7 @@ namespace Contractor.Gui
 			this.BeginInvoke((Action)delegate
 			{
 				treeviewTypes.Nodes.Add(root);
-				statusLabel.Text = "Ready";
-				progressBar.Visible = false;
+				this.EndBackgroundTask();
 			});
 		}
 
@@ -968,6 +967,34 @@ namespace Contractor.Gui
 			graphViewer.Enabled = false;
 			graphViewer.Graph = null;
 			_AssemblyInfo.Dispose();
+		}
+
+		private void StartBackgroundTask(string message, params object[] args)
+		{
+			message = string.Format(message, args);
+			statusLabel.Text = message;
+			progressBar.Visible = true;
+
+			textboxOutput.AppendText(message);
+			textboxOutput.AppendText(Environment.NewLine);
+		}
+
+		private void EndBackgroundTask(string message = null, params object[] args)
+		{
+			progressBar.Visible = false;
+
+			if (message == null)
+			{
+				statusLabel.Text = "Ready";
+			}
+			else
+			{
+				message = string.Format(message, args);
+				statusLabel.Text = message;
+
+				textboxOutput.AppendText(message);
+				textboxOutput.AppendText(Environment.NewLine);
+			}
 		}
 
 		private TreeNode LoadAssemblyTypes()
