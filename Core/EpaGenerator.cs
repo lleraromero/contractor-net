@@ -8,6 +8,7 @@ using Microsoft.Cci;
 using Microsoft.Cci.MutableContracts;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.ILToCodeModel;
+using Contractor.Utils;
 
 namespace Contractor.Core
 {
@@ -68,74 +69,46 @@ namespace Contractor.Core
 
 	public class EpaGenerator : IDisposable
 	{
-		private bool assemblyLoaded;
-		private string assemblyFileName;
+		private AssemblyInfo inputAssembly;
 		private Dictionary<int, Epa> epas;
 		private CodeContractAwareHostEnvironment host;
-		private Module module;
-		private PdbReader pdbReader;
 
 		public event EventHandler<TypeAnalysisStartedEventArgs> TypeAnalysisStarted;
 		public event EventHandler<TypeAnalysisDoneEventArgs> TypeAnalysisDone;
 		public event EventHandler<StateAddedEventArgs> StateAdded;
 		public event EventHandler<TransitionAddedEventArgs> TransitionAdded;
 
-		public EpaGenerator(string inputFileName)
+		public EpaGenerator()
 		{
-			assemblyLoaded = false;
-			assemblyFileName = inputFileName;
+			host = new CodeContractAwareHostEnvironment(true);
+			inputAssembly = new AssemblyInfo(host);
 			epas = new Dictionary<int, Epa>();
 		}
 
 		public void Dispose()
 		{
-			this.UnloadAssembly();
-			GC.SuppressFinalize(this);
+			inputAssembly.Dispose();
 		}
 
-		public void LoadAssembly()
+		public void LoadAssembly(string inputFileName)
 		{
-			if (assemblyLoaded) return;
-			host = new CodeContractAwareHostEnvironment(true);
-			var staticModule = host.LoadUnitFrom(assemblyFileName) as IModule;
-
-			if (staticModule == null || staticModule == Dummy.Module || staticModule == Dummy.Assembly)
-				throw new Exception("The input is not a valid CLR module or assembly.");
-
-			var pdbFileName = Path.ChangeExtension(assemblyFileName, "pdb");
-
-			if (File.Exists(pdbFileName))
-			{
-				using (var pdbStream = File.OpenRead(pdbFileName))
-					pdbReader = new PdbReader(pdbStream, host);
-			}
-
-			module = Decompiler.GetCodeModelFromMetadataModel(host, staticModule, pdbReader);
-			assemblyLoaded = true;
+			inputAssembly.Load(inputFileName);
+			inputAssembly.Decompile();
 		}
 
 		public void UnloadAssembly()
 		{
-			if (pdbReader != null)
-				pdbReader.Dispose();
-
-			if (host != null)
-				host.Dispose();
+			inputAssembly.Unload();
 
 			foreach (var epa in epas.Values)
 				epa.Instrumented = false;
-
-			assemblyLoaded = false;
 		}
 
 		public Dictionary<string, TypeAnalysisResult> GenerateEpas()
 		{
-			if (!assemblyLoaded)
-				this.LoadAssembly();
-
 			var analysisResults = new Dictionary<string, TypeAnalysisResult>();
 
-			foreach (var staticType in module.AllTypes)
+			foreach (var staticType in inputAssembly.DecompiledModule.AllTypes)
 			{
 				var type = staticType as NamespaceTypeDefinition;
 				var typeNameUniqueKey = type.Name.UniqueKey;
@@ -164,16 +137,13 @@ namespace Contractor.Core
 
 		public TypeAnalysisResult GenerateEpa(string typeFullName)
 		{
-			if (!assemblyLoaded)
-				this.LoadAssembly();
-
 			//Borramos del nombre los parametros de generics
 			int start = typeFullName.IndexOf('<');
 
 			if (start != -1)
 				typeFullName = typeFullName.Remove(start);
 
-			var type = module.AllTypes.Find(t => t.ToString() == typeFullName) as NamespaceTypeDefinition;
+			var type = inputAssembly.DecompiledModule.AllTypes.Find(t => t.ToString() == typeFullName) as NamespaceTypeDefinition;
 			var typeNameUniqueKey = type.Name.UniqueKey;
 
 			if (!epas.ContainsKey(typeNameUniqueKey))
@@ -203,13 +173,10 @@ namespace Contractor.Core
 						   select m)
 						   .ToList();
 
-			//MyCodeMutator dd = new MyCodeMutator(host);
-			//dd.Visit(type);
-
 			var epa = epas[type.Name.UniqueKey];
 			epa.Clear();
 
-			IAnalyzer checker = new CodeContractsAnalyzer(host, module, pdbReader, type);
+			IAnalyzer checker = new CodeContractsAnalyzer(host, inputAssembly, type);
 			var states = new Dictionary<string, State>();
 
 			var dummy = new State();
@@ -222,25 +189,22 @@ namespace Contractor.Core
 
 			while (newStates.Count > 0)
 			{
-				State source = newStates.Dequeue();
-				bool isDummySource = (source == dummy);
+				var source = newStates.Dequeue();
+				var isDummySource = (source == dummy);
 
 				foreach (var action in source.EnabledActions)
 				{
-					ActionAnalysisResults actionsResult = checker.AnalyzeActions(source, action, actions);
+					var actionsResult = checker.AnalyzeActions(source, action, actions);
 					var inconsistentActions = actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).ToList();
 
-					if (inconsistentActions.Any())
+					foreach (var act in inconsistentActions)
 					{
-						foreach (var act in inconsistentActions)
-						{
-							actionsResult.EnabledActions.Remove(act);
-							actionsResult.DisabledActions.Remove(act);
-						}
+						actionsResult.EnabledActions.Remove(act);
+						actionsResult.DisabledActions.Remove(act);
 					}
 
-					List<State> possibleTargets = generatePossibleStates(actions, actionsResult);
-					TransitionAnalysisResult transitionsResults = checker.AnalyzeTransitions(source, action, possibleTargets);
+					var possibleTargets = generatePossibleStates(actions, actionsResult);
+					var transitionsResults = checker.AnalyzeTransitions(source, action, possibleTargets);
 
 					foreach (var transition in transitionsResults.Transitions)
 					{
@@ -328,7 +292,7 @@ namespace Contractor.Core
 				var m = unknownActions.First();
 				unknownActions.Remove(m);
 
-				int count = states.Count;
+				var count = states.Count;
 
 				for (int i = 0; i < count; ++i)
 				{
@@ -349,10 +313,7 @@ namespace Contractor.Core
 
 		public void GenerateOutputAssembly(string outputFileName)
 		{
-			if (!assemblyLoaded)
-				this.LoadAssembly();
-
-			var contractProvider = ContractHelper.ExtractContracts(host, module, pdbReader, pdbReader);
+			var contractProvider = inputAssembly.ExtractContracts();
 			var instrumenter = new Instrumenter(host, contractProvider);
 
 			foreach (var typeId in epas.Keys)
@@ -361,47 +322,18 @@ namespace Contractor.Core
 
 				if (!epa.Instrumented)
 				{
-					NamespaceTypeDefinition type = (from t in module.AllTypes
-													where t.Name.UniqueKey == typeId
-													select t as NamespaceTypeDefinition)
-												   .First();
+					var type = (from t in inputAssembly.DecompiledModule.AllTypes
+								where t.Name.UniqueKey == typeId
+								select t as NamespaceTypeDefinition)
+								.First();
 
 					instrumenter.InstrumentType(type, epa);
 					epa.Instrumented = true;
 				}
 			}
 
-			ContractHelper.InjectContractCalls(host, module, contractProvider, pdbReader);
-			saveAssembly(outputFileName);
-		}
-
-		private void saveAssembly(string assemblyName)
-		{
-			//foreach (var staticType in module.AllTypes)
-			//{
-			//    var type = staticType as NamedTypeDefinition;
-
-			//    if (type != null && type.Methods != null && type.Methods.Exists(m => m.Name.Value == "$InvariantMethod$"))
-			//    {
-			//        var invariantMethod = type.Methods.Find(m => m.Name.Value == "$InvariantMethod$");
-			//        type.Methods.Remove(invariantMethod);
-			//    }
-			//}
-
-			var pdbName = Path.ChangeExtension(assemblyName, "pdb");
-
-			using (var peStream = File.Create(assemblyName))
-			{
-				if (pdbReader == null)
-				{
-					PeWriter.WritePeToStream(module, host, peStream);
-				}
-				else
-				{
-					using (var pdbWriter = new PdbWriter(pdbName, pdbReader))
-						PeWriter.WritePeToStream(module, host, peStream, pdbReader, pdbReader, pdbWriter);
-				}
-			}
+			inputAssembly.InjectContracts(contractProvider);
+			inputAssembly.Save(outputFileName);
 		}
 	}
 }

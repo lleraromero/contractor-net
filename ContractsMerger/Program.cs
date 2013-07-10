@@ -8,26 +8,12 @@ using Microsoft.Cci.Contracts;
 using Microsoft.Cci.ILToCodeModel;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableContracts;
+using Contractor.Utils;
 
 namespace ContractsMerger
 {
 	class Program
 	{
-		private struct AssemblyInfo
-		{
-			public MetadataReaderHost Host;
-			public Module Module;
-			public PdbReader PdbReader;
-
-			public AssemblyInfo(MetadataReaderHost host, Module module, PdbReader pdbReader)
-				: this()
-			{
-				this.Host = host;
-				this.Module = module;
-				this.PdbReader = pdbReader;
-			}
-		}
-
 		private string _AssemblyFileName;
 		private string _AssemblyWithContractsFileName;
 
@@ -44,6 +30,8 @@ namespace ContractsMerger
 
 			var program = new Program(assemblyFileName, assemblyWithContractsFileName);
 			program.InjectContracts(typeFullName, outputFileName);
+			//program.LoadAndSave(assemblyFileName, outputFileName);
+			//program.LoadAndSave(outputFileName, outputFileName);
 
 			Console.WriteLine("Done!");
 			Console.ReadKey();
@@ -55,22 +43,42 @@ namespace ContractsMerger
 			_AssemblyWithContractsFileName = assemblyWithContractsFileName;
 		}
 
+		//public void LoadAndSave(string inputFileName, string outputFileName)
+		//{
+		//    var host = new CodeContractAwareHostEnvironment(true);
+		//    var assembly = new AssemblyInfo(host);
+
+		//    Console.WriteLine("Loading assembly...");
+		//    assembly.Load(inputFileName);
+		//    assembly.Decompile();
+
+		//    Console.WriteLine("Saving output assembly...");
+		//    assembly.Save(outputFileName);
+
+		//    assembly.Dispose();
+		//    host.Dispose();
+		//}
+
 		private void InjectContracts(string typeFullName, string outputFileName)
 		{
 			var host = new CodeContractAwareHostEnvironment(true);
+			var assembly = new AssemblyInfo(host);
+			var assemblyWithContracts = new AssemblyInfo(host);
 
 			Console.WriteLine("Loading assembly...");
-			var assembly = LoadAssembly(host, _AssemblyFileName);
+			assembly.Load(_AssemblyFileName);
+			assembly.Decompile();
 
 			Console.WriteLine("Loading contract reference assembly...");
-			var assemblyWithContracts = LoadAssembly(host, _AssemblyWithContractsFileName);
+			assemblyWithContracts.Load(_AssemblyWithContractsFileName);
+			assemblyWithContracts.Decompile();
 
 			Console.WriteLine("Extracting contracts from contract reference assembly...");
-			var contractsProviderForAssemblyWithContracts = ContractHelper.ExtractContracts(host, assemblyWithContracts.Module, assemblyWithContracts.PdbReader, assemblyWithContracts.PdbReader);
+			var contractsProviderForAssemblyWithContracts = assemblyWithContracts.ExtractContracts();
 			var contractsProviderForAssembly = new ContractProvider(contractsProviderForAssemblyWithContracts.ContractMethods, assembly.Module);
 
-			var typeWithContracts = assemblyWithContracts.Module.AllTypes.Find(x => typeFullName == this.GetTypeFullName(x));
-			var type = assembly.Module.AllTypes.Find(x => typeFullName == this.GetTypeFullName(x));
+			var typeWithContracts = assemblyWithContracts.DecompiledModule.AllTypes.Find(x => typeFullName == this.GetTypeFullName(x));
+			var type = assembly.DecompiledModule.AllTypes.Find(x => typeFullName == this.GetTypeFullName(x));
 
 			if (type == null)
 			{
@@ -83,40 +91,40 @@ namespace ContractsMerger
 			else
 			{
 				Console.WriteLine("Associating contracts with specified type...");
-				InjectContractsForType(contractsProviderForAssemblyWithContracts, contractsProviderForAssembly, type, typeWithContracts);
+				InjectContractsForType(contractsProviderForAssemblyWithContracts, contractsProviderForAssembly, typeWithContracts, type);
 
 				Console.WriteLine("Injecting contracts into output assembly...");
-				ContractHelper.InjectContractCalls(host, assembly.Module, contractsProviderForAssembly, assembly.PdbReader);
+				assembly.InjectContracts(contractsProviderForAssembly);
 
 				Console.WriteLine("Saving output assembly...");
-				SaveAssembly(assembly, outputFileName);
+				assembly.Save(outputFileName);
 			}
 
-			if (assembly.PdbReader != null)
-				assembly.PdbReader.Dispose();
-
-			if (assemblyWithContracts.PdbReader != null)
-				assemblyWithContracts.PdbReader.Dispose();
-
+			assemblyWithContracts.Dispose();
+			assembly.Dispose();
 			host.Dispose();
 		}
 
 		private void InjectContracts(string outputFileName)
 		{
 			var host = new CodeContractAwareHostEnvironment(true);
+			var assembly = new AssemblyInfo(host);
+			var assemblyWithContracts = new AssemblyInfo(host);
 
 			Console.WriteLine("Loading assembly...");
-			var assembly = LoadAssembly(host, _AssemblyFileName);
+			assembly.Load(_AssemblyFileName);
+			assembly.Decompile();
 
 			Console.WriteLine("Loading contract reference assembly...");
-			var assemblyWithContracts = LoadAssembly(host, _AssemblyWithContractsFileName);
+			assemblyWithContracts.Load(_AssemblyWithContractsFileName);
+			assemblyWithContracts.Decompile();
 
 			Console.WriteLine("Extracting contracts from contract reference assembly...");
-			var contractsProviderForAssemblyWithContracts = ContractHelper.ExtractContracts(host, assemblyWithContracts.Module, assemblyWithContracts.PdbReader, assemblyWithContracts.PdbReader);
+			var contractsProviderForAssemblyWithContracts = assemblyWithContracts.ExtractContracts();
 			var contractsProviderForAssembly = new ContractProvider(contractsProviderForAssemblyWithContracts.ContractMethods, assembly.Module);
 
-			var typesWithContracts = assemblyWithContracts.Module.AllTypes;
-			var types = assembly.Module.AllTypes.ToDictionary(this.GetTypeFullName);
+			var typesWithContracts = assemblyWithContracts.DecompiledModule.AllTypes;
+			var types = assembly.DecompiledModule.AllTypes.ToDictionary(this.GetTypeFullName);
 
 			Console.WriteLine("Associating contracts with types...");
 
@@ -131,25 +139,21 @@ namespace ContractsMerger
 				}
 
 				var type = types[typeName];
-				InjectContractsForType(contractsProviderForAssemblyWithContracts, contractsProviderForAssembly, type, typeWithContracts);
+				InjectContractsForType(contractsProviderForAssemblyWithContracts, contractsProviderForAssembly, typeWithContracts, type);
 			}
 
 			Console.WriteLine("Injecting contracts into output assembly...");
-			ContractHelper.InjectContractCalls(host, assembly.Module, contractsProviderForAssembly, assembly.PdbReader);
+			assembly.InjectContracts(contractsProviderForAssembly);
 
 			Console.WriteLine("Saving output assembly...");
-			SaveAssembly(assembly, outputFileName);
+			assembly.Save(outputFileName);
 
-			if (assembly.PdbReader != null)
-				assembly.PdbReader.Dispose();
-
-			if (assemblyWithContracts.PdbReader != null)
-				assemblyWithContracts.PdbReader.Dispose();
-
+			assemblyWithContracts.Dispose();
+			assembly.Dispose();
 			host.Dispose();
 		}
 
-		private static void InjectContractsForType(ContractProvider contractsProviderForAssemblyWithContracts, ContractProvider contractsProviderForAssembly, INamedTypeDefinition type, INamedTypeDefinition typeWithContracts)
+		private static void InjectContractsForType(ContractProvider contractsProviderForAssemblyWithContracts, ContractProvider contractsProviderForAssembly, INamedTypeDefinition typeWithContracts, INamedTypeDefinition type)
 		{
 			var typeContract = contractsProviderForAssemblyWithContracts.GetTypeContractFor(typeWithContracts);
 
@@ -174,44 +178,6 @@ namespace ContractsMerger
 
 				if (methodContract != null)
 					contractsProviderForAssembly.AssociateMethodWithContract(method, methodContract);
-			}
-		}
-
-		private static AssemblyInfo LoadAssembly(MetadataReaderHost host, string assemblyFileName)
-		{
-			var staticModule = host.LoadUnitFrom(assemblyFileName) as IModule;
-
-			if (staticModule == null || staticModule == Dummy.Module || staticModule == Dummy.Assembly)
-				throw new Exception("The input is not a valid CLR module or assembly.");
-
-			string pdbFileName = Path.ChangeExtension(assemblyFileName, "pdb");
-			PdbReader pdbReader = null;
-
-			if (File.Exists(pdbFileName))
-			{
-				using (var pdbStream = File.OpenRead(pdbFileName))
-					pdbReader = new PdbReader(pdbStream, host);
-			}
-
-			var module = Decompiler.GetCodeModelFromMetadataModel(host, staticModule, pdbReader);
-			return new AssemblyInfo(host, module, pdbReader);
-		}
-
-		private static void SaveAssembly(AssemblyInfo assembly, string assemblyFileName)
-		{
-			var pdbName = Path.ChangeExtension(assemblyFileName, "pdb");
-
-			using (var peStream = File.Create(assemblyFileName))
-			{
-				if (assembly.PdbReader == null)
-				{
-					PeWriter.WritePeToStream(assembly.Module, assembly.Host, peStream);
-				}
-				else
-				{
-					using (var pdbWriter = new PdbWriter(pdbName, assembly.PdbReader))
-						PeWriter.WritePeToStream(assembly.Module, assembly.Host, peStream, assembly.PdbReader, assembly.PdbReader, pdbWriter);
-				}
 			}
 		}
 

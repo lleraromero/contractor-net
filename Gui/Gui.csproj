@@ -133,7 +133,6 @@
     <Compile Include="AboutDialog.Designer.cs">
       <DependentUpon>AboutDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
     </Compile>

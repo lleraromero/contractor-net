@@ -56,7 +56,7 @@ namespace Contractor.Console
 			{
 				try
 				{
-					new Program(options);
+					var program = new Program(options);
 				}
 				catch (Exception ex)
 				{
@@ -103,9 +103,13 @@ namespace Contractor.Console
 
 			if (!Directory.Exists(Configuration.TempPath))
 				Directory.CreateDirectory(Configuration.TempPath);
+		}
 
-			using (var generator = new EpaGenerator(options.input))
+		public void Execute()
+		{
+			using (var generator = new EpaGenerator())
 			{
+				generator.LoadAssembly(options.input);
 				generator.TypeAnalysisStarted += typeAnalysisStarted;
 				generator.TypeAnalysisDone += typeAnalysisDone;
 				generator.StateAdded += stateAdded;
@@ -190,7 +194,7 @@ namespace Contractor.Console
 		{
 			var graph = graphs[e.TypeFullName];
 			var label = e.Transition.Name;
-			bool createEdge = true;
+			var createEdge = true;
 
 			if (options.collapseTransitions)
 			{

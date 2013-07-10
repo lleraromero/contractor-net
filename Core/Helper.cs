@@ -6,8 +6,9 @@ using Microsoft.Cci;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableContracts;
+using Contractor.Core;
 
-namespace Contractor.Core
+namespace Contractor.Utils
 {
 	static class Helper
 	{

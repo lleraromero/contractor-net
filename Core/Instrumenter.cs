@@ -6,6 +6,7 @@ using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableContracts;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci;
+using Contractor.Utils;
 
 namespace Contractor.Core
 {

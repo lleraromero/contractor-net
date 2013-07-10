@@ -19,6 +19,7 @@ using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Msagl.Drawing;
 using Microsoft.Msagl.GraphViewerGdi;
 using Contractor.Core;
+using Contractor.Utils;
 
 namespace Contractor.Gui
 {
@@ -40,7 +41,8 @@ namespace Contractor.Gui
 			graphViewer.OutsideAreaBrush = Brushes.White;
 			splitcontainerOutput.Panel2Collapsed = true;
 
-			_AssemblyInfo = new AssemblyInfo();
+			var host = new PeReader.DefaultHost();
+			_AssemblyInfo = new AssemblyInfo(host);
 			_Options = new Options();
 		}
 
@@ -352,7 +354,8 @@ namespace Contractor.Gui
 			if (_EpaGenerator != null)
 				_EpaGenerator.Dispose();
 
-			_EpaGenerator = new EpaGenerator(_AssemblyInfo.FileName);
+			_EpaGenerator = new EpaGenerator();
+			_EpaGenerator.LoadAssembly(_AssemblyInfo.FileName);
 			_EpaGenerator.TypeAnalysisDone += this.OnTypeAnalysisDone;
 			_EpaGenerator.StateAdded += this.OnStateAdded;
 			_EpaGenerator.TransitionAdded += this.OnTransitionAdded;

@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.Cci.Contracts;
 using Contractor.Core.Properties;
+using Contractor.Utils;
 
 namespace Contractor.Core
 {
@@ -30,23 +31,20 @@ namespace Contractor.Core
 		private const string methodNameDelimiter = "~";
 		private const string pattern = @"^ Method \W* \d+ \W* : \W* (?<MethodName> [^(\r]+) (\( [^)]* \))? \r | ^ [^(]* \( [^)]* \) \W* (\[ [^]]* \])? \W* : \W* ([^:]+ :)? \W* (?<Message> [^\r]+) \r";
 
-		private IContractAwareHost host;
-		private Module module;
-		private PdbReader pdbReader;
-		private NamespaceTypeDefinition type;
+		private readonly IContractAwareHost host;
+		private readonly AssemblyInfo inputAssembly;
+		private readonly NamespaceTypeDefinition type;
+		private readonly Regex outputParser;
 		private ContractProvider contractProvider;
 		private StringBuilder output;
-		private Regex outputParser;
-
 		private List<IMethodDefinition> queries;
 
-		public CodeContractsAnalyzer(IContractAwareHost host, Module module, PdbReader pdbReader, NamespaceTypeDefinition type)
+		public CodeContractsAnalyzer(IContractAwareHost host, AssemblyInfo inputAssembly, NamespaceTypeDefinition type)
 		{
-			this.queries = new List<IMethodDefinition>();
 			this.outputParser = new Regex(pattern, RegexOptions.ExplicitCapture | RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline | RegexOptions.Compiled);
+			this.queries = new List<IMethodDefinition>();
 			this.host = host;
-			this.pdbReader = pdbReader;
-			this.module = module;
+			this.inputAssembly = inputAssembly;
 			this.type = type;
 		}
 
@@ -57,10 +55,10 @@ namespace Contractor.Core
 
 		public ActionAnalysisResults AnalyzeActions(State source, IMethodDefinition action, List<IMethodDefinition> actions)
 		{
-			contractProvider = ContractHelper.ExtractContracts(host, module, pdbReader, pdbReader);
-			string queryAssemblyName = generateQueries(source, action, actions);
-			ContractHelper.InjectContractCalls(host, module, contractProvider, pdbReader);
-			saveAssembly(queryAssemblyName);
+			contractProvider = inputAssembly.ExtractContracts();
+			var queryAssemblyName = generateQueries(source, action, actions);
+			inputAssembly.InjectContracts(contractProvider);
+			inputAssembly.Save(queryAssemblyName);
 			var result = executeChecker(queryAssemblyName);
 			var evalResult = evaluateQueries(actions, result);
 
@@ -87,15 +85,15 @@ namespace Contractor.Core
 				this.TotalGeneratedQueriesCount += 2;
 			}
 
-			string queryAssemblyName = string.Format("query{0}.dll", type.Name.Value);
+			var queryAssemblyName = string.Format("query{0}.dll", type.Name.Value);
 			return Path.Combine(Configuration.TempPath, queryAssemblyName);
 		}
 
 		private MethodDefinition generatePositiveNegativeQuery(State state, IMethodDefinition action, IMethodDefinition target, bool negative)
 		{
 			var contracts = new MethodContract();
-			ITypeContract mci = contractProvider.GetTypeContractFor(type);
-			IMethodContract mct = contractProvider.GetMethodContractFor(target);
+			var mci = contractProvider.GetTypeContractFor(type);
+			var mct = contractProvider.GetMethodContractFor(target);
 
 			if (mci != null && mci.Invariants.Count() > 0)
 			{
@@ -110,7 +108,7 @@ namespace Contractor.Core
 
 			foreach (var c in state.EnabledActions)
 			{
-				IMethodContract mc = contractProvider.GetMethodContractFor(c);
+				var mc = contractProvider.GetMethodContractFor(c);
 				if (mc == null) continue;
 
 				contracts.Preconditions.AddRange(mc.Preconditions);
@@ -118,7 +116,7 @@ namespace Contractor.Core
 
 			foreach (var c in state.DisabledActions)
 			{
-				IMethodContract mc = contractProvider.GetMethodContractFor(c);
+				var mc = contractProvider.GetMethodContractFor(c);
 
 				if (mc == null || mc.Preconditions.Count() == 0)
 				{
@@ -195,9 +193,9 @@ namespace Contractor.Core
 				}
 			}
 
-			string prefix = negative ? notPrefix : string.Empty;
+			var prefix = negative ? notPrefix : string.Empty;
 			var methodName = string.Format("{1}{0}{2}{0}{3}{4}", methodNameDelimiter, state.Name, action.Name, prefix, target.Name);
-			MethodDefinition method = generateQuery(methodName, action);
+			var method = generateQuery(methodName, action);
 
 			contractProvider.AssociateMethodWithContract(method, contracts);
 			return method;
@@ -226,7 +224,7 @@ namespace Contractor.Core
 				block = callMethod(action);
 			}
 
-			method.Body = new SourceMethodBody(host, pdbReader)
+			method.Body = new SourceMethodBody(host, inputAssembly.PdbReader)
 			{
 				MethodDefinition = method,
 				Block = block,
@@ -291,7 +289,7 @@ namespace Contractor.Core
 				method.Parameters = new List<IParameterDefinition>();
 
 			method.Parameters.AddRange(action.Parameters);
-			IMethodContract mc = contractProvider.GetMethodContractFor(action);
+			var mc = contractProvider.GetMethodContractFor(action);
 
 			if (mc != null && mc.Preconditions.Count() > 0)
 			{
@@ -378,7 +376,7 @@ namespace Contractor.Core
 		{
 			string libPaths;
 
-			if (module.TargetRuntimeVersion.StartsWith("v4.0"))
+			if (inputAssembly.Module.TargetRuntimeVersion.StartsWith("v4.0"))
 				libPaths = Configuration.ExpandVariables(Resources.Netv40);
 			else
 				libPaths = Configuration.ExpandVariables(Resources.Netv35);
@@ -389,12 +387,12 @@ namespace Contractor.Core
 				typeName = string.Format("{0}`{1}", typeName, type.GenericParameterCount);
 
 			output = new StringBuilder();
-			string cccheckArgs = Configuration.CheckerArguments;
+			var cccheckArgs = Configuration.CheckerArguments;
 			cccheckArgs = cccheckArgs.Replace("@assemblyName", queryAssemblyName);
 			cccheckArgs = cccheckArgs.Replace("@fullTypeName", typeName);
 			cccheckArgs = cccheckArgs.Replace("@libPaths", libPaths);
 
-			using (Process cccheck = new Process())
+			using (var cccheck = new Process())
 			{
 				cccheck.StartInfo = new ProcessStartInfo()
 				{
@@ -424,11 +422,11 @@ namespace Contractor.Core
 //#endif
 			}
 
-			string outputString = output.ToString();
-			MatchCollection matches = outputParser.Matches(outputString);
+			var outputString = output.ToString();
+			var matches = outputParser.Matches(outputString);
 			output = null;
 
-			Dictionary<string, List<ResultKind>> result = new Dictionary<string, List<ResultKind>>();
+			var result = new Dictionary<string, List<ResultKind>>();
 			string currentMethod = null;
 
 			foreach (Match m in matches)
@@ -474,16 +472,15 @@ namespace Contractor.Core
 
 		private void cccheck_DataReceived(object sender, DataReceivedEventArgs e)
 		{
-			//Console.WriteLine(e.Data);
 			output.AppendLine(e.Data);
 		}
 
 		public TransitionAnalysisResult AnalyzeTransitions(State source, IMethodDefinition action, List<State> targets)
 		{
-			contractProvider = ContractHelper.ExtractContracts(host, module, pdbReader, pdbReader);
-			string queryAssemblyName = generateQueries(source, action, targets);
-			ContractHelper.InjectContractCalls(host, module, contractProvider, pdbReader);
-			saveAssembly(queryAssemblyName);
+			contractProvider = inputAssembly.ExtractContracts();
+			var queryAssemblyName = generateQueries(source, action, targets);
+			inputAssembly.InjectContracts(contractProvider);
+			inputAssembly.Save(queryAssemblyName);
 			var result = executeChecker(queryAssemblyName);
 			var evalResult = evaluateQueries(source, action,targets, result);
 
@@ -504,7 +501,7 @@ namespace Contractor.Core
 				this.TotalGeneratedQueriesCount++;
 			}
 
-			string queryAssemblyName = string.Format("query{0}.dll", type.Name.Value);
+			var queryAssemblyName = string.Format("query{0}.dll", type.Name.Value);
 			return Path.Combine(Configuration.TempPath, queryAssemblyName);
 		}
 
@@ -514,10 +511,10 @@ namespace Contractor.Core
 			var typeInv = Helper.GenerateTypeInvariant(host, contractProvider, type);
 
 			var typeInvPre = from expr in typeInv
-							  select new Precondition()
-							  {
-								  Condition = expr
-							  };
+							 select new Precondition()
+							 {
+								 Condition = expr
+							 };
 
 			var stateInv = Helper.GenerateStateInvariant(host, contractProvider, type, state);
 
@@ -551,7 +548,7 @@ namespace Contractor.Core
 			contracts.Postconditions.Add(postcondition);
 
 			var methodName = string.Format("{1}{0}{2}{0}{3}", methodNameDelimiter, state.Name, action.Name, target.Name);
-			MethodDefinition method = generateQuery(methodName, action);
+			var method = generateQuery(methodName, action);
 
 			contractProvider.AssociateMethodWithContract(method, contracts);
 			return method;
@@ -583,35 +580,6 @@ namespace Contractor.Core
 			}
 
 			return analysisResult;
-		}
-
-		private void saveAssembly(string assemblyName)
-		{
-			//foreach (var staticType in module.AllTypes)
-			//{
-			//    var type = staticType as NamedTypeDefinition;
-
-			//    if (type != null && type.Methods != null && type.Methods.Exists(m => m.Name.Value == "$InvariantMethod$"))
-			//    {
-			//        var invariantMethod = type.Methods.Find(m => m.Name.Value == "$InvariantMethod$");
-			//        type.Methods.Remove(invariantMethod);
-			//    }
-			//}
-
-			var pdbName = Path.ChangeExtension(assemblyName, "pdb");
-
-			using (var peStream = File.Create(assemblyName))
-			{
-				if (pdbReader == null)
-				{
-					PeWriter.WritePeToStream(module, host, peStream);
-				}
-				else
-				{
-					using (var pdbWriter = new PdbWriter(pdbName, pdbReader))
-						PeWriter.WritePeToStream(module, host, peStream, pdbReader, pdbReader, pdbWriter);
-				}
-			}
 		}
 
 		private void removeQueries()

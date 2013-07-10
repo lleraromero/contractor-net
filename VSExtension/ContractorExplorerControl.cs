@@ -378,7 +378,8 @@ namespace Contractor.VSExtension
 			if (generator != null)
 				generator.Dispose();
 
-			generator = new EpaGenerator(outputFileName);
+			generator = new EpaGenerator();
+			generator.LoadAssembly(outputFileName);
 			generator.TypeAnalysisStarted += typeAnalysisStarted;
 			generator.TypeAnalysisDone += typeAnalysisDone;
 			generator.StateAdded += stateAdded;
