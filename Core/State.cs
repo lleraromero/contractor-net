@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using Microsoft.Cci;
+using Contractor.Utils;
 
 namespace Contractor.Core
 {
@@ -17,8 +18,10 @@ namespace Contractor.Core
 			}
 		}
 
+		private const string methodNameDelimiter = "-";
+
 		public uint Id;
-		public string Name;
+		public string UniqueName;
 		public bool IsInitial;
 		public List<IMethodDefinition> EnabledActions { get; private set; }
 		public List<IMethodDefinition> DisabledActions { get; private set; }
@@ -26,7 +29,7 @@ namespace Contractor.Core
 		public State()
 		{
 			this.Id = 0;
-			this.Name = string.Empty;
+			this.UniqueName = string.Empty;
 			this.IsInitial = false;
 			this.EnabledActions = new List<IMethodDefinition>();
 			this.DisabledActions = new List<IMethodDefinition>();
@@ -37,11 +40,11 @@ namespace Contractor.Core
 			if (this.EnabledActions.Count > 0)
 			{
 				this.EnabledActions.Sort(new NamedEntityComparer());
-				this.Name = string.Join(string.Empty, from a in this.EnabledActions select a.Name.Value);
+				this.UniqueName = string.Join(methodNameDelimiter, from a in this.EnabledActions select a.GetUniqueName());
 			}
 			else
 			{
-				this.Name = "empty";
+				this.UniqueName = "empty";
 			}
 		}
 
@@ -49,7 +52,7 @@ namespace Contractor.Core
 		{
 			get
 			{
-				var s = new EpaState(this.Id, this.Name);
+				var s = new EpaState(this.Id, this.UniqueName);
 				s.EnabledActions.AddRange(from a in this.EnabledActions select a.Name.UniqueKey);
 				s.DisabledActions.AddRange(from a in this.DisabledActions select a.Name.UniqueKey);
 				return s;
@@ -60,7 +63,7 @@ namespace Contractor.Core
 
 		string IState.Name
 		{
-			get { return this.Name; }
+			get { return this.UniqueName; }
 		}
 
 		bool IState.IsInitial
@@ -82,17 +85,17 @@ namespace Contractor.Core
 
 		public bool Equals(State other)
 		{
-			return this.Name.Equals(other.Name);
+			return this.UniqueName.Equals(other.UniqueName);
 		}
 
 		public override int GetHashCode()
 		{
-			return this.Name.GetHashCode();
+			return this.UniqueName.GetHashCode();
 		}
 
 		public override string ToString()
 		{
-			return this.Name;
+			return this.UniqueName;
 		}
 	}
 }

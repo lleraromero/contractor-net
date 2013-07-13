@@ -29,7 +29,8 @@ namespace Contractor.Core
 
 		private const string notPrefix = ".Not.";
 		private const string methodNameDelimiter = "~";
-		private const string pattern = @"^ Method \W* \d+ \W* : \W* (?<MethodName> [^(\r]+) (\( [^)]* \))? \r | ^ [^(]* \( [^)]* \) \W* (\[ [^]]* \])? \W* : \W* ([^:]+ :)? \W* (?<Message> [^\r]+) \r";
+		//private const string pattern = @"^ Method \W* \d+ \W* : \W* (?<MethodName> [^(\r]+) (\( [^)]* \))? \r | ^ [^(]* \( [^)]* \) \W* (\[ [^]]* \])? \W* : \W* ([^:]+ :)? \W* (?<Message> [^\r]+) \r";
+		private const string pattern = @"^ Method \W* \d+ \W* : (< [a-z ]+ >)? \W* (?<MethodName> [^(\r]+ (\( [^)]* \))?) \r | ^ [^( ]+ (\( [^)]* \))? \W* (\[ [^]]* \])? \W* : \W* ([^:]+ :)? \W* (?<Message> [^\r]+) \r";
 
 		private readonly IContractAwareHost host;
 		private readonly AssemblyInfo inputAssembly;
@@ -194,7 +195,10 @@ namespace Contractor.Core
 			}
 
 			var prefix = negative ? notPrefix : string.Empty;
-			var methodName = string.Format("{1}{0}{2}{0}{3}{4}", methodNameDelimiter, state.Name, action.Name, prefix, target.Name);
+			var actionName = action.GetUniqueName();
+			var stateName = state.UniqueName;
+			var targetName = target.GetUniqueName();
+			var methodName = string.Format("{1}{0}{2}{0}{3}{4}", methodNameDelimiter, stateName, actionName, prefix, targetName);
 			var method = generateQuery(methodName, action);
 
 			contractProvider.AssociateMethodWithContract(method, contracts);
@@ -349,18 +353,25 @@ namespace Contractor.Core
 					entry.Value.Contains(ResultKind.UnprovenEnsures))
 				{
 					var query = entry.Key;
-					var actionName = query.Substring(query.LastIndexOf(methodNameDelimiter) + 1);
+					var queryParametersStart = query.LastIndexOf('(');
+
+					// Borramos los parametros del query
+					if (queryParametersStart != -1)
+						query = query.Remove(queryParametersStart);
+
+					var actionNameStart = query.LastIndexOf(methodNameDelimiter) + 1;
+					var actionName = query.Substring(actionNameStart);
 					var isNegative = actionName.StartsWith(notPrefix);
 
 					if (isNegative)
 					{
 						actionName = actionName.Remove(0, notPrefix.Length);
-						var method = type.Methods.Find(m => m.Name.Value == actionName);
+						var method = type.Methods.Find(m => m.GetUniqueName() == actionName);
 						analysisResult.DisabledActions.Remove(method);
 					}
 					else
 					{
-						var method = type.Methods.Find(m => m.Name.Value == actionName);
+						var method = type.Methods.Find(m => m.GetUniqueName() == actionName);
 						analysisResult.EnabledActions.Remove(method);
 					}
 
@@ -547,7 +558,10 @@ namespace Contractor.Core
 			contracts.Postconditions.AddRange(typeInvPost);
 			contracts.Postconditions.Add(postcondition);
 
-			var methodName = string.Format("{1}{0}{2}{0}{3}", methodNameDelimiter, state.Name, action.Name, target.Name);
+			var actionName = action.GetUniqueName();
+			var stateName = state.UniqueName;
+			var targetName = target.UniqueName;
+			var methodName = string.Format("{1}{0}{2}{0}{3}", methodNameDelimiter, stateName, actionName, targetName);
 			var method = generateQuery(methodName, action);
 
 			contractProvider.AssociateMethodWithContract(method, contracts);
@@ -564,8 +578,15 @@ namespace Contractor.Core
 					entry.Value.Contains(ResultKind.UnprovenEnsures))
 				{
 					var query = entry.Key;
-					var actionName = query.Substring(query.LastIndexOf(methodNameDelimiter) + 1);
-					var target = targets.Find(s => s.Name == actionName);
+					var queryParametersStart = query.LastIndexOf('(');
+
+					// Borramos los parametros del query
+					if (queryParametersStart != -1)
+						query = query.Remove(queryParametersStart);
+
+					var targetNameStart = query.LastIndexOf(methodNameDelimiter) + 1;
+					var targetName = query.Substring(targetNameStart);
+					var target = targets.Find(s => s.UniqueName == targetName);
 					var isUnproven = entry.Value.Contains(ResultKind.UnprovenEnsures);
 
 					if (target != null)

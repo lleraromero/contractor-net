@@ -26,12 +26,13 @@ namespace Contractor.Gui
 	partial class Main : Form
 	{
 		private AssemblyInfo _AssemblyInfo;
-		private INamespaceTypeDefinition _AnalizedType;
+		private INamedTypeDefinition _AnalizedType;
 		private EpaGenerator _EpaGenerator;
 		private Thread _AnalisisThread;
 		private Graph _Graph;
 		private IViewerNode _SelectedGraphNode;
 		private Options _Options;
+		private string _ContractReferenceAssemblyFileName;
 		private string _EnvironmentInfo;
 
 		public Main()
@@ -117,9 +118,16 @@ namespace Contractor.Gui
 			this.StartAnalisis();
 		}
 
-		private void OnBeforeSelectTreeNode(object sender, TreeViewCancelEventArgs e)
+		private void OnAfterSelectTreeNode(object sender, TreeViewEventArgs e)
 		{
-			this.UpdateStartAnalisisCommand(e.Node);
+			this.UpdateStartAnalisisCommand();
+			listboxMethods.Items.Clear();
+
+			if (e.Node.Tag is INamedTypeDefinition)
+			{
+				var selectedType = e.Node.Tag as INamedTypeDefinition;
+				this.LoadTypeMethods(selectedType);
+			}
 		}
 
 		private void OnGraphChanged(object sender, EventArgs e)
@@ -130,6 +138,11 @@ namespace Contractor.Gui
 		private void OnLoadAssembly(object sender, EventArgs e)
 		{
 			this.LoadAssembly();
+		}
+
+		private void OnLoadContracts(object sender, EventArgs e)
+		{
+			this.LoadContracts();
 		}
 
 		private void OnStartAnalysis(object sender, EventArgs e)
@@ -187,6 +200,11 @@ namespace Contractor.Gui
 			this.GenerateAssembly();
 		}
 
+		private void OnTypeAnalysisStarted(object sender, TypeAnalysisStartedEventArgs e)
+		{
+			this.BeginInvoke(new Action<string>(this.UpdateAnalysisStart), e.TypeFullName);
+		}
+
 		private void OnTypeAnalysisDone(object sender, TypeAnalysisDoneEventArgs e)
 		{
 			this.BeginInvoke(new Action<TypeAnalysisResult>(this.UpdateAnalysisEnd), e.AnalysisResult);
@@ -211,7 +229,7 @@ namespace Contractor.Gui
 
 			if (_Options.StateDescription)
 			{
-				n.LabelText = string.Join<string>(Environment.NewLine, e.State.EnabledActions);
+				n.LabelText = string.Join(Environment.NewLine, e.State.EnabledActions);
 			}
 			else
 			{
@@ -323,12 +341,18 @@ namespace Contractor.Gui
 			_SelectedGraphNode = sender as IViewerNode;
 			var state = _SelectedGraphNode.Node.UserData as IState;
 			var info = this.GetStateInfo(state);
+
 			richtextboxInformation.Rtf = info;
+			titlebarProperties.Text = "State Info";
+			listboxMethods.Visible = false;
 		}
 
 		private void OnNodeUnmarkedForDragging(object sender, EventArgs e)
 		{
 			_SelectedGraphNode = null;
+
+			titlebarProperties.Text = "Methods";
+			listboxMethods.Visible = true;
 			richtextboxInformation.Clear();
 
 			this.OnObjectUnmarkedForDragging(sender, e);
@@ -349,13 +373,13 @@ namespace Contractor.Gui
 
 		private void StartAnalisis()
 		{
-			_AnalizedType = treeviewTypes.SelectedNode.Tag as INamespaceTypeDefinition;
+			_AnalizedType = treeviewTypes.SelectedNode.Tag as INamedTypeDefinition;
 
 			if (_EpaGenerator != null)
 				_EpaGenerator.Dispose();
 
 			_EpaGenerator = new EpaGenerator();
-			_EpaGenerator.LoadAssembly(_AssemblyInfo.FileName);
+			_EpaGenerator.TypeAnalysisStarted += this.OnTypeAnalysisStarted;
 			_EpaGenerator.TypeAnalysisDone += this.OnTypeAnalysisDone;
 			_EpaGenerator.StateAdded += this.OnStateAdded;
 			_EpaGenerator.TransitionAdded += this.OnTransitionAdded;
@@ -368,12 +392,27 @@ namespace Contractor.Gui
 
 		private void GenerateGraph()
 		{
-			this.BeginInvoke(new Action(this.UpdateAnalysisStart));
+			this.BeginInvoke(new Action(this.UpdateAnalysisInitialize));
 
 			try
 			{
+				var fileName = Path.GetFileName(_AssemblyInfo.FileName);
+				this.BeginInvoke(new System.Action<string, string>(this.SetBackgroundStatus), "Decompiling assembly {0}...", fileName);
+
+				_EpaGenerator.LoadAssembly(_AssemblyInfo.FileName);
+
+				if (_ContractReferenceAssemblyFileName != null)
+				{
+					fileName = Path.GetFileName(_ContractReferenceAssemblyFileName);
+					this.BeginInvoke(new System.Action<string, string>(this.SetBackgroundStatus), "Loading contracts from assembly {0}...", fileName);
+
+					_EpaGenerator.LoadContractReferenceAssembly(_ContractReferenceAssemblyFileName);
+				}
+
 				var typeFullName = _AnalizedType.ToString();
-				_EpaGenerator.GenerateEpa(typeFullName);
+				var selectedMethods = listboxMethods.CheckedItems.Cast<string>();
+
+				_EpaGenerator.GenerateEpa(typeFullName, selectedMethods);
 			}
 			catch (ThreadAbortException)
 			{
@@ -390,10 +429,10 @@ namespace Contractor.Gui
 			}
 		}
 
-		private void UpdateAnalysisStart()
+		private void UpdateAnalysisInitialize()
 		{
 			var typeFullName = _AnalizedType.ToString();
-			this.StartBackgroundTask("Generating contractor graph for {0}...", typeFullName);
+			this.StartBackgroundTask("Initializing analysis for {0}...", typeFullName);
 
 			_Graph = new Graph();
 			_Graph.Attr.OptimizeLabelPositions = true;
@@ -409,6 +448,9 @@ namespace Contractor.Gui
 			buttonLoadAssembly.Enabled = false;
 			menuitemLoadAssembly.Enabled = false;
 
+			buttonLoadContracts.Enabled = false;
+			menuitemLoadContracts.Enabled = false;
+
 			buttonExportGraph.Enabled = false;
 			menuitemExportGraph.Enabled = false;
 
@@ -417,6 +459,11 @@ namespace Contractor.Gui
 
 			buttonStopAnalysis.Enabled = true;
 			menuitemStopAnalysis.Enabled = true;
+		}
+
+		private void UpdateAnalysisStart(string typeFullName)
+		{
+			this.SetBackgroundStatus("Generating contractor graph for {0}...", typeFullName);
 		}
 
 		private void UpdateAnalysisEnd(TypeAnalysisResult analysisResult)
@@ -448,20 +495,23 @@ namespace Contractor.Gui
 			buttonLoadAssembly.Enabled = true;
 			menuitemLoadAssembly.Enabled = true;
 
+			buttonLoadContracts.Enabled = true;
+			menuitemLoadContracts.Enabled = true;
+
 			buttonExportGraph.Enabled = true;
 			menuitemExportGraph.Enabled = true;
 
 			buttonGenerateAssembly.Enabled = true;
 			menuitemGenerateAssembly.Enabled = true;
 
-			this.UpdateStartAnalisisCommand(treeviewTypes.SelectedNode);
+			this.UpdateStartAnalisisCommand();
 		}
 
 		private void UpdateAnalysisProgress()
 		{
 			var typeFullName = _AnalizedType.ToString();
 			var msg = "Performing analysis for {0}: {1} states, {2} transitions";
-			statusLabel.Text = string.Format(msg, typeFullName, _Graph.NodeCount, _Graph.EdgeCount);
+			this.SetBackgroundStatus(msg, typeFullName, _Graph.NodeCount, _Graph.EdgeCount);
 
 			//_Graph.Attr.AspectRatio = (double)graphViewer.ClientSize.Width / graphViewer.ClientSize.Height;
 			graphViewer.Graph = _Graph;
@@ -489,6 +539,8 @@ namespace Contractor.Gui
 			if (result == DialogResult.OK)
 			{
 				var fileName = generateOutputDialog.FileName;
+				generateOutputDialog.InitialDirectory = Path.GetDirectoryName(fileName);
+
 				Task.Factory.StartNew(() => this.GenerateAssembly(fileName));
 			}
 		}
@@ -677,6 +729,8 @@ namespace Contractor.Gui
 			if (result == DialogResult.OK)
 			{
 				var fileName = exportGraphDialog.FileName;
+				exportGraphDialog.InitialDirectory = Path.GetDirectoryName(fileName);
+
 				Task.Factory.StartNew(() => this.ExportGraph(fileName));
 			}
 		}
@@ -925,9 +979,10 @@ namespace Contractor.Gui
 			menuitemUndo.Enabled = false;
 		}
 
-		private void UpdateStartAnalisisCommand(TreeNode selectedNode)
+		private void UpdateStartAnalisisCommand()
 		{
-			var isClassNode = selectedNode != null && selectedNode.Nodes.Count == 0;
+			var selectedNode = treeviewTypes.SelectedNode;
+			var isClassNode = selectedNode != null && selectedNode.Tag is INamedTypeDefinition;
 			var analisisRunning = _AnalisisThread != null;
 
 			buttonStartAnalysis.Enabled = isClassNode && !analisisRunning;
@@ -940,8 +995,10 @@ namespace Contractor.Gui
 
 			if (result == DialogResult.OK)
 			{
-				this.UnloadAssembly();
 				var fileName = loadAssemblyDialog.FileName;
+				loadAssemblyDialog.InitialDirectory = Path.GetDirectoryName(fileName);
+				
+				this.UnloadAssembly();				
 				Task.Factory.StartNew(() => this.LoadAssembly(fileName));
 			}
 		}
@@ -960,26 +1017,50 @@ namespace Contractor.Gui
 			this.BeginInvoke((Action)delegate
 			{
 				treeviewTypes.Nodes.Add(root);
+
+				buttonLoadContracts.Enabled = true;
+				menuitemLoadContracts.Enabled = true;
+
+				buttonLoadContracts.Checked = false;
+				menuitemLoadContracts.Checked = false;
+
 				this.EndBackgroundTask();
 			});
+		}
+
+		private void LoadContracts()
+		{
+			var result = loadContractsDialog.ShowDialog(this);
+
+			if (result == DialogResult.OK)
+			{
+				var fileName = loadContractsDialog.FileName;
+				loadContractsDialog.InitialDirectory = Path.GetDirectoryName(fileName);
+
+				_ContractReferenceAssemblyFileName = fileName;
+
+				buttonLoadContracts.Checked = true;
+				menuitemLoadContracts.Checked = true;
+
+				var name = Path.GetFileName(fileName);
+				this.SetBackgroundStatus("Using contract reference assembly {0}", name);
+			}
 		}
 
 		private void UnloadAssembly()
 		{
 			treeviewTypes.Nodes.Clear();
+			listboxMethods.Items.Clear();
 			graphViewer.Enabled = false;
 			graphViewer.Graph = null;
+			_ContractReferenceAssemblyFileName = null;
 			_AssemblyInfo.Dispose();
 		}
 
 		private void StartBackgroundTask(string message, params object[] args)
 		{
-			message = string.Format(message, args);
-			statusLabel.Text = message;
 			progressBar.Visible = true;
-
-			textboxOutput.AppendText(message);
-			textboxOutput.AppendText(Environment.NewLine);
+			this.SetBackgroundStatus(message, args);
 		}
 
 		private void EndBackgroundTask(string message = null, params object[] args)
@@ -992,19 +1073,29 @@ namespace Contractor.Gui
 			}
 			else
 			{
-				message = string.Format(message, args);
-				statusLabel.Text = message;
-
-				textboxOutput.AppendText(message);
-				textboxOutput.AppendText(Environment.NewLine);
+				this.SetBackgroundStatus(message, args);
 			}
+		}
+
+		private void SetBackgroundStatus(string message, string arg)
+		{
+			this.SetBackgroundStatus(message, arg as object);
+		}
+
+		private void SetBackgroundStatus(string message, params object[] args)
+		{
+			message = string.Format(message, args);
+			statusLabel.Text = message;
+
+			textboxOutput.AppendText(message);
+			textboxOutput.AppendText(Environment.NewLine);
 		}
 
 		private TreeNode LoadAssemblyTypes()
 		{
 			var namespaces = new Dictionary<INamespaceDefinition, TreeNode>();
-			var allTypes = _AssemblyInfo.Module.GetAllTypes();
-			var root = new TreeNode()
+			var allTypes = _AssemblyInfo.Module.GetAllTypes().OfType<INamespaceTypeDefinition>();
+			var assemblyNode = new TreeNode()
 			{
 				Text = _AssemblyInfo.Module.Name.Value,
 				ImageKey = "assembly",
@@ -1014,46 +1105,45 @@ namespace Contractor.Gui
 
 			foreach (var type in allTypes)
 			{
-				var member = type as INamespaceMember;
-				if (member == null) continue;
-
-				var containingNamespace = member.ContainingNamespace;
+				var containingNamespace = type.ContainingNamespace;
 				if (containingNamespace is IRootUnitNamespace) continue;
 
-				if (type == null) continue;
-				if (!type.IsClass && !type.IsStruct) continue;
-				if (type.Name.Value == "<Module>") continue;
-				TreeNode parent;
+				if (!type.IsClass && !type.IsStruct && type.IsStatic) continue;
+				TreeNode namespaceNode;
 
 				if (namespaces.ContainsKey(containingNamespace))
 				{
-					parent = namespaces[containingNamespace];
+					namespaceNode = namespaces[containingNamespace];
 				}
 				else
 				{
-					parent = this.CreateTreeNode(root, containingNamespace.ToString(), "namespace", "collapsed");
-					namespaces.Add(containingNamespace, parent);
+					var namespaceName = containingNamespace.ToString();
+					namespaceNode = this.CreateTreeNode(assemblyNode, namespaceName, "namespace", "collapsed");
+					namespaces.Add(containingNamespace, namespaceNode);
 				}
 
-				var name = this.GetTypeName(type);
-				var node = this.CreateTreeNode(parent, name, "class", "none");
-				node.Tag = type;
+				var typeName = type.GetDisplayName();
+				var typeNode = this.CreateTreeNode(namespaceNode, typeName, "class", "none");
+				typeNode.Tag = type;
+
+				if (!type.IsPublic)
+				{
+					typeNode.ForeColor = System.Drawing.Color.Gray;
+				}
 			}
 
-			return root;
+			return assemblyNode;
 		}
 
-		private string GetTypeName(INamedTypeDefinition type)
+		private void LoadTypeMethods(INamedTypeDefinition type)
 		{
-			var name = type.Name.Value;
+			var methods = type.GetPublicInstanceMethods();
 
-			if (type.IsGeneric)
+			foreach (var method in methods)
 			{
-				var genericParams = string.Join(",", type.GenericParameters);
-				return string.Format("{0}<{1}>", name, genericParams);
+				var name = method.GetDisplayName();
+				listboxMethods.Items.Add(name, true);
 			}
-
-			return name;
 		}
 
 		private TreeNode CreateTreeNode(TreeNode rootNode, string name, string image, string state)

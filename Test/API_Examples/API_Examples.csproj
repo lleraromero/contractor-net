@@ -51,7 +51,7 @@
     <CodeContractsBoundsObligations>True</CodeContractsBoundsObligations>
     <CodeContractsArithmeticObligations>True</CodeContractsArithmeticObligations>
     <CodeContractsContainerAnalysis>False</CodeContractsContainerAnalysis>
-    <CodeContractsRedundantAssumptions>True</CodeContractsRedundantAssumptions>
+    <CodeContractsRedundantAssumptions>False</CodeContractsRedundantAssumptions>
     <CodeContractsRunInBackground>True</CodeContractsRunInBackground>
     <CodeContractsShowSquigglies>True</CodeContractsShowSquigglies>
     <CodeContractsUseBaseLine>False</CodeContractsUseBaseLine>
@@ -64,15 +64,25 @@
     </CodeContractsLibPaths>
     <CodeContractsExtraRewriteOptions>
     </CodeContractsExtraRewriteOptions>
-    <CodeContractsExtraAnalysisOptions>-adaptive -infer requires -infer propertyensures -infer methodensures -infer nonnullreturn</CodeContractsExtraAnalysisOptions>
+    <CodeContractsExtraAnalysisOptions>
+    </CodeContractsExtraAnalysisOptions>
     <CodeContractsBaseLineFile>..\..\baseline.xml</CodeContractsBaseLineFile>
     <CodeContractsRuntimeCheckingLevel>None</CodeContractsRuntimeCheckingLevel>
     <CodeContractsReferenceAssembly>%28none%29</CodeContractsReferenceAssembly>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeContractsCacheAnalysisResults>False</CodeContractsCacheAnalysisResults>
     <CodeContractsRuntimeSkipQuantifiers>False</CodeContractsRuntimeSkipQuantifiers>
-    <CodeContractsEnumObligations>False</CodeContractsEnumObligations>
-    <CodeContractsAnalysisWarningLevel>0</CodeContractsAnalysisWarningLevel>
+    <CodeContractsEnumObligations>True</CodeContractsEnumObligations>
+    <CodeContractsAnalysisWarningLevel>3</CodeContractsAnalysisWarningLevel>
+    <CodeContractsMissingPublicRequiresAsWarnings>False</CodeContractsMissingPublicRequiresAsWarnings>
+    <CodeContractsInferRequires>False</CodeContractsInferRequires>
+    <CodeContractsInferEnsures>False</CodeContractsInferEnsures>
+    <CodeContractsInferObjectInvariants>False</CodeContractsInferObjectInvariants>
+    <CodeContractsSuggestAssumptions>True</CodeContractsSuggestAssumptions>
+    <CodeContractsSuggestRequires>False</CodeContractsSuggestRequires>
+    <CodeContractsSuggestObjectInvariants>False</CodeContractsSuggestObjectInvariants>
+    <CodeContractsSQLServerOption />
+    <CodeContractsFailBuildOnWarnings>False</CodeContractsFailBuildOnWarnings>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -102,9 +112,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ATM.cs" />
+    <None Include="SystemStack2.cs" />
     <Compile Include="Elevator.cs" />
     <Compile Include="Microwave.cs" />
     <Compile Include="StackInforme.cs" />
+    <Compile Include="SystemStack.cs" />
     <Compile Include="VendingMachine.cs" />
     <Compile Include="EnrichedDoor.cs" />
     <None Include="BoundedStack.cs" />

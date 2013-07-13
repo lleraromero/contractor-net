@@ -99,5 +99,80 @@ namespace Contractor.Utils
 		{
 			this.Unload();
 		}
+
+		public static void MergeContractsWithCode(AssemblyInfo assembly, AssemblyInfo assemblyWithContracts)
+		{
+			var contractProviderForAssemblyWithContracts = assemblyWithContracts.ExtractContracts();
+			var contractProviderForAssembly = new ContractProvider(contractProviderForAssemblyWithContracts.ContractMethods, assembly.Module);
+
+			var typesWithContracts = assemblyWithContracts.DecompiledModule.AllTypes;
+			//var types = assembly.DecompiledModule.AllTypes.ToDictionary(Extensions.GetUniqueName);
+
+			var types = new Dictionary<string, INamedTypeDefinition>();
+
+			foreach (var t in assembly.DecompiledModule.AllTypes)
+			{
+				var name = t.GetUniqueName();
+
+				if (!types.ContainsKey(name))
+				{
+					types.Add(name, t);
+				}
+				else
+				{
+
+				}
+			}
+
+			foreach (var typeWithContracts in typesWithContracts)
+			{
+				var typeName = typeWithContracts.GetUniqueName();
+				if (!types.ContainsKey(typeName)) continue;
+
+				var type = types[typeName];
+				AssemblyInfo.MergeContractsForType(contractProviderForAssemblyWithContracts, contractProviderForAssembly, typeWithContracts, type);
+			}
+
+			assembly.InjectContracts(contractProviderForAssembly);
+		}
+
+		private static void MergeContractsForType(ContractProvider contractsProviderForAssemblyWithContracts, ContractProvider contractsProviderForAssembly, INamedTypeDefinition typeWithContracts, INamedTypeDefinition type)
+		{
+			var typeContract = contractsProviderForAssemblyWithContracts.GetTypeContractFor(typeWithContracts);
+
+			if (typeContract != null)
+				contractsProviderForAssembly.AssociateTypeWithContract(type, typeContract);
+
+			var methodsWithContracts = typeWithContracts.Methods;
+			//var methods = type.Methods.ToDictionary(Extensions.GetUniqueName);
+
+			var methods = new Dictionary<string, IMethodDefinition>();
+
+			foreach (var m in type.Methods)
+			{
+				var name = m.GetUniqueName();
+
+				if (!methods.ContainsKey(name))
+				{
+					methods.Add(name, m);
+				}
+				else
+				{
+
+				}
+			}
+
+			foreach (var methodWithContracts in methodsWithContracts)
+			{
+				var methodName = methodWithContracts.GetUniqueName();
+				if (!methods.ContainsKey(methodName)) continue;
+
+				var method = methods[methodName];
+				var methodContract = contractsProviderForAssemblyWithContracts.GetMethodContractFor(methodWithContracts);
+
+				if (methodContract != null)
+					contractsProviderForAssembly.AssociateMethodWithContract(method, methodContract);
+			}
+		}
 	}
 }

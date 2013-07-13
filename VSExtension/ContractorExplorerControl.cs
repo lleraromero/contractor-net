@@ -46,6 +46,7 @@ namespace Contractor.VSExtension
 
 		private System.Threading.Thread thread;
 		private EpaGenerator generator;
+		private string assemblyFileName;
 		private string typeFullName;
 		private Graph graph;
 		private IViewerNode selectedNode;
@@ -357,11 +358,10 @@ namespace Contractor.VSExtension
 				return;
 			}
 
-			typeFullName = type.FullName;
-			exportGraphDialog.FileName = string.Format("{0}.png", typeFullName);
+			exportGraphDialog.FileName = string.Format("{0}.png", type.FullName);
 			generateOutputDialog.FileName = outputFileName;
 
-			//Obtenemos el output original por si el code contracts le borra los contratos
+			//Obtenemos el output original por si code contracts le borra los contratos
 			var outputWithContractsFileName = Path.Combine(fullPath, outputPath.Replace("bin", "obj"), "Decl", outputFileName);
 			outputFileName = Path.Combine(fullPath, outputPath, outputFileName);
 
@@ -375,11 +375,13 @@ namespace Contractor.VSExtension
 				return;
 			}
 
+			assemblyFileName = outputFileName;
+			typeFullName = type.FullName;
+
 			if (generator != null)
 				generator.Dispose();
 
 			generator = new EpaGenerator();
-			generator.LoadAssembly(outputFileName);
 			generator.TypeAnalysisStarted += typeAnalysisStarted;
 			generator.TypeAnalysisDone += typeAnalysisDone;
 			generator.StateAdded += stateAdded;
@@ -395,6 +397,7 @@ namespace Contractor.VSExtension
 		{
 			try
 			{
+				generator.LoadAssembly(assemblyFileName);
 				generator.GenerateEpa(typeFullName);
 			}
 			catch (ThreadAbortException)

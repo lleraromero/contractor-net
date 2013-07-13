@@ -126,6 +126,7 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="Epa.cs" />
     <Compile Include="EpaGenerator.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="IAnalyzer.cs" />
     <Compile Include="Transition.cs" />

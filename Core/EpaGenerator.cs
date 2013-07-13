@@ -96,6 +96,16 @@ namespace Contractor.Core
 			inputAssembly.Decompile();
 		}
 
+		public void LoadContractReferenceAssembly(string inputFileName)
+		{
+			var contractsHost = new CodeContractAwareHostEnvironment(true);
+			var contractsAssembly = new AssemblyInfo(contractsHost);
+			contractsAssembly.Load(inputFileName);
+			contractsAssembly.Decompile();
+			AssemblyInfo.MergeContractsWithCode(inputAssembly, contractsAssembly);
+			contractsAssembly.Unload();
+		}
+
 		public void UnloadAssembly()
 		{
 			inputAssembly.Unload();
@@ -126,7 +136,10 @@ namespace Contractor.Core
 					epas.Add(typeNameUniqueKey, new Epa());
 
 				if (!epas[typeNameUniqueKey].GenerationCompleted)
-					generateEpa(type);
+				{
+					var methods = type.GetPublicInstanceMethods();
+					generateEpa(type, methods);
+				}
 
 				var epa = epas[typeNameUniqueKey];
 				analysisResults.Add(type.ToString(), epa.AnalysisResult);
@@ -150,13 +163,44 @@ namespace Contractor.Core
 				epas.Add(typeNameUniqueKey, new Epa());
 
 			if (!epas[typeNameUniqueKey].GenerationCompleted)
-				generateEpa(type);
+			{
+				var methods = type.GetPublicInstanceMethods();
+				generateEpa(type, methods);
+			}
 
 			var epa = epas[typeNameUniqueKey];
 			return epa.AnalysisResult;
 		}
 
-		private void generateEpa(NamespaceTypeDefinition type)
+		public TypeAnalysisResult GenerateEpa(string typeFullName, IEnumerable<string> selectedMethods)
+		{
+			//Borramos del nombre los parametros de generics
+			int start = typeFullName.IndexOf('<');
+
+			if (start != -1)
+				typeFullName = typeFullName.Remove(start);
+
+			var type = inputAssembly.DecompiledModule.AllTypes.Find(t => t.ToString() == typeFullName) as NamespaceTypeDefinition;
+			var typeNameUniqueKey = type.Name.UniqueKey;
+
+			if (!epas.ContainsKey(typeNameUniqueKey))
+				epas.Add(typeNameUniqueKey, new Epa());
+
+			if (!epas[typeNameUniqueKey].GenerationCompleted)
+			{
+				var methods = from name in selectedMethods
+							  join m in type.Methods
+							  on name equals m.GetDisplayName()
+							  select m;
+
+				generateEpa(type, methods);
+			}
+
+			var epa = epas[typeNameUniqueKey];
+			return epa.AnalysisResult;
+		}
+
+		private void generateEpa(NamespaceTypeDefinition type, IEnumerable<IMethodDefinition> methods)
 		{
 			var typeFullName = type.ToString();
 			var analysisStart = DateTime.Now;
@@ -164,12 +208,13 @@ namespace Contractor.Core
 			if (this.TypeAnalysisStarted != null)
 				this.TypeAnalysisStarted(this, new TypeAnalysisStartedEventArgs(typeFullName));
 
-			var constructors = from m in type.Methods
-							   where !m.IsStaticConstructor && m.IsConstructor && m.Visibility == TypeMemberVisibility.Public
-							   select m;
+			var constructors = (from m in methods
+								where m.IsConstructor
+								select m)
+								.ToList();
 
-			var actions = (from m in type.Methods
-						   where !m.IsStaticConstructor && !m.IsConstructor && m.Visibility == TypeMemberVisibility.Public
+			var actions = (from m in methods
+						   where !m.IsConstructor
 						   select m)
 						   .ToList();
 
@@ -182,7 +227,7 @@ namespace Contractor.Core
 			var dummy = new State();
 			dummy.EnabledActions.AddRange(constructors);
 			dummy.Sort();
-			dummy.Name = "dummy";
+			dummy.UniqueName = "dummy";
 
 			var newStates = new Queue<State>();
 			newStates.Enqueue(dummy);
@@ -210,15 +255,15 @@ namespace Contractor.Core
 					{
 						var target = transition.TargetState;
 
-						if (states.ContainsKey(target.Name))
+						if (states.ContainsKey(target.UniqueName))
 						{
-							target = states[target.Name];
+							target = states[target.UniqueName];
 						}
 						else
 						{
 							target.Id = (uint)(states.Keys.Count + 1);
 							target.IsInitial = isDummySource;
-							states.Add(target.Name, target);
+							states.Add(target.UniqueName, target);
 							newStates.Enqueue(target);
 							epa.States.Add(target.Id, target.EpaState);
 

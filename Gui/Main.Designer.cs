@@ -41,6 +41,7 @@
 			this.buttonOptions = new System.Windows.Forms.ToolStripButton();
 			this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
 			this.buttonLoadAssembly = new System.Windows.Forms.ToolStripButton();
+			this.buttonLoadContracts = new System.Windows.Forms.ToolStripButton();
 			this.buttonExportGraph = new System.Windows.Forms.ToolStripButton();
 			this.buttonGenerateAssembly = new System.Windows.Forms.ToolStripButton();
 			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -58,6 +59,7 @@
 			this.menuStrip = new System.Windows.Forms.MenuStrip();
 			this.menuitemFile = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuitemLoadAssembly = new System.Windows.Forms.ToolStripMenuItem();
+			this.menuitemLoadContracts = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuitemExportGraph = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuitemGenerateAssembly = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
@@ -84,11 +86,13 @@
 			this.splitcontainerV = new System.Windows.Forms.SplitContainer();
 			this.splitcontainerH = new System.Windows.Forms.SplitContainer();
 			this.treeviewTypes = new System.Windows.Forms.TreeView();
+			this.listboxMethods = new System.Windows.Forms.CheckedListBox();
 			this.richtextboxInformation = new System.Windows.Forms.RichTextBox();
+			this.titlebarProperties = new Contractor.Gui.TitleBar();
 			this.splitcontainerOutput = new System.Windows.Forms.SplitContainer();
 			this.graphViewer = new Microsoft.Msagl.GraphViewerGdi.GViewer();
-			this.titlebarStateInfo = new Contractor.Gui.TitleBar();
 			this.titlebarOutput = new Contractor.Gui.TitleBar();
+			this.loadContractsDialog = new System.Windows.Forms.OpenFileDialog();
 			this.statusStrip.SuspendLayout();
 			this.toolStrip.SuspendLayout();
 			this.menuStrip.SuspendLayout();
@@ -116,7 +120,7 @@
 			this.imagelist.Images.SetKeyName(3, "collapsed");
 			this.imagelist.Images.SetKeyName(4, "expanded");
 			this.imagelist.Images.SetKeyName(5, "none");
-			this.imagelist.Images.SetKeyName(6, "close");
+			this.imagelist.Images.SetKeyName(6, "method");
 			// 
 			// exportGraphDialog
 			// 
@@ -165,6 +169,7 @@
             this.buttonOptions,
             this.toolStripSeparator4,
             this.buttonLoadAssembly,
+            this.buttonLoadContracts,
             this.buttonExportGraph,
             this.buttonGenerateAssembly,
             this.toolStripSeparator1,
@@ -208,6 +213,17 @@
 			this.buttonLoadAssembly.Size = new System.Drawing.Size(23, 22);
 			this.buttonLoadAssembly.Text = "Load Assembly";
 			this.buttonLoadAssembly.Click += new System.EventHandler(this.OnLoadAssembly);
+			// 
+			// buttonLoadContracts
+			// 
+			this.buttonLoadContracts.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+			this.buttonLoadContracts.Enabled = false;
+			this.buttonLoadContracts.Image = ((System.Drawing.Image)(resources.GetObject("buttonLoadContracts.Image")));
+			this.buttonLoadContracts.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.buttonLoadContracts.Name = "buttonLoadContracts";
+			this.buttonLoadContracts.Size = new System.Drawing.Size(23, 22);
+			this.buttonLoadContracts.Text = "Load Contracts";
+			this.buttonLoadContracts.Click += new System.EventHandler(this.OnLoadContracts);
 			// 
 			// buttonExportGraph
 			// 
@@ -363,6 +379,7 @@
 			// 
 			this.menuitemFile.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuitemLoadAssembly,
+            this.menuitemLoadContracts,
             this.menuitemExportGraph,
             this.menuitemGenerateAssembly,
             this.toolStripSeparator6,
@@ -380,6 +397,18 @@
 			this.menuitemLoadAssembly.Size = new System.Drawing.Size(256, 22);
 			this.menuitemLoadAssembly.Text = "&Load Assembly...";
 			this.menuitemLoadAssembly.Click += new System.EventHandler(this.OnLoadAssembly);
+			// 
+			// menuitemLoadContracts
+			// 
+			this.menuitemLoadContracts.Enabled = false;
+			this.menuitemLoadContracts.Image = ((System.Drawing.Image)(resources.GetObject("menuitemLoadContracts.Image")));
+			this.menuitemLoadContracts.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.menuitemLoadContracts.Name = "menuitemLoadContracts";
+			this.menuitemLoadContracts.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift)
+						| System.Windows.Forms.Keys.O)));
+			this.menuitemLoadContracts.Size = new System.Drawing.Size(256, 22);
+			this.menuitemLoadContracts.Text = "Load &Contracts...";
+			this.menuitemLoadContracts.Click += new System.EventHandler(this.OnLoadContracts);
 			// 
 			// menuitemExportGraph
 			// 
@@ -647,8 +676,9 @@
 			// 
 			// splitcontainerH.Panel2
 			// 
+			this.splitcontainerH.Panel2.Controls.Add(this.listboxMethods);
 			this.splitcontainerH.Panel2.Controls.Add(this.richtextboxInformation);
-			this.splitcontainerH.Panel2.Controls.Add(this.titlebarStateInfo);
+			this.splitcontainerH.Panel2.Controls.Add(this.titlebarProperties);
 			this.splitcontainerH.Size = new System.Drawing.Size(197, 298);
 			this.splitcontainerH.SplitterDistance = 149;
 			this.splitcontainerH.TabIndex = 0;
@@ -674,9 +704,22 @@
 			this.treeviewTypes.TabIndex = 0;
 			this.treeviewTypes.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.OnBeforeCollapseTreeNode);
 			this.treeviewTypes.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.OnBeforeExpandTreeNode);
-			this.treeviewTypes.BeforeSelect += new System.Windows.Forms.TreeViewCancelEventHandler(this.OnBeforeSelectTreeNode);
+			this.treeviewTypes.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.OnAfterSelectTreeNode);
 			this.treeviewTypes.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.OnTreeNodeMouseClick);
 			this.treeviewTypes.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.OnTreeNodeMouseDoubleClick);
+			// 
+			// listboxMethods
+			// 
+			this.listboxMethods.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this.listboxMethods.CheckOnClick = true;
+			this.listboxMethods.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.listboxMethods.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.listboxMethods.FormattingEnabled = true;
+			this.listboxMethods.IntegralHeight = false;
+			this.listboxMethods.Location = new System.Drawing.Point(0, 19);
+			this.listboxMethods.Name = "listboxMethods";
+			this.listboxMethods.Size = new System.Drawing.Size(195, 124);
+			this.listboxMethods.TabIndex = 2;
 			// 
 			// richtextboxInformation
 			// 
@@ -693,6 +736,22 @@
 			this.richtextboxInformation.TabIndex = 1;
 			this.richtextboxInformation.TabStop = false;
 			this.richtextboxInformation.Text = "";
+			// 
+			// titlebarProperties
+			// 
+			this.titlebarProperties.BackColor = System.Drawing.SystemColors.ActiveBorder;
+			this.titlebarProperties.BackColorStyle = Contractor.Gui.BackColorStyle.Gradient;
+			this.titlebarProperties.DarkBackColor = System.Drawing.SystemColors.ActiveCaption;
+			this.titlebarProperties.Dock = System.Windows.Forms.DockStyle.Top;
+			this.titlebarProperties.LightBackColor = System.Drawing.SystemColors.GradientInactiveCaption;
+			this.titlebarProperties.Location = new System.Drawing.Point(0, 0);
+			this.titlebarProperties.Name = "titlebarProperties";
+			this.titlebarProperties.ShowBottomBorder = true;
+			this.titlebarProperties.ShowCloseButton = false;
+			this.titlebarProperties.Size = new System.Drawing.Size(195, 19);
+			this.titlebarProperties.TabIndex = 0;
+			this.titlebarProperties.TabStop = false;
+			this.titlebarProperties.Text = "Methods";
 			// 
 			// splitcontainerOutput
 			// 
@@ -747,22 +806,6 @@
 			this.graphViewer.ZoomWindowThreshold = 0.05D;
 			this.graphViewer.GraphChanged += new System.EventHandler(this.OnGraphChanged);
 			// 
-			// titlebarStateInfo
-			// 
-			this.titlebarStateInfo.BackColor = System.Drawing.SystemColors.ActiveBorder;
-			this.titlebarStateInfo.BackColorStyle = Contractor.Gui.BackColorStyle.Gradient;
-			this.titlebarStateInfo.DarkBackColor = System.Drawing.SystemColors.ActiveCaption;
-			this.titlebarStateInfo.Dock = System.Windows.Forms.DockStyle.Top;
-			this.titlebarStateInfo.LightBackColor = System.Drawing.SystemColors.GradientInactiveCaption;
-			this.titlebarStateInfo.Location = new System.Drawing.Point(0, 0);
-			this.titlebarStateInfo.Name = "titlebarStateInfo";
-			this.titlebarStateInfo.ShowBottomBorder = true;
-			this.titlebarStateInfo.ShowCloseButton = false;
-			this.titlebarStateInfo.Size = new System.Drawing.Size(195, 19);
-			this.titlebarStateInfo.TabIndex = 0;
-			this.titlebarStateInfo.TabStop = false;
-			this.titlebarStateInfo.Text = "State Info";
-			// 
 			// titlebarOutput
 			// 
 			this.titlebarOutput.BackColor = System.Drawing.SystemColors.ActiveBorder;
@@ -778,6 +821,12 @@
 			this.titlebarOutput.TabIndex = 0;
 			this.titlebarOutput.Text = "Output";
 			this.titlebarOutput.Close += new System.EventHandler(this.OnOutputClose);
+			// 
+			// loadContractsDialog
+			// 
+			this.loadContractsDialog.DefaultExt = "dll";
+			this.loadContractsDialog.Filter = "Dynamic Link Libraries (*.dll)|*.dll|Executable Files (*.exe)|*.exe";
+			this.loadContractsDialog.Title = "Load Contract Reference Assembly...";
 			// 
 			// Main
 			// 
@@ -875,9 +924,13 @@
 		private System.Windows.Forms.SplitContainer splitcontainerH;
 		private System.Windows.Forms.TreeView treeviewTypes;
 		private System.Windows.Forms.RichTextBox richtextboxInformation;
-		private TitleBar titlebarStateInfo;
+		private TitleBar titlebarProperties;
 		private System.Windows.Forms.SplitContainer splitcontainerOutput;
 		private Microsoft.Msagl.GraphViewerGdi.GViewer graphViewer;
+		private System.Windows.Forms.CheckedListBox listboxMethods;
+		private System.Windows.Forms.OpenFileDialog loadContractsDialog;
+		private System.Windows.Forms.ToolStripMenuItem menuitemLoadContracts;
+		private System.Windows.Forms.ToolStripButton buttonLoadContracts;
 	}
 }
 
