@@ -125,7 +125,7 @@ namespace Contractor.Core
 				if (type.ContainingUnitNamespace.ToString() == "System.Diagnostics.Contracts")
 					continue;
 
-				if (!type.IsClass && !type.IsStruct)
+				if (!type.IsClass && !type.IsStruct && type.IsStatic && type.IsEnum)
 					continue;
 
 				if (!epas.ContainsKey(typeNameUniqueKey))

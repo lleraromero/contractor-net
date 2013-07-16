@@ -88,6 +88,10 @@
 			this.treeviewTypes = new System.Windows.Forms.TreeView();
 			this.listboxMethods = new System.Windows.Forms.CheckedListBox();
 			this.richtextboxInformation = new System.Windows.Forms.RichTextBox();
+			this.toolstripMethods = new System.Windows.Forms.ToolStrip();
+			this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
+			this.buttonCheckAllMethods = new System.Windows.Forms.ToolStripButton();
+			this.buttonUncheckAllMethods = new System.Windows.Forms.ToolStripButton();
 			this.titlebarProperties = new Contractor.Gui.TitleBar();
 			this.splitcontainerOutput = new System.Windows.Forms.SplitContainer();
 			this.graphViewer = new Microsoft.Msagl.GraphViewerGdi.GViewer();
@@ -104,6 +108,7 @@
 			this.splitcontainerH.Panel1.SuspendLayout();
 			this.splitcontainerH.Panel2.SuspendLayout();
 			this.splitcontainerH.SuspendLayout();
+			this.toolstripMethods.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.splitcontainerOutput)).BeginInit();
 			this.splitcontainerOutput.Panel1.SuspendLayout();
 			this.splitcontainerOutput.Panel2.SuspendLayout();
@@ -678,6 +683,7 @@
 			// 
 			this.splitcontainerH.Panel2.Controls.Add(this.listboxMethods);
 			this.splitcontainerH.Panel2.Controls.Add(this.richtextboxInformation);
+			this.splitcontainerH.Panel2.Controls.Add(this.toolstripMethods);
 			this.splitcontainerH.Panel2.Controls.Add(this.titlebarProperties);
 			this.splitcontainerH.Size = new System.Drawing.Size(197, 298);
 			this.splitcontainerH.SplitterDistance = 149;
@@ -716,9 +722,9 @@
 			this.listboxMethods.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.listboxMethods.FormattingEnabled = true;
 			this.listboxMethods.IntegralHeight = false;
-			this.listboxMethods.Location = new System.Drawing.Point(0, 19);
+			this.listboxMethods.Location = new System.Drawing.Point(0, 44);
 			this.listboxMethods.Name = "listboxMethods";
-			this.listboxMethods.Size = new System.Drawing.Size(195, 124);
+			this.listboxMethods.Size = new System.Drawing.Size(195, 99);
 			this.listboxMethods.TabIndex = 2;
 			// 
 			// richtextboxInformation
@@ -728,14 +734,57 @@
 			this.richtextboxInformation.DetectUrls = false;
 			this.richtextboxInformation.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.richtextboxInformation.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.richtextboxInformation.Location = new System.Drawing.Point(0, 19);
+			this.richtextboxInformation.Location = new System.Drawing.Point(0, 44);
 			this.richtextboxInformation.Name = "richtextboxInformation";
 			this.richtextboxInformation.ReadOnly = true;
 			this.richtextboxInformation.ShowSelectionMargin = true;
-			this.richtextboxInformation.Size = new System.Drawing.Size(195, 124);
+			this.richtextboxInformation.Size = new System.Drawing.Size(195, 99);
 			this.richtextboxInformation.TabIndex = 1;
 			this.richtextboxInformation.TabStop = false;
 			this.richtextboxInformation.Text = "";
+			// 
+			// toolstripMethods
+			// 
+			this.toolstripMethods.Enabled = false;
+			this.toolstripMethods.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+			this.toolstripMethods.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripLabel1,
+            this.buttonCheckAllMethods,
+            this.buttonUncheckAllMethods});
+			this.toolstripMethods.Location = new System.Drawing.Point(0, 19);
+			this.toolstripMethods.Name = "toolstripMethods";
+			this.toolstripMethods.ShowItemToolTips = false;
+			this.toolstripMethods.Size = new System.Drawing.Size(195, 25);
+			this.toolstripMethods.TabIndex = 3;
+			this.toolstripMethods.Text = "toolStrip1";
+			// 
+			// toolStripLabel1
+			// 
+			this.toolStripLabel1.Name = "toolStripLabel1";
+			this.toolStripLabel1.Size = new System.Drawing.Size(43, 22);
+			this.toolStripLabel1.Text = "Check:";
+			// 
+			// buttonCheckAllMethods
+			// 
+			this.buttonCheckAllMethods.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+			this.buttonCheckAllMethods.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.buttonCheckAllMethods.Image = ((System.Drawing.Image)(resources.GetObject("buttonCheckAllMethods.Image")));
+			this.buttonCheckAllMethods.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.buttonCheckAllMethods.Name = "buttonCheckAllMethods";
+			this.buttonCheckAllMethods.Size = new System.Drawing.Size(25, 22);
+			this.buttonCheckAllMethods.Text = "All";
+			this.buttonCheckAllMethods.Click += new System.EventHandler(this.OnCheckAllMethods);
+			// 
+			// buttonUncheckAllMethods
+			// 
+			this.buttonUncheckAllMethods.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+			this.buttonUncheckAllMethods.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.buttonUncheckAllMethods.Image = ((System.Drawing.Image)(resources.GetObject("buttonUncheckAllMethods.Image")));
+			this.buttonUncheckAllMethods.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.buttonUncheckAllMethods.Name = "buttonUncheckAllMethods";
+			this.buttonUncheckAllMethods.Size = new System.Drawing.Size(41, 22);
+			this.buttonUncheckAllMethods.Text = "None";
+			this.buttonUncheckAllMethods.Click += new System.EventHandler(this.OnUncheckAllMethods);
 			// 
 			// titlebarProperties
 			// 
@@ -854,8 +903,11 @@
 			this.splitcontainerV.ResumeLayout(false);
 			this.splitcontainerH.Panel1.ResumeLayout(false);
 			this.splitcontainerH.Panel2.ResumeLayout(false);
+			this.splitcontainerH.Panel2.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.splitcontainerH)).EndInit();
 			this.splitcontainerH.ResumeLayout(false);
+			this.toolstripMethods.ResumeLayout(false);
+			this.toolstripMethods.PerformLayout();
 			this.splitcontainerOutput.Panel1.ResumeLayout(false);
 			this.splitcontainerOutput.Panel2.ResumeLayout(false);
 			this.splitcontainerOutput.Panel2.PerformLayout();
@@ -931,6 +983,10 @@
 		private System.Windows.Forms.OpenFileDialog loadContractsDialog;
 		private System.Windows.Forms.ToolStripMenuItem menuitemLoadContracts;
 		private System.Windows.Forms.ToolStripButton buttonLoadContracts;
+		private System.Windows.Forms.ToolStrip toolstripMethods;
+		private System.Windows.Forms.ToolStripButton buttonCheckAllMethods;
+		private System.Windows.Forms.ToolStripButton buttonUncheckAllMethods;
+		private System.Windows.Forms.ToolStripLabel toolStripLabel1;
 	}
 }
 

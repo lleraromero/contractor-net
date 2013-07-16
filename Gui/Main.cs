@@ -122,12 +122,27 @@ namespace Contractor.Gui
 		{
 			this.UpdateStartAnalisisCommand();
 			listboxMethods.Items.Clear();
+			toolstripMethods.Enabled = false;
 
 			if (e.Node.Tag is INamedTypeDefinition)
 			{
+				toolstripMethods.Enabled = true;
+
 				var selectedType = e.Node.Tag as INamedTypeDefinition;
 				this.LoadTypeMethods(selectedType);
 			}
+		}
+
+		private void OnCheckAllMethods(object sender, EventArgs e)
+		{
+			for (var i = 0; i < listboxMethods.Items.Count; ++i)
+				listboxMethods.SetItemChecked(i, true);
+		}
+
+		private void OnUncheckAllMethods(object sender, EventArgs e)
+		{
+			for (var i = 0; i < listboxMethods.Items.Count; ++i)
+				listboxMethods.SetItemChecked(i, false);
 		}
 
 		private void OnGraphChanged(object sender, EventArgs e)
@@ -345,6 +360,7 @@ namespace Contractor.Gui
 			richtextboxInformation.Rtf = info;
 			titlebarProperties.Text = "State Info";
 			listboxMethods.Visible = false;
+			toolstripMethods.Visible = false;
 		}
 
 		private void OnNodeUnmarkedForDragging(object sender, EventArgs e)
@@ -352,6 +368,7 @@ namespace Contractor.Gui
 			_SelectedGraphNode = null;
 
 			titlebarProperties.Text = "Methods";
+			toolstripMethods.Visible = true;
 			listboxMethods.Visible = true;
 			richtextboxInformation.Clear();
 
@@ -1108,7 +1125,7 @@ namespace Contractor.Gui
 				var containingNamespace = type.ContainingNamespace;
 				if (containingNamespace is IRootUnitNamespace) continue;
 
-				if (!type.IsClass && !type.IsStruct && type.IsStatic) continue;
+				if (!type.IsClass && !type.IsStruct && type.IsStatic && type.IsEnum) continue;
 				TreeNode namespaceNode;
 
 				if (namespaces.ContainsKey(containingNamespace))
