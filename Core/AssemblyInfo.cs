@@ -13,6 +13,8 @@ namespace Contractor.Utils
 {
 	public class AssemblyInfo : IDisposable
 	{
+		private bool _ContractsInjected;
+
 		public string FileName { get; private set; }
 		public bool IsLoaded { get; private set; }
 		public IMetadataHost Host { get; private set; }
@@ -49,16 +51,39 @@ namespace Contractor.Utils
 			this.DecompiledModule = Decompiler.GetCodeModelFromMetadataModel(this.Host, this.Module, this.PdbReader);
 		}
 
+		public ContractProvider ExtractContractsFromContractReferenceAssembly(IContractAwareHost host)
+		{
+			var contractAwareHost = this.Host as IContractAwareHost;
+			var contractExtractor = contractAwareHost.GetContractExtractor(this.Module.UnitIdentity);
+			var contractProvider = new AggregatingContractProvider(contractExtractor);
+
+			return contractProvider;
+		}
+
 		public ContractProvider ExtractContracts()
 		{
 			var contractAwareHost = this.Host as IContractAwareHost;
-			var contractProvider = ContractHelper.ExtractContracts(contractAwareHost, this.DecompiledModule, this.PdbReader, this.PdbReader);
+			ContractProvider contractProvider;
+
+			if (_ContractsInjected)
+			{
+				// Extracting contracts from this assembly
+				contractProvider = ContractHelper.ExtractContracts(contractAwareHost, this.DecompiledModule, this.PdbReader, this.PdbReader);
+			}
+			else
+			{
+				// Extracting contracts from this assembly and the contract reference assembly previously loaded with this host
+				var contractExtractor = contractAwareHost.GetContractExtractor(this.Module.UnitIdentity);
+				contractProvider = new AggregatingContractProvider(contractExtractor);
+			}
+
 			return contractProvider;
 		}
 
 		public void InjectContracts(ContractProvider contractProvider)
 		{
 			ContractHelper.InjectContractCalls(this.Host, this.DecompiledModule, contractProvider, this.PdbReader);
+			_ContractsInjected = true;
 		}
 
 		public void Save(string fileName)

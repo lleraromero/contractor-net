@@ -98,12 +98,8 @@ namespace Contractor.Core
 
 		public void LoadContractReferenceAssembly(string inputFileName)
 		{
-			var contractsHost = new CodeContractAwareHostEnvironment(true);
-			var contractsAssembly = new AssemblyInfo(contractsHost);
-			contractsAssembly.Load(inputFileName);
-			contractsAssembly.Decompile();
-			AssemblyInfo.MergeContractsWithCode(inputAssembly, contractsAssembly);
-			contractsAssembly.Unload();
+			using (var contractsAssembly = new AssemblyInfo(host))
+				contractsAssembly.Load(inputFileName);
 		}
 
 		public void UnloadAssembly()
