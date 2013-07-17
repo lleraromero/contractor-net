@@ -31,7 +31,6 @@
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
 			this.imagelist = new System.Windows.Forms.ImageList(this.components);
-			this.tooltip = new System.Windows.Forms.ToolTip(this.components);
 			this.exportGraphDialog = new System.Windows.Forms.SaveFileDialog();
 			this.generateOutputDialog = new System.Windows.Forms.SaveFileDialog();
 			this.statusStrip = new System.Windows.Forms.StatusStrip();
@@ -920,7 +919,6 @@
 
 		#endregion
 
-		private System.Windows.Forms.ToolTip tooltip;
 		private System.Windows.Forms.SaveFileDialog exportGraphDialog;
 		private System.Windows.Forms.SaveFileDialog generateOutputDialog;
 		private System.Windows.Forms.StatusStrip statusStrip;

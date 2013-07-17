@@ -332,8 +332,9 @@ namespace Contractor.Core
 								  Condition = post.Condition
 							  };
 
-				//Ponemos los assume antes del return
-				block.Statements.InsertRange(block.Statements.Count - 1, assumes);
+				////Ponemos los assume antes del return
+				//block.Statements.InsertRange(block.Statements.Count - 1, assumes);
+				block.Statements.InsertRange(block.Statements.Count, assumes);
 			}
 
 			return block;

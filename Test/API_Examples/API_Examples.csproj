@@ -68,7 +68,7 @@
     </CodeContractsExtraAnalysisOptions>
     <CodeContractsBaseLineFile>..\..\baseline.xml</CodeContractsBaseLineFile>
     <CodeContractsRuntimeCheckingLevel>None</CodeContractsRuntimeCheckingLevel>
-    <CodeContractsReferenceAssembly>%28none%29</CodeContractsReferenceAssembly>
+    <CodeContractsReferenceAssembly>Build</CodeContractsReferenceAssembly>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeContractsCacheAnalysisResults>False</CodeContractsCacheAnalysisResults>
     <CodeContractsRuntimeSkipQuantifiers>False</CodeContractsRuntimeSkipQuantifiers>
@@ -111,10 +111,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArrayList.cs" />
     <Compile Include="ATM.cs" />
-    <None Include="SystemStack2.cs" />
     <Compile Include="Elevator.cs" />
+    <Compile Include="LinkedList.cs" />
     <Compile Include="Microwave.cs" />
+    <Compile Include="Queue.cs" />
     <Compile Include="StackInforme.cs" />
     <Compile Include="SystemStack.cs" />
     <Compile Include="VendingMachine.cs" />

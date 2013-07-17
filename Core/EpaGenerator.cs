@@ -198,7 +198,7 @@ namespace Contractor.Core
 
 		private void generateEpa(NamespaceTypeDefinition type, IEnumerable<IMethodDefinition> methods)
 		{
-			var typeFullName = type.ToString();
+			var typeFullName = type.GetDisplayName();
 			var analysisStart = DateTime.Now;
 
 			if (this.TypeAnalysisStarted != null)

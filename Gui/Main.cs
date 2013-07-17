@@ -448,7 +448,7 @@ namespace Contractor.Gui
 
 		private void UpdateAnalysisInitialize()
 		{
-			var typeFullName = _AnalizedType.ToString();
+			var typeFullName = _AnalizedType.GetDisplayName();
 			this.StartBackgroundTask("Initializing analysis for {0}...", typeFullName);
 
 			_Graph = new Graph();
@@ -485,7 +485,7 @@ namespace Contractor.Gui
 
 		private void UpdateAnalysisEnd(TypeAnalysisResult analysisResult)
 		{
-			var typeFullName = _AnalizedType.ToString();
+			var typeFullName = _AnalizedType.GetDisplayName();
 			var msg = string.Format("Analysis for {0}", typeFullName);
 
 			if (analysisResult == null)
@@ -526,7 +526,7 @@ namespace Contractor.Gui
 
 		private void UpdateAnalysisProgress()
 		{
-			var typeFullName = _AnalizedType.ToString();
+			var typeFullName = _AnalizedType.GetDisplayName();
 			var msg = "Performing analysis for {0}: {1} states, {2} transitions";
 			this.SetBackgroundStatus(msg, typeFullName, _Graph.NodeCount, _Graph.EdgeCount);
 
@@ -675,7 +675,7 @@ namespace Contractor.Gui
 				buttonStopAnalysis.Enabled = false;
 				menuitemStopAnalysis.Enabled = false;
 
-				var typeFullName = _AnalizedType.ToString();
+				var typeFullName = _AnalizedType.GetDisplayName();
 				statusLabel.Text = string.Format("Aborting analysis for {0}...", typeFullName);
 			}
 		}
@@ -799,7 +799,7 @@ namespace Contractor.Gui
 		{
 			using (var xml = new XmlTextWriter(fileName, Encoding.UTF8))
 			{
-				var typeFullName = _AnalizedType.ToString();
+				var typeFullName = _AnalizedType.GetDisplayName();
 				var nodes = graphViewer.Graph.GeometryGraph.CollectAllNodes();
 
 				xml.Formatting = Formatting.Indented;
@@ -851,7 +851,7 @@ namespace Contractor.Gui
 		{
 			using (var sw = File.CreateText(fileName))
 			{
-				var typeFullName = _AnalizedType.ToString();
+				var typeFullName = _AnalizedType.GetDisplayName();
 				var nodes = graphViewer.Graph.GeometryGraph.CollectAllNodes();
 				var initialNodes = nodes.Where(n => ((n.UserData as Node).UserData as IState).IsInitial);
 				var otherNodes = nodes.Where(n => !((n.UserData as Node).UserData as IState).IsInitial);
