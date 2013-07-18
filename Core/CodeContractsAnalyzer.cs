@@ -321,7 +321,7 @@ namespace Contractor.Core
 
 			//Por tratarse de un constructor skipeamos
 			//el primer statement porque es base..ctor();
-			var skipCount = (action.IsConstructor ? 1 : 0);
+			var skipCount = action.IsConstructor ? 1 : 0;
 			block.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));
 
 			if (mc != null && mc.Postconditions.Count() > 0)

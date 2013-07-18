@@ -9,6 +9,7 @@ using Microsoft.Cci.MutableContracts;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.ILToCodeModel;
 using Contractor.Utils;
+using System.Diagnostics;
 
 namespace Contractor.Core
 {
@@ -70,7 +71,7 @@ namespace Contractor.Core
 	public class EpaGenerator : IDisposable
 	{
 		private AssemblyInfo inputAssembly;
-		private Dictionary<int, Epa> epas;
+		private Dictionary<string, Epa> epas;
 		private CodeContractAwareHostEnvironment host;
 
 		public event EventHandler<TypeAnalysisStartedEventArgs> TypeAnalysisStarted;
@@ -82,7 +83,7 @@ namespace Contractor.Core
 		{
 			host = new CodeContractAwareHostEnvironment(true);
 			inputAssembly = new AssemblyInfo(host);
-			epas = new Dictionary<int, Epa>();
+			epas = new Dictionary<string, Epa>();
 		}
 
 		public void Dispose()
@@ -112,33 +113,29 @@ namespace Contractor.Core
 
 		public Dictionary<string, TypeAnalysisResult> GenerateEpas()
 		{
+			var allTypes = inputAssembly.DecompiledModule.AllTypes.OfType<NamespaceTypeDefinition>();
 			var analysisResults = new Dictionary<string, TypeAnalysisResult>();
 
-			foreach (var staticType in inputAssembly.DecompiledModule.AllTypes)
+			foreach (var type in allTypes)
 			{
-				var type = staticType as NamespaceTypeDefinition;
-				var typeNameUniqueKey = type.Name.UniqueKey;
+				var containingNamespace = type.ContainingUnitNamespace;
+				if (containingNamespace is IRootUnitNamespace) continue;
 
-				if (type.Name.Value == "<Module>")
-					continue;
+				if (!type.IsClass && !type.IsStruct && type.IsStatic && type.IsEnum) continue;
+				var typeUniqueName = type.GetUniqueName();
 
-				if (type.ContainingUnitNamespace.ToString() == "System.Diagnostics.Contracts")
-					continue;
+				if (!epas.ContainsKey(typeUniqueName))
+					epas.Add(typeUniqueName, new Epa());
 
-				if (!type.IsClass && !type.IsStruct && type.IsStatic && type.IsEnum)
-					continue;
+				var epa = epas[typeUniqueName];
 
-				if (!epas.ContainsKey(typeNameUniqueKey))
-					epas.Add(typeNameUniqueKey, new Epa());
-
-				if (!epas[typeNameUniqueKey].GenerationCompleted)
+				if (!epa.GenerationCompleted)
 				{
 					var methods = type.GetPublicInstanceMethods();
 					generateEpa(type, methods);
 				}
 
-				var epa = epas[typeNameUniqueKey];
-				analysisResults.Add(type.ToString(), epa.AnalysisResult);
+				analysisResults.Add(typeUniqueName, epa.AnalysisResult);
 			}
 
 			return analysisResults;
@@ -153,18 +150,19 @@ namespace Contractor.Core
 				typeFullName = typeFullName.Remove(start);
 
 			var type = inputAssembly.DecompiledModule.AllTypes.Find(t => t.ToString() == typeFullName) as NamespaceTypeDefinition;
-			var typeNameUniqueKey = type.Name.UniqueKey;
+			var typeUniqueName = type.GetUniqueName();
 
-			if (!epas.ContainsKey(typeNameUniqueKey))
-				epas.Add(typeNameUniqueKey, new Epa());
+			if (!epas.ContainsKey(typeUniqueName))
+				epas.Add(typeUniqueName, new Epa());
 
-			if (!epas[typeNameUniqueKey].GenerationCompleted)
+			var epa = epas[typeUniqueName];
+
+			if (!epa.GenerationCompleted)
 			{
 				var methods = type.GetPublicInstanceMethods();
 				generateEpa(type, methods);
 			}
 
-			var epa = epas[typeNameUniqueKey];
 			return epa.AnalysisResult;
 		}
 
@@ -177,12 +175,14 @@ namespace Contractor.Core
 				typeFullName = typeFullName.Remove(start);
 
 			var type = inputAssembly.DecompiledModule.AllTypes.Find(t => t.ToString() == typeFullName) as NamespaceTypeDefinition;
-			var typeNameUniqueKey = type.Name.UniqueKey;
+			var typeUniqueName = type.GetUniqueName();
 
-			if (!epas.ContainsKey(typeNameUniqueKey))
-				epas.Add(typeNameUniqueKey, new Epa());
+			if (!epas.ContainsKey(typeUniqueName))
+				epas.Add(typeUniqueName, new Epa());
 
-			if (!epas[typeNameUniqueKey].GenerationCompleted)
+			var epa = epas[typeUniqueName];
+
+			if (!epa.GenerationCompleted)
 			{
 				var methods = from name in selectedMethods
 							  join m in type.Methods
@@ -191,18 +191,18 @@ namespace Contractor.Core
 
 				generateEpa(type, methods);
 			}
-
-			var epa = epas[typeNameUniqueKey];
+			
 			return epa.AnalysisResult;
 		}
 
 		private void generateEpa(NamespaceTypeDefinition type, IEnumerable<IMethodDefinition> methods)
 		{
-			var typeFullName = type.GetDisplayName();
-			var analysisStart = DateTime.Now;
+			var typeDisplayName = type.GetDisplayName();
+			var typeUniqueName = type.GetUniqueName();
+			var analysisTimer = Stopwatch.StartNew();
 
 			if (this.TypeAnalysisStarted != null)
-				this.TypeAnalysisStarted(this, new TypeAnalysisStartedEventArgs(typeFullName));
+				this.TypeAnalysisStarted(this, new TypeAnalysisStartedEventArgs(typeDisplayName));
 
 			var constructors = (from m in methods
 								where m.IsConstructor
@@ -214,7 +214,8 @@ namespace Contractor.Core
 						   select m)
 						   .ToList();
 
-			var epa = epas[type.Name.UniqueKey];
+			
+			var epa = epas[typeUniqueName];
 			epa.Clear();
 
 			IAnalyzer checker = new CodeContractsAnalyzer(host, inputAssembly, type);
@@ -235,6 +236,7 @@ namespace Contractor.Core
 
 				foreach (var action in source.EnabledActions)
 				{
+					var actionUniqueName = action.GetUniqueName();
 					var actionsResult = checker.AnalyzeActions(source, action, actions);
 					var inconsistentActions = actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).ToList();
 
@@ -267,17 +269,17 @@ namespace Contractor.Core
 
 							if (this.StateAdded != null)
 							{
-								var eventArgs = new StateAddedEventArgs(typeFullName, target);
+								var eventArgs = new StateAddedEventArgs(typeDisplayName, target);
 								this.StateAdded(this, eventArgs);
 							}
 						}
 
 						var sourceId = isDummySource ? 0 : source.Id;
 
-						if (!epa.ContainsKey(action.Name.UniqueKey))
-							epa.Add(action.Name.UniqueKey, new EpaTransitions());
+						if (!epa.ContainsKey(actionUniqueName))
+							epa.Add(actionUniqueName, new EpaTransitions());
 
-						var actionTransitions = epa[action.Name.UniqueKey];
+						var actionTransitions = epa[actionUniqueName];
 
 						if (!actionTransitions.ContainsKey(sourceId))
 							actionTransitions.Add(sourceId, new List<uint>());
@@ -290,7 +292,7 @@ namespace Contractor.Core
 
 							if (this.TransitionAdded != null)
 							{
-								var eventArgs = new TransitionAddedEventArgs(typeFullName, transition);
+								var eventArgs = new TransitionAddedEventArgs(typeDisplayName, transition);
 								this.TransitionAdded(this, eventArgs);
 							}
 						}
@@ -298,8 +300,9 @@ namespace Contractor.Core
 				}
 			}
 
+			analysisTimer.Stop();
 			epa.GenerationCompleted = true;
-			epa.AnalysisResult.TotalDuration = DateTime.Now - analysisStart;
+			epa.AnalysisResult.TotalDuration = analysisTimer.Elapsed;
 			epa.AnalysisResult.TotalAnalyzerDuration = checker.TotalAnalysisDuration;
 			epa.AnalysisResult.ExecutionsCount = checker.ExecutionsCount;
 			epa.AnalysisResult.TotalGeneratedQueriesCount = checker.TotalGeneratedQueriesCount;
@@ -307,7 +310,7 @@ namespace Contractor.Core
 
 			if (this.TypeAnalysisDone != null)
 			{
-				var eventArgs = new TypeAnalysisDoneEventArgs(typeFullName, epa.AnalysisResult);
+				var eventArgs = new TypeAnalysisDoneEventArgs(typeDisplayName, epa.AnalysisResult);
 				this.TypeAnalysisDone(this, eventArgs);
 			}
 		}
@@ -357,14 +360,14 @@ namespace Contractor.Core
 			var contractProvider = inputAssembly.ExtractContracts();
 			var instrumenter = new Instrumenter(host, contractProvider);
 
-			foreach (var typeId in epas.Keys)
+			foreach (var typeUniqueName in epas.Keys)
 			{
-				var epa = epas[typeId];
+				var epa = epas[typeUniqueName];
 
 				if (!epa.Instrumented)
 				{
 					var type = (from t in inputAssembly.DecompiledModule.AllTypes
-								where t.Name.UniqueKey == typeId
+								where typeUniqueName == t.GetUniqueName()
 								select t as NamespaceTypeDefinition)
 								.First();
 

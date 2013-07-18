@@ -15,12 +15,12 @@ namespace Contractor.Core
 		private IMetadataHost host;
 		private ContractProvider cp;
 		private NamespaceTypeDefinition type;
-		private Dictionary<int, List<IPrecondition>> preconditions;
+		private Dictionary<string, List<IPrecondition>> preconditions;
 		private Epa epa;
 
 		public Instrumenter(IMetadataHost host, ContractProvider cp)
 		{
-			preconditions = new Dictionary<int, List<IPrecondition>>();
+			preconditions = new Dictionary<string, List<IPrecondition>>();
 			this.host = host;
 			this.cp = cp;
 		}
@@ -30,15 +30,17 @@ namespace Contractor.Core
 			this.type = type;
 			this.epa = epa;
 
-			var actions = from actionId in epa.Keys
-						  join action in type.Methods on actionId equals action.Name.UniqueKey
+			var actions = from actionUniqueName in epa.Keys
+						  join action in type.Methods on actionUniqueName equals action.GetUniqueName()
 						  select action;
 
 			foreach (var action in actions)
 			{
 				var mc = cp.GetMethodContractFor(action) as MethodContract;
 				if (mc == null) continue;
-				preconditions.Add(action.Name.UniqueKey, mc.Preconditions.ToList());
+
+				var actionUniqueName = action.GetUniqueName();
+				preconditions.Add(actionUniqueName, mc.Preconditions.ToList());
 			}
 
 			//Borramos los metodos que continen los invariantes de tipo
@@ -72,7 +74,8 @@ namespace Contractor.Core
 
 			foreach (var action in actions)
 			{
-				var transitions = epa[action.Name.UniqueKey];
+				var actionUniqueName = action.GetUniqueName();
+				var transitions = epa[actionUniqueName];
 				var mc = cp.GetMethodContractFor(action) as MethodContract;
 
 				if (mc == null)

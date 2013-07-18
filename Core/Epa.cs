@@ -5,8 +5,8 @@ using System.Text;
 
 namespace Contractor.Core
 {
-	// Dictionary<actionId, EpaTransitions>
-	class Epa : Dictionary<int, EpaTransitions>
+	// Dictionary<actionUniqueName, EpaTransitions>
+	class Epa : Dictionary<string, EpaTransitions>
 	{
 		public Dictionary<uint, EpaState> States { get; private set; }
 		public TypeAnalysisResult AnalysisResult { get; private set; }
@@ -39,16 +39,16 @@ namespace Contractor.Core
 	class EpaState
 	{
 		public uint Id { get; private set; }
-		public string Name { get; private set; }
-		public List<int> EnabledActions { get; private set; }
-		public List<int> DisabledActions { get; private set; }
+		public string UniqueName { get; private set; }
+		public List<string> EnabledActions { get; private set; }
+		public List<string> DisabledActions { get; private set; }
 
-		public EpaState(uint id, string name)
+		public EpaState(uint id, string uniqueName)
 		{
 			this.Id = id;
-			this.Name = name;
-			this.EnabledActions = new List<int>();
-			this.DisabledActions = new List<int>();
+			this.UniqueName = uniqueName;
+			this.EnabledActions = new List<string>();
+			this.DisabledActions = new List<string>();
 		}
 	}
 }

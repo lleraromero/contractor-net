@@ -92,7 +92,7 @@ namespace Contractor.VSExtension
 		{
 			if (mcs == null) return;
 
-			CommandID commandId = new CommandID(GuidList.guidVSExtensionCmdSet, PkgCmdIDList.RefreshButton);
+			var commandId = new CommandID(GuidList.guidVSExtensionCmdSet, PkgCmdIDList.RefreshButton);
 			cmdRefresh = new MenuCommand(toolbar_refresh, commandId);
 			mcs.AddCommand(cmdRefresh);
 
@@ -289,7 +289,7 @@ namespace Contractor.VSExtension
 					continue;
 
 				TreeNode child;
-				string name = type.Name;
+				var name = type.Name;
 
 				if (node.Nodes.ContainsKey(type.Namespace.FullName))
 				{
@@ -328,7 +328,7 @@ namespace Contractor.VSExtension
 
 		private void treeviewTypes_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
 		{
-			Rectangle rect = e.Node.Bounds;
+			var rect = e.Node.Bounds;
 			rect.Width = imagelist.ImageSize.Width;
 			rect.X -= imagelist.ImageSize.Width * 2 + 3;
 
@@ -338,16 +338,16 @@ namespace Contractor.VSExtension
 
 		private void treeviewTypes_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
 		{
-			CodeClass type = e.Node.Tag as CodeClass;
+			var type = e.Node.Tag as CodeClass;
 			if (type == null) return;
 
 			stopAnalysis();
 
-			Project prj = type.ProjectItem.ContainingProject;
-			string fullPath = prj.Properties.Item("FullPath").Value.ToString();
-			string outputFileName = prj.Properties.Item("OutputFileName").Value.ToString();
-			string outputPath = prj.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value.ToString();
-			string cfgName = dte.Solution.SolutionBuild.ActiveConfiguration.Name;
+			var prj = type.ProjectItem.ContainingProject;
+			var fullPath = prj.Properties.Item("FullPath").Value.ToString();
+			var outputFileName = prj.Properties.Item("OutputFileName").Value.ToString();
+			var outputPath = prj.ConfigurationManager.ActiveConfiguration.Properties.Item("OutputPath").Value.ToString();
+			var cfgName = dte.Solution.SolutionBuild.ActiveConfiguration.Name;
 
 			dte.Solution.SolutionBuild.BuildProject(cfgName, prj.UniqueName, true);
 
@@ -409,10 +409,6 @@ namespace Contractor.VSExtension
 				this.Invoke(new Action<Exception>(HandleException), ex);
 				this.Invoke(new Action<TypeAnalysisResult>(updateAnalysisEnd), (object)null);
 			}
-			finally
-			{
-				generator.UnloadAssembly();
-			}
 		}
 
 		private void typeAnalysisStarted(object sender, TypeAnalysisStartedEventArgs e)
@@ -463,7 +459,7 @@ namespace Contractor.VSExtension
 			}
 
 			var label = e.Transition.Name;
-			bool createEdge = true;
+			var createEdge = true;
 
 			if (this.Options.CollapseTransitions)
 			{
@@ -500,15 +496,15 @@ namespace Contractor.VSExtension
 		private bool OnDrawNode(Node node, object graphics)
 		{
 			var g = graphics as Graphics;
-			double w = node.Attr.Width;
-			double h = node.Attr.Height;
-			double x = node.Attr.Pos.X - (w / 2.0);
-			double y = node.Attr.Pos.Y - (h / 2.0);
+			var w = node.Attr.Width;
+			var h = node.Attr.Height;
+			var x = node.Attr.Pos.X - (w / 2.0);
+			var y = node.Attr.Pos.Y - (h / 2.0);
 
 			g.FillEllipse(Brushes.AliceBlue, (float)x, (float)y, (float)w, (float)h);
 
-			float penWidth = (selectedNode != null && selectedNode.Node == node ? 2f : 1f);
-			using (Pen pen = new Pen(System.Drawing.Color.Black, penWidth))
+			var penWidth = (selectedNode != null && selectedNode.Node == node ? 2f : 1f);
+			using (var pen = new Pen(System.Drawing.Color.Black, penWidth))
 				g.DrawEllipse(pen, (float)x, (float)y, (float)w, (float)h);
 
 			if ((node.UserData as IState).IsInitial)
@@ -522,10 +518,10 @@ namespace Contractor.VSExtension
 				g.DrawEllipse(Pens.Black, (float)x, (float)y, (float)w, (float)h);
 			}
 
-			using (Matrix m = g.Transform)
-			using (Matrix saveM = m.Clone())
+			using (var m = g.Transform)
+			using (var saveM = m.Clone())
 			{
-				float c = (float)(2.0 * node.Label.Center.Y);
+				var c = (float)(2.0 * node.Label.Center.Y);
 				x = node.Label.Center.X;
 				y = node.Label.Center.Y;
 
@@ -534,8 +530,8 @@ namespace Contractor.VSExtension
 
 				g.Transform = m;
 
-				using (Font font = new Font(node.Label.FontName, node.Label.FontSize))
-				using (StringFormat format = new StringFormat(StringFormat.GenericTypographic))
+				using (var font = new Font(node.Label.FontName, node.Label.FontSize))
+				using (var format = new StringFormat(StringFormat.GenericTypographic))
 				{
 					format.Alignment = StringAlignment.Center;
 					format.LineAlignment = StringAlignment.Center;
@@ -774,7 +770,7 @@ namespace Contractor.VSExtension
 
 		private void exportXmlGraph(string fileName)
 		{
-			using (XmlTextWriter xml = new XmlTextWriter(fileName, Encoding.UTF8))
+			using (var xml = new XmlTextWriter(fileName, Encoding.UTF8))
 			{
 				var nodes = graphViewer.Graph.GeometryGraph.CollectAllNodes();
 
@@ -877,19 +873,19 @@ namespace Contractor.VSExtension
 
 		private void exportVectorGraph(string fileName)
 		{
-			float scale = 6.0f;
+			var scale = 6.0f;
 			var w = (int)(graphViewer.Graph.Width * scale);
 			var h = (int)(graphViewer.Graph.Height * scale);
 
-			using (Graphics temp = base.CreateGraphics())
+			using (var temp = base.CreateGraphics())
 			{
-				IntPtr hdc = temp.GetHdc();
+				var hdc = temp.GetHdc();
 
-				using (Metafile img = new Metafile(fileName, hdc, EmfType.EmfOnly))
+				using (var img = new Metafile(fileName, hdc, EmfType.EmfOnly))
 				{
 					temp.ReleaseHdc(hdc);
 					
-					using (Graphics g = Graphics.FromImage(img))
+					using (var g = Graphics.FromImage(img))
 					{
 						g.SmoothingMode = SmoothingMode.HighQuality;
 						g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
@@ -904,12 +900,12 @@ namespace Contractor.VSExtension
 
 		private void exportImageGraph(string fileName)
 		{
-			float scale = 6.0f;
+			var scale = 6.0f;
 			var w = (int)(graphViewer.Graph.Width * scale);
 			var h = (int)(graphViewer.Graph.Height * scale);
 
-			using (Image img = new Bitmap(w, h, PixelFormat.Format32bppPArgb))
-			using (Graphics g = Graphics.FromImage(img))
+			using (var img = new Bitmap(w, h, PixelFormat.Format32bppPArgb))
+			using (var g = Graphics.FromImage(img))
 			{
 				g.SmoothingMode = SmoothingMode.HighQuality;
 				g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
@@ -925,13 +921,13 @@ namespace Contractor.VSExtension
 		{
 			var graph = graphViewer.Graph;
 
-			float num1 = (float)((0.5 * w) - (scale * (graph.Left + (0.5 * graph.Width))));
-			float num2 = (float)((0.5 * h) + (scale * (graph.Bottom + (0.5 * graph.Height))));
+			var num1 = (float)((0.5 * w) - (scale * (graph.Left + (0.5 * graph.Width))));
+			var num2 = (float)((0.5 * h) + (scale * (graph.Bottom + (0.5 * graph.Height))));
 
-			using (SolidBrush brush = new SolidBrush(Draw.MsaglColorToDrawingColor(graph.Attr.BackgroundColor)))
+			using (var brush = new SolidBrush(Draw.MsaglColorToDrawingColor(graph.Attr.BackgroundColor)))
 				g.FillRectangle(brush, 0, 0, w, h);
 
-			using (Matrix matrix = new Matrix(scale, 0f, 0f, -scale, num1, num2))
+			using (var matrix = new Matrix(scale, 0f, 0f, -scale, num1, num2))
 			{
 				g.Transform = matrix;
 				Draw.DrawPrecalculatedLayoutObject(g, graphViewer.ViewerGraph);
@@ -956,16 +952,12 @@ namespace Contractor.VSExtension
 				{
 					HandleException(ex);
 				}
-				finally
-				{
-					generator.UnloadAssembly();
-				}
 			}
 		}
 
 		private void graphViewer_GraphChanged(object sender, EventArgs e)
 		{
-			bool enabled = (graphViewer.Graph != null);
+			var enabled = graphViewer.Graph != null;
 
 			cmdExportGraph.Enabled = enabled;
 			cmdGenerateOutputAssembly.Enabled = enabled;
@@ -998,7 +990,7 @@ namespace Contractor.VSExtension
 			output.OutputString(ex.ToString());
 			output.OutputString(Environment.NewLine);
 
-			string msg = string.Format("{0}\n\nFor more information check the {1} output window.", ex.Message, Resources.ToolWindowTitle);
+			var msg = string.Format("{0}\n\nFor more information check the {1} output window.", ex.Message, Resources.ToolWindowTitle);
 			MessageBox.Show(msg, Resources.ToolWindowTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
 			output.Activate();
 		}
@@ -1007,7 +999,7 @@ namespace Contractor.VSExtension
 		{
 			if (string.IsNullOrEmpty(environmentInfo))
 			{
-				StringBuilder sb = new StringBuilder();
+				var sb = new StringBuilder();
 
 				sb.AppendLine("========================================");
 
@@ -1026,8 +1018,8 @@ namespace Contractor.VSExtension
 				sb.Append(" Edition ");
 				sb.AppendLine(Application.ProductVersion);
 
-				string codeContractsVersion = "Code Contracts is not installed.";
-				string checkerFileName = Contractor.Core.Configuration.CheckerFileName;
+				var codeContractsVersion = "Code Contracts is not installed.";
+				var checkerFileName = Contractor.Core.Configuration.CheckerFileName;
 
 				if (!string.IsNullOrEmpty(checkerFileName))
 				{

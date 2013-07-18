@@ -53,8 +53,8 @@ namespace Contractor.Core
 			get
 			{
 				var s = new EpaState(this.Id, this.UniqueName);
-				s.EnabledActions.AddRange(from a in this.EnabledActions select a.Name.UniqueKey);
-				s.DisabledActions.AddRange(from a in this.DisabledActions select a.Name.UniqueKey);
+				s.EnabledActions.AddRange(from a in this.EnabledActions select a.GetUniqueName());
+				s.DisabledActions.AddRange(from a in this.DisabledActions select a.GetUniqueName());
 				return s;
 			}
 		}

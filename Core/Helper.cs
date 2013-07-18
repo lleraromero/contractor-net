@@ -88,14 +88,14 @@ namespace Contractor.Utils
 			return exprs;
 		}
 
-		public static List<IExpression> GenerateStatesConditions(IMetadataHost host, Dictionary<int, List<IPrecondition>> preconditions,
+		public static List<IExpression> GenerateStatesConditions(IMetadataHost host, Dictionary<string, List<IPrecondition>> preconditions,
 			NamespaceTypeDefinition type, IEnumerable<EpaState> states)
 		{
 			//Optimizacion: calculamos la interseccion de todas las acciones habilitadas
 			//y desabilitadas de todos los estados y se la restamos a todos
 			var firstState = states.First();
-			var enabledIntersection = states.Aggregate(firstState.EnabledActions, (IEnumerable<int> a, EpaState s) => a.Intersect(s.EnabledActions));
-			var disabledIntersection = states.Aggregate(firstState.DisabledActions, (IEnumerable<int> a, EpaState s) => a.Intersect(s.DisabledActions));
+			var enabledIntersection = states.Aggregate(firstState.EnabledActions, (IEnumerable<string> a, EpaState s) => a.Intersect(s.EnabledActions));
+			var disabledIntersection = states.Aggregate(firstState.DisabledActions, (IEnumerable<string> a, EpaState s) => a.Intersect(s.DisabledActions));
 			var conditions = new List<IExpression>();
 
 			foreach (var state in states)
@@ -114,14 +114,15 @@ namespace Contractor.Utils
 		// Do not include the type invariant
 		public static List<IExpression> GenerateStateInvariant(IMetadataHost host, ContractProvider cp, NamespaceTypeDefinition type, State state)
 		{
-			var preconditions = new Dictionary<int, List<IPrecondition>>();
+			var preconditions = new Dictionary<string, List<IPrecondition>>();
 
 			foreach (var action in state.EnabledActions)
 			{
 				var mc = cp.GetMethodContractFor(action);
 				if (mc == null) continue;
 
-				preconditions.Add(action.Name.UniqueKey, mc.Preconditions.ToList());
+				var actionUniqueName = action.GetUniqueName();
+				preconditions.Add(actionUniqueName, mc.Preconditions.ToList());
 			}
 
 			foreach (var action in state.DisabledActions)
@@ -129,39 +130,42 @@ namespace Contractor.Utils
 				var mc = cp.GetMethodContractFor(action);
 				if (mc == null) continue;
 
-				preconditions.Add(action.Name.UniqueKey, mc.Preconditions.ToList());
+				var actionUniqueName = action.GetUniqueName();
+				preconditions.Add(actionUniqueName, mc.Preconditions.ToList());
 			}
 
 			return generateStateInvariant(host, preconditions, type, state.EnabledActions, state.DisabledActions);
 		}
 
 		// Do not include the type invariant
-		private static List<IExpression> generateStateInvariant(IMetadataHost host, Dictionary<int, List<IPrecondition>> preconditions,
-			NamespaceTypeDefinition type, IEnumerable<int> enabledActionsId, IEnumerable<int> disabledActionsId)
+		private static List<IExpression> generateStateInvariant(IMetadataHost host, Dictionary<string, List<IPrecondition>> preconditions,
+			NamespaceTypeDefinition type, IEnumerable<string> enabledActionsId, IEnumerable<string> disabledActionsId)
 		{
 			var exprs = new List<IExpression>();
 
-			var enabledActions = from actionId in enabledActionsId
-								 join action in type.Methods on actionId equals action.Name.UniqueKey
+			var enabledActions = from actionUniqueName in enabledActionsId
+								 join action in type.Methods on actionUniqueName equals action.GetUniqueName()
 								 select action;
 
-			var disabledActions = from actionId in disabledActionsId
-								  join action in type.Methods on actionId equals action.Name.UniqueKey
+			var disabledActions = from actionUniqueName in disabledActionsId
+								  join action in type.Methods on actionUniqueName equals action.GetUniqueName()
 								  select action;
 
 			return generateStateInvariant(host, preconditions, type, enabledActions, disabledActions);
 		}
 
 		// Do not include the type invariant
-		private static List<IExpression> generateStateInvariant(IMetadataHost host, Dictionary<int, List<IPrecondition>> preconditions, NamespaceTypeDefinition type,
+		private static List<IExpression> generateStateInvariant(IMetadataHost host, Dictionary<string, List<IPrecondition>> preconditions, NamespaceTypeDefinition type,
 			IEnumerable<IMethodDefinition> enabledActions, IEnumerable<IMethodDefinition> disabledActions)
 		{
 			var exprs = new List<IExpression>();
 
 			foreach (var action in enabledActions)
 			{
-				if (!preconditions.ContainsKey(action.Name.UniqueKey)) continue;
-				var actionPreconditions = preconditions[action.Name.UniqueKey];
+				var actionUniqueName = action.GetUniqueName();
+
+				if (!preconditions.ContainsKey(actionUniqueName)) continue;
+				var actionPreconditions = preconditions[actionUniqueName];
 
 				var conditions = from pre in actionPreconditions
 								 select pre.Condition;
@@ -171,10 +175,11 @@ namespace Contractor.Utils
 
 			foreach (var action in disabledActions)
 			{
+				var actionUniqueName = action.GetUniqueName();
 				List<IPrecondition> actionPreconditions = null;
 
-				if (preconditions.ContainsKey(action.Name.UniqueKey))
-					actionPreconditions = preconditions[action.Name.UniqueKey];
+				if (preconditions.ContainsKey(actionUniqueName))
+					actionPreconditions = preconditions[actionUniqueName];
 
 				if (actionPreconditions == null || actionPreconditions.Count == 0)
 				{

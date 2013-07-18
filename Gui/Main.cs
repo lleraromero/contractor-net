@@ -440,10 +440,6 @@ namespace Contractor.Gui
 				this.BeginInvoke(new Action<Exception>(this.HandleException), ex);
 				this.BeginInvoke(new Action<TypeAnalysisResult>(this.UpdateAnalysisEnd), (object)null);
 			}
-			finally
-			{
-				_EpaGenerator.UnloadAssembly();
-			}
 		}
 
 		private void UpdateAnalysisInitialize()
@@ -577,10 +573,6 @@ namespace Contractor.Gui
 			catch (Exception ex)
 			{
 				this.BeginInvoke(new Action<Exception>(this.HandleException), ex);
-			}
-			finally
-			{
-				_EpaGenerator.UnloadAssembly();
 			}
 
 			this.BeginInvoke((Action)delegate
@@ -1122,7 +1114,7 @@ namespace Contractor.Gui
 
 			foreach (var type in allTypes)
 			{
-				var containingNamespace = type.ContainingNamespace;
+				var containingNamespace = type.ContainingUnitNamespace;
 				if (containingNamespace is IRootUnitNamespace) continue;
 
 				if (!type.IsClass && !type.IsStruct && type.IsStatic && type.IsEnum) continue;

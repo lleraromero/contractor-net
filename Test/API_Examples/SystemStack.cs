@@ -242,12 +242,13 @@ namespace API_Examples
         private const int _defaultCapacity = 4;
 
         [ContractInvariantMethod]
-        private void Invariant()
-        {
-            Contract.Invariant(_array != null);
-            Contract.Invariant(_size <= _array.Length);
-            Contract.Invariant(_size >= 0);
-        }
+		private void Invariant()
+		{
+			Contract.Invariant(_array != null);
+			Contract.Invariant(this.Count <= _array.Length);
+			Contract.Invariant(this.Count >= 0);
+			Contract.Invariant(this.Count == _size);
+		}
 
         [Pure]
         public int Count
