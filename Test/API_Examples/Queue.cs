@@ -28,6 +28,14 @@ namespace API_Examples
 		private int _tail;
 		private int _version;
 
+		[ContractInvariantMethod]
+		private void Invariant()
+		{
+			Contract.Invariant(_array != null);
+			Contract.Invariant(_size <= _array.Length);
+			Contract.Invariant(_size >= 0);
+		}
+
 		// Methods
 		static Queue()
 		{
