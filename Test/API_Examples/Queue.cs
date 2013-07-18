@@ -32,8 +32,9 @@ namespace API_Examples
 		private void Invariant()
 		{
 			Contract.Invariant(_array != null);
-			Contract.Invariant(_size <= _array.Length);
-			Contract.Invariant(_size >= 0);
+			Contract.Invariant(this.Count <= _array.Length);
+			Contract.Invariant(this.Count >= 0);
+			Contract.Invariant(this.Count == _size);
 		}
 
 		// Methods
@@ -290,6 +291,7 @@ namespace API_Examples
 		}
 
 		// Properties
+		[Pure]
 		public int Count
 		{
 			[TargetedPatchingOptOut("Performance critical to inline this type of method across NGen image boundaries")]

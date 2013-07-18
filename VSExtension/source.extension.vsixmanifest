@@ -7,8 +7,8 @@
 		<Description xml:space="preserve">A .NET validation and specification strengthening tool</Description>
 		<Locale>1033</Locale>
 		<MoreInfoUrl>http://lafhis.dc.uba.ar/contractor.net</MoreInfoUrl>
-		<License>License.rtf</License>
 		<GettingStartedGuide>http://lafhis.dc.uba.ar/contractor.net/install.html</GettingStartedGuide>
+		<License>Resources\License.rtf</License>
 		<Icon>Resources\Package.ico</Icon>
 		<PreviewImage>Resources\Preview.png</PreviewImage>
 		<InstalledByMsi>false</InstalledByMsi>
