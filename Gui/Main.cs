@@ -218,7 +218,7 @@ namespace Contractor.Gui
 
 		private void OnTypeAnalysisStarted(object sender, TypeAnalysisStartedEventArgs e)
 		{
-			this.BeginInvoke(new Action<string>(this.UpdateAnalysisStart), e.TypeFullName);
+			this.BeginInvoke(new Action(this.UpdateAnalysisStart));
 		}
 
 		private void OnTypeAnalysisDone(object sender, TypeAnalysisDoneEventArgs e)
@@ -475,19 +475,19 @@ namespace Contractor.Gui
 			menuitemStopAnalysis.Enabled = true;
 		}
 
-		private void UpdateAnalysisStart(string typeFullName)
+		private void UpdateAnalysisStart()
 		{
+			var typeFullName = _AnalizedType.GetDisplayName();
 			this.SetBackgroundStatus("Generating contractor graph for {0}...", typeFullName);
 		}
 
 		private void UpdateAnalysisEnd(TypeAnalysisResult analysisResult)
 		{
 			var typeFullName = _AnalizedType.GetDisplayName();
-			var msg = string.Format("Analysis for {0}", typeFullName);
 
 			if (analysisResult == null)
 			{
-				msg = string.Format("{0} aborted", msg);
+				this.EndBackgroundTask("Analysis for {0} aborted", typeFullName);
 			}
 			else
 			{
@@ -495,10 +495,9 @@ namespace Contractor.Gui
 				var statesCount = analysisResult.States.Count;
 				var transitionsCount = analysisResult.Transitions.Count;
 
-				msg = string.Format("{0} done in {1} seconds: {2} states, {3} transitions", msg, seconds, statesCount, transitionsCount);
+				this.EndBackgroundTask("Analysis for {0} done in {1} seconds: {2} states, {3} transitions", typeFullName, seconds, statesCount, transitionsCount);
+				this.OutputTypeAnalysisResult(analysisResult);
 			}
-
-			this.EndBackgroundTask(msg);
 
 			_AnalisisThread = null;
 			_Graph = null;
@@ -521,11 +520,37 @@ namespace Contractor.Gui
 			this.UpdateStartAnalisisCommand();
 		}
 
+		private void OutputTypeAnalysisResult(TypeAnalysisResult analysisResult)
+		{
+			var sb = new StringBuilder();
+			var totalDuration = analysisResult.TotalDuration;
+			var totalAnalyzerDuration = analysisResult.TotalAnalyzerDuration;
+			var executionsCount = analysisResult.ExecutionsCount;
+			var totalGeneratedQueriesCount = analysisResult.TotalGeneratedQueriesCount;
+			var unprovenQueriesCount = analysisResult.UnprovenQueriesCount;
+			var statesCount = analysisResult.States.Count;
+			var transitionsCount = analysisResult.Transitions.Count;
+			var initialStatesCount = analysisResult.States.Count(s => s.IsInitial);
+			var unprovenTransitionsCount = analysisResult.Transitions.Count(t => t.IsUnproven);
+			var precision = 100 - Math.Ceiling((double)unprovenQueriesCount * 100 / totalGeneratedQueriesCount);
+
+			sb.AppendFormat("   Code Contracts analysis total duration:\t{0}", totalAnalyzerDuration).AppendLine();
+			sb.AppendFormat("   Code Contracts analysis precision:\t\t{0}%", precision).AppendLine();
+			sb.AppendFormat("   Code Contracts executions:\t\t\t{0}", executionsCount).AppendLine();
+			sb.AppendFormat("   Total duration:\t\t\t\t{0}", totalDuration).AppendLine();
+			sb.AppendFormat("   Generated queries:\t\t\t\t{0} ({1} unproven)", totalGeneratedQueriesCount, unprovenQueriesCount).AppendLine();
+			sb.AppendFormat("   States:\t\t\t\t\t{0} ({1} initial)", statesCount, initialStatesCount).AppendLine();
+			sb.AppendFormat("   Transitions:\t\t\t\t\t{0} ({1} unproven)", transitionsCount, unprovenTransitionsCount).AppendLine();
+
+			textboxOutput.AppendText(sb.ToString());
+			textboxOutput.AppendText(Environment.NewLine);
+		}
+
 		private void UpdateAnalysisProgress()
 		{
 			var typeFullName = _AnalizedType.GetDisplayName();
 			var msg = "Performing analysis for {0}: {1} states, {2} transitions";
-			this.SetBackgroundStatus(msg, typeFullName, _Graph.NodeCount, _Graph.EdgeCount);
+			statusLabel.Text = string.Format(msg, typeFullName, _Graph.NodeCount, _Graph.EdgeCount);
 
 			//_Graph.Attr.AspectRatio = (double)graphViewer.ClientSize.Width / graphViewer.ClientSize.Height;
 			graphViewer.Graph = _Graph;
