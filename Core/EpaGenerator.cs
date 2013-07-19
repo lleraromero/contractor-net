@@ -113,15 +113,11 @@ namespace Contractor.Core
 
 		public Dictionary<string, TypeAnalysisResult> GenerateEpas()
 		{
-			var allTypes = inputAssembly.DecompiledModule.AllTypes.OfType<NamespaceTypeDefinition>();
+			var types = inputAssembly.DecompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
 			var analysisResults = new Dictionary<string, TypeAnalysisResult>();
 
-			foreach (var type in allTypes)
+			foreach (var type in types)
 			{
-				var containingNamespace = type.ContainingUnitNamespace;
-				if (containingNamespace is IRootUnitNamespace) continue;
-
-				if (!type.IsClass && !type.IsStruct && type.IsStatic && type.IsEnum) continue;
 				var typeUniqueName = type.GetUniqueName();
 
 				if (!epas.ContainsKey(typeUniqueName))
@@ -149,7 +145,8 @@ namespace Contractor.Core
 			if (start != -1)
 				typeFullName = typeFullName.Remove(start);
 
-			var type = inputAssembly.DecompiledModule.AllTypes.Find(t => t.ToString() == typeFullName) as NamespaceTypeDefinition;
+			var types = inputAssembly.DecompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
+			var type = types.First(t => t.ToString() == typeFullName);
 			var typeUniqueName = type.GetUniqueName();
 
 			if (!epas.ContainsKey(typeUniqueName))
@@ -174,7 +171,8 @@ namespace Contractor.Core
 			if (start != -1)
 				typeFullName = typeFullName.Remove(start);
 
-			var type = inputAssembly.DecompiledModule.AllTypes.Find(t => t.ToString() == typeFullName) as NamespaceTypeDefinition;
+			var types = inputAssembly.DecompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
+			var type = types.First(t => t.ToString() == typeFullName);
 			var typeUniqueName = type.GetUniqueName();
 
 			if (!epas.ContainsKey(typeUniqueName))

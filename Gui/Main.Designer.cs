@@ -91,11 +91,11 @@
 			this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
 			this.buttonCheckAllMethods = new System.Windows.Forms.ToolStripButton();
 			this.buttonUncheckAllMethods = new System.Windows.Forms.ToolStripButton();
-			this.titlebarProperties = new Contractor.Gui.TitleBar();
 			this.splitcontainerOutput = new System.Windows.Forms.SplitContainer();
 			this.graphViewer = new Microsoft.Msagl.GraphViewerGdi.GViewer();
-			this.titlebarOutput = new Contractor.Gui.TitleBar();
 			this.loadContractsDialog = new System.Windows.Forms.OpenFileDialog();
+			this.titlebarProperties = new Contractor.Gui.TitleBar();
+			this.titlebarOutput = new Contractor.Gui.TitleBar();
 			this.statusStrip.SuspendLayout();
 			this.toolStrip.SuspendLayout();
 			this.menuStrip.SuspendLayout();
@@ -724,6 +724,7 @@
 			this.listboxMethods.Location = new System.Drawing.Point(0, 44);
 			this.listboxMethods.Name = "listboxMethods";
 			this.listboxMethods.Size = new System.Drawing.Size(195, 99);
+			this.listboxMethods.Sorted = true;
 			this.listboxMethods.TabIndex = 2;
 			// 
 			// richtextboxInformation
@@ -785,22 +786,6 @@
 			this.buttonUncheckAllMethods.Text = "None";
 			this.buttonUncheckAllMethods.Click += new System.EventHandler(this.OnUncheckAllMethods);
 			// 
-			// titlebarProperties
-			// 
-			this.titlebarProperties.BackColor = System.Drawing.SystemColors.ActiveBorder;
-			this.titlebarProperties.BackColorStyle = Contractor.Gui.BackColorStyle.Gradient;
-			this.titlebarProperties.DarkBackColor = System.Drawing.SystemColors.ActiveCaption;
-			this.titlebarProperties.Dock = System.Windows.Forms.DockStyle.Top;
-			this.titlebarProperties.LightBackColor = System.Drawing.SystemColors.GradientInactiveCaption;
-			this.titlebarProperties.Location = new System.Drawing.Point(0, 0);
-			this.titlebarProperties.Name = "titlebarProperties";
-			this.titlebarProperties.ShowBottomBorder = true;
-			this.titlebarProperties.ShowCloseButton = false;
-			this.titlebarProperties.Size = new System.Drawing.Size(195, 19);
-			this.titlebarProperties.TabIndex = 0;
-			this.titlebarProperties.TabStop = false;
-			this.titlebarProperties.Text = "Methods";
-			// 
 			// splitcontainerOutput
 			// 
 			this.splitcontainerOutput.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -854,6 +839,28 @@
 			this.graphViewer.ZoomWindowThreshold = 0.05D;
 			this.graphViewer.GraphChanged += new System.EventHandler(this.OnGraphChanged);
 			// 
+			// loadContractsDialog
+			// 
+			this.loadContractsDialog.DefaultExt = "dll";
+			this.loadContractsDialog.Filter = "Dynamic Link Libraries (*.dll)|*.dll|Executable Files (*.exe)|*.exe";
+			this.loadContractsDialog.Title = "Load Contract Reference Assembly...";
+			// 
+			// titlebarProperties
+			// 
+			this.titlebarProperties.BackColor = System.Drawing.SystemColors.ActiveBorder;
+			this.titlebarProperties.BackColorStyle = Contractor.Gui.BackColorStyle.Gradient;
+			this.titlebarProperties.DarkBackColor = System.Drawing.SystemColors.ActiveCaption;
+			this.titlebarProperties.Dock = System.Windows.Forms.DockStyle.Top;
+			this.titlebarProperties.LightBackColor = System.Drawing.SystemColors.GradientInactiveCaption;
+			this.titlebarProperties.Location = new System.Drawing.Point(0, 0);
+			this.titlebarProperties.Name = "titlebarProperties";
+			this.titlebarProperties.ShowBottomBorder = true;
+			this.titlebarProperties.ShowCloseButton = false;
+			this.titlebarProperties.Size = new System.Drawing.Size(195, 19);
+			this.titlebarProperties.TabIndex = 0;
+			this.titlebarProperties.TabStop = false;
+			this.titlebarProperties.Text = "Methods";
+			// 
 			// titlebarOutput
 			// 
 			this.titlebarOutput.BackColor = System.Drawing.SystemColors.ActiveBorder;
@@ -869,12 +876,6 @@
 			this.titlebarOutput.TabIndex = 0;
 			this.titlebarOutput.Text = "Output";
 			this.titlebarOutput.Close += new System.EventHandler(this.OnOutputClose);
-			// 
-			// loadContractsDialog
-			// 
-			this.loadContractsDialog.DefaultExt = "dll";
-			this.loadContractsDialog.Filter = "Dynamic Link Libraries (*.dll)|*.dll|Executable Files (*.exe)|*.exe";
-			this.loadContractsDialog.Title = "Load Contract Reference Assembly...";
 			// 
 			// Main
 			// 

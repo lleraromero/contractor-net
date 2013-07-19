@@ -41,6 +41,7 @@ namespace Contractor.Gui
 
 			graphViewer.OutsideAreaBrush = Brushes.White;
 			splitcontainerOutput.Panel2Collapsed = true;
+			treeviewTypes.Sorted = true;
 
 			var host = new PeReader.DefaultHost();
 			_AssemblyInfo = new AssemblyInfo(host);
@@ -1025,7 +1026,9 @@ namespace Contractor.Gui
 
 			this.BeginInvoke((Action)delegate
 			{
+				treeviewTypes.BeginUpdate();
 				treeviewTypes.Nodes.Add(root);
+				treeviewTypes.EndUpdate();
 
 				buttonLoadContracts.Enabled = true;
 				menuitemLoadContracts.Enabled = true;
@@ -1103,7 +1106,7 @@ namespace Contractor.Gui
 		private TreeNode LoadAssemblyTypes()
 		{
 			var namespaces = new Dictionary<INamespaceDefinition, TreeNode>();
-			var allTypes = _AssemblyInfo.Module.GetAllTypes().OfType<INamespaceTypeDefinition>();
+			var types = _AssemblyInfo.Module.GetAnalyzableTypes();
 			var assemblyNode = new TreeNode()
 			{
 				Text = _AssemblyInfo.Module.Name.Value,
@@ -1112,13 +1115,10 @@ namespace Contractor.Gui
 				StateImageKey = "collapsed"
 			};
 
-			foreach (var type in allTypes)
+			foreach (var type in types)
 			{
-				var containingNamespace = type.ContainingUnitNamespace;
-				if (containingNamespace is IRootUnitNamespace) continue;
-
-				if (!type.IsClass && !type.IsStruct && type.IsStatic && type.IsEnum) continue;
 				TreeNode namespaceNode;
+				var containingNamespace = type.ContainingUnitNamespace;
 
 				if (namespaces.ContainsKey(containingNamespace))
 				{
@@ -1147,12 +1147,15 @@ namespace Contractor.Gui
 		private void LoadTypeMethods(INamedTypeDefinition type)
 		{
 			var methods = type.GetPublicInstanceMethods();
+			listboxMethods.BeginUpdate();
 
 			foreach (var method in methods)
 			{
 				var name = method.GetDisplayName();
 				listboxMethods.Items.Add(name, true);
 			}
+
+			listboxMethods.EndUpdate();
 		}
 
 		private TreeNode CreateTreeNode(TreeNode rootNode, string name, string image, string state)
