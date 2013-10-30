@@ -89,6 +89,7 @@ namespace Contractor.Core
 		public void Dispose()
 		{
 			inputAssembly.Dispose();
+            host.Dispose();
 		}
 
 		public void LoadAssembly(string inputFileName)

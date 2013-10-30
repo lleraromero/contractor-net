@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Cci.Contracts;
 using Contractor.Core.Properties;
 using Contractor.Utils;
+using Microsoft.Cci.MutableCodeModel.Contracts;
 
 namespace Contractor.Core
 {
@@ -29,24 +30,29 @@ namespace Contractor.Core
 
 		private const string notPrefix = ".Not.";
 		private const string methodNameDelimiter = "~";
-		//private const string pattern = @"^ Method \W* \d+ \W* : \W* (?<MethodName> [^(\r]+) (\( [^)]* \))? \r | ^ [^(]* \( [^)]* \) \W* (\[ [^]]* \])? \W* : \W* ([^:]+ :)? \W* (?<Message> [^\r]+) \r";
 		private const string pattern = @"^ Method \W* \d+ \W* : (< [a-z ]+ >)? \W* (?<MethodName> [^(\r]+ (\( [^)]* \))?) \r | ^ [^( ]+ (\( [^)]* \))? \W* (\[ [^]]* \])? \W* : \W* ([^:]+ :)? \W* (?<Message> [^\r]+) \r";
 
+		private readonly Regex outputParser;
 		private readonly IContractAwareHost host;
 		private readonly AssemblyInfo inputAssembly;
-		private readonly NamespaceTypeDefinition type;
-		private readonly Regex outputParser;
-		private ContractProvider contractProvider;
+		private readonly NamespaceTypeDefinition inputType;
+		private readonly ContractProvider inputContractProvider;
+		private AssemblyInfo queryAssembly;
+		private NamespaceTypeDefinition queryType;
+		private Microsoft.Cci.Immutable.GenericTypeInstance specializedInputType;
+		private ContractProvider queryContractProvider;
+		private QueryReplacer queryReplacer;
 		private StringBuilder output;
-		private List<IMethodDefinition> queries;
 
-		public CodeContractsAnalyzer(IContractAwareHost host, AssemblyInfo inputAssembly, NamespaceTypeDefinition type)
+		public CodeContractsAnalyzer(IContractAwareHost host, AssemblyInfo assembly, NamespaceTypeDefinition type)
 		{
 			this.outputParser = new Regex(pattern, RegexOptions.ExplicitCapture | RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline | RegexOptions.Compiled);
-			this.queries = new List<IMethodDefinition>();
 			this.host = host;
-			this.inputAssembly = inputAssembly;
-			this.type = type;
+			this.inputAssembly = assembly;
+			this.inputType = type;
+
+			this.inputContractProvider = assembly.ExtractContracts();
+			this.generateQueryAssembly();
 		}
 
 		public TimeSpan TotalAnalysisDuration { get; private set; }
@@ -54,62 +60,133 @@ namespace Contractor.Core
 		public int TotalGeneratedQueriesCount { get; private set; }
 		public int UnprovenQueriesCount { get; private set; }
 
+		private void generateQueryAssembly()
+		{
+			var coreAssembly = host.LoadAssembly(host.CoreAssemblySymbolicIdentity);
+
+			var assembly = new Assembly()
+			{
+				Name = host.NameTable.GetNameFor("Query"),
+				ModuleName = host.NameTable.GetNameFor("query.dll"),
+				Kind = ModuleKind.DynamicallyLinkedLibrary,
+				TargetRuntimeVersion = coreAssembly.TargetRuntimeVersion,
+			};
+
+			assembly.AssemblyReferences.Add(coreAssembly);
+			assembly.AssemblyReferences.Add(inputAssembly.Module.ContainingAssembly);
+
+			var rootUnitNamespace = new RootUnitNamespace();
+			assembly.UnitNamespaceRoot = rootUnitNamespace;
+			rootUnitNamespace.Unit = assembly;
+
+			var moduleClass = new NamespaceTypeDefinition()
+			{
+				ContainingUnitNamespace = rootUnitNamespace,
+				InternFactory = host.InternFactory,
+				IsClass = true,
+				Name = host.NameTable.GetNameFor("<Module>"),
+			};
+
+			assembly.AllTypes.Add(moduleClass);
+
+			this.queryType = new NamespaceTypeDefinition()
+			{
+				ContainingUnitNamespace = rootUnitNamespace,
+				InternFactory = host.InternFactory,
+				IsClass = true,
+				IsPublic = true,
+				Name = host.NameTable.GetNameFor("Query"),
+				GenericParameters = inputType.GenericParameters.ToList()
+			};
+
+			queryType.BaseClasses = new List<ITypeReference>();
+			queryType.BaseClasses.Add(host.PlatformType.SystemObject);
+
+			rootUnitNamespace.Members.Add(queryType);
+			assembly.AllTypes.Add(queryType);
+
+			ITypeReference inputTypeReference = inputType;
+
+			if (inputType.IsGeneric)
+			{
+				var typeReference = MutableModelHelper.GetGenericTypeInstanceReference(queryType.GenericParameters, inputType, host.InternFactory, null);
+				this.specializedInputType = typeReference.ResolvedType as Microsoft.Cci.Immutable.GenericTypeInstance;
+				inputTypeReference = typeReference;
+			}
+
+			var self = new FieldDefinition()
+			{
+				ContainingTypeDefinition = queryType,
+				InternFactory = host.InternFactory,
+				Name = host.NameTable.GetNameFor("self"),
+				Type = inputTypeReference,
+				Visibility = TypeMemberVisibility.Public
+			};
+
+			queryType.Methods = new List<IMethodDefinition>();
+			queryType.Fields = new List<IFieldDefinition>();
+			queryType.Fields.Add(self);
+
+			this.queryAssembly = new AssemblyInfo(host, assembly);
+			this.queryReplacer = new QueryReplacer(host, inputType, queryType);
+		}
+
 		public ActionAnalysisResults AnalyzeActions(State source, IMethodDefinition action, List<IMethodDefinition> actions)
 		{
-			contractProvider = inputAssembly.ExtractContracts();
-			var queryAssemblyName = generateQueries(source, action, actions);
-			inputAssembly.InjectContracts(contractProvider);
-			inputAssembly.Save(queryAssemblyName);
+			var queryAssemblyName = Path.Combine(Configuration.TempPath, queryAssembly.Module.ModuleName.Value);
+			var contractMethods = new ContractMethods(host);
+			
+			queryContractProvider = new ContractProvider(contractMethods, queryAssembly.Module);
+			generateQueries(source, action, actions);
+			queryAssembly.InjectContracts(queryContractProvider);
+
+			queryReplacer.Rewrite(queryAssembly.DecompiledModule);
+			queryAssembly.Save(queryAssemblyName);
+			queryType.Methods.Clear();
+
 			var result = executeChecker(queryAssemblyName);
 			var evalResult = evaluateQueries(actions, result);
 
-			removeQueries();
 			return evalResult;
 		}
 
-		private string generateQueries(State state, IMethodDefinition action, List<IMethodDefinition> actions)
+		private void generateQueries(State state, IMethodDefinition action, List<IMethodDefinition> actions)
 		{
 			foreach (var target in actions)
 			{
 				var positiveQuery = generatePositiveNegativeQuery(state, action, target, false);
 				var negativeQuery = generatePositiveNegativeQuery(state, action, target, true);
 
-				positiveQuery.ContainingTypeDefinition = type;
-				negativeQuery.ContainingTypeDefinition = type;
+				positiveQuery.ContainingTypeDefinition = queryType;
+				negativeQuery.ContainingTypeDefinition = queryType;
 
-				type.Methods.Add(positiveQuery);
-				type.Methods.Add(negativeQuery);
-
-				queries.Add(positiveQuery);
-				queries.Add(negativeQuery);
+				queryType.Methods.Add(positiveQuery);
+				queryType.Methods.Add(negativeQuery);
 
 				this.TotalGeneratedQueriesCount += 2;
 			}
-
-			var queryAssemblyName = string.Format("query{0}.dll", type.Name.Value);
-			return Path.Combine(Configuration.TempPath, queryAssemblyName);
 		}
 
 		private MethodDefinition generatePositiveNegativeQuery(State state, IMethodDefinition action, IMethodDefinition target, bool negative)
 		{
 			var contracts = new MethodContract();
-			var mci = contractProvider.GetTypeContractFor(type);
-			var mct = contractProvider.GetMethodContractFor(target);
+			//var mci = inputContractProvider.GetTypeContractFor(inputType);
+			var mct = inputContractProvider.GetMethodContractFor(target);
 
-			if (mci != null && mci.Invariants.Count() > 0)
-			{
-				var pres = from inv in mci.Invariants
-						   select new Precondition()
-						   {
-							   Condition = inv.Condition
-						   };
+			//if (mci != null && mci.Invariants.Count() > 0)
+			//{
+			//    var pres = from inv in mci.Invariants
+			//               select new Precondition()
+			//               {
+			//                   Condition = inv.Condition
+			//               };
 
-				contracts.Preconditions.AddRange(pres);
-			}
+			//    contracts.Preconditions.AddRange(pres);
+			//}
 
 			foreach (var c in state.EnabledActions)
 			{
-				var mc = contractProvider.GetMethodContractFor(c);
+				var mc = inputContractProvider.GetMethodContractFor(c);
 				if (mc == null) continue;
 
 				contracts.Preconditions.AddRange(mc.Preconditions);
@@ -117,7 +194,7 @@ namespace Contractor.Core
 
 			foreach (var c in state.DisabledActions)
 			{
-				var mc = contractProvider.GetMethodContractFor(c);
+				var mc = inputContractProvider.GetMethodContractFor(c);
 
 				if (mc == null || mc.Preconditions.Count() == 0)
 				{
@@ -201,7 +278,7 @@ namespace Contractor.Core
 			var methodName = string.Format("{1}{0}{2}{0}{3}{4}", methodNameDelimiter, stateName, actionName, prefix, targetName);
 			var method = generateQuery(methodName, action);
 
-			contractProvider.AssociateMethodWithContract(method, contracts);
+			queryContractProvider.AssociateMethodWithContract(method, contracts);
 			return method;
 		}
 
@@ -213,7 +290,7 @@ namespace Contractor.Core
 				IsCil = true,
 				Name = host.NameTable.GetNameFor(name),
 				Type = action.Type,
-				Visibility = TypeMemberVisibility.Private,
+				Visibility = TypeMemberVisibility.Public,
 				GenericParameters = action.GenericParameters.ToList()
 			};
 
@@ -228,10 +305,27 @@ namespace Contractor.Core
 				block = callMethod(action);
 			}
 
-			method.Body = new SourceMethodBody(host, inputAssembly.PdbReader)
+			var assumeSelfNotNull = new AssumeStatement()
+			{
+				Condition = new LogicalNot()
+				{
+					Type = host.PlatformType.SystemBoolean,
+					Operand = new Equality()
+					{
+						Type = host.PlatformType.SystemBoolean,
+						LeftOperand = new ThisReference(),
+						RightOperand = new CompileTimeConstant()
+					}
+				}
+			};
+
+			block.Statements.Insert(0, assumeSelfNotNull);
+
+			method.Body = new SourceMethodBody(host)
 			{
 				MethodDefinition = method,
 				Block = block,
+				LocalsAreZeroed = true
 			};
 
 			return method;
@@ -253,10 +347,17 @@ namespace Contractor.Core
 				args.Add(defaultValue);
 			}
 
+			IMethodReference methodReference = action;
+
+			if (inputType.IsGeneric)
+			{
+				methodReference = specializedInputType.SpecializeMember(action, host.InternFactory) as IMethodReference;
+			}
+
 			var callExpr = new MethodCall()
 			{
 				IsStaticCall = false,
-				MethodToCall = action,
+				MethodToCall = methodReference,
 				Type = action.Type,
 				ThisArgument = new ThisReference(),
 				Arguments = args
@@ -293,7 +394,7 @@ namespace Contractor.Core
 				method.Parameters = new List<IParameterDefinition>();
 
 			method.Parameters.AddRange(action.Parameters);
-			var mc = contractProvider.GetMethodContractFor(action);
+			var mc = inputContractProvider.GetMethodContractFor(action);
 
 			if (mc != null && mc.Preconditions.Count() > 0)
 			{
@@ -367,12 +468,12 @@ namespace Contractor.Core
 					if (isNegative)
 					{
 						actionName = actionName.Remove(0, notPrefix.Length);
-						var method = type.Methods.Find(m => m.GetUniqueName() == actionName);
+						var method = inputType.Methods.Find(m => m.GetUniqueName() == actionName);
 						analysisResult.DisabledActions.Remove(method);
 					}
 					else
 					{
-						var method = type.Methods.Find(m => m.GetUniqueName() == actionName);
+						var method = inputType.Methods.Find(m => m.GetUniqueName() == actionName);
 						analysisResult.EnabledActions.Remove(method);
 					}
 
@@ -393,10 +494,13 @@ namespace Contractor.Core
 			else
 				libPaths = Configuration.ExpandVariables(Resources.Netv35);
 
-			var typeName = type.ToString();
+			var inputAssemblyPath = Path.GetDirectoryName(inputAssembly.FileName);
+			libPaths = string.Format("{0};{1}", libPaths, inputAssemblyPath);
 
-			if (type.IsGeneric)
-				typeName = string.Format("{0}`{1}", typeName, type.GenericParameterCount);
+			var typeName = queryType.ToString();
+
+			if (queryType.IsGeneric)
+				typeName = string.Format("{0}`{1}", typeName, queryType.GenericParameterCount);
 
 			output = new StringBuilder();
 			var cccheckArgs = Configuration.CheckerArguments;
@@ -489,46 +593,48 @@ namespace Contractor.Core
 
 		public TransitionAnalysisResult AnalyzeTransitions(State source, IMethodDefinition action, List<State> targets)
 		{
-			contractProvider = inputAssembly.ExtractContracts();
-			var queryAssemblyName = generateQueries(source, action, targets);
-			inputAssembly.InjectContracts(contractProvider);
-			inputAssembly.Save(queryAssemblyName);
+			var queryAssemblyName = Path.Combine(Configuration.TempPath, queryAssembly.Module.ModuleName.Value);
+			var contractMethods = new ContractMethods(host);
+
+			queryContractProvider = new ContractProvider(contractMethods, queryAssembly.Module);
+			generateQueries(source, action, targets);
+			queryAssembly.InjectContracts(queryContractProvider);
+
+			queryReplacer.Rewrite(queryAssembly.DecompiledModule);
+			queryAssembly.Save(queryAssemblyName);
+			queryType.Methods.Clear();
+
 			var result = executeChecker(queryAssemblyName);
 			var evalResult = evaluateQueries(source, action,targets, result);
 
-			removeQueries();
 			return evalResult;
 		}
 
-		private string generateQueries(State state, IMethodDefinition action, List<State> states)
+		private void generateQueries(State state, IMethodDefinition action, List<State> states)
 		{
 			foreach (var target in states)
 			{
 				var query = generateQuery(state, action, target);
 
-				query.ContainingTypeDefinition = type;
-				type.Methods.Add(query);
-				queries.Add(query);
+				query.ContainingTypeDefinition = queryType;
+				queryType.Methods.Add(query);
 
 				this.TotalGeneratedQueriesCount++;
 			}
-
-			var queryAssemblyName = string.Format("query{0}.dll", type.Name.Value);
-			return Path.Combine(Configuration.TempPath, queryAssemblyName);
 		}
 
 		private MethodDefinition generateQuery(State state, IMethodDefinition action, State target)
 		{
 			var contracts = new MethodContract();
-			var typeInv = Helper.GenerateTypeInvariant(host, contractProvider, type);
+			//var typeInv = Helper.GenerateTypeInvariant(host, inputContractProvider, inputType);
 
-			var typeInvPre = from expr in typeInv
-							 select new Precondition()
-							 {
-								 Condition = expr
-							 };
+			//var typeInvPre = from expr in typeInv
+			//                 select new Precondition()
+			//                 {
+			//                     Condition = expr
+			//                 };
 
-			var stateInv = Helper.GenerateStateInvariant(host, contractProvider, type, state);
+			var stateInv = Helper.GenerateStateInvariant(host, inputContractProvider, inputType, state);
 
 			var precondition = from expr in stateInv
 							   select new Precondition()
@@ -536,16 +642,16 @@ namespace Contractor.Core
 								   Condition = expr
 							   };
 
-			contracts.Preconditions.AddRange(typeInvPre);
+			//contracts.Preconditions.AddRange(typeInvPre);
 			contracts.Preconditions.AddRange(precondition);
 
-			var typeInvPost = from expr in typeInv
-							  select new Postcondition()
-							  {
-								  Condition = expr
-							  };
+			//var typeInvPost = from expr in typeInv
+			//                  select new Postcondition()
+			//                  {
+			//                      Condition = expr
+			//                  };
 
-			var targetInv = Helper.GenerateStateInvariant(host, contractProvider, type, target);
+			var targetInv = Helper.GenerateStateInvariant(host, inputContractProvider, inputType, target);
 
 			var postcondition = new Postcondition()
 			{
@@ -556,7 +662,7 @@ namespace Contractor.Core
 				},
 			};
 
-			contracts.Postconditions.AddRange(typeInvPost);
+			//contracts.Postconditions.AddRange(typeInvPost);
 			contracts.Postconditions.Add(postcondition);
 
 			var actionName = action.GetUniqueName();
@@ -565,7 +671,7 @@ namespace Contractor.Core
 			var methodName = string.Format("{1}{0}{2}{0}{3}", methodNameDelimiter, stateName, actionName, targetName);
 			var method = generateQuery(methodName, action);
 
-			contractProvider.AssociateMethodWithContract(method, contracts);
+			queryContractProvider.AssociateMethodWithContract(method, contracts);
 			return method;
 		}
 
@@ -603,13 +709,70 @@ namespace Contractor.Core
 
 			return analysisResult;
 		}
+	}
 
-		private void removeQueries()
+	class QueryReplacer : CodeAndContractRewriter
+	{
+		private NamespaceTypeDefinition inputType;
+		private NamespaceTypeDefinition queryType;
+		private IBoundExpression selfExpression;
+		private IMethodDefinition currentMethod;
+
+		public QueryReplacer(IMetadataHost host, NamespaceTypeDefinition inputType, NamespaceTypeDefinition queryType)
+			: base(host)
 		{
-			foreach (var m in queries)
-				type.Methods.Remove(m);
+			this.inputType = inputType;
+			this.queryType = queryType;
 
-			queries.Clear();
+			var self = queryType.Fields.Single();
+
+			this.selfExpression = new BoundExpression()
+			{
+				Definition = self,
+				Instance = new ThisReference(),
+				Type = self.Type
+			};
+		}
+
+		public override IMethodDefinition Rewrite(IMethodDefinition method)
+		{
+			currentMethod = method;
+			var newMethod = base.Rewrite(method);
+			currentMethod = null;
+			return newMethod;
+		}
+
+		public override IExpression Rewrite(IBoundExpression boundExpression)
+		{
+			if (boundExpression == selfExpression)
+				return boundExpression;
+
+			return base.Rewrite(boundExpression);
+		}
+
+		public override IExpression Rewrite(IThisReference thisReference)
+		{
+			return selfExpression;
+		}
+
+		public override IGenericTypeParameter Rewrite(IGenericTypeParameter genericTypeParameter)
+		{
+			var newGenericTypeParameter = new GenericTypeParameter();
+
+			newGenericTypeParameter.Copy(genericTypeParameter, host.InternFactory);
+			newGenericTypeParameter.DefiningType = queryType;
+
+			return newGenericTypeParameter;
+		}
+
+		public override IGenericMethodParameter Rewrite(IGenericMethodParameter genericMethodParameter)
+		{
+			var newGenericMethodParameter = new GenericMethodParameter();
+
+			newGenericMethodParameter.Copy(genericMethodParameter, host.InternFactory);
+			newGenericMethodParameter.DefiningMethod = currentMethod;
+
+			return newGenericMethodParameter;
 		}
 	}
 }

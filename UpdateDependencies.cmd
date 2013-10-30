@@ -13,7 +13,6 @@ set ast_files=%ast_files% AstsProjectedAsCodeModel
 set ast_files=%ast_files% CodeModel
 set ast_files=%ast_files% CodeModelToIL
 set ast_files=%ast_files% ContractExtractor
-set ast_files=%ast_files% ILToCodeModel
 set ast_files=%ast_files% MutableCodeModel
 set ast_files=%ast_files% NewILToCodeModel
 

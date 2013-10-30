@@ -638,7 +638,7 @@ namespace Contractor.Gui
 			var codeContractsVersion = "Code Contracts is not installed.";
 			var checkerFileName = Contractor.Core.Configuration.CheckerFileName;
 
-			if (!string.IsNullOrEmpty(checkerFileName))
+			if (!string.IsNullOrEmpty(checkerFileName) && File.Exists(checkerFileName))
 			{
 				var vi = FileVersionInfo.GetVersionInfo(checkerFileName);
 				codeContractsVersion = vi.ProductVersion;

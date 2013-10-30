@@ -27,6 +27,14 @@ namespace Contractor.Utils
 			this.Host = host;
 		}
 
+		public AssemblyInfo(IMetadataHost host, Module module)
+		{
+			this.Host = host;
+			this.Module = module;
+			this.DecompiledModule = module;
+			this.IsLoaded = true;
+		}
+
 		public void Load(string fileName)
 		{
 			this.Module = this.Host.LoadUnitFrom(fileName) as IModule;
