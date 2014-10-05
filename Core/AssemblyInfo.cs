@@ -1,127 +1,127 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Cci;
-using Microsoft.Cci.MutableCodeModel;
-using System.IO;
-using Microsoft.Cci.ILToCodeModel;
-using Microsoft.Cci.MutableContracts;
+﻿using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
+using Microsoft.Cci.ILToCodeModel;
+using Microsoft.Cci.MutableCodeModel;
+using Microsoft.Cci.MutableContracts;
+using System;
+using System.Diagnostics.Contracts;
+using System.IO;
 
 namespace Contractor.Utils
 {
-	public class AssemblyInfo : IDisposable
-	{
-		private bool _ContractsInjected;
+    public class AssemblyInfo
+    {
+        public string FileName { get; private set; }
+        public IMetadataHost Host { get; private set; }
+        public IModule Module { get; private set; }
+        public Module DecompiledModule { get; private set; }
+        public PdbReader PdbReader { get; private set; }
 
-		public string FileName { get; private set; }
-		public bool IsLoaded { get; private set; }
-		public IMetadataHost Host { get; private set; }
-		public IModule Module { get; private set; }
-		public Module DecompiledModule { get; private set; }
-		public PdbReader PdbReader { get; private set; }
+        private bool _ContractsInjected;
 
-		public AssemblyInfo(IMetadataHost host)
-		{
-			this.Host = host;
-		}
+        public AssemblyInfo(IMetadataHost host)
+        {
+            Contract.Requires(host != null);
 
-		public AssemblyInfo(IMetadataHost host, Module module)
-		{
-			this.Host = host;
-			this.Module = module;
-			this.DecompiledModule = module;
-			this.IsLoaded = true;
-		}
+            this.Host = host;
+        }
 
-		public void Load(string fileName)
-		{
-			this.Module = this.Host.LoadUnitFrom(fileName) as IModule;
+        public AssemblyInfo(IMetadataHost host, IModule module)
+        {
+            Contract.Requires(host != null && module != null);
 
-			if (this.Module == null || this.Module == Dummy.Module || this.Module == Dummy.Assembly)
-				throw new Exception("The input is not a valid CLR module or assembly.");
+            this.Host = host;
+            this.Module = module;
+            this.DecompiledModule = module as Module;
+        }
 
-			var pdbFileName = Path.ChangeExtension(fileName, "pdb");
+        ~AssemblyInfo()
+        {
+            if (PdbReader != null)
+                this.PdbReader.Dispose();
+        }
 
-			if (File.Exists(pdbFileName))
-			{
-				using (var pdbStream = File.OpenRead(pdbFileName))
-					this.PdbReader = new PdbReader(pdbStream, this.Host);
-			}
+        public void Load(string fileName)
+        {
+            Contract.Requires(!string.IsNullOrEmpty(fileName) && File.Exists(fileName));
 
-			this.FileName = fileName;
-			this.IsLoaded = true;
-		}
+            this.FileName = fileName;
+            this.Module = LoadModule(fileName, this.Host);
+            this.PdbReader = GetPDBReader(this.Module, this.Host);
+        }
 
-		public void Decompile()
-		{
-			this.DecompiledModule = Decompiler.GetCodeModelFromMetadataModel(this.Host, this.Module, this.PdbReader);
-		}
+        public void Decompile()
+        {
+            Contract.Requires(DecompiledModule == null && Module != null);
 
-		public ContractProvider ExtractContracts()
-		{
-			var contractAwareHost = this.Host as IContractAwareHost;
-			ContractProvider contractProvider;
+            this.DecompiledModule = Decompiler.GetCodeModelFromMetadataModel(this.Host, this.Module, this.PdbReader);
+        }
 
-			if (_ContractsInjected)
-			{
-				// Extracting contracts from this assembly
-				contractProvider = ContractHelper.ExtractContracts(contractAwareHost, this.DecompiledModule, this.PdbReader, this.PdbReader);
-			}
-			else
-			{
-				// Extracting contracts from this assembly and the contract reference assembly previously loaded with this host
-				var contractExtractor = contractAwareHost.GetContractExtractor(this.Module.UnitIdentity);
-				contractProvider = new AggregatingContractProvider(contractExtractor);
-			}
+        public ContractProvider ExtractContracts()
+        {
+            var contractAwareHost = this.Host as IContractAwareHost;
+            ContractProvider contractProvider;
 
-			return contractProvider;
-		}
+            if (_ContractsInjected)
+            {
+                // Extracting contracts from this assembly
+                contractProvider = ContractHelper.ExtractContracts(contractAwareHost, this.DecompiledModule, this.PdbReader, this.PdbReader);
+            }
+            else
+            {
+                // Extracting contracts from this assembly and the contract reference assembly previously loaded with this host
+                var contractExtractor = contractAwareHost.GetContractExtractor(this.Module.UnitIdentity);
+                contractProvider = new AggregatingContractProvider(contractExtractor);
+            }
 
-		public void InjectContracts(ContractProvider contractProvider)
-		{
-			ContractHelper.InjectContractCalls(this.Host, this.DecompiledModule, contractProvider, this.PdbReader);
-			_ContractsInjected = true;
-		}
+            return contractProvider;
+        }
 
-		public void Save(string fileName)
-		{
-			var pdbName = Path.ChangeExtension(fileName, "pdb");
+        public void InjectContracts(ContractProvider contractProvider)
+        {
+            ContractHelper.InjectContractCalls(this.Host, this.DecompiledModule, contractProvider, this.PdbReader);
+            _ContractsInjected = true;
+        }
 
-			using (var peStream = File.Create(fileName))
-			{
-				if (this.PdbReader == null)
-				{
-					PeWriter.WritePeToStream(this.DecompiledModule, this.Host, peStream);
-				}
-				else
-				{
-					using (var pdbWriter = new PdbWriter(pdbName, this.PdbReader))
-						PeWriter.WritePeToStream(this.DecompiledModule, this.Host, peStream, this.PdbReader, this.PdbReader, pdbWriter);
-				}
-			}
-		}
+        public void Save(string fileName)
+        {
+            Contract.Requires(DecompiledModule != null && Host != null && !string.IsNullOrEmpty(fileName));
 
-		public void Unload()
-		{
-			if (!this.IsLoaded) return;
+            using (var peStream = File.OpenWrite(fileName))
+            {
+                if (this.PdbReader == null)
+                {
+                    PeWriter.WritePeToStream(this.DecompiledModule, this.Host, peStream);
+                }
+                else
+                {
+                    var pdbName = Path.ChangeExtension(fileName, "pdb");
+                    using (var pdbWriter = new PdbWriter(pdbName, this.PdbReader))
+                        PeWriter.WritePeToStream(this.DecompiledModule, this.Host, peStream, this.PdbReader, this.PdbReader, pdbWriter);
+                }
+            }
+        }
 
-			if (this.PdbReader != null)
-			{
-				this.PdbReader.Dispose();
-				this.PdbReader = null;
-			}
+        private IModule LoadModule(string filename, IMetadataHost host)
+        {
+            Contract.Requires(host != null && !string.IsNullOrEmpty(filename));
 
-			this.Module = null;
-			this.DecompiledModule = null;
-			this.FileName = null;
-			this.IsLoaded = false;
-		}
+            var module = host.LoadUnitFrom(filename) as IModule;
+            if (module == null || module is Dummy || this.Module == Dummy.Assembly)
+                throw new Exception(string.Concat(filename, " is not a PE file containing a CLR module or assembly."));
+            return module;
+        }
 
-		public void Dispose()
-		{
-			this.Unload();
-		}
-	}
+        private PdbReader GetPDBReader(IModule module, IMetadataHost host)
+        {
+            Contract.Requires(host != null && module != null);
+
+            PdbReader pdbReader = null;
+            string pdbFile = Path.ChangeExtension(module.Location, "pdb");
+            if (File.Exists(pdbFile))
+                using (var pdbStream = File.OpenRead(pdbFile))
+                    pdbReader = new PdbReader(pdbStream, host);
+            return pdbReader;
+        }
+    }
 }

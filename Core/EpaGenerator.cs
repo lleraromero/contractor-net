@@ -87,7 +87,6 @@ namespace Contractor.Core
 
         public void Dispose()
         {
-            inputAssembly.Dispose();
             host.Dispose();
         }
 
@@ -99,14 +98,12 @@ namespace Contractor.Core
 
         public void LoadContractReferenceAssembly(string inputFileName)
         {
-            using (var contractsAssembly = new AssemblyInfo(host))
-                contractsAssembly.Load(inputFileName);
+            var contractsAssembly = new AssemblyInfo(host);
+            contractsAssembly.Load(inputFileName);
         }
 
         public void UnloadAssembly()
         {
-            inputAssembly.Unload();
-
             foreach (var epa in epas.Values)
                 epa.Instrumented = false;
         }
