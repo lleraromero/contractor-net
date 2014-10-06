@@ -288,12 +288,15 @@ namespace Contractor.Core
         {
             var method = new MethodDefinition()
             {
+                Attributes = new List<ICustomAttribute>(action.Attributes),
+                CallingConvention = Microsoft.Cci.CallingConvention.HasThis,
                 InternFactory = host.InternFactory,
                 IsCil = true,
+                IsStatic = false,
                 Name = host.NameTable.GetNameFor(name),
                 Type = action.Type,
                 Visibility = TypeMemberVisibility.Public,
-                GenericParameters = action.GenericParameters.ToList()
+                GenericParameters = new List<IGenericMethodParameter>(action.GenericParameters)
             };
 
             BlockStatement block = null;
