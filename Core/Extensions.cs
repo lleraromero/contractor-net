@@ -73,7 +73,7 @@ namespace Contractor.Utils
 
 		public static string GetUniqueName(this IMethodDefinition method)
 		{
-			var name = new StringBuilder(method.Name.Value);
+			var name = new StringBuilder(method.Name.Value.Replace(".", ""));
 
 			if (method.IsGeneric)
 			{
