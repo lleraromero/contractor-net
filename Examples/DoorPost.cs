@@ -2,7 +2,7 @@
 
 namespace Examples
 {
-    class DoorPost
+    public class DoorPost
     {
         public bool emergency;
         public bool closed;
@@ -11,7 +11,6 @@ namespace Examples
         [ContractInvariantMethod]
         private void Invariant()
         {
-            //Contract.Invariant(emergency ? !closed : true);
             Contract.Invariant(!emergency || !closed);
         }
 
@@ -75,6 +74,7 @@ namespace Examples
         }
 
         #region tests
+
         //s0: {stop, safe}
         //s1: {start, safe}
         private void s0_stop_s1()
@@ -86,7 +86,6 @@ namespace Examples
             Contract.Requires(!closed || moving); //not open
             Contract.Requires(moving); //not start
 
-
             Contract.Ensures(!!moving); //start
             Contract.Ensures(!emergency); //safe
 
@@ -97,6 +96,7 @@ namespace Examples
 
             Stop();
         }
-        #endregion
+
+        #endregion tests
     }
 }

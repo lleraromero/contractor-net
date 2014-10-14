@@ -2,7 +2,7 @@
 
 namespace Examples
 {
-    class Door
+    public class Door
     {
         public bool emergency;
         public bool closed;
