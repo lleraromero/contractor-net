@@ -716,6 +716,7 @@ namespace Contractor.Core
         }
     }
 
+    //Reemplaza los 'this' que apuntan al 'module' del input para que pasen a apuntar al nuevo 'module' creado para las queries
     internal class QueryReplacer : CodeAndContractRewriter
     {
         private NamespaceTypeDefinition inputType;

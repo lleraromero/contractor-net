@@ -254,9 +254,7 @@ namespace Contractor.Core
                 GenericMethod = mref,
                 InternFactory = this.host.InternFactory,
                 Name = mref.Name,
-                Parameters = new List<IParameterTypeInformation>{
-            new ParameterTypeInformation { Type = oldValue.Type, }
-          },
+                Parameters = new List<IParameterTypeInformation> { new ParameterTypeInformation { Type = oldValue.Type, } },
                 Type = oldValue.Type,
             };
             var methodCall = new MethodCall()

@@ -5,6 +5,8 @@ using System.Text;
 using System.IO;
 
 using Contractor.Core.Properties;
+using NLog.Config;
+using NLog.Targets;
 
 namespace Contractor.Core
 {
@@ -13,6 +15,8 @@ namespace Contractor.Core
 		public static string TempPath;
 		public static string CheckerFileName;
 		public static string CheckerArguments;
+        public static string BCTPath;
+        public static string CorralPath;
 		public static bool InlineMethodsBody;
 
 		private static string windows;
@@ -31,6 +35,8 @@ namespace Contractor.Core
 			InlineMethodsBody = true;
 			CheckerFileName = ExpandVariables(Resources.CheckerFileName);
 			CheckerArguments = Resources.CheckerArguments;
+            BCTPath = Resources.BCTPath;
+            CorralPath = Resources.CorralPath;
 
 #if DEBUG
 			TempPath = Path.Combine(Directory.GetCurrentDirectory(), "Temp");
@@ -49,6 +55,8 @@ namespace Contractor.Core
 
 				throw new Exception(msg);
 			}
+
+            SetUpLogger();
 		}
 
 		public static string ExpandVariables(string text)
@@ -62,5 +70,26 @@ namespace Contractor.Core
 			text = text.Replace("\\\\", "\\");
 			return text;
 		}
+
+        private static void SetUpLogger()
+        {
+            // Step 1. Create configuration object 
+            var config = new LoggingConfiguration();
+
+            // Step 2. Create targets and add them to the configuration 
+            var fileTarget = new FileTarget();
+            config.AddTarget("file", fileTarget);
+
+            // Step 3. Set target properties 
+            fileTarget.FileName = Path.Combine(TempPath, "contractor.out");
+            fileTarget.Layout = "${message}";
+
+            // Step 4. Define rules
+            var rule = new LoggingRule("*", NLog.LogLevel.Trace, fileTarget);
+            config.LoggingRules.Add(rule);
+
+            // Step 5. Activate the configuration
+            NLog.LogManager.Configuration = config;
+        }
 	}
 }

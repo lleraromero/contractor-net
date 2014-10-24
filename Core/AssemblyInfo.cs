@@ -17,8 +17,6 @@ namespace Contractor.Utils
         public Module DecompiledModule { get; private set; }
         public PdbReader PdbReader { get; private set; }
 
-        private bool _ContractsInjected;
-
         public AssemblyInfo(IMetadataHost host)
         {
             Contract.Requires(host != null);
@@ -33,6 +31,8 @@ namespace Contractor.Utils
             this.Host = host;
             this.Module = module;
             this.DecompiledModule = module as Module;
+            if (this.DecompiledModule == null)
+                Decompile();
         }
 
         ~AssemblyInfo()
@@ -48,11 +48,12 @@ namespace Contractor.Utils
             this.FileName = fileName;
             this.Module = LoadModule(fileName, this.Host);
             this.PdbReader = GetPDBReader(this.Module, this.Host);
+            Decompile();
         }
 
-        public void Decompile()
+        private void Decompile()
         {
-            Contract.Requires(DecompiledModule == null && Module != null);
+            Contract.Requires(Module != null);
 
             this.DecompiledModule = Decompiler.GetCodeModelFromMetadataModel(this.Host, this.Module, this.PdbReader);
         }
@@ -60,19 +61,14 @@ namespace Contractor.Utils
         public ContractProvider ExtractContracts()
         {
             var contractAwareHost = this.Host as IContractAwareHost;
-            ContractProvider contractProvider;
+            ContractProvider contractProvider = null;
 
-            if (_ContractsInjected)
-            {
-                // Extracting contracts from this assembly
-                contractProvider = ContractHelper.ExtractContracts(contractAwareHost, this.DecompiledModule, this.PdbReader, this.PdbReader);
-            }
-            else
-            {
-                // Extracting contracts from this assembly and the contract reference assembly previously loaded with this host
-                var contractExtractor = contractAwareHost.GetContractExtractor(this.Module.UnitIdentity);
-                contractProvider = new AggregatingContractProvider(contractExtractor);
-            }
+            // Extracting contracts from this assembly and the contract reference assembly previously loaded with this host
+            var contractExtractor = contractAwareHost.GetContractExtractor(this.Module.UnitIdentity);
+            contractProvider = new AggregatingContractProvider(contractExtractor);
+            
+            // Extracting contracts from this assembly
+            //contractProvider = ContractHelper.ExtractContracts(contractAwareHost, this.DecompiledModule, this.PdbReader, this.PdbReader);
 
             return contractProvider;
         }
@@ -80,7 +76,6 @@ namespace Contractor.Utils
         public void InjectContracts(ContractProvider contractProvider)
         {
             ContractHelper.InjectContractCalls(this.Host, this.DecompiledModule, contractProvider, this.PdbReader);
-            _ContractsInjected = true;
         }
 
         public void Save(string fileName)

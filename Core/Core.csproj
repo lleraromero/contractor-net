@@ -152,6 +152,9 @@
     <Reference Include="Microsoft.Cci.SourceModel">
       <HintPath>..\Dependencies\Microsoft.Cci.SourceModel.dll</HintPath>
     </Reference>
+    <Reference Include="NLog">
+      <HintPath>..\Dependencies\NLog-3.0\NLog.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -176,6 +179,7 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="IAnalyzer.cs" />
+    <Compile Include="LogManager.cs" />
     <Compile Include="Transition.cs" />
     <None Include="API.cd" />
     <Compile Include="Instrumenter.cs" />

@@ -16,7 +16,7 @@ namespace Contractor.Core
             }
         }
 
-        private const string methodNameDelimiter = "-";
+        private const string methodNameDelimiter = "$";
 
         public uint Id;
         public string UniqueName;

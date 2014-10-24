@@ -93,9 +93,10 @@ namespace Contractor.Core
         public void LoadAssembly(string inputFileName)
         {
             inputAssembly.Load(inputFileName);
-            inputAssembly.Decompile();
+            //inputAssembly.Decompile();
         }
 
+        // Loads the contract reference assembly in the host.
         public void LoadContractReferenceAssembly(string inputFileName)
         {
             var contractsAssembly = new AssemblyInfo(host);
@@ -212,6 +213,7 @@ namespace Contractor.Core
             var epa = epas[typeUniqueName];
             epa.Clear();
 
+            //IAnalyzer checker = new CorralAnalyzer(host, inputAssembly.Module, type);
             IAnalyzer checker = new CodeContractsAnalyzer(host, inputAssembly, type);
             var states = new Dictionary<string, State>();
 
