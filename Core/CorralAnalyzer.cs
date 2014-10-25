@@ -44,21 +44,30 @@ namespace Contractor.Core
             this.inputAssembly = new AssemblyInfo(host);
             inputAssembly.Load(module.Location);
 
-            // Create a clone of the module as a working copy.
-            CreateQueryAssembly(inputAssembly, type);
-
-            this.queryAssembly = new AssemblyInfo(host);
-            this.queryAssembly.Load(GetQueryAssemblyPath());
-            this.queryContractProvider = new ContractProvider(new ContractMethods(this.host), this.host.FindUnit(this.queryAssembly.Module.UnitIdentity));
-
             this.inputType = type;
             this.inputContractProvider = inputAssembly.ExtractContracts();
+
+            // Create a clone of the module as a working copy.
+            CreateQueryAssembly(type);
+            this.queryContractProvider = new ContractProvider(new ContractMethods(this.host), this.host.FindUnit(this.queryAssembly.Module.UnitIdentity));
         }
 
-        private void CreateQueryAssembly(AssemblyInfo input, NamespaceTypeDefinition type)
+        private void CreateQueryAssembly(NamespaceTypeDefinition type)
         {
-            //input.DecompiledModule.AllTypes.RemoveAll(x => x.Name != type.Name);
-            input.Save(GetQueryAssemblyPath());
+            // Load original module
+            IModule module = this.host.LoadUnitFrom(inputAssembly.Module.Location) as IModule;
+            // Make a editable copy
+            module = new MetadataDeepCopier(this.host).Copy(module);
+            this.queryAssembly = new AssemblyInfo(this.host, module);
+
+            var uselessTypes = new List<NamespaceTypeDefinition>();
+            foreach (var t in this.queryAssembly.DecompiledModule.AllTypes)
+            {
+                var tMutable = t as NamespaceTypeDefinition;
+                if (tMutable != null && tMutable.ContainingUnitNamespace.Name == type.ContainingUnitNamespace.Name && tMutable.Name != type.Name)
+                    uselessTypes.Add(tMutable);
+            }
+            this.queryAssembly.DecompiledModule.AllTypes.RemoveAll(x => uselessTypes.Contains(x));
         }
 
         ~CorralAnalyzer()
@@ -77,8 +86,7 @@ namespace Contractor.Core
 
         private Dictionary<string, ResultKind> Analyze<T>(State source, IMethodDefinition action, List<T> target)
         {
-            if (typeof(T) != typeof(IMethodDefinition) && typeof(T) != typeof(State))
-                throw new InvalidOperationException();
+            Contract.Requires(typeof(T) == typeof(IMethodDefinition) || typeof(T) == typeof(State));
 
             List<MethodDefinition> queries = new List<MethodDefinition>();
             if (typeof(T) == typeof(IMethodDefinition))
