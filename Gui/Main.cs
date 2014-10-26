@@ -39,6 +39,9 @@ namespace Contractor.Gui
             graphViewer.OutsideAreaBrush = Brushes.White;
             splitcontainerOutput.Panel2Collapsed = true;
             treeviewTypes.Sorted = true;
+            cmbBackend.Items.Add(EpaGenerator.Backend.CodeContracts);
+            cmbBackend.Items.Add(EpaGenerator.Backend.Corral);
+            cmbBackend.SelectedIndex = 0;
 
             var host = new PeReader.DefaultHost();
             _AssemblyInfo = new AssemblyInfo(host);
@@ -388,12 +391,16 @@ namespace Contractor.Gui
 
         private void StartAnalisis()
         {
+            var parameters = GetParameters();
+
             _AnalizedType = treeviewTypes.SelectedNode.Tag as INamedTypeDefinition;
 
             if (_EpaGenerator != null)
                 _EpaGenerator.Dispose();
 
-            _EpaGenerator = new EpaGenerator();
+            var backend = (EpaGenerator.Backend)parameters["backend"];
+
+            _EpaGenerator = new EpaGenerator(backend);
             _EpaGenerator.TypeAnalysisStarted += this.OnTypeAnalysisStarted;
             _EpaGenerator.TypeAnalysisDone += this.OnTypeAnalysisDone;
             _EpaGenerator.StateAdded += this.OnStateAdded;
@@ -403,6 +410,14 @@ namespace Contractor.Gui
             _AnalisisThread.Name = "GenerateGraph";
             _AnalisisThread.IsBackground = true;
             _AnalisisThread.Start();
+        }
+
+        private Dictionary<string, object> GetParameters()
+        {
+            var parameters = new Dictionary<string, object>();
+            parameters.Add("backend", cmbBackend.SelectedItem);
+
+            return parameters;
         }
 
         private void GenerateGraph()
