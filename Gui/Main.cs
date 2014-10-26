@@ -39,6 +39,7 @@ namespace Contractor.Gui
             graphViewer.OutsideAreaBrush = Brushes.White;
             splitcontainerOutput.Panel2Collapsed = true;
             treeviewTypes.Sorted = true;
+            treeviewTypes.ShowPlusMinus = true;
             cmbBackend.Items.Add(EpaGenerator.Backend.CodeContracts);
             cmbBackend.Items.Add(EpaGenerator.Backend.Corral);
             cmbBackend.SelectedIndex = 0;
@@ -91,26 +92,6 @@ namespace Contractor.Gui
         {
             splitcontainerOutput.Panel2Collapsed = true;
             menuitemOutput.Checked = false;
-        }
-
-        private void OnBeforeCollapseTreeNode(object sender, TreeViewCancelEventArgs e)
-        {
-            e.Node.StateImageKey = "collapsed";
-        }
-
-        private void OnBeforeExpandTreeNode(object sender, TreeViewCancelEventArgs e)
-        {
-            e.Node.StateImageKey = "expanded";
-        }
-
-        private void OnTreeNodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
-        {
-            var rect = e.Node.Bounds;
-            rect.Width = imagelist.ImageSize.Width;
-            rect.X -= imagelist.ImageSize.Width * 2 + 3;
-
-            if (rect.Contains(e.Location))
-                e.Node.Toggle();
         }
 
         private void OnTreeNodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
@@ -534,7 +515,6 @@ namespace Contractor.Gui
 
         private void OutputTypeAnalysisResult(TypeAnalysisResult analysisResult)
         {
-            var sb = new StringBuilder();
             var totalDuration = analysisResult.TotalDuration;
             var totalAnalyzerDuration = analysisResult.TotalAnalyzerDuration;
             var executionsCount = analysisResult.ExecutionsCount;
@@ -546,6 +526,7 @@ namespace Contractor.Gui
             var unprovenTransitionsCount = analysisResult.Transitions.Count(t => t.IsUnproven);
             var precision = 100 - Math.Ceiling((double)unprovenQueriesCount * 100 / totalGeneratedQueriesCount);
 
+            var sb = new StringBuilder();
             sb.AppendFormat("   Code Contracts analysis total duration:\t{0}", totalAnalyzerDuration).AppendLine();
             sb.AppendFormat("   Code Contracts analysis precision:\t\t{0}%", precision).AppendLine();
             sb.AppendFormat("   Code Contracts executions:\t\t\t{0}", executionsCount).AppendLine();
@@ -1147,8 +1128,7 @@ namespace Contractor.Gui
             {
                 Text = _AssemblyInfo.Module.Name.Value,
                 ImageKey = "assembly",
-                SelectedImageKey = "assembly",
-                StateImageKey = "collapsed"
+                SelectedImageKey = "assembly"
             };
 
             foreach (var type in types)
@@ -1163,12 +1143,12 @@ namespace Contractor.Gui
                 else
                 {
                     var namespaceName = containingNamespace.ToString();
-                    namespaceNode = this.CreateTreeNode(assemblyNode, namespaceName, "namespace", "collapsed");
+                    namespaceNode = this.CreateTreeNode(assemblyNode, namespaceName, "namespace");
                     namespaces.Add(containingNamespace, namespaceNode);
                 }
 
                 var typeName = type.GetDisplayName();
-                var typeNode = this.CreateTreeNode(namespaceNode, typeName, "class", "none");
+                var typeNode = this.CreateTreeNode(namespaceNode, typeName, "class");
                 typeNode.Tag = type;
 
                 if (!type.IsPublic)
@@ -1194,12 +1174,11 @@ namespace Contractor.Gui
             listboxMethods.EndUpdate();
         }
 
-        private TreeNode CreateTreeNode(TreeNode rootNode, string name, string image, string state)
+        private TreeNode CreateTreeNode(TreeNode rootNode, string name, string image)
         {
             var node = rootNode.Nodes.Add(name);
             node.ImageKey = image;
             node.SelectedImageKey = image;
-            node.StateImageKey = state;
             return node;
         }
 

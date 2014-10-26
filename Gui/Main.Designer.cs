@@ -722,10 +722,7 @@
             this.treeviewTypes.Size = new System.Drawing.Size(195, 147);
             this.treeviewTypes.StateImageList = this.imagelist;
             this.treeviewTypes.TabIndex = 0;
-            this.treeviewTypes.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.OnBeforeCollapseTreeNode);
-            this.treeviewTypes.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.OnBeforeExpandTreeNode);
             this.treeviewTypes.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.OnAfterSelectTreeNode);
-            this.treeviewTypes.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.OnTreeNodeMouseClick);
             this.treeviewTypes.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.OnTreeNodeMouseDoubleClick);
             // 
             // listboxMethods
