@@ -25,7 +25,7 @@ namespace Contractor.Utils
 			if (loopContract == null)
 			{
 				loopContract = underlyingContractExtractor.GetLoopContractFor(loop);
-				//base.AssociateLoopWithContract(loop, loopContract);
+				base.AssociateLoopWithContract(loop, loopContract);
 			}
 
 			return loopContract;
@@ -38,7 +38,7 @@ namespace Contractor.Utils
 			if (methodContract == null)
 			{
 				methodContract = underlyingContractExtractor.GetMethodContractFor(method);
-				//base.AssociateMethodWithContract(method, methodContract);
+				base.AssociateMethodWithContract(method, methodContract);
 			}
 
 			return methodContract;
@@ -51,7 +51,7 @@ namespace Contractor.Utils
 			if (triggers == null)
 			{
 				triggers = underlyingContractExtractor.GetTriggersFor(quantifier);
-				//base.AssociateTriggersWithQuantifier(quantifier, triggers);
+				base.AssociateTriggersWithQuantifier(quantifier, triggers);
 			}
 
 			return triggers;
@@ -64,7 +64,7 @@ namespace Contractor.Utils
 			if (typeContract == null)
 			{
 				typeContract = underlyingContractExtractor.GetTypeContractFor(type);
-				//base.AssociateTypeWithContract(type, typeContract);
+				base.AssociateTypeWithContract(type, typeContract);
 			}
 
 			return typeContract;
