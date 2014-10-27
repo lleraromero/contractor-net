@@ -14,8 +14,21 @@ namespace Contractor.Utils
         public string FileName { get; private set; }
         public IMetadataHost Host { get; private set; }
         public IModule Module { get; private set; }
-        public Module DecompiledModule { get; private set; }
         public PdbReader PdbReader { get; private set; }
+        private Module decompiledModule;
+        public Module DecompiledModule {
+            get 
+            {
+                if (decompiledModule == null)
+                    decompiledModule = Decompiler.GetCodeModelFromMetadataModel(this.Host, this.Module, this.PdbReader);
+
+                return decompiledModule;
+            }
+            private set
+            {
+                decompiledModule = value;
+            }
+        }
 
         public AssemblyInfo(IMetadataHost host)
         {
@@ -31,8 +44,6 @@ namespace Contractor.Utils
             this.Host = host;
             this.Module = module;
             this.DecompiledModule = module as Module;
-            if (this.DecompiledModule == null)
-                Decompile();
         }
 
         ~AssemblyInfo()
@@ -48,14 +59,6 @@ namespace Contractor.Utils
             this.FileName = fileName;
             this.Module = LoadModule(fileName, this.Host);
             this.PdbReader = GetPDBReader(this.Module, this.Host);
-            Decompile();
-        }
-
-        private void Decompile()
-        {
-            Contract.Requires(Module != null);
-
-            this.DecompiledModule = Decompiler.GetCodeModelFromMetadataModel(this.Host, this.Module, this.PdbReader);
         }
 
         public ContractProvider ExtractContracts()
