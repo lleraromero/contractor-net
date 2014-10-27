@@ -71,11 +71,8 @@ namespace Contractor.Core
         private CodeContractAwareHostEnvironment host;
 
         public event EventHandler<TypeAnalysisStartedEventArgs> TypeAnalysisStarted;
-
         public event EventHandler<TypeAnalysisDoneEventArgs> TypeAnalysisDone;
-
         public event EventHandler<StateAddedEventArgs> StateAdded;
-
         public event EventHandler<TransitionAddedEventArgs> TransitionAdded;
 
         public EpaGenerator()
@@ -93,7 +90,6 @@ namespace Contractor.Core
         public void LoadAssembly(string inputFileName)
         {
             inputAssembly.Load(inputFileName);
-            //inputAssembly.Decompile();
         }
 
         // Loads the contract reference assembly in the host.
@@ -118,18 +114,8 @@ namespace Contractor.Core
             {
                 var typeUniqueName = type.GetUniqueName();
 
-                if (!epas.ContainsKey(typeUniqueName))
-                    epas.Add(typeUniqueName, new Epa());
-
-                var epa = epas[typeUniqueName];
-
-                if (!epa.GenerationCompleted)
-                {
-                    var methods = type.GetPublicInstanceMethods();
-                    generateEpa(type, methods);
-                }
-
-                analysisResults.Add(typeUniqueName, epa.AnalysisResult);
+                var result = GenerateEpa(type.ToString());
+                analysisResults.Add(typeUniqueName, result);
             }
 
             return analysisResults;
@@ -145,20 +131,10 @@ namespace Contractor.Core
 
             var types = inputAssembly.DecompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
             var type = types.First(t => t.ToString() == typeFullName);
-            var typeUniqueName = type.GetUniqueName();
 
-            if (!epas.ContainsKey(typeUniqueName))
-                epas.Add(typeUniqueName, new Epa());
-
-            var epa = epas[typeUniqueName];
-
-            if (!epa.GenerationCompleted)
-            {
-                var methods = type.GetPublicInstanceMethods();
-                generateEpa(type, methods);
-            }
-
-            return epa.AnalysisResult;
+            var methods = from m in type.GetPublicInstanceMethods()
+                          select m.Name.Value;
+            return GenerateEpa(typeFullName, methods);
         }
 
         public TypeAnalysisResult GenerateEpa(string typeFullName, IEnumerable<string> selectedMethods)
@@ -185,13 +161,13 @@ namespace Contractor.Core
                               on name equals m.GetDisplayName()
                               select m;
 
-                generateEpa(type, methods);
+                GenerateEpa(type, methods);
             }
 
             return epa.AnalysisResult;
         }
 
-        private void generateEpa(NamespaceTypeDefinition type, IEnumerable<IMethodDefinition> methods)
+        private void GenerateEpa(NamespaceTypeDefinition type, IEnumerable<IMethodDefinition> methods)
         {
             var typeDisplayName = type.GetDisplayName();
             var typeUniqueName = type.GetUniqueName();
