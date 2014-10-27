@@ -169,6 +169,7 @@
     </Compile>
     <Compile Include="AggregatingContractProvider.cs" />
     <Compile Include="AnalysisResults.cs" />
+    <Compile Include="Analyzer.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="CodeContractsAnalyzer.cs" />
     <Compile Include="Configuration.cs" />
