@@ -30,12 +30,6 @@ namespace Contractor.Core
             Contract.Requires(module != null && host != null && type != null);
         }
 
-        ~CorralAnalyzer()
-        {
-            // Delete the working copy of the module.
-            //File.Delete(GetQueryAssemblyPath());
-        }
-
         public override ActionAnalysisResults AnalyzeActions(State source, IMethodDefinition action, List<IMethodDefinition> actions)
         {
             var result = Analyze<IMethodDefinition>(source, action, actions);
@@ -44,19 +38,18 @@ namespace Contractor.Core
             return analysisResult;
         }
 
+        public override TransitionAnalysisResult AnalyzeTransitions(State source, IMethodDefinition action, List<State> targets)
+        {
+            var result = Analyze<State>(source, action, targets);
+            var resultAnalysis = EvaluateQueries(source, action, targets, result);
+
+            return resultAnalysis;
+        }
+
         private Dictionary<string, ResultKind> Analyze<T>(State source, IMethodDefinition action, List<T> target)
         {
-            Contract.Requires(typeof(T) == typeof(IMethodDefinition) || typeof(T) == typeof(State));
+            List<MethodDefinition> queries = GenerateQueries<T>(source, action, target);
 
-            List<MethodDefinition> queries = new List<MethodDefinition>();
-            if (typeof(T) == typeof(IMethodDefinition))
-            {
-                queries.AddRange(GenerateQueries(source, action, (List<IMethodDefinition>)(object)target));
-            }
-            else
-            {
-                queries.AddRange(GenerateQueries(source, action, (List<State>)(object)target));
-            }
             // Add queries to the working assembly
             var type = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == typeToAnalyze.Name) as NamespaceTypeDefinition;
             type.Methods.AddRange(queries);
@@ -70,27 +63,96 @@ namespace Contractor.Core
             // Save the query assembly to run Corral
             queryAssembly.Save(GetQueryAssemblyPath());
 
-            var pepe = ExecuteChecker(queries);
+            var result = ExecuteChecker(queries);
 
+            // I don't need the queries anymore
             type.Methods.RemoveAll(m => queries.Contains(m));
-            return pepe;
+
+            return result;
         }
 
-        private List<MethodDefinition> GenerateQueries(State state, IMethodDefinition action, List<IMethodDefinition> actions)
+        private List<MethodDefinition> GenerateQueries<T>(State state, IMethodDefinition action, List<T> actions /*states*/)
         {
+            Contract.Requires(typeof(T) == typeof(IMethodDefinition) || typeof(T) == typeof(State));
+
             var queries = new List<MethodDefinition>();
 
             foreach (var target in actions)
             {
-                // Add positive query
-                queries.Add(GenerateQuery(state, action, target));
-                // Add negative query
-                queries.Add(GenerateQuery(state, action, target, true));
+                if (typeof(T) == typeof(IMethodDefinition))
+                {
+                    // Add positive query
+                    queries.Add(GenerateQuery(state, action, (IMethodDefinition) target));
+                    // Add negative query
+                    queries.Add(GenerateQuery(state, action, (IMethodDefinition) target, true));
+                }
+                else if (typeof(T) == typeof(State))
+                {
+                    queries.Add(GenerateQuery(state, action, (State)(object) target));
+                }
+                else
+                {
+                    throw new NotImplementedException("Unknown type");
+                }
             }
 
             base.TotalGeneratedQueriesCount += queries.Count;
 
             return queries;
+        }
+
+        private MethodDefinition GenerateQuery(string name, IMethodDefinition action)
+        {
+            // I need to assign the queries to the type that I'm processing
+            var type = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == typeToAnalyze.Name) as NamespaceTypeDefinition;
+            var method = new MethodDefinition()
+            {
+                Attributes = new List<ICustomAttribute>(action.Attributes),
+                CallingConvention = Microsoft.Cci.CallingConvention.HasThis,
+                ContainingTypeDefinition = type,
+                InternFactory = host.InternFactory,
+                IsStatic = false,
+                Name = host.NameTable.GetNameFor(name),
+                Type = action.Type,
+                Visibility = TypeMemberVisibility.Private,
+                GenericParameters = new List<IGenericMethodParameter>(action.GenericParameters)
+            };
+
+            BlockStatement block = null;
+
+            if (Configuration.InlineMethodsBody)
+            {
+                block = InlineMethodBody(action, method);
+            }
+            else
+            {
+                block = CallMethod(action);
+            }
+
+            var assumeSelfNotNull = new AssumeStatement()
+            {
+                Condition = new LogicalNot()
+                {
+                    Type = host.PlatformType.SystemBoolean,
+                    Operand = new Equality()
+                    {
+                        Type = host.PlatformType.SystemBoolean,
+                        LeftOperand = new ThisReference(),
+                        RightOperand = new CompileTimeConstant()
+                    }
+                }
+            };
+
+            block.Statements.Insert(0, assumeSelfNotNull);
+
+            method.Body = new SourceMethodBody(host)
+            {
+                MethodDefinition = method,
+                Block = block,
+                LocalsAreZeroed = true
+            };
+
+            return method;
         }
 
         private MethodDefinition GenerateQuery(State state, IMethodDefinition action, IMethodDefinition target, bool negate = false)
@@ -187,57 +249,40 @@ namespace Contractor.Core
             return method;
         }
 
-        private MethodDefinition GenerateQuery(string name, IMethodDefinition action)
+        private MethodDefinition GenerateQuery(State state, IMethodDefinition action, State target)
         {
-            // I need to assign the queries to the type that I'm processing
-            var type = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == typeToAnalyze.Name) as NamespaceTypeDefinition;
-            var method = new MethodDefinition()
-            {
-                Attributes = new List<ICustomAttribute>(action.Attributes),
-                CallingConvention = Microsoft.Cci.CallingConvention.HasThis,
-                ContainingTypeDefinition = type,
-                InternFactory = host.InternFactory,
-                IsStatic = false,
-                Name = host.NameTable.GetNameFor(name),
-                Type = action.Type,
-                Visibility = TypeMemberVisibility.Private,
-                GenericParameters = new List<IGenericMethodParameter>(action.GenericParameters)
-            };
+            var contracts = new MethodContract();
 
-            BlockStatement block = null;
+            var stateInv = Helper.GenerateStateInvariant(host, inputContractProvider, typeToAnalyze, state);
 
-            if (Configuration.InlineMethodsBody)
-            {
-                block = InlineMethodBody(action, method);
-            }
-            else
-            {
-                block = CallMethod(action);
-            }
+            var precondition = from expr in stateInv
+                               select new Precondition()
+                               {
+                                   Condition = expr
+                               };
 
-            var assumeSelfNotNull = new AssumeStatement()
+            contracts.Preconditions.AddRange(precondition);
+
+            var targetInv = Helper.GenerateStateInvariant(host, inputContractProvider, typeToAnalyze, target);
+
+            var postcondition = new Postcondition()
             {
                 Condition = new LogicalNot()
                 {
                     Type = host.PlatformType.SystemBoolean,
-                    Operand = new Equality()
-                    {
-                        Type = host.PlatformType.SystemBoolean,
-                        LeftOperand = new ThisReference(),
-                        RightOperand = new CompileTimeConstant()
-                    }
-                }
+                    Operand = Helper.JoinWithLogicalAnd(host, targetInv, true)
+                },
             };
 
-            block.Statements.Insert(0, assumeSelfNotNull);
+            contracts.Postconditions.Add(postcondition);
 
-            method.Body = new SourceMethodBody(host)
-            {
-                MethodDefinition = method,
-                Block = block,
-                LocalsAreZeroed = true
-            };
+            var actionName = action.GetUniqueName();
+            var stateName = state.UniqueName;
+            var targetName = target.UniqueName;
+            var methodName = string.Format("{1}{0}{2}{0}{3}", methodNameDelimiter, stateName, actionName, targetName);
+            var method = GenerateQuery(methodName, action);
 
+            queryContractProvider.AssociateMethodWithContract(method, contracts);
             return method;
         }
 
@@ -504,65 +549,6 @@ namespace Contractor.Core
                 return ResultKind.RecursionBoundReached;
             else
                 throw new NotImplementedException("The result was not understood");
-        }
-
-        public override TransitionAnalysisResult AnalyzeTransitions(State source, IMethodDefinition action, List<State> targets)
-        {
-            var result = Analyze<State>(source, action, targets);
-            var resultAnalysis = EvaluateQueries(source, action, targets, result);
-
-            return resultAnalysis;
-        }
-
-        private List<MethodDefinition> GenerateQueries(State state, IMethodDefinition action, List<State> states)
-        {
-            var queries = new List<MethodDefinition>();
-
-            foreach (var target in states)
-            {
-                queries.Add(GenerateQuery(state, action, target));
-            }
-
-            base.TotalGeneratedQueriesCount += queries.Count;
-
-            return queries;
-        }
-
-        private MethodDefinition GenerateQuery(State state, IMethodDefinition action, State target)
-        {
-            var contracts = new MethodContract();
-
-            var stateInv = Helper.GenerateStateInvariant(host, inputContractProvider, typeToAnalyze, state);
-
-            var precondition = from expr in stateInv
-                               select new Precondition()
-                               {
-                                   Condition = expr
-                               };
-
-            contracts.Preconditions.AddRange(precondition);
-
-            var targetInv = Helper.GenerateStateInvariant(host, inputContractProvider, typeToAnalyze, target);
-
-            var postcondition = new Postcondition()
-            {
-                Condition = new LogicalNot()
-                {
-                    Type = host.PlatformType.SystemBoolean,
-                    Operand = Helper.JoinWithLogicalAnd(host, targetInv, true)
-                },
-            };
-
-            contracts.Postconditions.Add(postcondition);
-
-            var actionName = action.GetUniqueName();
-            var stateName = state.UniqueName;
-            var targetName = target.UniqueName;
-            var methodName = string.Format("{1}{0}{2}{0}{3}", methodNameDelimiter, stateName, actionName, targetName);
-            var method = GenerateQuery(methodName, action);
-
-            queryContractProvider.AssociateMethodWithContract(method, contracts);
-            return method;
         }
 
         private TransitionAnalysisResult EvaluateQueries(State source, IMethodDefinition action, List<State> targets, Dictionary<string, ResultKind> result)
