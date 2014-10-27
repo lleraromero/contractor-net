@@ -15,68 +15,28 @@ using System.Text.RegularExpressions;
 
 namespace Contractor.Core
 {
-    internal class CorralAnalyzer : IAnalyzer
+    class CorralAnalyzer : Analyzer
     {
-        public TimeSpan TotalAnalysisDuration { get; private set; }
-        public int ExecutionsCount { get; private set; }
-        public int TotalGeneratedQueriesCount { get; private set; }
-        public int UnprovenQueriesCount { get; private set; }
-
         private enum ResultKind { TrueBug, NoBugs, RecursionBoundReached }
 
         private const string notPrefix = "_Not_";
         private const string methodNameDelimiter = "~";
 
-        private readonly IContractAwareHost host;
-        private readonly AssemblyInfo inputAssembly;
-        private readonly NamespaceTypeDefinition inputType;
-        private readonly ContractProvider inputContractProvider;
-        private AssemblyInfo queryAssembly;
-        private NamespaceTypeDefinition queryType;
         private Microsoft.Cci.Immutable.GenericTypeInstance specializedInputType;
-        private ContractProvider queryContractProvider;
 
-        public CorralAnalyzer(IContractAwareHost host, IModule module, NamespaceTypeDefinition type)
+        public CorralAnalyzer(IContractAwareHost host, IModule module, NamespaceTypeDefinition type) 
+                                : base(host, module, type)
         {
             Contract.Requires(module != null && host != null && type != null);
-
-            this.host = host;
-            this.inputAssembly = new AssemblyInfo(host);
-            inputAssembly.Load(module.Location);
-
-            this.inputType = type;
-            this.inputContractProvider = inputAssembly.ExtractContracts();
-
-            // Create a clone of the module as a working copy.
-            CreateQueryAssembly(type);
-            this.queryContractProvider = new ContractProvider(new ContractMethods(this.host), this.host.FindUnit(this.queryAssembly.Module.UnitIdentity));
-        }
-
-        private void CreateQueryAssembly(NamespaceTypeDefinition type)
-        {
-            // Load original module
-            IModule module = this.host.LoadUnitFrom(inputAssembly.Module.Location) as IModule;
-            // Make a editable copy
-            module = new MetadataDeepCopier(this.host).Copy(module);
-            this.queryAssembly = new AssemblyInfo(this.host, module);
-
-            var uselessTypes = new List<NamespaceTypeDefinition>();
-            foreach (var t in this.queryAssembly.DecompiledModule.AllTypes)
-            {
-                var tMutable = t as NamespaceTypeDefinition;
-                if (tMutable != null && tMutable.ContainingUnitNamespace.Name == type.ContainingUnitNamespace.Name && tMutable.Name != type.Name)
-                    uselessTypes.Add(tMutable);
-            }
-            this.queryAssembly.DecompiledModule.AllTypes.RemoveAll(x => uselessTypes.Contains(x));
         }
 
         ~CorralAnalyzer()
         {
             // Delete the working copy of the module.
-            File.Delete(GetQueryAssemblyPath());
+            //File.Delete(GetQueryAssemblyPath());
         }
 
-        public ActionAnalysisResults AnalyzeActions(State source, IMethodDefinition action, List<IMethodDefinition> actions)
+        public override ActionAnalysisResults AnalyzeActions(State source, IMethodDefinition action, List<IMethodDefinition> actions)
         {
             var result = Analyze<IMethodDefinition>(source, action, actions);
             var analysisResult = EvaluateQueries(actions, result);
@@ -98,10 +58,10 @@ namespace Contractor.Core
                 queries.AddRange(GenerateQueries(source, action, (List<State>)(object)target));
             }
             // Add queries to the working assembly
-            var type = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == inputType.Name) as NamespaceTypeDefinition;
+            var type = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == typeToAnalyze.Name) as NamespaceTypeDefinition;
             type.Methods.AddRange(queries);
 
-            //// I need to replace Pre/Post with Assume/Assert
+            // I need to replace Pre/Post with Assume/Assert
             ILocalScopeProvider localScopeProvider = new Microsoft.Cci.ILToCodeModel.Decompiler.LocalScopeProvider(GetPDBReader(queryAssembly.Module, host));
             ISourceLocationProvider sourceLocationProvider = GetPDBReader(queryAssembly.Module, host);
             var trans = new ContractRewriter(host, queryContractProvider, sourceLocationProvider);
@@ -128,7 +88,7 @@ namespace Contractor.Core
                 queries.Add(GenerateQuery(state, action, target, true));
             }
 
-            this.TotalGeneratedQueriesCount += queries.Count;
+            base.TotalGeneratedQueriesCount += queries.Count;
 
             return queries;
         }
@@ -230,7 +190,7 @@ namespace Contractor.Core
         private MethodDefinition GenerateQuery(string name, IMethodDefinition action)
         {
             // I need to assign the queries to the type that I'm processing
-            var type = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == inputType.Name) as NamespaceTypeDefinition;
+            var type = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == typeToAnalyze.Name) as NamespaceTypeDefinition;
             var method = new MethodDefinition()
             {
                 Attributes = new List<ICustomAttribute>(action.Attributes),
@@ -299,7 +259,7 @@ namespace Contractor.Core
 
             IMethodReference methodReference = action;
 
-            if (inputType.IsGeneric)
+            if (typeToAnalyze.IsGeneric)
             {
                 methodReference = specializedInputType.SpecializeMember(action, host.InternFactory) as IMethodReference;
             }
@@ -383,7 +343,7 @@ namespace Contractor.Core
                                   Condition = post.Condition
                               };
 
-                ////Ponemos los assume antes del return
+                //Ponemos los assume antes del return
                 //block.Statements.InsertRange(block.Statements.Count - 1, assumes);
                 block.Statements.InsertRange(block.Statements.Count, assumes);
             }
@@ -417,17 +377,17 @@ namespace Contractor.Core
                         if (isNegative)
                         {
                             actionName = actionName.Remove(0, notPrefix.Length);
-                            var method = inputType.Methods.Find(m => m.GetUniqueName() == actionName);
+                            var method = typeToAnalyze.Methods.Find(m => m.GetUniqueName() == actionName);
                             analysisResult.DisabledActions.Remove(method);
                         }
                         else
                         {
-                            var method = inputType.Methods.Find(m => m.GetUniqueName() == actionName);
+                            var method = typeToAnalyze.Methods.Find(m => m.GetUniqueName() == actionName);
                             analysisResult.EnabledActions.Remove(method);
                         }
 
                         if (entry.Value == ResultKind.RecursionBoundReached)
-                            this.UnprovenQueriesCount++;
+                            base.UnprovenQueriesCount++;
 
                         break;
                     case ResultKind.NoBugs:
@@ -446,7 +406,7 @@ namespace Contractor.Core
 
             RunBCT();
 
-            var queryType = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == inputType.Name) as NamespaceTypeDefinition;
+            var queryType = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == typeToAnalyze.Name) as NamespaceTypeDefinition;
             foreach (var query in queries)
             {
                 var queryName = string.Concat(queryType.ResolvedType.ToString(), ".", query.Name.Value);
@@ -490,7 +450,7 @@ namespace Contractor.Core
                 if (bct.ExitCode != 0)
                     throw new Exception("Error translating the query assembly to boogie");
 
-                this.TotalAnalysisDuration += bct.ExitTime - bct.StartTime;
+                base.TotalAnalysisDuration += bct.ExitTime - bct.StartTime;
             }
         }
 
@@ -526,8 +486,8 @@ namespace Contractor.Core
                 if (corral.ExitCode != 0)
                     throw new Exception("Error executing corral");
 
-                this.TotalAnalysisDuration += corral.ExitTime - corral.StartTime;
-                this.ExecutionsCount++;
+                base.TotalAnalysisDuration += corral.ExitTime - corral.StartTime;
+                base.ExecutionsCount++;
             }
 
             return output.ToString();
@@ -546,7 +506,7 @@ namespace Contractor.Core
                 throw new NotImplementedException("The result was not understood");
         }
 
-        public TransitionAnalysisResult AnalyzeTransitions(State source, IMethodDefinition action, List<State> targets)
+        public override TransitionAnalysisResult AnalyzeTransitions(State source, IMethodDefinition action, List<State> targets)
         {
             var result = Analyze<State>(source, action, targets);
             var resultAnalysis = EvaluateQueries(source, action, targets, result);
@@ -563,7 +523,7 @@ namespace Contractor.Core
                 queries.Add(GenerateQuery(state, action, target));
             }
 
-            this.TotalGeneratedQueriesCount += queries.Count;
+            base.TotalGeneratedQueriesCount += queries.Count;
 
             return queries;
         }
@@ -572,7 +532,7 @@ namespace Contractor.Core
         {
             var contracts = new MethodContract();
 
-            var stateInv = Helper.GenerateStateInvariant(host, inputContractProvider, inputType, state);
+            var stateInv = Helper.GenerateStateInvariant(host, inputContractProvider, typeToAnalyze, state);
 
             var precondition = from expr in stateInv
                                select new Precondition()
@@ -582,7 +542,7 @@ namespace Contractor.Core
 
             contracts.Preconditions.AddRange(precondition);
 
-            var targetInv = Helper.GenerateStateInvariant(host, inputContractProvider, inputType, target);
+            var targetInv = Helper.GenerateStateInvariant(host, inputContractProvider, typeToAnalyze, target);
 
             var postcondition = new Postcondition()
             {
@@ -634,7 +594,7 @@ namespace Contractor.Core
                         }
 
                         if (isUnproven)
-                            this.UnprovenQueriesCount++;
+                            base.UnprovenQueriesCount++;
                         break;
                     case ResultKind.NoBugs:
                         break;
@@ -644,25 +604,6 @@ namespace Contractor.Core
             }
 
             return analysisResult;
-        }
-
-        private string GetQueryAssemblyPath()
-        {
-            Contract.Requires(inputAssembly != null);
-
-            return Path.Combine(Configuration.TempPath, inputAssembly.Module.ModuleName.Value + ".tmp");
-        }
-
-        private PdbReader GetPDBReader(IModule module, IContractAwareHost host)
-        {
-            Contract.Requires(module != null && host != null);
-
-            PdbReader pdbReader = null;
-            string pdbFile = Path.ChangeExtension(module.Location, "pdb");
-            if (File.Exists(pdbFile))
-                using (var pdbStream = File.OpenRead(pdbFile))
-                    pdbReader = new PdbReader(pdbStream, host);
-            return pdbReader;
         }
     }
 }
