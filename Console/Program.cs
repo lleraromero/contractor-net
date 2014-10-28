@@ -57,6 +57,7 @@ namespace Contractor.Console
 				try
 				{
 					var program = new Program(options);
+                    program.Execute();
 				}
 				catch (Exception ex)
 				{
@@ -160,7 +161,17 @@ namespace Contractor.Console
 
 				renderer.Render(g, 0, 0, img.Width, img.Height);
 
-				var imgName = string.Format("{0}.png", e.TypeFullName);
+                var imgName = e.TypeFullName;
+
+                //Borramos del nombre los parametros de generics
+                var start = imgName.IndexOf('<');
+
+                if (start != -1)
+                {
+                    imgName = imgName.Remove(start);
+                }
+
+                imgName = string.Format("{0}.png", imgName);
 				imgName = Path.Combine(options.graph, imgName);
 				img.Save(imgName);
 			}
