@@ -106,9 +106,9 @@ namespace Contractor.Console
 				Directory.CreateDirectory(Configuration.TempPath);
 		}
 
-		public void Execute()
+		public void Execute(EpaGenerator.Backend backend)
 		{
-			using (var generator = new EpaGenerator())
+			using (var generator = new EpaGenerator(backend))
 			{
 				generator.LoadAssembly(options.input);
 				generator.TypeAnalysisStarted += typeAnalysisStarted;

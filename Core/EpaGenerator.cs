@@ -66,20 +66,24 @@ namespace Contractor.Core
 
     public class EpaGenerator : IDisposable
     {
+        public enum Backend { CodeContracts, Corral };
+
         private AssemblyInfo inputAssembly;
         private Dictionary<string, Epa> epas;
         private CodeContractAwareHostEnvironment host;
+        private Backend backend;
 
         public event EventHandler<TypeAnalysisStartedEventArgs> TypeAnalysisStarted;
         public event EventHandler<TypeAnalysisDoneEventArgs> TypeAnalysisDone;
         public event EventHandler<StateAddedEventArgs> StateAdded;
         public event EventHandler<TransitionAddedEventArgs> TransitionAdded;
 
-        public EpaGenerator()
+        public EpaGenerator(Backend backend)
         {
             host = new CodeContractAwareHostEnvironment(true);
             inputAssembly = new AssemblyInfo(host);
             epas = new Dictionary<string, Epa>();
+            this.backend = backend;
         }
 
         public void Dispose()
@@ -189,8 +193,19 @@ namespace Contractor.Core
             var epa = epas[typeUniqueName];
             epa.Clear();
 
-            //IAnalyzer checker = new CorralAnalyzer(host, inputAssembly.Module, type);
-            IAnalyzer checker = new CodeContractsAnalyzer(host, inputAssembly, type);
+            IAnalyzer checker;
+            switch (this.backend)
+	        {
+		        case Backend.CodeContracts:
+                    checker = new CodeContractsAnalyzer(host, inputAssembly, type);
+                 break;
+                case Backend.Corral:
+                    checker = new CorralAnalyzer(host, inputAssembly.Module, type);
+                 break;
+                default:
+                 throw new NotImplementedException("Unknown backend");
+	        }
+            
             var states = new Dictionary<string, State>();
 
             var dummy = new State();
