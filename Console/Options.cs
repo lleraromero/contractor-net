@@ -43,5 +43,8 @@ namespace Contractor.Console
 
 		[OptionDescription("Show states descriptions ", ShortForm = "sd")]
 		public bool stateDescription = true;
+
+        [OptionDescription("Backend used to analyze the assembly (CodeContracts / Corral) ", ShortForm = "b")]
+        public string backend = "CodeContracts";
 	}
 }

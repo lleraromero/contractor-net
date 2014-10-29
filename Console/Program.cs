@@ -57,7 +57,12 @@ namespace Contractor.Console
 				try
 				{
 					var program = new Program(options);
-                    program.Execute();
+
+                    EpaGenerator.Backend backend = EpaGenerator.Backend.CodeContracts;
+                    if (program.options.backend.Equals("Corral", StringComparison.InvariantCultureIgnoreCase))
+                        backend = EpaGenerator.Backend.Corral;
+
+                    program.Execute(backend);
 				}
 				catch (Exception ex)
 				{
