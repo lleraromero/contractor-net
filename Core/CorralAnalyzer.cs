@@ -1,5 +1,4 @@
-﻿using Contractor.Core.Properties;
-using Contractor.Utils;
+﻿using Contractor.Utils;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;
@@ -8,9 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Contractor.Core
@@ -24,8 +21,8 @@ namespace Contractor.Core
 
         private Microsoft.Cci.Immutable.GenericTypeInstance specializedInputType;
 
-        public CorralAnalyzer(IContractAwareHost host, IModule module, NamespaceTypeDefinition type) 
-                                : base(host, module, type)
+        public CorralAnalyzer(IContractAwareHost host, IModule module, NamespaceTypeDefinition type)
+            : base(host, module, type)
         {
             Contract.Requires(module != null && host != null && type != null);
         }
@@ -82,13 +79,13 @@ namespace Contractor.Core
                 if (typeof(T) == typeof(IMethodDefinition))
                 {
                     // Add positive query
-                    queries.Add(GenerateQuery(state, action, (IMethodDefinition) target));
+                    queries.Add(GenerateQuery(state, action, (IMethodDefinition)target));
                     // Add negative query
-                    queries.Add(GenerateQuery(state, action, (IMethodDefinition) target, true));
+                    queries.Add(GenerateQuery(state, action, (IMethodDefinition)target, true));
                 }
                 else if (typeof(T) == typeof(State))
                 {
-                    queries.Add(GenerateQuery(state, action, (State)(object) target));
+                    queries.Add(GenerateQuery(state, action, (State)(object)target));
                 }
                 else
                 {
@@ -435,8 +432,10 @@ namespace Contractor.Core
                             base.UnprovenQueriesCount++;
 
                         break;
+
                     case ResultKind.NoBugs:
                         break;
+
                     default:
                         throw new NotImplementedException("Unknown result");
                 }
@@ -456,13 +455,15 @@ namespace Contractor.Core
             {
                 var queryName = string.Concat(queryType.ResolvedType.ToString(), ".", query.Name.Value);
                 string output = RunCorral(queryName);
-                const string pattern = @"(true bug)|(recursion bound reached)|(has no bugs)";
+                const string pattern = @"(true bug)|(reached recursion bound)|(has no bugs)";
                 Regex outputParser = new Regex(pattern, RegexOptions.ExplicitCapture |
                                                 RegexOptions.Multiline | RegexOptions.Compiled | RegexOptions.IgnoreCase);
                 var matches = outputParser.Matches(output);
 
                 if (matches.Count == 1)
                     result[queryName] = ParseResultKind(matches[0].Value);
+                else
+                    throw new NotSupportedException("Unknown result");
             }
 
             return result;
@@ -470,6 +471,7 @@ namespace Contractor.Core
 
         private void RunBCT()
         {
+            //TODO: Use BCT as a library instead of an external process
             using (var bct = new Process())
             {
                 bct.StartInfo = new ProcessStartInfo()
@@ -503,39 +505,31 @@ namespace Contractor.Core
         {
             Contract.Requires(!string.IsNullOrEmpty(method));
 
-            var output = new StringBuilder();
-            var args = string.Format("{0} /main:{1} /recursionBound:{2}", GetQueryAssemblyPath().Replace("tmp", "bpl"), method, 1);    // recursionBound 3 es absolutamente arbitrario :)
+            var args = string.Format("{0} /main:{1} /recursionBound:{2}", GetQueryAssemblyPath().Replace("tmp", "bpl"), method, 3);    // recursionBound 3 es absolutamente arbitrario :)
 
-            using (var corral = new Process())
+            var timer = new Stopwatch();
+            timer.Start();
+            if (cba.Driver.run(args.Split(' ')) != 0)
+                throw new Exception("Error executing corral");
+            timer.Stop();
+
+            base.TotalAnalysisDuration += new TimeSpan(timer.ElapsedTicks);
+            base.ExecutionsCount++;
+
+            // TODO: Improve Corral as a library instead of a console application.
+            switch (cba.Driver.Result)
             {
-                corral.StartInfo = new ProcessStartInfo()
-                {
-                    FileName = Configuration.CorralPath,
-                    Arguments = args,
-                    WorkingDirectory = Configuration.TempPath,
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false
-                };
+                case cba.CorralResult.BugFound:
+                    return "true bug";
 
-                LogManager.Log(LogLevel.Info, "=============== CORRAL ===============");
-                corral.OutputDataReceived += (sender, e) => { output.AppendLine(e.Data); LogManager.Log(LogLevel.Debug, e.Data); };
-                corral.ErrorDataReceived += (sender, e) => { LogManager.Log(LogLevel.Fatal, e.Data); };
-                corral.Start();
-                corral.BeginErrorReadLine();
-                corral.BeginOutputReadLine();
-                corral.WaitForExit();
+                case cba.CorralResult.NoBugs:
+                    return "has no bugs";
 
-                if (corral.ExitCode != 0)
-                    throw new Exception("Error executing corral");
-
-                base.TotalAnalysisDuration += corral.ExitTime - corral.StartTime;
-                base.ExecutionsCount++;
+                case cba.CorralResult.RecursionBoundReached:
+                    return "reached recursion bound";
             }
 
-            return output.ToString();
+            throw new NotImplementedException("bug");
         }
 
         private ResultKind ParseResultKind(string message)
@@ -545,7 +539,7 @@ namespace Contractor.Core
                 return ResultKind.TrueBug;
             else if (message.Contains("has no bugs"))
                 return ResultKind.NoBugs;
-            else if (message.Contains("recursion bound reached"))
+            else if (message.Contains("reached recursion bound"))
                 return ResultKind.RecursionBoundReached;
             else
                 throw new NotImplementedException("The result was not understood");
@@ -582,8 +576,10 @@ namespace Contractor.Core
                         if (isUnproven)
                             base.UnprovenQueriesCount++;
                         break;
+
                     case ResultKind.NoBugs:
                         break;
+
                     default:
                         throw new NotImplementedException("Unknown result");
                 }
