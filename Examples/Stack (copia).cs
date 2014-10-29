@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace wp
 {
-    public class Stack<T>
+    public class StackC<T>
     {
-        private const int capacity = 5;
-        private int size;
-        private T[] data;
+        public const int capacity = 5;
+        public int size;
+        public T[] data;
 
         [ContractInvariantMethod]
         private void Invariant()
@@ -23,7 +23,7 @@ namespace wp
             //Contract.Invariant(capacity == Capacity);
         }
 
-        public Stack()
+        public StackC()
         {
             size = 0;
             data = new T[capacity];
@@ -44,10 +44,7 @@ namespace wp
         }
         public void Push(T item)
         {
-            Contract.Requires(Size < Capacity);
-
-            //Contract.Requires(true && (Size < Capacity) && (Size > 0));
-            //Contract.Ensures(true && !(Size < Capacity) && (Size > 0));
+            Contract.Requires(size < capacity);
            // Contract.Ensures(((Stack<T>)this).Size == Contract.OldValue(((Stack<T>)this).Size + 1));
             //Contract.Requires(true && (Size < Capacity) && (Size > 0));
             //Contract.Ensures(true && (Size < Capacity) && (Size > 0));
@@ -61,11 +58,7 @@ namespace wp
 
         public T Pop()
         {
-            Contract.Requires(Size > 0);
-            //Contract.Requires(true && (Size < Capacity) && (Size > 0));
-            //Contract.Ensures(true && (Size < Capacity) && !(Size > 0));
-
-
+            Contract.Requires(size > 0);
             //Contract.Requires(true && !(Size < Capacity) && (Size > 0));
             //Contract.Ensures(true && Size < Capacity && (Size > 0));
 

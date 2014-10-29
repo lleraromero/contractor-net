@@ -97,6 +97,18 @@ namespace Examples
             Stop();
         }
 
+        // Examples.DoorPost
+        private void test()
+        {
+            Contract.Assume(this != null);
+            this.closed = true;
+            this.moving = false;
+            this.emergency = false;
+            Contract.Assume(this.closed && !this.moving && !this.emergency);
+            Contract.Assert((!this.emergency && !this.emergency) || (!this.closed && !this.emergency) || (this.closed && !this.moving) || this.emergency || !this.moving || this.moving);
+        }
+
+
         #endregion tests
     }
 }
