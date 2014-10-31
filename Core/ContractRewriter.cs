@@ -154,7 +154,7 @@ namespace Contractor.Core
             {
                 var methodCall = new MethodCall()
                 {
-                    Arguments = new List<IExpression> { precondition.Condition },
+                    Arguments = new List<IExpression> { this.Rewrite(precondition.Condition) },
                     IsStaticCall = true,
                     MethodToCall = this.contractProvider.ContractMethods.Assume,
                     Type = systemVoid,
@@ -173,7 +173,7 @@ namespace Contractor.Core
             {
                 var methodCall = new MethodCall()
                 {
-                    Arguments = new List<IExpression> { postcondition.Condition, },
+                    Arguments = new List<IExpression> { this.Rewrite(postcondition.Condition) },
                     IsStaticCall = true,
                     MethodToCall = this.contractProvider.ContractMethods.Assert,
                     Type = systemVoid,
@@ -207,7 +207,7 @@ namespace Contractor.Core
         {
             var methodCall = new MethodCall()
             {
-                Arguments = new List<IExpression> { assertStatement.Condition, },
+                Arguments = new List<IExpression> { this.Rewrite(assertStatement.Condition) },
                 IsStaticCall = true,
                 MethodToCall = this.contractProvider.ContractMethods.Assert,
                 Type = systemVoid,
@@ -227,7 +227,7 @@ namespace Contractor.Core
         {
             var methodCall = new MethodCall()
             {
-                Arguments = new List<IExpression> { assumeStatement.Condition, },
+                Arguments = new List<IExpression> { this.Rewrite(assumeStatement.Condition) },
                 IsStaticCall = true,
                 MethodToCall = this.contractProvider.ContractMethods.Assume,
                 Type = systemVoid,
