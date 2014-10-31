@@ -7,11 +7,20 @@ using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableContracts;
 using Contractor.Core;
+using CSharpSourceEmitter;
 
 namespace Contractor.Utils
 {
 	static class Helper
 	{
+        public static string PrintExpression(IExpression expression)
+        {
+            SourceEmitterOutputString sourceEmitterOutput = new SourceEmitterOutputString();
+            SourceEmitter CSSourceEmitter = new SourceEmitter(sourceEmitterOutput);
+            CSSourceEmitter.Traverse(expression);
+            return sourceEmitterOutput.Data;
+        }
+
 		// A || B = A ? true : B
 		public static IExpression JoinWithLogicalOr(IMetadataHost host, List<IExpression> expressions, bool defaultValue)
 		{
