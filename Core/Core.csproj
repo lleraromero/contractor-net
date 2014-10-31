@@ -123,6 +123,9 @@
     <Reference Include="Microsoft.Cci.ContractExtractor">
       <HintPath>..\Dependencies\Microsoft.Cci.ContractExtractor.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Cci.CSharpSourceEmitter">
+      <HintPath>..\Dependencies\Microsoft.Cci.CSharpSourceEmitter.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Cci.ILGenerator">
       <HintPath>..\Dependencies\Microsoft.Cci.ILGenerator.dll</HintPath>
     </Reference>
