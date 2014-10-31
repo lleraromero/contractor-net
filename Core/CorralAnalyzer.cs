@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Contractor.Core
@@ -43,7 +44,7 @@ namespace Contractor.Core
             return resultAnalysis;
         }
 
-        private Dictionary<string, ResultKind> Analyze<T>(State source, IMethodDefinition action, List<T> target)
+        private Dictionary<MethodDefinition, ResultKind> Analyze<T>(State source, IMethodDefinition action, List<T> target)
         {
             List<MethodDefinition> queries = GenerateQueries<T>(source, action, target);
 
@@ -98,60 +99,6 @@ namespace Contractor.Core
             return queries;
         }
 
-        private MethodDefinition GenerateQuery(string name, IMethodDefinition action)
-        {
-            // I need to assign the queries to the type that I'm processing
-            var type = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == typeToAnalyze.Name) as NamespaceTypeDefinition;
-            var method = new MethodDefinition()
-            {
-                Attributes = new List<ICustomAttribute>(action.Attributes),
-                CallingConvention = Microsoft.Cci.CallingConvention.HasThis,
-                ContainingTypeDefinition = type,
-                InternFactory = host.InternFactory,
-                IsStatic = false,
-                Name = host.NameTable.GetNameFor(name),
-                Type = action.Type,
-                Visibility = TypeMemberVisibility.Private,
-                GenericParameters = new List<IGenericMethodParameter>(action.GenericParameters)
-            };
-
-            BlockStatement block = null;
-
-            if (Configuration.InlineMethodsBody)
-            {
-                block = InlineMethodBody(action, method);
-            }
-            else
-            {
-                block = CallMethod(action);
-            }
-
-            var assumeSelfNotNull = new AssumeStatement()
-            {
-                Condition = new LogicalNot()
-                {
-                    Type = host.PlatformType.SystemBoolean,
-                    Operand = new Equality()
-                    {
-                        Type = host.PlatformType.SystemBoolean,
-                        LeftOperand = new ThisReference(),
-                        RightOperand = new CompileTimeConstant()
-                    }
-                }
-            };
-
-            block.Statements.Insert(0, assumeSelfNotNull);
-
-            method.Body = new SourceMethodBody(host)
-            {
-                MethodDefinition = method,
-                Block = block,
-                LocalsAreZeroed = true
-            };
-
-            return method;
-        }
-
         private MethodDefinition GenerateQuery(State state, IMethodDefinition action, IMethodDefinition target, bool negate = false)
         {
             Contract.Requires(state != null && action != null && target != null);
@@ -181,7 +128,8 @@ namespace Contractor.Core
                                {
                                    Type = host.PlatformType.SystemBoolean,
                                    Operand = pre.Condition
-                               }
+                               },
+                               OriginalSource = pre.OriginalSource
                            };
 
                 queryContract.Preconditions.AddRange(pres);
@@ -199,7 +147,8 @@ namespace Contractor.Core
                         {
                             Type = host.PlatformType.SystemBoolean,
                             Value = false
-                        }
+                        },
+                        OriginalSource = "false"
                     };
 
                     queryContract.Postconditions.Add(post);
@@ -218,7 +167,8 @@ namespace Contractor.Core
                         {
                             Type = host.PlatformType.SystemBoolean,
                             Operand = Helper.JoinWithLogicalAnd(host, exprs, true)
-                        }
+                        },
+                        OriginalSource = Helper.PrintExpression(Helper.JoinWithLogicalAnd(host, exprs, true))
                     };
 
                     queryContract.Postconditions.Add(post);
@@ -228,7 +178,8 @@ namespace Contractor.Core
                     var posts = from pre in targetContract.Preconditions
                                 select new Postcondition()
                                 {
-                                    Condition = pre.Condition
+                                    Condition = pre.Condition,
+                                    OriginalSource = pre.OriginalSource
                                 };
 
                     queryContract.Postconditions.AddRange(posts);
@@ -240,7 +191,19 @@ namespace Contractor.Core
             var stateName = state.Id;
             var targetName = target.GetUniqueName();
             var methodName = string.Format("{1}{0}{2}{0}{3}{4}", methodNameDelimiter, stateName, actionName, prefix, targetName);
-            var method = GenerateQuery(methodName, action);
+            var method = GenerateQuery<IMethodDefinition>(methodName, action, target);
+
+            // Adding the parameters to the query
+            var parameters = new HashSet<IParameterDefinition>();
+            foreach (var a in state.EnabledActions)
+            {
+                parameters.UnionWith(a.Parameters);
+            }
+            foreach (var a in state.DisabledActions)
+            {
+                parameters.UnionWith(a.Parameters);
+            }
+            method.Parameters = parameters.ToList();
 
             queryContractProvider.AssociateMethodWithContract(method, queryContract);
             return method;
@@ -255,12 +218,21 @@ namespace Contractor.Core
             var precondition = from expr in stateInv
                                select new Precondition()
                                {
-                                   Condition = expr
+                                   Condition = expr,
+                                   OriginalSource = Helper.PrintExpression(expr)
                                };
 
             contracts.Preconditions.AddRange(precondition);
 
             var targetInv = Helper.GenerateStateInvariant(host, inputContractProvider, typeToAnalyze, target);
+
+            StringBuilder originalSource = new StringBuilder();
+            foreach (var p in targetInv)
+            {
+                originalSource.Append(Helper.PrintExpression(p));
+                originalSource.Append(" AND ");
+            }
+            originalSource.Remove(originalSource.Length - 5, 5);
 
             var postcondition = new Postcondition()
             {
@@ -269,6 +241,7 @@ namespace Contractor.Core
                     Type = host.PlatformType.SystemBoolean,
                     Operand = Helper.JoinWithLogicalAnd(host, targetInv, true)
                 },
+                OriginalSource = originalSource.ToString()
             };
 
             contracts.Postconditions.Add(postcondition);
@@ -277,9 +250,78 @@ namespace Contractor.Core
             var stateName = state.UniqueName;
             var targetName = target.UniqueName;
             var methodName = string.Format("{1}{0}{2}{0}{3}", methodNameDelimiter, stateName, actionName, targetName);
-            var method = GenerateQuery(methodName, action);
+            var method = GenerateQuery<State>(methodName, action, target);
+
+            // Adding the parameters to the query
+            var parameters = new HashSet<IParameterDefinition>();
+            foreach (var a in state.EnabledActions)
+            {
+                parameters.UnionWith(a.Parameters);
+            }
+            foreach (var a in state.DisabledActions)
+            {
+                parameters.UnionWith(a.Parameters);
+            }
+            method.Parameters = parameters.ToList();
 
             queryContractProvider.AssociateMethodWithContract(method, contracts);
+            return method;
+        }
+
+        private MethodDefinition GenerateQuery<T>(string name, IMethodDefinition action, T target)
+        {
+            Contract.Requires(target is IMethodDefinition || target is State);
+
+            // I need to assign the queries to the type that I'm processing
+            var type = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == typeToAnalyze.Name) as NamespaceTypeDefinition;
+
+            var method = new MethodDefinition()
+            {
+                Attributes = new List<ICustomAttribute>(action.Attributes),
+                CallingConvention = Microsoft.Cci.CallingConvention.HasThis,
+                ContainingTypeDefinition = type,
+                InternFactory = host.InternFactory,
+                IsStatic = false,
+                Name = host.NameTable.GetNameFor(name),
+                Type = action.Type,
+                Visibility = TypeMemberVisibility.Private,
+            };
+
+            BlockStatement block = null;
+
+            if (Configuration.InlineMethodsBody)
+            {
+                block = InlineMethodBody(action);
+            }
+            else
+            {
+                block = CallMethod(action);
+            }
+
+            var assumeSelfNotNull = new AssumeStatement()
+            {
+                Condition = new LogicalNot()
+                {
+                    Type = host.PlatformType.SystemBoolean,
+                    Operand = new Equality()
+                    {
+                        Type = host.PlatformType.SystemBoolean,
+                        LeftOperand = new ThisReference(),
+                        RightOperand = new CompileTimeConstant()
+                    }
+                }
+            };
+            assumeSelfNotNull.OriginalSource = Helper.PrintExpression(assumeSelfNotNull.Condition);
+
+            block.Statements.Insert(0, assumeSelfNotNull);
+
+            method.Body = new SourceMethodBody(host)
+            {
+                MethodDefinition = method,
+                Block = block,
+                LocalsAreZeroed = true
+            };
+
             return method;
         }
 
@@ -338,14 +380,10 @@ namespace Contractor.Core
             return block;
         }
 
-        private BlockStatement InlineMethodBody(IMethodDefinition action, MethodDefinition method)
+        private BlockStatement InlineMethodBody(IMethodDefinition action)
         {
             var block = new BlockStatement();
 
-            if (method.Parameters == null)
-                method.Parameters = new List<IParameterDefinition>();
-
-            method.Parameters.AddRange(action.Parameters);
             var mc = inputContractProvider.GetMethodContractFor(action);
 
             if (mc != null && mc.Preconditions.Count() > 0)
@@ -353,7 +391,8 @@ namespace Contractor.Core
                 var asserts = from pre in mc.Preconditions
                               select new AssertStatement()
                               {
-                                  Condition = pre.Condition
+                                  Condition = pre.Condition,
+                                  OriginalSource = pre.OriginalSource
                               };
 
                 block.Statements.AddRange(asserts);
@@ -382,7 +421,8 @@ namespace Contractor.Core
                 var assumes = from post in mc.Postconditions
                               select new AssumeStatement()
                               {
-                                  Condition = post.Condition
+                                  Condition = post.Condition,
+                                  OriginalSource = post.OriginalSource
                               };
 
                 //Ponemos los assume antes del return
@@ -393,27 +433,26 @@ namespace Contractor.Core
             return block;
         }
 
-        private ActionAnalysisResults EvaluateQueries(List<IMethodDefinition> actions, Dictionary<string, ResultKind> result)
+        private ActionAnalysisResults EvaluateQueries(List<IMethodDefinition> actions, Dictionary<MethodDefinition, ResultKind> result)
         {
             var analysisResult = new ActionAnalysisResults();
             analysisResult.EnabledActions.AddRange(actions);
             analysisResult.DisabledActions.AddRange(actions);
 
+            var queryType = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == typeToAnalyze.Name) as NamespaceTypeDefinition;
             foreach (var entry in result)
             {
                 switch (entry.Value)
                 {
+                    case ResultKind.NoBugs:
+                        break;
                     case ResultKind.TrueBug:
                     case ResultKind.RecursionBoundReached:
                         var query = entry.Key;
-                        var queryParametersStart = query.LastIndexOf('(');
-
-                        // Borramos los parametros del query
-                        if (queryParametersStart != -1)
-                            query = query.Remove(queryParametersStart);
-
-                        var actionNameStart = query.LastIndexOf(methodNameDelimiter) + 1;
-                        var actionName = query.Substring(actionNameStart);
+                        
+                        var actionName = query.Name.Value;
+                        var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
+                        actionName = actionName.Substring(actionNameStart);
                         var isNegative = actionName.StartsWith(notPrefix);
 
                         if (isNegative)
@@ -432,10 +471,6 @@ namespace Contractor.Core
                             base.UnprovenQueriesCount++;
 
                         break;
-
-                    case ResultKind.NoBugs:
-                        break;
-
                     default:
                         throw new NotImplementedException("Unknown result");
                 }
@@ -444,24 +479,30 @@ namespace Contractor.Core
             return analysisResult;
         }
 
-        private Dictionary<string, ResultKind> ExecuteChecker(List<MethodDefinition> queries)
+        private Dictionary<MethodDefinition, ResultKind> ExecuteChecker(List<MethodDefinition> queries)
         {
-            var result = new Dictionary<string, ResultKind>();
+            var result = new Dictionary<MethodDefinition, ResultKind>();
 
             RunBCT();
 
             var queryType = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == typeToAnalyze.Name) as NamespaceTypeDefinition;
             foreach (var query in queries)
             {
-                var queryName = string.Concat(queryType.ResolvedType.ToString(), ".", query.Name.Value);
-                string output = RunCorral(queryName);
+                StringBuilder queryName = new StringBuilder();
+                // Method name
+                queryName.Append(string.Concat(queryType.ResolvedType.ToString(), ".", query.Name.Value));
+                // If it has parameters their types also appear in the name of the query in boogie
+                foreach (var p in query.Parameters)
+                    queryName.Append("$").Append(p.Type.ResolvedType.ToString());
+
+                string output = RunCorral(queryName.ToString());
                 const string pattern = @"(true bug)|(reached recursion bound)|(has no bugs)";
                 Regex outputParser = new Regex(pattern, RegexOptions.ExplicitCapture |
                                                 RegexOptions.Multiline | RegexOptions.Compiled | RegexOptions.IgnoreCase);
                 var matches = outputParser.Matches(output);
 
                 if (matches.Count == 1)
-                    result[queryName] = ParseResultKind(matches[0].Value);
+                    result[query] = ParseResultKind(matches[0].Value);
                 else
                     throw new NotSupportedException("Unknown result");
             }
@@ -509,8 +550,20 @@ namespace Contractor.Core
 
             var timer = new Stopwatch();
             timer.Start();
-            if (cba.Driver.run(args.Split(' ')) != 0)
-                throw new Exception("Error executing corral");
+
+            try
+            {
+                LogManager.Log(LogLevel.Info, "=============== Corral ===============");
+                LogManager.Log(LogLevel.Info, method);
+                if (cba.Driver.run(args.Split(' ')) != 0)
+                    throw new Exception("Error executing corral");
+            }
+            catch (Exception ex)
+            {
+                LogManager.Log(LogLevel.Fatal, ex.Message);
+                throw ex;
+            }
+            
             timer.Stop();
 
             base.TotalAnalysisDuration += new TimeSpan(timer.ElapsedTicks);
@@ -545,7 +598,7 @@ namespace Contractor.Core
                 throw new NotImplementedException("The result was not understood");
         }
 
-        private TransitionAnalysisResult EvaluateQueries(State source, IMethodDefinition action, List<State> targets, Dictionary<string, ResultKind> result)
+        private TransitionAnalysisResult EvaluateQueries(State source, IMethodDefinition action, List<State> targets, Dictionary<MethodDefinition, ResultKind> result)
         {
             var analysisResult = new TransitionAnalysisResult();
 
@@ -556,14 +609,13 @@ namespace Contractor.Core
                     case ResultKind.TrueBug:
                     case ResultKind.RecursionBoundReached:
                         var query = entry.Key;
-                        var queryParametersStart = query.LastIndexOf('(');
+                        
+                        var actionName = query.Name.Value;
+                        var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
+                        actionName = actionName.Substring(actionNameStart);
 
-                        // Borramos los parametros del query
-                        if (queryParametersStart != -1)
-                            query = query.Remove(queryParametersStart);
-
-                        var targetNameStart = query.LastIndexOf(methodNameDelimiter) + 1;
-                        var targetName = query.Substring(targetNameStart);
+                        var targetNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
+                        var targetName = actionName.Substring(targetNameStart);
                         var target = targets.Find(s => s.UniqueName == targetName);
                         var isUnproven = entry.Value == ResultKind.RecursionBoundReached;
 
