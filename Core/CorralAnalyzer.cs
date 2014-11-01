@@ -88,10 +88,6 @@ namespace Contractor.Core
                 {
                     queries.Add(GenerateQuery(state, action, (State)(object)target));
                 }
-                else
-                {
-                    throw new NotImplementedException("Unknown type");
-                }
             }
 
             base.TotalGeneratedQueriesCount += queries.Count;
@@ -104,6 +100,23 @@ namespace Contractor.Core
             Contract.Requires(state != null && action != null && target != null);
 
             var queryContract = new MethodContract();
+
+            // Add the invariant as a precondition and postcondition of the query
+            queryContract.Preconditions.AddRange(from i in inputContractProvider.GetTypeContractFor(typeToAnalyze).Invariants
+                                                 select new Precondition()
+                                                 {
+                                                      Condition = i.Condition,
+                                                      OriginalSource = i.OriginalSource,
+                                                      Locations = new List<ILocation>(i.Locations),
+                                                 });
+            queryContract.Postconditions.AddRange(from i in inputContractProvider.GetTypeContractFor(typeToAnalyze).Invariants
+                                                  select new Postcondition()
+                                                  {
+                                                      Condition = i.Condition,
+                                                      OriginalSource = i.OriginalSource,
+                                                      Locations = new List<ILocation>(i.Locations),
+                                                  });
+
             var targetContract = inputContractProvider.GetMethodContractFor(target);
 
             // Add preconditions of enabled actions
@@ -226,14 +239,6 @@ namespace Contractor.Core
 
             var targetInv = Helper.GenerateStateInvariant(host, inputContractProvider, typeToAnalyze, target);
 
-            StringBuilder originalSource = new StringBuilder();
-            foreach (var p in targetInv)
-            {
-                originalSource.Append(Helper.PrintExpression(p));
-                originalSource.Append(" AND ");
-            }
-            originalSource.Remove(originalSource.Length - 5, 5);
-
             var postcondition = new Postcondition()
             {
                 Condition = new LogicalNot()
@@ -241,7 +246,7 @@ namespace Contractor.Core
                     Type = host.PlatformType.SystemBoolean,
                     Operand = Helper.JoinWithLogicalAnd(host, targetInv, true)
                 },
-                OriginalSource = originalSource.ToString()
+                OriginalSource = string.Join(" AND ", from a in targetInv select Helper.PrintExpression(a))
             };
 
             contracts.Postconditions.Add(postcondition);
@@ -399,7 +404,6 @@ namespace Contractor.Core
             }
 
             IBlockStatement actionBodyBlock = null;
-
             if (action.Body is Microsoft.Cci.ILToCodeModel.SourceMethodBody)
             {
                 var actionBody = action.Body as Microsoft.Cci.ILToCodeModel.SourceMethodBody;
@@ -606,6 +610,8 @@ namespace Contractor.Core
             {
                 switch (entry.Value)
                 {
+                    case ResultKind.NoBugs:
+                        break;
                     case ResultKind.TrueBug:
                     case ResultKind.RecursionBoundReached:
                         var query = entry.Key;
@@ -628,10 +634,6 @@ namespace Contractor.Core
                         if (isUnproven)
                             base.UnprovenQueriesCount++;
                         break;
-
-                    case ResultKind.NoBugs:
-                        break;
-
                     default:
                         throw new NotImplementedException("Unknown result");
                 }
