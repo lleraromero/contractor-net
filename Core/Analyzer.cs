@@ -52,7 +52,12 @@ namespace Contractor.Core
         ~Analyzer()
         {
             // Delete the working copy of the module.
-            File.Delete(GetQueryAssemblyPath());
+            try
+            {
+                File.Delete(GetQueryAssemblyPath());
+            }
+            catch
+            { }
         }
 
         protected void CreateQueryAssembly(NamespaceTypeDefinition type)
@@ -69,7 +74,10 @@ namespace Contractor.Core
             {
                 var tMutable = t as NamespaceTypeDefinition;
                 if (tMutable != null && tMutable.ContainingUnitNamespace.Name == type.ContainingUnitNamespace.Name && tMutable.Name != type.Name)
+                {
                     this.queryAssembly.DecompiledModule.AllTypes.Remove(t);
+                }
+                // TODO: removed types are still present as RootNamespace members, remove them.
             }
         }
 
