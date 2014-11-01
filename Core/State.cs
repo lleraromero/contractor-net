@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Contractor.Core
 {
-    internal class State : IState, IEquatable<State>
+    class State : IState, IEquatable<State>
     {
         private class NamedEntityComparer : Comparer<INamedEntity>
         {
@@ -21,16 +21,16 @@ namespace Contractor.Core
         public uint Id;
         public string UniqueName;
         public bool IsInitial;
-        public HashSet<IMethodDefinition> EnabledActions { get; private set; }
-        public HashSet<IMethodDefinition> DisabledActions { get; private set; }
+        public SortedSet<IMethodDefinition> EnabledActions { get; private set; }
+        public SortedSet<IMethodDefinition> DisabledActions { get; private set; }
 
         public State()
         {
             this.Id = 0;
             this.UniqueName = string.Empty;
             this.IsInitial = false;
-            this.EnabledActions = new HashSet<IMethodDefinition>();
-            this.DisabledActions = new HashSet<IMethodDefinition>();
+            this.EnabledActions = new SortedSet<IMethodDefinition>(new NamedEntityComparer());
+            this.DisabledActions = new SortedSet<IMethodDefinition>(new NamedEntityComparer());
         }
 
         public void Sort()
