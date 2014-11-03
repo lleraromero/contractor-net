@@ -167,7 +167,13 @@ namespace Contractor.Core
                 newStatements.Add(es);
             }
 
-            newStatements.AddRange(existingStatements); // replaces assert/assume?
+            newStatements.AddRange(existingStatements);
+            IStatement returnStatement = null;
+            if (newStatements.Count > 0 && newStatements.Last() is IReturnStatement)
+            {
+                returnStatement = newStatements.Last();
+                newStatements.RemoveAt(newStatements.Count - 1);
+            }
 
             foreach (var postcondition in methodContract.Postconditions)
             {
@@ -185,6 +191,9 @@ namespace Contractor.Core
                 };
                 newStatements.Add(es);
             }
+
+            if (returnStatement != null)
+                newStatements.Add(returnStatement);
 
             var newSourceMethodBody = new SourceMethodBody(this.host, this.sourceLocationProvider)
             {

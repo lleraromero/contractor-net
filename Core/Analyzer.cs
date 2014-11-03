@@ -461,8 +461,14 @@ namespace Contractor.Core
                               };
 
                 //Ponemos los assume antes del return
-                //block.Statements.InsertRange(block.Statements.Count - 1, assumes);
-                block.Statements.InsertRange(block.Statements.Count, assumes);
+                if (block.Statements.Last() is IReturnStatement)
+                {
+                    block.Statements.InsertRange(block.Statements.Count - 1, assumes);
+                }
+                else
+                {
+                    block.Statements.InsertRange(block.Statements.Count, assumes);
+                }
             }
 
             return block;
