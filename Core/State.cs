@@ -8,11 +8,11 @@ namespace Contractor.Core
 {
     class State : IState, IEquatable<State>
     {
-        private class NamedEntityComparer : Comparer<INamedEntity>
+        private class NamedEntityComparer : Comparer<IMethodDefinition>
         {
-            public override int Compare(INamedEntity x, INamedEntity y)
+            public override int Compare(IMethodDefinition x, IMethodDefinition y)
             {
-                return x.Name.UniqueKey.CompareTo(y.Name.UniqueKey);
+                return x.GetUniqueName().CompareTo(y.GetUniqueName());
             }
         }
 
@@ -70,12 +70,12 @@ namespace Contractor.Core
 
         IEnumerable<string> IState.EnabledActions
         {
-            get { return from a in this.EnabledActions select a.Name.Value; }
+            get { return from a in this.EnabledActions select Utils.Extensions.GetDisplayName(a); }
         }
 
         IEnumerable<string> IState.DisabledActions
         {
-            get { return from a in this.DisabledActions select a.Name.Value; }
+            get { return from a in this.DisabledActions select Utils.Extensions.GetDisplayName(a); }
         }
 
         #endregion IState

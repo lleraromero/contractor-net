@@ -36,7 +36,7 @@ namespace Contractor.Core
 
 		string ITransition.Name
 		{
-			get { return this.Action.Name.Value; }
+            get { return Utils.Extensions.GetDisplayName(this.Action); }
 		}
 
 		bool ITransition.IsUnproven
@@ -48,7 +48,7 @@ namespace Contractor.Core
 
 		public override string ToString()
 		{
-			return string.Format("{0} - {1} -> {2}", this.SourceState, this.Action.Name.Value, this.TargetState);
+			return string.Format("{0} - {1} -> {2}", this.SourceState, Utils.Extensions.GetDisplayName(this.Action), this.TargetState);
 		}
 	}
 }
