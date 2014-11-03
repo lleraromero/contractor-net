@@ -212,6 +212,11 @@ namespace Contractor.Core
             dummy.EnabledActions.UnionWith(constructors);
             dummy.Sort();
             dummy.UniqueName = "dummy";
+            dummy.IsInitial = true;
+
+            states.Add(dummy.UniqueName, dummy);
+            if (this.StateAdded != null)
+                this.StateAdded(this, new StateAddedEventArgs(typeDisplayName, dummy));
 
             var newStates = new Queue<State>();
             newStates.Enqueue(dummy);
@@ -247,7 +252,7 @@ namespace Contractor.Core
                         else
                         {
                             target.Id = (uint)(states.Keys.Count + 1);
-                            target.IsInitial = isDummySource;
+                            target.IsInitial = false;
                             states.Add(target.UniqueName, target);
                             newStates.Enqueue(target);
                             epa.States.Add(target.Id, target.EpaState);
@@ -261,27 +266,22 @@ namespace Contractor.Core
                             }
                         }
 
-                        var sourceId = isDummySource ? 0 : source.Id;
-
                         if (!epa.ContainsKey(actionUniqueName))
                             epa.Add(actionUniqueName, new EpaTransitions());
 
                         var actionTransitions = epa[actionUniqueName];
 
-                        if (!actionTransitions.ContainsKey(sourceId))
-                            actionTransitions.Add(sourceId, new List<uint>());
+                        if (!actionTransitions.ContainsKey(source.Id))
+                            actionTransitions.Add(source.Id, new List<uint>());
 
-                        actionTransitions[sourceId].Add(target.Id);
+                        actionTransitions[source.Id].Add(target.Id);
 
-                        if (!isDummySource)
+                        epa.AnalysisResult.Transitions.Add(transition);
+
+                        if (this.TransitionAdded != null)
                         {
-                            epa.AnalysisResult.Transitions.Add(transition);
-
-                            if (this.TransitionAdded != null)
-                            {
-                                var eventArgs = new TransitionAddedEventArgs(typeDisplayName, transition);
-                                this.TransitionAdded(this, eventArgs);
-                            }
+                            var eventArgs = new TransitionAddedEventArgs(typeDisplayName, transition);
+                            this.TransitionAdded(this, eventArgs);
                         }
                     }
                 }
