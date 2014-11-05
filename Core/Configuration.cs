@@ -82,7 +82,7 @@ namespace Contractor.Core
 
             // Step 3. Set target properties 
             fileTarget.FileName = Path.Combine(TempPath, "contractor.out");
-            fileTarget.Layout = "${message}";
+            fileTarget.Layout = "${longdate} | ${level} | ${logger} | ${message}";
 
             // Step 4. Define rules
             var rule = new LoggingRule("*", NLog.LogLevel.Trace, fileTarget);
