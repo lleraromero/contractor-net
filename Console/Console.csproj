@@ -47,29 +47,24 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Cci.MetadataHelper">
-      <HintPath>..\Dependencies\Microsoft.Cci.MetadataHelper.dll</HintPath>
+    <Reference Include="Microsoft.Cci.MetadataHelper, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.MetadataHelper.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Msagl, Version=2.0.1.0, Culture=neutral, PublicKeyToken=7f84f738e1fc245c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Microsoft.Msagl.dll</HintPath>
+      <HintPath>..\Dependencies\Msagl\Microsoft.Msagl.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Msagl.Drawing, Version=2.0.1.0, Culture=neutral, PublicKeyToken=8a3d7c21d5fa1306, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Microsoft.Msagl.Drawing.dll</HintPath>
+      <HintPath>..\Dependencies\Msagl\Microsoft.Msagl.Drawing.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Msagl.GraphViewerGdi, Version=2.0.1.0, Culture=neutral, PublicKeyToken=fffc27ea4058b3a1, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Microsoft.Msagl.GraphViewerGdi.dll</HintPath>
+      <HintPath>..\Dependencies\Msagl\Microsoft.Msagl.GraphViewerGdi.dll</HintPath>
     </Reference>
-    <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\GlobalAssemblyInfo.cs">

@@ -61,7 +61,7 @@ namespace Contractor.Core.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to D:\contractor-net\BCTBinaries\BytecodeTranslator.exe.
+        ///   Looks up a localized string similar to D:\contractor-net\Dependencies\BCT\BytecodeTranslator.exe.
         /// </summary>
         internal static string BCTPath {
             get {
@@ -88,7 +88,7 @@ namespace Contractor.Core.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to D:\contractor-net\CorralBinaries\corral.exe.
+        ///   Looks up a localized string similar to D:\contractor-net\Dependencies\Corral\corral.exe.
         /// </summary>
         internal static string CorralPath {
             get {

@@ -38,88 +38,39 @@
     <ApplicationIcon>Resources\Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Cci.Analysis.ControlAndDataFlowGraph, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Microsoft.Cci.Analysis.ControlAndDataFlowGraph.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Cci.AssertionAdder">
-      <HintPath>..\Dependencies\Microsoft.Cci.AssertionAdder.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Cci.AstsProjectedAsCodeModel">
-      <HintPath>..\Dependencies\Microsoft.Cci.AstsProjectedAsCodeModel.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Cci.CodeModel, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Microsoft.Cci.CodeModel.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Cci.CodeModelToIL, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Microsoft.Cci.CodeModelToIL.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Cci.ContractExtractor, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Microsoft.Cci.ContractExtractor.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Cci.ILGenerator, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Microsoft.Cci.ILGenerator.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Cci.MetadataHelper, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Microsoft.Cci.MetadataHelper.dll</HintPath>
+      <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.MetadataHelper.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Cci.MetadataModel, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Microsoft.Cci.MetadataModel.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Cci.MutableCodeModel, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Microsoft.Cci.MutableCodeModel.dll</HintPath>
+      <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.MetadataModel.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Cci.MutableMetadataModel, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Microsoft.Cci.MutableMetadataModel.dll</HintPath>
+      <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.MutableMetadataModel.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Cci.NewILToCodeModel, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Microsoft.Cci.NewILToCodeModel.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Cci.PdbReader, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Microsoft.Cci.PdbReader.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Cci.PdbWriter, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Microsoft.Cci.PdbWriter.dll</HintPath>
+    <Reference Include="Microsoft.Cci.PdbReader">
+      <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.PdbReader.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Cci.PeReader, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Microsoft.Cci.PeReader.dll</HintPath>
+      <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.PeReader.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Cci.PeWriter, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.Msagl, Version=2.0.1.0, Culture=neutral, PublicKeyToken=7f84f738e1fc245c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Microsoft.Cci.PeWriter.dll</HintPath>
+      <HintPath>..\Dependencies\Msagl\Microsoft.Msagl.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Cci.SourceModel, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.Msagl.Drawing, Version=2.0.1.0, Culture=neutral, PublicKeyToken=8a3d7c21d5fa1306, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Microsoft.Cci.SourceModel.dll</HintPath>
+      <HintPath>..\Dependencies\Msagl\Microsoft.Msagl.Drawing.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Msagl">
-      <HintPath>..\Dependencies\Microsoft.Msagl.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Msagl.Drawing">
-      <HintPath>..\Dependencies\Microsoft.Msagl.Drawing.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Msagl.GraphViewerGdi">
-      <HintPath>..\Dependencies\Microsoft.Msagl.GraphViewerGdi.dll</HintPath>
+    <Reference Include="Microsoft.Msagl.GraphViewerGdi, Version=2.0.1.0, Culture=neutral, PublicKeyToken=fffc27ea4058b3a1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Dependencies\Msagl\Microsoft.Msagl.GraphViewerGdi.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />

@@ -24,9 +24,6 @@ namespace ContractsMerger
                 Console.WriteLine("Loading input assembly...");
                 assembly.Load(assemblyFileName);
 
-                Console.WriteLine("Decompiling input assembly...");
-                assembly.Decompile();
-
                 Console.WriteLine("Loading contract reference assembly...");
                 assemblyWithContracts.Load(assemblyWithContractsFileName);
 
