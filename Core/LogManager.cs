@@ -3,41 +3,40 @@ using System.Diagnostics.Contracts;
 
 namespace Contractor.Core
 {
-    public enum LogLevel { Fatal, Error, Warn, Info, Debug, Trace };
+    internal enum LogLevel { Fatal, Error, Warn, Info, Debug, Trace };
 
-    internal class LogManager
+    internal sealed class LogManager
     {
-        public static void Log(LogLevel level, object message)
+        public static void Log(LogLevel level, Exception ex)
         {
-            if (message == null)
-                return;
+            Contract.Requires(ex != null);
 
+            NLog.LogManager.GetCurrentClassLogger().Log(ToLibraryLogLevel(level), ex);
+        }
+
+        public static void Log(LogLevel level, string message)
+        {
+            Contract.Requires(!string.IsNullOrEmpty(message));
+
+            NLog.LogManager.GetCurrentClassLogger().Log(ToLibraryLogLevel(level), message);
+        }
+
+        private static NLog.LogLevel ToLibraryLogLevel(LogLevel level)
+        {
             switch (level)
             {
                 case LogLevel.Fatal:
-                    NLog.LogManager.GetCurrentClassLogger().Fatal(message.ToString());
-                    break;
-
+                    return NLog.LogLevel.Fatal;
                 case LogLevel.Error:
-                    NLog.LogManager.GetCurrentClassLogger().Error(message.ToString());
-                    break;
-
+                    return NLog.LogLevel.Error;
                 case LogLevel.Warn:
-                    NLog.LogManager.GetCurrentClassLogger().Warn(message.ToString());
-                    break;
-
+                    return NLog.LogLevel.Warn;
                 case LogLevel.Info:
-                    NLog.LogManager.GetCurrentClassLogger().Info(message.ToString());
-                    break;
-
+                    return NLog.LogLevel.Info;
                 case LogLevel.Debug:
-                    NLog.LogManager.GetCurrentClassLogger().Debug(message.ToString());
-                    break;
-
+                    return NLog.LogLevel.Debug;
                 case LogLevel.Trace:
-                    NLog.LogManager.GetCurrentClassLogger().Trace(message.ToString());
-                    break;
-
+                    return NLog.LogLevel.Trace;
                 default:
                     throw new NotImplementedException("Unknown LogLevel");
             }
