@@ -70,20 +70,22 @@ namespace Contractor.Core
             // Load original module
             IModule module = this.host.LoadUnitFrom(inputAssembly.Module.Location) as IModule;
             // Make a editable copy
-            module = new MetadataDeepCopier(this.host).Copy(module);
-            this.queryAssembly = new AssemblyInfo(this.host, module);
-
+            Module queryModule = new MetadataDeepCopier(this.host).Copy(module);
+            
             // Remove types that we don't need to analyse in the query assembly.
-            var types = this.queryAssembly.DecompiledModule.GetAnalyzableTypes().ToList();
+            var types = queryModule.GetAnalyzableTypes().ToList();
             foreach (var t in types)
             {
                 var tMutable = t as NamespaceTypeDefinition;
                 if (tMutable != null && tMutable.ContainingUnitNamespace.Name == type.ContainingUnitNamespace.Name && tMutable.Name != type.Name)
                 {
-                    this.queryAssembly.DecompiledModule.AllTypes.Remove(t);
+                    queryModule.AllTypes.Remove(t);
                 }
-                // TODO: removed types are still present as RootNamespace members, remove them.
             }
+
+            // TODO: removed types are still present as RootNamespace members, remove them. 
+            // How do we recognize useless types?
+            this.queryAssembly = new AssemblyInfo(this.host, queryModule);
         }
 
         protected string GetQueryAssemblyPath()
