@@ -105,14 +105,23 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Dependencies\Corral\corral.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Cci.Analysis.ControlAndDataFlowGraph">
+      <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.Analysis.ControlAndDataFlowGraph.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Cci.CodeModel">
       <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.CodeModel.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Cci.CodeModelToIL">
+      <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.CodeModelToIL.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Cci.ContractExtractor">
       <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.ContractExtractor.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Cci.CSharpSourceEmitter">
       <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.CSharpSourceEmitter.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Cci.ILGenerator">
+      <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.ILGenerator.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Cci.MetadataHelper">
       <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.MetadataHelper.dll</HintPath>
