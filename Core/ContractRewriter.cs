@@ -4,6 +4,7 @@ using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableCodeModel.Contracts;
 using Microsoft.Cci.MutableContracts;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 
 namespace Contractor.Core
@@ -150,6 +151,29 @@ namespace Contractor.Core
                 existingStatements.RemoveAt(0);
             }
 
+
+            /* if the query returns a value, instead of copying the postconditions at the end of each
+             * single return in the code, we assign the value at that point to a local variable and jump
+             * to the beginning of the postcondition block.
+             */
+
+            // add a new local variable to store the value at return
+            LocalDeclarationStatement retLocal = null;
+            if (!TypeHelper.TypesAreEquivalent(methodDefinition.Type, this.host.PlatformType.SystemVoid))
+            {
+                retLocal = new LocalDeclarationStatement()
+                {
+                    LocalVariable = new LocalDefinition()
+                    {
+                        Name = this.host.NameTable.GetNameFor("retLocal"),
+                        Type = methodDefinition.Type
+                    },
+                    InitialValue = new CompileTimeConstant() { Type = methodDefinition.Type, Value = null }
+                };
+                newStatements.Add(retLocal);
+            }
+
+            // add the preconditions as assumes
             foreach (var precondition in methodContract.Preconditions)
             {
                 var methodCall = new MethodCall()
@@ -167,14 +191,53 @@ namespace Contractor.Core
                 newStatements.Add(es);
             }
 
-            newStatements.AddRange(existingStatements);
-            IStatement returnStatement = null;
-            if (newStatements.Count > 0 && newStatements.Last() is IReturnStatement)
+            LabeledStatement dummyPostconditionStatement = null;
+            if (TypeHelper.TypesAreEquivalent(methodDefinition.Type, this.host.PlatformType.SystemVoid))
             {
-                returnStatement = newStatements.Last();
-                newStatements.RemoveAt(newStatements.Count - 1);
+                // the method is void, there is no value to return
+                newStatements.AddRange(existingStatements);
+            }
+            else
+            {
+                // the dummy statement is going to indicate the beginning of the postcondition block
+                dummyPostconditionStatement = new LabeledStatement()
+                {
+                    Label = this.host.NameTable.GetNameFor("dummyPostconditionStatement"),
+                    Statement = new EmptyStatement()
+                };
+
+                ReturnRewriter retRewriter = new ReturnRewriter(this.host, dummyPostconditionStatement, retLocal);
+
+                foreach (var stmt in existingStatements)
+                {
+                    var retStmt = stmt as IReturnStatement;
+                    if (retStmt == null)
+                    {
+                        // traverse the ast to replace nested ReturnStatements
+                        newStatements.Add(retRewriter.Rewrite(stmt));
+                        continue;
+                    }
+
+                    // replace the (potentially many?) top level ReturnStatement with the assignment to the local variable
+                    // and the GotoStatement to the dummy statement
+                    newStatements.Add(new ExpressionStatement()
+                    {
+                        Expression = new Assignment()
+                        {
+                            Target = new TargetExpression() { Definition = retLocal.LocalVariable, Instance = null, Type = retLocal.LocalVariable.Type },
+                            Source = retStmt.Expression,
+                            Type = retStmt.Expression.Type
+                        }
+                    });
+
+                    newStatements.Add(new GotoStatement() { TargetStatement = dummyPostconditionStatement });
+                }
+                
+                // now, that all the existing statements were added it is time for the postcondition block
+                newStatements.Add(dummyPostconditionStatement);
             }
 
+            // the postcondition block. Add each postcondition as an assert
             foreach (var postcondition in methodContract.Postconditions)
             {
                 var methodCall = new MethodCall()
@@ -192,8 +255,15 @@ namespace Contractor.Core
                 newStatements.Add(es);
             }
 
-            if (returnStatement != null)
+            // If the method is not void, we add the return statement
+            if (!TypeHelper.TypesAreEquivalent(methodDefinition.Type, this.host.PlatformType.SystemVoid))
+            {
+                var returnStatement = new ReturnStatement()
+                {
+                    Expression = new BoundExpression() { Definition = retLocal.LocalVariable, Instance = null, Type = retLocal.LocalVariable.Type }
+                };
                 newStatements.Add(returnStatement);
+            }
 
             var newSourceMethodBody = new SourceMethodBody(this.host, this.sourceLocationProvider)
             {

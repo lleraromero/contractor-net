@@ -71,7 +71,7 @@ namespace Contractor.Core
             IModule module = this.host.LoadUnitFrom(inputAssembly.Module.Location) as IModule;
             // Make a editable copy
             Module queryModule = new MetadataDeepCopier(this.host).Copy(module);
-            
+
             // Remove types that we don't need to analyse in the query assembly.
             var types = queryModule.GetAnalyzableTypes().ToList();
             foreach (var t in types)
@@ -83,7 +83,7 @@ namespace Contractor.Core
                 }
             }
 
-            // TODO: removed types are still present as RootNamespace members, remove them. 
+            // TODO: removed types are still present as RootNamespace members, remove them.
             // How do we recognize useless types?
             this.queryAssembly = new AssemblyInfo(this.host, queryModule);
         }
@@ -148,7 +148,7 @@ namespace Contractor.Core
             queryContractProvider.AssociateMethodWithContract(method, queryContract);
             return method;
         }
-               
+
         private MethodContract CreateQueryContract(State state, IMethodDefinition target, bool negate)
         {
             var queryContract = new MethodContract();
@@ -252,7 +252,7 @@ namespace Contractor.Core
             }
             return queryContract;
         }
-               
+
         private MethodDefinition GenerateQuery(State state, IMethodDefinition action, State target)
         {
             var actionName = action.GetUniqueName();
@@ -265,7 +265,7 @@ namespace Contractor.Core
             queryContractProvider.AssociateMethodWithContract(method, queryContract);
             return method;
         }
-               
+
         private MethodContract CreateQueryContract(State state, State target)
         {
             var contracts = new MethodContract();
@@ -296,7 +296,7 @@ namespace Contractor.Core
             contracts.Postconditions.Add(postcondition);
             return contracts;
         }
-               
+
         private MethodDefinition CreateQueryMethod<T>(State state, string name, IMethodDefinition action, T target)
         {
             Contract.Requires(target is IMethodDefinition || target is State);
@@ -361,7 +361,7 @@ namespace Contractor.Core
 
             return method;
         }
-               
+
         private BlockStatement CallMethod(IMethodDefinition action)
         {
             throw new NotSupportedException(); //TODO: do the proper modifications
@@ -417,7 +417,7 @@ namespace Contractor.Core
 
             return block;
         }
-               
+
         private BlockStatement InlineMethodBody(IMethodDefinition action)
         {
             var block = new BlockStatement();
@@ -461,7 +461,6 @@ namespace Contractor.Core
                                   Condition = post.Condition,
                                   OriginalSource = post.OriginalSource
                               };
-
                 //Ponemos los assume antes del return
                 if (block.Statements.Last() is IReturnStatement)
                 {
@@ -469,7 +468,7 @@ namespace Contractor.Core
                 }
                 else
                 {
-                    block.Statements.InsertRange(block.Statements.Count, assumes);
+                    block.Statements.AddRange(assumes);
                 }
             }
 
