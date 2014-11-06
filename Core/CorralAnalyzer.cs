@@ -83,7 +83,7 @@ namespace Contractor.Core
                     case ResultKind.TrueBug:
                     case ResultKind.RecursionBoundReached:
                         var query = entry.Key;
-                        
+
                         var actionName = query.Name.Value;
                         var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
                         actionName = actionName.Substring(actionNameStart);
@@ -156,9 +156,16 @@ namespace Contractor.Core
                     UseShellExecute = false
                 };
 
-                LogManager.Log(LogLevel.Info, "=============== BCT ===============");
-                bct.OutputDataReceived += (sender, e) => { LogManager.Log(LogLevel.Debug, e.Data); };
-                bct.ErrorDataReceived += (sender, e) => { LogManager.Log(LogLevel.Fatal, e.Data); };
+                bct.OutputDataReceived += (sender, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                        LogManager.Log(LogLevel.Debug, e.Data);
+                };
+                bct.ErrorDataReceived += (sender, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                        LogManager.Log(LogLevel.Fatal, e.Data);
+                };
                 bct.Start();
                 bct.BeginErrorReadLine();
                 bct.BeginOutputReadLine();
@@ -181,17 +188,16 @@ namespace Contractor.Core
 
             try
             {
-                LogManager.Log(LogLevel.Info, "=============== Corral ===============");
-                LogManager.Log(LogLevel.Info, method);
                 if (cba.Driver.run(args.Split(' ')) != 0)
                     throw new Exception("Error executing corral");
             }
             catch (Exception ex)
             {
                 LogManager.Log(LogLevel.Fatal, ex);
+                LogManager.Log(LogLevel.Info, args);
                 throw;
             }
-            
+
             timer.Stop();
 
             base.TotalAnalysisDuration += new TimeSpan(timer.ElapsedTicks);
@@ -239,7 +245,7 @@ namespace Contractor.Core
                     case ResultKind.TrueBug:
                     case ResultKind.RecursionBoundReached:
                         var query = entry.Key;
-                        
+
                         var actionName = query.Name.Value;
                         var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
                         actionName = actionName.Substring(actionNameStart);
