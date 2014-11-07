@@ -1,36 +1,40 @@
 @echo off
 
-set config=Debug
-set dependency_path=.\Dependencies\
-set cci_namespace=Microsoft.Cci
-set cci_path=C:\CCI\
-set cci_ast_path=%cci_path%\Sources\%%f\bin\%config%\
-set cci_metadata_path=%cci_path%\Metadata\Sources\%%f\bin\%config%\
+echo Copying CCI-AST:
+set cci_path=D:\cciast\bin\Debug
+set dependency_path=.\Dependencies\CCI-AST
 
-set ast_files=
-set ast_files=%ast_files% AssertionAdder
-set ast_files=%ast_files% AstsProjectedAsCodeModel
-set ast_files=%ast_files% CodeModel
-set ast_files=%ast_files% CodeModelToIL
-set ast_files=%ast_files% ContractExtractor
-set ast_files=%ast_files% MutableCodeModel
-set ast_files=%ast_files% NewILToCodeModel
+set files=
+set files=%files% Microsoft.Cci.Analysis.ControlAndDataFlowGraph
+set files=%files% Microsoft.Cci.CodeModel
+set files=%files% Microsoft.Cci.CodeModelToIL
+set files=%files% Microsoft.Cci.ContractExtractor
+set files=%files% Microsoft.Cci.CSharpSourceEmitter
+set files=%files% Microsoft.Cci.ILGenerator
+set files=%files% Microsoft.Cci.MetadataHelper
+set files=%files% Microsoft.Cci.MetadataModel
+set files=%files% Microsoft.Cci.MutableCodeModel
+set files=%files% Microsoft.Cci.MutableMetadataModel
+set files=%files% Microsoft.Cci.NewILToCodeModel
+set files=%files% Microsoft.Cci.PdbReader
+set files=%files% Microsoft.Cci.PdbWriter
+set files=%files% Microsoft.Cci.PeReader
+set files=%files% Microsoft.Cci.PeWriter
+set files=%files% Microsoft.Cci.SourceModel
 
-set metadata_files=
-set metadata_files=%metadata_files% ILGenerator
-set metadata_files=%metadata_files% MetadataHelper
-set metadata_files=%metadata_files% MetadataModel
-set metadata_files=%metadata_files% MutableMetadataModel
-set metadata_files=%metadata_files% PdbReader
-set metadata_files=%metadata_files% PdbWriter
-set metadata_files=%metadata_files% PeReader
-set metadata_files=%metadata_files% PeWriter
-set metadata_files=%metadata_files% SourceModel
+for %%f in (%files%) do call :copy "%cci_path%\%%f.*" "%%f"
 
-echo Copying files:
+echo Copying BCT:
+set bct_path=D:\bct\Binaries
+set dependency_path=.\Dependencies\BCT
 
-for %%f in (%ast_files%) do call :copy "%cci_ast_path%\%cci_namespace%.%%f.dll" "%%f"
-for %%f in (%metadata_files%) do call :copy "%cci_metadata_path%\%cci_namespace%.%%f.dll" "%%f"
+for %%f in (%bct_path%\*.*) do call :copy "%%f" "%%f"
+
+echo Copying Corral:
+set corral_path=D:\corral\bin\Debug
+set dependency_path=.\Dependencies\Corral
+
+for %%f in (%corral_path%\*.*) do call :copy "%%f" "%%f"
 
 pause
 goto :eof
