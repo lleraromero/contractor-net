@@ -175,10 +175,4 @@
 			@codeContracts\Contracts\v3.5
 		</value>
   </data>
-  <data name="BCTPath" xml:space="preserve">
-    <value>D:\contractor-net\Dependencies\BCT\BytecodeTranslator.exe</value>
-  </data>
-  <data name="CorralPath" xml:space="preserve">
-    <value>D:\contractor-net\Dependencies\Corral\corral.exe</value>
-  </data>
 </root>

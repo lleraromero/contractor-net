@@ -61,15 +61,6 @@ namespace Contractor.Core.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to D:\contractor-net\Dependencies\BCT\BytecodeTranslator.exe.
-        /// </summary>
-        internal static string BCTPath {
-            get {
-                return ResourceManager.GetString("BCTPath", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to -show errors -show progress -sortwarns=false -warninglevel=full -stats=!! -nobox -nologo -nopex -assemblyMode=standard -suggest=!! -wp -adaptive -arithmetic -bounds -enum -nonnull -typeNameSelect=@fullTypeName -libPaths:&quot;@libPaths&quot; &quot;@assemblyName&quot;.
         /// </summary>
         internal static string CheckerArguments {
@@ -84,15 +75,6 @@ namespace Contractor.Core.Properties {
         internal static string CheckerFileName {
             get {
                 return ResourceManager.GetString("CheckerFileName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to D:\contractor-net\Dependencies\Corral\corral.exe.
-        /// </summary>
-        internal static string CorralPath {
-            get {
-                return ResourceManager.GetString("CorralPath", resourceCulture);
             }
         }
         
