@@ -37,7 +37,6 @@ namespace Contractor.Core
 			CheckerArguments = Resources.CheckerArguments;
             var dependenciesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\Dependencies"));
             BCTPath = Path.GetFullPath(Path.Combine(dependenciesPath, @"BCT\BytecodeTranslator.exe"));
-            //CorralPath = Path.GetFullPath(Path.Combine(dependenciesPath, @"Corral\Corral.exe"));
 
 #if DEBUG
 			TempPath = Path.Combine(Directory.GetCurrentDirectory(), "Temp");
