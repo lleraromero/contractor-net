@@ -154,20 +154,24 @@ namespace Contractor.Core
             var queryContract = new MethodContract();
 
             // Add the invariant as a precondition and postcondition of the query
-            queryContract.Preconditions.AddRange(from i in inputContractProvider.GetTypeContractFor(typeToAnalyze).Invariants
-                                                 select new Precondition()
-                                                 {
-                                                     Condition = i.Condition,
-                                                     OriginalSource = i.OriginalSource,
-                                                     Locations = new List<ILocation>(i.Locations),
-                                                 });
-            queryContract.Postconditions.AddRange(from i in inputContractProvider.GetTypeContractFor(typeToAnalyze).Invariants
-                                                  select new Postcondition()
-                                                  {
-                                                      Condition = i.Condition,
-                                                      OriginalSource = i.OriginalSource,
-                                                      Locations = new List<ILocation>(i.Locations),
-                                                  });
+            ITypeContract typeContract = inputContractProvider.GetTypeContractFor(typeToAnalyze);
+            if (typeContract != null)
+            {
+                queryContract.Preconditions.AddRange(from i in typeContract.Invariants
+                                                     select new Precondition()
+                                                     {
+                                                         Condition = i.Condition,
+                                                         OriginalSource = i.OriginalSource,
+                                                         Locations = new List<ILocation>(i.Locations),
+                                                     });
+                queryContract.Postconditions.AddRange(from i in typeContract.Invariants
+                                                      select new Postcondition()
+                                                      {
+                                                          Condition = i.Condition,
+                                                          OriginalSource = i.OriginalSource,
+                                                          Locations = new List<ILocation>(i.Locations),
+                                                      });
+            }
 
             var targetContract = inputContractProvider.GetMethodContractFor(target);
 
@@ -310,6 +314,20 @@ namespace Contractor.Core
                 parameters.UnionWith(a.Parameters);
             foreach (var a in state.DisabledActions)
                 parameters.UnionWith(a.Parameters);
+
+            parameters.UnionWith(action.Parameters);
+
+            if (target is IMethodDefinition)
+                parameters.UnionWith(((IMethodDefinition)target).Parameters);
+            else
+            {
+                var stateTarget = target as State;
+                foreach (var a in stateTarget.EnabledActions)
+                    parameters.UnionWith(a.Parameters);
+                foreach (var a in stateTarget.DisabledActions)
+                    parameters.UnionWith(a.Parameters);
+            }
+            
 
             var method = new MethodDefinition()
             {
