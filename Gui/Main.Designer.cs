@@ -902,6 +902,7 @@
             this.MainMenuStrip = this.menuStrip;
             this.Name = "Main";
             this.Text = "Contractor.NET";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Load += new System.EventHandler(this.OnLoad);
             this.statusStrip.ResumeLayout(false);
             this.statusStrip.PerformLayout();

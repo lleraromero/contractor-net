@@ -42,7 +42,7 @@ namespace Contractor.Gui
             treeviewTypes.ShowPlusMinus = true;
             cmbBackend.Items.Add(EpaGenerator.Backend.CodeContracts);
             cmbBackend.Items.Add(EpaGenerator.Backend.Corral);
-            cmbBackend.SelectedIndex = 0;
+            cmbBackend.SelectedIndex = 1;
 
             var host = new PeReader.DefaultHost();
             _AssemblyInfo = new AssemblyInfo(host);
