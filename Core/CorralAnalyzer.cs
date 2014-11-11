@@ -182,7 +182,7 @@ namespace Contractor.Core
         {
             Contract.Requires(!string.IsNullOrEmpty(method));
 
-            var args = string.Format("{0} /main:{1} /recursionBound:{2}", GetQueryAssemblyPath().Replace("tmp", "bpl"), method, 3);    // recursionBound 3 es absolutamente arbitrario :)
+            var args = string.Format("{0} /main:{1} {2}", GetQueryAssemblyPath().Replace("tmp", "bpl"), method, Configuration.CorralArguments);    // recursionBound 3 es absolutamente arbitrario :)
 
             var timer = Stopwatch.StartNew();
 

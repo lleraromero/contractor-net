@@ -79,6 +79,15 @@ namespace Contractor.Core.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to /recursionBound:3.
+        /// </summary>
+        internal static string CorralArguments {
+            get {
+                return ResourceManager.GetString("CorralArguments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 
         ///			@windows\Microsoft.NET\Framework\v2.0.50727\;
         ///			@windows\Microsoft.NET\Framework\v2.0.50727\CodeContracts;

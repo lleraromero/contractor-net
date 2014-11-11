@@ -175,4 +175,7 @@
 			@codeContracts\Contracts\v3.5
 		</value>
   </data>
+  <data name="CorralArguments" xml:space="preserve">
+    <value>/recursionBound:3</value>
+  </data>
 </root>
