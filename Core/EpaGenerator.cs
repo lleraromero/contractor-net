@@ -280,11 +280,11 @@ namespace Contractor.Core
                         Contract.Assert(epa.AnalysisResult.States.Count == epa.States.Count);
 
                         actionTransitions[source.Id].Add(target.Id);
-                        epa.AnalysisResult.Transitions.Add(transition);
+                        epa.AnalysisResult.Transitions.Add(transition.EPATransition);
 
                         if (this.TransitionAdded != null)
                         {
-                            var eventArgs = new TransitionAddedEventArgs(typeDisplayName, transition);
+                            var eventArgs = new TransitionAddedEventArgs(typeDisplayName, transition.EPATransition);
                             this.TransitionAdded(this, eventArgs);
                         }
                     }

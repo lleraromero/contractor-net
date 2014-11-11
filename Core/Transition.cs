@@ -2,44 +2,52 @@
 
 namespace Contractor.Core
 {
-    class Transition : ITransition
+    // Immutable representation of an EPA transition
+    public class ITransition : Transition
+    {
+        public ITransition(State source, IMethodDefinition action, State target, bool isUnproven)
+            : base(source, action, target, isUnproven)
+        { 
+        }
+
+        public new IState SourceState
+        {
+            get { return base.SourceState.EPAState; }
+        }
+
+        public new IState TargetState
+        {
+            get { return base.TargetState.EPAState; }
+        }
+
+        public string Name
+        {
+            get { return Utils.Extensions.GetDisplayName(this.Action); }
+        }
+    }
+
+    public class Transition
     {
         public IMethodDefinition Action { get; private set; }
-        public IState SourceState { get; private set; }
-        public IState TargetState { get; private set; }
+        public State SourceState { get; private set; }
+        public State TargetState { get; private set; }
         public bool IsUnproven { get; private set; }
 
         public Transition(State source, IMethodDefinition action, State target, bool isUnproven)
         {
-            this.SourceState = source.EPAState;
+            this.SourceState = source;
             this.Action = action;
-            this.TargetState = target.EPAState;
+            this.TargetState = target;
             this.IsUnproven = isUnproven;
         }
 
-        #region ITransition
-
-        IState ITransition.SourceState
+        public ITransition EPATransition
         {
-            get { return this.SourceState; }
+            get
+            {
+                return new ITransition(this.SourceState, this.Action, this.TargetState, this.IsUnproven);
+            }
         }
-
-        IState ITransition.TargetState
-        {
-            get { return this.TargetState; }
-        }
-
-        string ITransition.Name
-        {
-            get { return Utils.Extensions.GetDisplayName(this.Action); }
-        }
-
-        bool ITransition.IsUnproven
-        {
-            get { return this.IsUnproven; }
-        }
-
-        #endregion
 
         public override string ToString()
         {
