@@ -6,7 +6,26 @@ using System.Linq;
 
 namespace Contractor.Core
 {
-    class State : IState, IEquatable<State>
+    // Immutable representation of an EPA state
+    public class IState : State
+    {
+        public string Name
+        {
+            get { return base.UniqueName; }
+        }
+
+        public new List<string> EnabledActions
+        {
+            get { return (from a in base.EnabledActions select Utils.Extensions.GetDisplayName(a)).ToList(); }
+        }
+
+        public new List<string> DisabledActions
+        {
+            get { return (from a in base.DisabledActions select Utils.Extensions.GetDisplayName(a)).ToList(); }
+        }
+    }
+
+    public class State : IEquatable<State>
     {
         private class NamedEntityComparer : Comparer<IMethodDefinition>
         {
@@ -19,66 +38,38 @@ namespace Contractor.Core
         private const string methodNameDelimiter = "$";
 
         public uint Id;
-        public string UniqueName;
         public bool IsInitial;
+        public string UniqueName
+        {
+            get
+            {
+                return (this.EnabledActions.Count > 0) ? string.Join(methodNameDelimiter, from a in this.EnabledActions select a.GetUniqueName())
+                                                       : "empty";
+            }
+        }
         public SortedSet<IMethodDefinition> EnabledActions { get; private set; }
         public SortedSet<IMethodDefinition> DisabledActions { get; private set; }
 
         public State()
         {
             this.Id = 0;
-            this.UniqueName = string.Empty;
             this.IsInitial = false;
             this.EnabledActions = new SortedSet<IMethodDefinition>(new NamedEntityComparer());
             this.DisabledActions = new SortedSet<IMethodDefinition>(new NamedEntityComparer());
         }
 
-        public void Sort()
-        {
-            if (this.EnabledActions.Count > 0)
-            {
-                this.UniqueName = string.Join(methodNameDelimiter, from a in this.EnabledActions select a.GetUniqueName());
-            }
-            else
-            {
-                this.UniqueName = "empty";
-            }
-        }
-
-        public EpaState EpaState
+        public IState EPAState
         {
             get
             {
-                var s = new EpaState(this.Id, this.UniqueName);
-                s.EnabledActions.AddRange(from a in this.EnabledActions select a.GetUniqueName());
-                s.DisabledActions.AddRange(from a in this.DisabledActions select a.GetUniqueName());
+                var s = new IState();
+                s.Id = this.Id;
+                s.IsInitial = this.IsInitial;
+                ((State)s).EnabledActions = new SortedSet<IMethodDefinition>(this.EnabledActions, new NamedEntityComparer());
+                ((State)s).DisabledActions = new SortedSet<IMethodDefinition>(this.DisabledActions, new NamedEntityComparer());
                 return s;
             }
         }
-
-        #region IState
-
-        string IState.Name
-        {
-            get { return this.UniqueName; }
-        }
-
-        bool IState.IsInitial
-        {
-            get { return this.IsInitial; }
-        }
-
-        IEnumerable<string> IState.EnabledActions
-        {
-            get { return from a in this.EnabledActions select Utils.Extensions.GetDisplayName(a); }
-        }
-
-        IEnumerable<string> IState.DisabledActions
-        {
-            get { return from a in this.DisabledActions select Utils.Extensions.GetDisplayName(a); }
-        }
-
-        #endregion IState
 
         public bool Equals(State other)
         {

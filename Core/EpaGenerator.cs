@@ -5,6 +5,7 @@ using Microsoft.Cci.MutableContracts;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Linq;
 
 namespace Contractor.Core
@@ -137,7 +138,7 @@ namespace Contractor.Core
             var type = types.First(t => t.ToString() == typeFullName);
 
             var methods = from m in type.GetPublicInstanceMethods()
-                          select m.Name.Value;
+                          select m.GetDisplayName();
             return GenerateEpa(typeFullName, methods);
         }
 
@@ -195,28 +196,28 @@ namespace Contractor.Core
 
             IAnalyzer checker;
             switch (this.backend)
-	        {
-		        case Backend.CodeContracts:
+            {
+                case Backend.CodeContracts:
                     checker = new CodeContractsAnalyzer(host, inputAssembly, type);
-                 break;
+                    break;
                 case Backend.Corral:
                     checker = new CorralAnalyzer(host, inputAssembly.Module, type);
-                 break;
+                    break;
                 default:
-                 throw new NotImplementedException("Unknown backend");
-	        }
-            
+                    throw new NotImplementedException("Unknown backend");
+            }
+
             var states = new Dictionary<string, State>();
 
             var dummy = new State();
             dummy.EnabledActions.UnionWith(constructors);
-            dummy.Sort();
-            dummy.UniqueName = "dummy";
             dummy.IsInitial = true;
 
             states.Add(dummy.UniqueName, dummy);
+            epa.States.Add(dummy.Id, dummy.EPAState);
+            epa.AnalysisResult.States.Add(dummy.EPAState);
             if (this.StateAdded != null)
-                this.StateAdded(this, new StateAddedEventArgs(typeDisplayName, dummy));
+                this.StateAdded(this, new StateAddedEventArgs(typeDisplayName, dummy.EPAState));
 
             var newStates = new Queue<State>();
             newStates.Enqueue(dummy);
@@ -247,21 +248,21 @@ namespace Contractor.Core
 
                         if (states.ContainsKey(target.UniqueName))
                         {
-                            target = states[target.UniqueName];
+                            target = states[target.UniqueName].EPAState;
                         }
                         else
                         {
-                            target.Id = (uint)(states.Keys.Count + 1);
+                            target.Id = (uint)states.Keys.Count;
                             target.IsInitial = false;
-                            states.Add(target.UniqueName, target);
                             newStates.Enqueue(target);
-                            epa.States.Add(target.Id, target.EpaState);
 
-                            epa.AnalysisResult.States.Add(target);
+                            states.Add(target.UniqueName, target);
+                            epa.States.Add(target.Id, target.EPAState);
+                            epa.AnalysisResult.States.Add(target.EPAState);
 
                             if (this.StateAdded != null)
                             {
-                                var eventArgs = new StateAddedEventArgs(typeDisplayName, target);
+                                var eventArgs = new StateAddedEventArgs(typeDisplayName, target.EPAState);
                                 this.StateAdded(this, eventArgs);
                             }
                         }
@@ -274,8 +275,11 @@ namespace Contractor.Core
                         if (!actionTransitions.ContainsKey(source.Id))
                             actionTransitions.Add(source.Id, new List<uint>());
 
-                        actionTransitions[source.Id].Add(target.Id);
+                        Contract.Assert(epa.States.Any(s => s.Value.Id == source.Id));
+                        Contract.Assert(epa.States.Any(s => s.Value.Id == target.Id));
+                        Contract.Assert(epa.AnalysisResult.States.Count == epa.States.Count);
 
+                        actionTransitions[source.Id].Add(target.Id);
                         epa.AnalysisResult.Transitions.Add(transition);
 
                         if (this.TransitionAdded != null)
@@ -315,7 +319,6 @@ namespace Contractor.Core
             v.EnabledActions.UnionWith(actionsResult.EnabledActions);
             v.DisabledActions.UnionWith(actionsResult.DisabledActions);
             v.DisabledActions.UnionWith(unknownActions);
-            v.Sort();
             states.Add(v);
 
             while (unknownActions.Count > 0)
@@ -333,7 +336,6 @@ namespace Contractor.Core
                     w.EnabledActions.UnionWith(states[i].EnabledActions);
                     w.DisabledActions.UnionWith(states[i].DisabledActions);
                     w.DisabledActions.Remove(m);
-                    w.Sort();
 
                     states.Add(w);
                 }
