@@ -48,6 +48,11 @@ namespace Contractor.Core
 
             this.typeToAnalyze = type;
             this.inputContractProvider = inputAssembly.ExtractContracts();
+            if (type.IsGeneric)
+            {
+                var typeReference = MutableModelHelper.GetGenericTypeInstanceReference(type.GenericParameters, type, host.InternFactory, null);
+                this.specializedInputType = typeReference.ResolvedType as Microsoft.Cci.Immutable.GenericTypeInstance;
+            }
 
             // Create a clone of the module as a working copy.
             CreateQueryAssembly(type);
@@ -382,7 +387,6 @@ namespace Contractor.Core
 
         private BlockStatement CallMethod(IMethodDefinition action)
         {
-            throw new NotSupportedException(); //TODO: do the proper modifications
             var block = new BlockStatement();
             var args = new List<IExpression>();
 
@@ -421,7 +425,7 @@ namespace Contractor.Core
                 };
 
                 block.Statements.Add(call);
-                block.Statements.Add(new ReturnStatement());
+                //block.Statements.Add(new ReturnStatement());
             }
             else
             {
