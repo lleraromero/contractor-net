@@ -1,4 +1,5 @@
 ﻿using Microsoft.Cci;
+using System;
 
 namespace Contractor.Core
 {
@@ -26,7 +27,7 @@ namespace Contractor.Core
         }
     }
 
-    public class Transition
+    public class Transition : IEquatable<Transition>
     {
         public IMethodDefinition Action { get; private set; }
         public State SourceState { get; private set; }
@@ -52,6 +53,24 @@ namespace Contractor.Core
         public override string ToString()
         {
             return string.Format("{0} - {1} -> {2}", this.SourceState, Utils.Extensions.GetDisplayName(this.Action), this.TargetState);
+        }
+
+        public bool Equals(Transition other)
+        {
+            return this.Action.Equals(other.Action) && this.SourceState.Equals(other.SourceState) && this.TargetState.Equals(other.TargetState);
+        }
+
+        public override bool Equals(object obj)
+        {
+            // Again just optimization
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+
+            // Actually check the type, should not throw exception from Equals override
+            if (obj.GetType() != this.GetType()) return false;
+
+            // Call the implementation from IEquatable
+            return Equals((Transition)obj);
         }
     }
 }

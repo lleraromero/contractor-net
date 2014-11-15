@@ -70,7 +70,7 @@ namespace Contractor.Core
         public enum Backend { CodeContracts, Corral };
 
         private AssemblyInfo inputAssembly;
-        private Dictionary<string, Epa> epas;
+        private Dictionary<string, TypeAnalysisResult> epas;
         private CodeContractAwareHostEnvironment host;
         private Backend backend;
 
@@ -83,7 +83,7 @@ namespace Contractor.Core
         {
             host = new CodeContractAwareHostEnvironment(true);
             inputAssembly = new AssemblyInfo(host);
-            epas = new Dictionary<string, Epa>();
+            epas = new Dictionary<string, TypeAnalysisResult>();
             this.backend = backend;
         }
 
@@ -106,8 +106,8 @@ namespace Contractor.Core
 
         public void UnloadAssembly()
         {
-            foreach (var epa in epas.Values)
-                epa.Instrumented = false;
+            foreach (var typeAnalysis in epas.Values)
+                typeAnalysis.EPA.Instrumented = false;
         }
 
         public Dictionary<string, TypeAnalysisResult> GenerateEpas()
@@ -155,11 +155,11 @@ namespace Contractor.Core
             var typeUniqueName = type.GetUniqueName();
 
             if (!epas.ContainsKey(typeUniqueName))
-                epas.Add(typeUniqueName, new Epa());
+                epas.Add(typeUniqueName, new TypeAnalysisResult());
 
-            var epa = epas[typeUniqueName];
+            var typeAnalysis = epas[typeUniqueName];
 
-            if (!epa.GenerationCompleted)
+            if (!typeAnalysis.EPA.GenerationCompleted)
             {
                 var methods = from name in selectedMethods
                               join m in type.Methods
@@ -169,7 +169,7 @@ namespace Contractor.Core
                 GenerateEpa(type, methods);
             }
 
-            return epa.AnalysisResult;
+            return typeAnalysis;
         }
 
         private void GenerateEpa(NamespaceTypeDefinition type, IEnumerable<IMethodDefinition> methods)
@@ -191,7 +191,7 @@ namespace Contractor.Core
                            select m)
                            .ToList();
 
-            var epa = epas[typeUniqueName];
+            var epa = epas[typeUniqueName].EPA;
             epa.Clear();
 
             IAnalyzer checker;
@@ -214,8 +214,8 @@ namespace Contractor.Core
             dummy.IsInitial = true;
 
             states.Add(dummy.UniqueName, dummy);
-            epa.States.Add(dummy.Id, dummy.EPAState);
-            epa.AnalysisResult.States.Add(dummy.EPAState);
+            epa.Add(dummy.EPAState, new List<ITransition>());
+
             if (this.StateAdded != null)
                 this.StateAdded(this, new StateAddedEventArgs(typeDisplayName, dummy.EPAState));
 
@@ -225,8 +225,6 @@ namespace Contractor.Core
             while (newStates.Count > 0)
             {
                 var source = newStates.Dequeue();
-                var isDummySource = (source == dummy);
-
                 foreach (var action in source.EnabledActions)
                 {
                     var actionUniqueName = action.GetUniqueName();
@@ -257,8 +255,8 @@ namespace Contractor.Core
                             newStates.Enqueue(target);
 
                             states.Add(target.UniqueName, target);
-                            epa.States.Add(target.Id, target.EPAState);
-                            epa.AnalysisResult.States.Add(target.EPAState);
+                            epa.Add(target.EPAState, new List<ITransition>());
+
 
                             if (this.StateAdded != null)
                             {
@@ -267,20 +265,7 @@ namespace Contractor.Core
                             }
                         }
 
-                        if (!epa.ContainsKey(actionUniqueName))
-                            epa.Add(actionUniqueName, new EpaTransitions());
-
-                        var actionTransitions = epa[actionUniqueName];
-
-                        if (!actionTransitions.ContainsKey(source.Id))
-                            actionTransitions.Add(source.Id, new List<uint>());
-
-                        Contract.Assert(epa.States.Any(s => s.Value.Id == source.Id));
-                        Contract.Assert(epa.States.Any(s => s.Value.Id == target.Id));
-                        Contract.Assert(epa.AnalysisResult.States.Count == epa.States.Count);
-
-                        actionTransitions[source.Id].Add(target.Id);
-                        epa.AnalysisResult.Transitions.Add(transition.EPATransition);
+                        epa[transition.SourceState.EPAState].Add(transition.EPATransition);
 
                         if (this.TransitionAdded != null)
                         {
@@ -293,15 +278,18 @@ namespace Contractor.Core
 
             analysisTimer.Stop();
             epa.GenerationCompleted = true;
-            epa.AnalysisResult.TotalDuration = analysisTimer.Elapsed;
-            epa.AnalysisResult.TotalAnalyzerDuration = checker.TotalAnalysisDuration;
-            epa.AnalysisResult.ExecutionsCount = checker.ExecutionsCount;
-            epa.AnalysisResult.TotalGeneratedQueriesCount = checker.TotalGeneratedQueriesCount;
-            epa.AnalysisResult.UnprovenQueriesCount = checker.UnprovenQueriesCount;
+            var analysisResult = new TypeAnalysisResult();
+            analysisResult.EPA = epa;
+            analysisResult.TotalDuration = analysisTimer.Elapsed;
+            analysisResult.TotalAnalyzerDuration = checker.TotalAnalysisDuration;
+            analysisResult.ExecutionsCount = checker.ExecutionsCount;
+            analysisResult.TotalGeneratedQueriesCount = checker.TotalGeneratedQueriesCount;
+            analysisResult.UnprovenQueriesCount = checker.UnprovenQueriesCount;
+            analysisResult.Backend = this.backend;
 
             if (this.TypeAnalysisDone != null)
             {
-                var eventArgs = new TypeAnalysisDoneEventArgs(typeDisplayName, epa.AnalysisResult);
+                var eventArgs = new TypeAnalysisDoneEventArgs(typeDisplayName, analysisResult);
                 this.TypeAnalysisDone(this, eventArgs);
             }
         }
@@ -351,17 +339,17 @@ namespace Contractor.Core
 
             foreach (var typeUniqueName in epas.Keys)
             {
-                var epa = epas[typeUniqueName];
+                var typeAnalysis = epas[typeUniqueName];
 
-                if (!epa.Instrumented)
+                if (!typeAnalysis.EPA.Instrumented)
                 {
                     var type = (from t in inputAssembly.DecompiledModule.AllTypes
                                 where typeUniqueName == t.GetUniqueName()
                                 select t as NamespaceTypeDefinition)
                                 .First();
 
-                    instrumenter.InstrumentType(type, epa);
-                    epa.Instrumented = true;
+                    instrumenter.InstrumentType(type, typeAnalysis.EPA);
+                    typeAnalysis.EPA.Instrumented = true;
                 }
             }
 

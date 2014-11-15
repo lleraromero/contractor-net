@@ -28,19 +28,18 @@ namespace Contractor.Core
 
     public class TypeAnalysisResult
     {
-        public List<IState> States { get; private set; }
-        public List<ITransition> Transitions { get; private set; }
+        public Epa EPA { get; internal set; }
 
         public TimeSpan TotalAnalyzerDuration { get; internal set; }
         public TimeSpan TotalDuration { get; internal set; }
         public int ExecutionsCount { get; internal set; }
         public int TotalGeneratedQueriesCount { get; internal set; }
         public int UnprovenQueriesCount { get; internal set; }
+        public EpaGenerator.Backend Backend { get; internal set; }
 
         public TypeAnalysisResult()
         {
-            this.States = new List<IState>();
-            this.Transitions = new List<ITransition>();
+            EPA = new Epa();
         }
     }
 }
