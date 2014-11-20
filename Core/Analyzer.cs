@@ -33,7 +33,7 @@ namespace Contractor.Core
         protected ContractProvider queryContractProvider;
         protected readonly NamespaceTypeDefinition typeToAnalyze;
 
-        protected string notPrefix = ".Not.";
+        protected string notPrefix = "_Not_";
         protected string methodNameDelimiter = "~";
 
         protected Microsoft.Cci.Immutable.GenericTypeInstance specializedInputType;
@@ -46,7 +46,6 @@ namespace Contractor.Core
             this.inputAssembly = new AssemblyInfo(host);
             inputAssembly.Load(module.Location);
 
-            this.typeToAnalyze = type;
             this.inputContractProvider = inputAssembly.ExtractContracts();
             if (type.IsGeneric)
             {
@@ -56,6 +55,7 @@ namespace Contractor.Core
 
             // Create a clone of the module as a working copy.
             CreateQueryAssembly(type);
+            this.typeToAnalyze = queryAssembly.DecompiledModule.AllTypes.Find(t => t.Name == type.Name) as NamespaceTypeDefinition;
             this.queryContractProvider = new ContractProvider(new ContractMethods(this.host), this.host.FindUnit(this.queryAssembly.Module.UnitIdentity));
         }
 
@@ -70,7 +70,7 @@ namespace Contractor.Core
             { }
         }
 
-        private void CreateQueryAssembly(NamespaceTypeDefinition type)
+        protected virtual void CreateQueryAssembly(NamespaceTypeDefinition type)
         {
             // Load original module
             IModule module = this.host.LoadUnitFrom(inputAssembly.Module.Location) as IModule;
@@ -144,7 +144,7 @@ namespace Contractor.Core
 
             var prefix = negate ? notPrefix : string.Empty;
             var actionName = action.GetUniqueName();
-            var stateName = state.Id;
+            var stateName = state.UniqueName;
             var targetName = target.GetUniqueName();
             var methodName = string.Format("{1}{0}{2}{0}{3}{4}", methodNameDelimiter, stateName, actionName, prefix, targetName);
             var method = CreateQueryMethod<IMethodDefinition>(state, methodName, action, target);
@@ -157,27 +157,6 @@ namespace Contractor.Core
         private MethodContract CreateQueryContract(State state, IMethodDefinition target, bool negate)
         {
             var queryContract = new MethodContract();
-
-            // Add the invariant as a precondition and postcondition of the query
-            ITypeContract typeContract = inputContractProvider.GetTypeContractFor(typeToAnalyze);
-            if (typeContract != null)
-            {
-                queryContract.Preconditions.AddRange(from i in typeContract.Invariants
-                                                     select new Precondition()
-                                                     {
-                                                         Condition = i.Condition,
-                                                         OriginalSource = i.OriginalSource,
-                                                         Locations = new List<ILocation>(i.Locations),
-                                                     });
-                queryContract.Postconditions.AddRange(from i in typeContract.Invariants
-                                                      select new Postcondition()
-                                                      {
-                                                          Condition = i.Condition,
-                                                          OriginalSource = i.OriginalSource,
-                                                          Locations = new List<ILocation>(i.Locations),
-                                                      });
-            }
-
             var targetContract = inputContractProvider.GetMethodContractFor(target);
 
             // Add preconditions of enabled actions
@@ -310,9 +289,6 @@ namespace Contractor.Core
         {
             Contract.Requires(target is IMethodDefinition || target is State);
 
-            // I need to assign the queries to the type that I'm processing
-            var type = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == typeToAnalyze.Name) as NamespaceTypeDefinition;
-
             // Get all the parameters that the query might need
             var parameters = new HashSet<IParameterDefinition>();
             foreach (var a in state.EnabledActions)
@@ -338,12 +314,12 @@ namespace Contractor.Core
             {
                 Attributes = new List<ICustomAttribute>(action.Attributes),
                 CallingConvention = Microsoft.Cci.CallingConvention.HasThis,
-                ContainingTypeDefinition = type,
+                ContainingTypeDefinition = this.typeToAnalyze,
                 InternFactory = host.InternFactory,
                 IsStatic = false,
                 Name = host.NameTable.GetNameFor(name),
                 Type = action.Type,
-                Visibility = TypeMemberVisibility.Private,
+                Visibility = TypeMemberVisibility.Public,
                 Parameters = parameters.ToList()
             };
 
@@ -357,23 +333,6 @@ namespace Contractor.Core
             {
                 block = CallMethod(action);
             }
-
-            var assumeSelfNotNull = new AssumeStatement()
-            {
-                Condition = new LogicalNot()
-                {
-                    Type = host.PlatformType.SystemBoolean,
-                    Operand = new Equality()
-                    {
-                        Type = host.PlatformType.SystemBoolean,
-                        LeftOperand = new ThisReference(),
-                        RightOperand = new CompileTimeConstant()
-                    }
-                }
-            };
-            assumeSelfNotNull.OriginalSource = Helper.PrintExpression(assumeSelfNotNull.Condition);
-
-            block.Statements.Insert(0, assumeSelfNotNull);
 
             method.Body = new SourceMethodBody(host)
             {

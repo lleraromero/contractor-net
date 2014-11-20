@@ -22,8 +22,8 @@ namespace Contractor.Core
         {
             Contract.Requires(module != null && host != null && type != null);
 
-            base.notPrefix = "_Not_";
-            base.methodNameDelimiter = "~";
+            ITypeContract typeContract = this.inputContractProvider.GetTypeContractFor(type);
+            this.queryContractProvider.AssociateTypeWithContract(this.typeToAnalyze, typeContract);
         }
 
         public override ActionAnalysisResults AnalyzeActions(State source, IMethodDefinition action, List<IMethodDefinition> actions)

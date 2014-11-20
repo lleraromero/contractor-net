@@ -39,7 +39,8 @@ namespace Contractor.Core
         /// </summary>
         private void VisitTypeDefinition(ITypeDefinition typeDefinition)
         {
-            ITypeContract typeContract = this.contractProvider.GetTypeContractFor(typeDefinition);
+            var pepe = typeDefinition as NamespaceTypeDefinition;
+            ITypeContract typeContract = base.contractProvider.GetTypeContractFor(pepe);
             if (typeContract != null)
             {
                 #region Define the method
@@ -191,6 +192,28 @@ namespace Contractor.Core
                 newStatements.Add(es);
             }
 
+            // Add the invariant as a precondition as well
+            ITypeContract typeContract = this.contractProvider.GetTypeContractFor(methodDefinition.ContainingTypeDefinition);
+            if (typeContract != null)
+            {
+                foreach (var inv in typeContract.Invariants)
+                {
+                    var methodCall = new MethodCall()
+                    {
+                        Arguments = new List<IExpression> { this.Rewrite(inv.Condition) },
+                        IsStaticCall = true,
+                        MethodToCall = this.contractProvider.ContractMethods.Assume,
+                        Type = systemVoid,
+                        Locations = new List<ILocation>(inv.Locations),
+                    };
+                    ExpressionStatement es = new ExpressionStatement()
+                    {
+                        Expression = methodCall
+                    };
+                    newStatements.Add(es);
+                }
+            }
+
             LabeledStatement dummyPostconditionStatement = null;
             if (TypeHelper.TypesAreEquivalent(methodDefinition.Type, this.host.PlatformType.SystemVoid))
             {
@@ -254,6 +277,28 @@ namespace Contractor.Core
                 };
                 newStatements.Add(es);
             }
+
+            // add the invariant as a postcondition as well
+            if (typeContract != null)
+            {
+                foreach (var inv in typeContract.Invariants)
+                {
+                    var methodCall = new MethodCall()
+                    {
+                        Arguments = new List<IExpression> { this.Rewrite(inv.Condition) },
+                        IsStaticCall = true,
+                        MethodToCall = this.contractProvider.ContractMethods.Assert,
+                        Type = systemVoid,
+                        Locations = new List<ILocation>(inv.Locations),
+                    };
+                    ExpressionStatement es = new ExpressionStatement()
+                    {
+                        Expression = methodCall
+                    };
+                    newStatements.Add(es);
+                }
+            }
+
 
             // If the method is not void, we add the return statement
             if (!TypeHelper.TypesAreEquivalent(methodDefinition.Type, this.host.PlatformType.SystemVoid))
