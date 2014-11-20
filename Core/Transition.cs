@@ -72,5 +72,10 @@ namespace Contractor.Core
             // Call the implementation from IEquatable
             return Equals((Transition)obj);
         }
+
+        public override int GetHashCode()
+        {
+            return this.SourceState.GetHashCode() ^ this.TargetState.GetHashCode();
+        }
     }
 }

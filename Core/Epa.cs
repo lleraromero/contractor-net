@@ -6,8 +6,17 @@ namespace Contractor.Core
     // Dictionary<Source, TransitionsFromSource>
     public class Epa : Dictionary<IState, List<ITransition>>
     {
-        public bool GenerationCompleted { get; set; }
-        public bool Instrumented { get; set; }
+        public IEnumerable<IState> States { get { return base.Keys; } }
+        public IEnumerable<ITransition> Transitions
+        {
+            get
+            {
+                return ((IEnumerable<IEnumerable<ITransition>>)base.Values).Aggregate((acum, l) => acum.Union(l));
+            }
+        }
+
+        internal bool GenerationCompleted { get; set; }
+        internal bool Instrumented { get; set; }
 
         public Epa()
         {
@@ -20,15 +29,6 @@ namespace Contractor.Core
             base.Clear();
             this.GenerationCompleted = false;
             this.Instrumented = false;
-        }
-
-        public IEnumerable<IState> States { get { return base.Keys; } }
-        public IEnumerable<ITransition> Transitions 
-        {
-            get
-            {
-                return ((IEnumerable<IEnumerable<ITransition>>)base.Values).Aggregate((acum, l) => acum.Union(l));      
-            }
         }
     }
 }
