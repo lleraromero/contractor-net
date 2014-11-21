@@ -72,32 +72,45 @@ namespace Contractor.Core
 
         protected virtual void CreateQueryAssembly(NamespaceTypeDefinition type)
         {
-            // Load original module
-            IModule module = this.host.LoadUnitFrom(inputAssembly.Module.Location) as IModule;
-            // Make a editable copy
-            Module queryModule = new MetadataDeepCopier(this.host).Copy(module);
+            var coreAssembly = host.LoadAssembly(host.CoreAssemblySymbolicIdentity);
 
-            // Remove types that we don't need to analyse in the query assembly.
-            var types = queryModule.GetAnalyzableTypes().ToList();
-            foreach (var t in types)
+            var assembly = new Assembly()
             {
-                var tMutable = t as NamespaceTypeDefinition;
-                if (tMutable != null && tMutable.ContainingUnitNamespace.Name == type.ContainingUnitNamespace.Name && tMutable.Name != type.Name)
-                {
-                    queryModule.AllTypes.Remove(t);
-                }
-            }
+                Name = host.NameTable.GetNameFor("Query"),
+                ModuleName = host.NameTable.GetNameFor("query.dll"),
+                Kind = ModuleKind.DynamicallyLinkedLibrary,
+                TargetRuntimeVersion = coreAssembly.TargetRuntimeVersion,
+            };
 
-            // TODO: removed types are still present as RootNamespace members, remove them.
-            // How do we recognize useless types?
-            this.queryAssembly = new AssemblyInfo(this.host, queryModule);
+            assembly.AssemblyReferences.Add(coreAssembly);
+
+            var rootUnitNamespace = new RootUnitNamespace();
+            assembly.UnitNamespaceRoot = rootUnitNamespace;
+            rootUnitNamespace.Unit = assembly;
+
+            var moduleClass = new NamespaceTypeDefinition()
+            {
+                ContainingUnitNamespace = rootUnitNamespace,
+                InternFactory = host.InternFactory,
+                IsClass = true,
+                Name = host.NameTable.GetNameFor("<Module>"),
+            };
+
+
+            assembly.AllTypes.Add(moduleClass);
+
+            var queryType = new MetadataDeepCopier(this.host).Copy(type);
+            rootUnitNamespace.Members.Add(queryType);
+            assembly.AllTypes.Add(queryType);
+
+            this.queryAssembly = new AssemblyInfo(host, assembly);
         }
 
         protected string GetQueryAssemblyPath()
         {
             Contract.Requires(this.inputAssembly != null);
 
-            return Path.Combine(Configuration.TempPath, this.inputAssembly.Module.ModuleName.Value + ".tmp");
+            return Path.Combine(Configuration.TempPath, this.queryAssembly.Module.ModuleName.Value);
         }
 
         protected PdbReader GetPDBReader(IModule module, IContractAwareHost host)
