@@ -47,8 +47,7 @@ namespace Contractor.Core
             List<MethodDefinition> queries = GenerateQueries<T>(source, action, target);
 
             // Add queries to the working assembly
-            var type = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == typeToAnalyze.Name) as NamespaceTypeDefinition;
-            type.Methods.AddRange(queries);
+            this.typeToAnalyze.Methods.AddRange(queries);
 
             // I need to replace Pre/Post with Assume/Assert
             ILocalScopeProvider localScopeProvider = new Microsoft.Cci.ILToCodeModel.Decompiler.LocalScopeProvider(GetPDBReader(queryAssembly.Module, host));
@@ -62,7 +61,7 @@ namespace Contractor.Core
             var result = ExecuteChecker(queries);
 
             // I don't need the queries anymore
-            type.Methods.RemoveAll(m => queries.Contains(m));
+            this.typeToAnalyze.Methods.RemoveAll(m => queries.Contains(m));
 
             return result;
         }
@@ -73,7 +72,6 @@ namespace Contractor.Core
             analysisResult.EnabledActions.AddRange(actions);
             analysisResult.DisabledActions.AddRange(actions);
 
-            var queryType = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == typeToAnalyze.Name) as NamespaceTypeDefinition;
             foreach (var entry in result)
             {
                 switch (entry.Value)
@@ -92,13 +90,11 @@ namespace Contractor.Core
                         if (isNegative)
                         {
                             actionName = actionName.Remove(0, notPrefix.Length);
-                            var method = typeToAnalyze.Methods.Find(m => m.GetUniqueName() == actionName);
-                            analysisResult.DisabledActions.Remove(method);
+                            analysisResult.DisabledActions.RemoveAll(m => m.GetUniqueName() == actionName);
                         }
                         else
                         {
-                            var method = typeToAnalyze.Methods.Find(m => m.GetUniqueName() == actionName);
-                            analysisResult.EnabledActions.Remove(method);
+                            analysisResult.EnabledActions.RemoveAll(m => m.GetUniqueName() == actionName);
                         }
 
                         if (entry.Value == ResultKind.RecursionBoundReached)
@@ -119,7 +115,6 @@ namespace Contractor.Core
 
             RunBCT();
 
-            var queryType = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == typeToAnalyze.Name) as NamespaceTypeDefinition;
             foreach (var query in queries)
             {
                 var queryName = CreateUniqueMethodName(query);

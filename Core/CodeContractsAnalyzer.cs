@@ -29,7 +29,6 @@ namespace Contractor.Core
         private const string pattern = @"^ Method \W* \d+ \W* : (< [a-z ]+ >)? \W* (?<MethodName> [^(\r]+ (\( [^)]* \))?) \r | ^ [^( ]+ (\( [^)]* \))? \W* (\[ [^]]* \])? \W* : \W* ([^:]+ :)? \W* (?<Message> [^\r]+) \r";
 
         private readonly Regex outputParser;
-        private NamespaceTypeDefinition queryType;
         private StringBuilder output;
 
         public CodeContractsAnalyzer(IContractAwareHost host, AssemblyInfo assembly, NamespaceTypeDefinition type)
@@ -40,19 +39,18 @@ namespace Contractor.Core
             ITypeContract typeContract = this.inputContractProvider.GetTypeContractFor(type);
             this.queryContractProvider.AssociateTypeWithContract(this.typeToAnalyze, typeContract);
 
-            this.queryType = this.queryAssembly.DecompiledModule.AllTypes.Find(t => t.Name == type.Name) as NamespaceTypeDefinition;
             this.outputParser = new Regex(pattern, RegexOptions.ExplicitCapture | RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline | RegexOptions.Compiled);
         }
 
         public override ActionAnalysisResults AnalyzeActions(State source, IMethodDefinition action, List<IMethodDefinition> actions)
         {
             var queries = base.GenerateQueries<IMethodDefinition>(source, action, actions);
-            queryType.Methods.AddRange(queries);
+            this.typeToAnalyze.Methods.AddRange(queries);
             queryAssembly.InjectContracts(this.queryContractProvider);
 
             var queryAssemblyName = GetQueryAssemblyPath();
             queryAssembly.Save(queryAssemblyName);
-            queryType.Methods.RemoveAll(m => queries.Contains(m));
+            this.typeToAnalyze.Methods.RemoveAll(m => queries.Contains(m));
 
             var result = executeChecker(queryAssemblyName);
             var evalResult = evaluateQueries(actions, result);
@@ -87,13 +85,11 @@ namespace Contractor.Core
                     if (isNegative)
                     {
                         actionName = actionName.Remove(0, notPrefix.Length);
-                        var method = typeToAnalyze.Methods.Find(m => m.GetUniqueName() == actionName);
-                        analysisResult.DisabledActions.Remove(method);
+                        analysisResult.DisabledActions.RemoveAll(m => m.GetUniqueName() == actionName);
                     }
                     else
                     {
-                        var method = typeToAnalyze.Methods.Find(m => m.GetUniqueName() == actionName);
-                        analysisResult.EnabledActions.Remove(method);
+                        analysisResult.EnabledActions.RemoveAll(m => m.GetUniqueName() == actionName);
                     }
 
                     if (entry.Value.Contains(ResultKind.UnprovenEnsures))
@@ -116,10 +112,10 @@ namespace Contractor.Core
             var inputAssemblyPath = Path.GetDirectoryName(inputAssembly.FileName);
             libPaths = string.Format("{0};{1}", libPaths, inputAssemblyPath);
 
-            var typeName = queryType.ToString();
+            var typeName = this.typeToAnalyze.ToString();
 
-            if (queryType.IsGeneric)
-                typeName = string.Format("{0}`{1}", typeName, queryType.GenericParameterCount);
+            if (this.typeToAnalyze.IsGeneric)
+                typeName = string.Format("{0}`{1}", typeName, this.typeToAnalyze.GenericParameterCount);
 
             output = new StringBuilder();
             var cccheckArgs = Configuration.CheckerArguments;
@@ -209,12 +205,12 @@ namespace Contractor.Core
         public override TransitionAnalysisResult AnalyzeTransitions(State source, IMethodDefinition action, List<State> targets)
         {
             var queries = base.GenerateQueries<State>(source, action, targets);
-            queryType.Methods.AddRange(queries);
+            this.typeToAnalyze.Methods.AddRange(queries);
             queryAssembly.InjectContracts(this.queryContractProvider);
 
             var queryAssemblyName = GetQueryAssemblyPath();
             queryAssembly.Save(queryAssemblyName);
-            queryType.Methods.RemoveAll(m => queries.Contains(m));
+            this.typeToAnalyze.Methods.RemoveAll(m => queries.Contains(m));
 
             var result = executeChecker(queryAssemblyName);
             var evalResult = evaluateQueries(source, action, targets, result);

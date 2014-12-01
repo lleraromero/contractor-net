@@ -64,14 +64,10 @@ namespace Contractor.Utils
         public ContractProvider ExtractContracts()
         {
             var contractAwareHost = this.Host as IContractAwareHost;
-            ContractProvider contractProvider = null;
 
             // Extracting contracts from this assembly and the contract reference assembly previously loaded with this host
             var contractExtractor = contractAwareHost.GetContractExtractor(this.Module.UnitIdentity);
-            contractProvider = new AggregatingContractProvider(contractExtractor);
-            
-            // Extracting contracts from this assembly
-            //contractProvider = ContractHelper.ExtractContracts(contractAwareHost, this.DecompiledModule, this.PdbReader, this.PdbReader);
+            var contractProvider = new AggregatingContractProvider(contractExtractor);
 
             return contractProvider;
         }
