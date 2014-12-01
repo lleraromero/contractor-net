@@ -47,6 +47,7 @@ namespace Contractor.Core
             inputAssembly.Load(module.Location);
 
             this.inputContractProvider = inputAssembly.ExtractContracts();
+
             if (type.IsGeneric)
             {
                 var typeReference = MutableModelHelper.GetGenericTypeInstanceReference(type.GenericParameters, type, host.InternFactory, null);
@@ -325,7 +326,6 @@ namespace Contractor.Core
 
             var method = new MethodDefinition()
             {
-                Attributes = new List<ICustomAttribute>(action.Attributes),
                 CallingConvention = Microsoft.Cci.CallingConvention.HasThis,
                 ContainingTypeDefinition = this.typeToAnalyze,
                 InternFactory = host.InternFactory,
