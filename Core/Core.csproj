@@ -156,6 +156,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\GlobalAssemblyInfo.cs">
@@ -171,6 +172,7 @@
     <Compile Include="CorralAnalyzer.cs" />
     <Compile Include="Epa.cs" />
     <Compile Include="EpaGenerator.cs" />
+    <Compile Include="EpaXmlSerializer.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="IAnalyzer.cs" />
