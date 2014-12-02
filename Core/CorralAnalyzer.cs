@@ -136,54 +136,31 @@ namespace Contractor.Core
 
         private void RunBCT()
         {
-            //TODO: Use BCT as a library instead of an external process
-            using (var bct = new Process())
-            {
-                bct.StartInfo = new ProcessStartInfo()
-                {
-                    FileName = Configuration.BCTPath,
-                    Arguments = GetQueryAssemblyPath(),
-                    WorkingDirectory = Configuration.TempPath,
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false
-                };
+            var timer = Stopwatch.StartNew();
 
-                bct.OutputDataReceived += (sender, e) =>
-                {
-                    if (!string.IsNullOrEmpty(e.Data))
-                        LogManager.Log(LogLevel.Debug, e.Data);
-                };
-                bct.ErrorDataReceived += (sender, e) =>
-                {
-                    if (!string.IsNullOrEmpty(e.Data))
-                        LogManager.Log(LogLevel.Fatal, e.Data);
-                };
-                bct.Start();
-                bct.BeginErrorReadLine();
-                bct.BeginOutputReadLine();
-                bct.WaitForExit();
+            // I need to change the current directory so BCT can write the output in the correct folder
+            var tmp = Environment.CurrentDirectory;
+            Environment.CurrentDirectory = Configuration.TempPath;
+            if (new BytecodeTranslator.BCT().Main(new string[] { GetQueryAssemblyPath() }) != 0)
+                throw new Exception("Error translating the query assembly to boogie");
+            Environment.CurrentDirectory = tmp;
 
-                if (bct.ExitCode != 0)
-                    throw new Exception("Error translating the query assembly to boogie");
-
-                base.TotalAnalysisDuration += bct.ExitTime - bct.StartTime;
-            }
+            timer.Stop();
+            base.TotalAnalysisDuration += new TimeSpan(timer.ElapsedTicks);            
         }
 
         private string RunCorral(string method)
         {
             Contract.Requires(!string.IsNullOrEmpty(method));
 
-            var args = string.Format("{0} /main:{1} {2}", GetQueryAssemblyPath().Replace("dll", "bpl"), method, Configuration.CorralArguments);    // recursionBound 3 es absolutamente arbitrario :)
+            var args = string.Format("{0} /main:{1} {2}", GetQueryAssemblyPath().Replace("dll", "bpl"), method, Configuration.CorralArguments);
 
             var timer = Stopwatch.StartNew();
 
+            var corral = new cba.Driver();
             try
             {
-                if (cba.Driver.run(args.Split(' ')) != 0)
+                if (corral.run(args.Split(' ')) != 0)
                     throw new Exception("Error executing corral");
             }
             catch (Exception ex)
@@ -199,7 +176,7 @@ namespace Contractor.Core
             base.ExecutionsCount++;
 
             // TODO: Improve Corral as a library instead of a console application.
-            switch (cba.Driver.Result)
+            switch (corral.Result)
             {
                 case cba.CorralResult.BugFound:
                     return "true bug";
