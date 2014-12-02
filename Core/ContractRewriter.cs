@@ -14,6 +14,23 @@ namespace Contractor.Core
         private readonly ITypeReference systemVoid;
         private ISourceLocationProvider sourceLocationProvider;
 
+        private IMethodReference assumeReference
+        {
+            get
+            {
+                return new Microsoft.Cci.MethodReference(this.host, this.host.PlatformType.SystemDiagnosticsContractsContract, CallingConvention.Default,
+            this.host.PlatformType.SystemVoid, this.host.NameTable.GetNameFor("Assume"), 0, this.host.PlatformType.SystemBoolean, this.host.PlatformType.SystemString);
+            }
+        }
+        private IMethodReference assertReference
+        {
+            get
+            {
+                return new Microsoft.Cci.MethodReference(this.host, this.host.PlatformType.SystemDiagnosticsContractsContract, CallingConvention.Default,
+            this.host.PlatformType.SystemVoid, this.host.NameTable.GetNameFor("Assert"), 0, this.host.PlatformType.SystemBoolean, this.host.PlatformType.SystemString);
+            }
+        }
+
         public ContractRewriter(IMetadataHost host, ContractProvider contractProvider, ISourceLocationProvider sourceLocationProvider)
             : base(host, contractProvider)
         {
@@ -179,9 +196,9 @@ namespace Contractor.Core
             {
                 var methodCall = new MethodCall()
                 {
-                    Arguments = new List<IExpression> { this.Rewrite(precondition.Condition) },
+                    Arguments = new List<IExpression> { this.Rewrite(precondition.Condition), precondition.Description ?? new CompileTimeConstant() { Type = this.host.PlatformType.SystemString, Value = "era null" } },
                     IsStaticCall = true,
-                    MethodToCall = this.contractProvider.ContractMethods.Assume,
+                    MethodToCall = this.assumeReference,
                     Type = systemVoid,
                     Locations = new List<ILocation>(precondition.Locations),
                 };
@@ -200,9 +217,9 @@ namespace Contractor.Core
                 {
                     var methodCall = new MethodCall()
                     {
-                        Arguments = new List<IExpression> { this.Rewrite(inv.Condition) },
+                        Arguments = new List<IExpression> { this.Rewrite(inv.Condition), new CompileTimeConstant() { Value = "Type invariant", Type = this.host.PlatformType.SystemString } },
                         IsStaticCall = true,
-                        MethodToCall = this.contractProvider.ContractMethods.Assume,
+                        MethodToCall = this.assumeReference,
                         Type = systemVoid,
                         Locations = new List<ILocation>(inv.Locations),
                     };
@@ -255,7 +272,7 @@ namespace Contractor.Core
 
                     newStatements.Add(new GotoStatement() { TargetStatement = dummyPostconditionStatement });
                 }
-                
+
                 // now, that all the existing statements were added it is time for the postcondition block
                 newStatements.Add(dummyPostconditionStatement);
             }
@@ -265,9 +282,9 @@ namespace Contractor.Core
             {
                 var methodCall = new MethodCall()
                 {
-                    Arguments = new List<IExpression> { this.Rewrite(postcondition.Condition) },
+                    Arguments = new List<IExpression> { this.Rewrite(postcondition.Condition), postcondition.Description ?? new CompileTimeConstant() { Type = this.host.PlatformType.SystemString, Value = "era null" } },
                     IsStaticCall = true,
-                    MethodToCall = this.contractProvider.ContractMethods.Assert,
+                    MethodToCall = this.assertReference,
                     Type = systemVoid,
                     Locations = new List<ILocation>(postcondition.Locations),
                 };
@@ -285,9 +302,9 @@ namespace Contractor.Core
                 {
                     var methodCall = new MethodCall()
                     {
-                        Arguments = new List<IExpression> { this.Rewrite(inv.Condition) },
+                        Arguments = new List<IExpression> { this.Rewrite(inv.Condition), new CompileTimeConstant() { Value = "Type invariant", Type = this.host.PlatformType.SystemString } },
                         IsStaticCall = true,
-                        MethodToCall = this.contractProvider.ContractMethods.Assert,
+                        MethodToCall = this.assertReference,
                         Type = systemVoid,
                         Locations = new List<ILocation>(inv.Locations),
                     };
