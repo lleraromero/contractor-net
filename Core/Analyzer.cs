@@ -343,8 +343,7 @@ namespace Contractor.Core
                 foreach (var a in stateTarget.DisabledActions)
                     parameters.UnionWith(a.Parameters);
             }
-
-
+                 
             var method = new MethodDefinition()
             {
                 CallingConvention = Microsoft.Cci.CallingConvention.HasThis,
@@ -365,6 +364,7 @@ namespace Contractor.Core
             }
             else
             {
+                // TODO: Calling the method is not working properly
                 block = CallMethod(action);
             }
 

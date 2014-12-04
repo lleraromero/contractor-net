@@ -4,11 +4,9 @@ namespace Examples
 {
     public class FiniteStack
     {
-        [ContractVerification(false)]
         public int Max { get; private set; }
-        [ContractVerification(false)]
         public int Next { get; private set; }
-        [ContractVerification(false)]
+        
         public FiniteStack()
         {
             Contract.Ensures(Max == 5 && Next == -1);
@@ -16,7 +14,7 @@ namespace Examples
             Max = 5;
             Next = -1;
         }
-        [ContractVerification(false)]
+        
         public FiniteStack(int size)
         {
             Contract.Requires(size > 2);
@@ -25,13 +23,13 @@ namespace Examples
             Max = size;
             Next = -1;
         }
-        [ContractVerification(false)]
+        
         [ContractInvariantMethod]
         private void Invariant()
         {
             Contract.Invariant(Max > 2 && Next >= -1 && Max >= Next);
         }
-        [ContractVerification(false)]
+        
         public void Pop()
         {
             Contract.Requires(Next > -1);
@@ -39,7 +37,7 @@ namespace Examples
 
             Next = Next - 1;
         }
-        [ContractVerification(false)]
+        
         public void Push(int elem)
         {
             Contract.Requires(Next < Max);

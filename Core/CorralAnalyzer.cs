@@ -175,7 +175,6 @@ namespace Contractor.Core
             base.TotalAnalysisDuration += new TimeSpan(timer.ElapsedTicks);
             base.ExecutionsCount++;
 
-            // TODO: Improve Corral as a library instead of a console application.
             switch (corral.Result)
             {
                 case cba.CorralResult.BugFound:

@@ -39,7 +39,35 @@ namespace Contractor.Core
             ITypeContract typeContract = this.inputContractProvider.GetTypeContractFor(type);
             this.queryContractProvider.AssociateTypeWithContract(this.typeToAnalyze, typeContract);
 
+            // We assume that the methods were already proved by cccheck during the compilation
+            AddVerifierAttribute();
+
             this.outputParser = new Regex(pattern, RegexOptions.ExplicitCapture | RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline | RegexOptions.Compiled);
+        }
+
+        private void AddVerifierAttribute()
+        {
+            foreach (var m in this.typeToAnalyze.Methods)
+            {
+                if (m.Visibility != TypeMemberVisibility.Public)
+                {
+                    continue;
+                }
+
+                var disableVerifier = new CustomAttribute()
+                {
+                    Arguments = new List<IMetadataExpression>() { new MetadataConstant() { Value = false, Type = this.host.PlatformType.SystemBoolean } },
+                    Constructor = new Microsoft.Cci.MethodReference(this.host, this.host.PlatformType.SystemDiagnosticsContractsContract.ResolvedType.ContainingNamespace.GetMembersNamed(this.host.NameTable.GetNameFor("ContractVerificationAttribute"), false).First() as INamespaceTypeReference, CallingConvention.HasThis,
+                this.host.PlatformType.SystemVoid, this.host.NameTable.GetNameFor(".ctor"), 0, this.host.PlatformType.SystemBoolean),
+                };
+
+                var tmp = m as MethodDefinition;
+                if (tmp.Attributes == null)
+                {
+                    tmp.Attributes = new List<ICustomAttribute>();
+                }
+                tmp.Attributes.Add(disableVerifier);
+            }
         }
 
         public override ActionAnalysisResults AnalyzeActions(State source, IMethodDefinition action, List<IMethodDefinition> actions)

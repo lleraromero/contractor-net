@@ -5,63 +5,86 @@ namespace Examples
 {
     class Test
     {
-        public bool Pepe { get; set; }
+        public bool Pepe;
 
         public Test()
         {
-            Pepe = false;
+            this.Pepe = false;
         }
 
         public void acot()
         {
-            Contract.Requires(!Pepe);
-            Contract.Ensures(Pepe);
+            Contract.Requires(!this.Pepe);
+            Contract.Ensures(this.Pepe);
 
             for (int i = 0; i < 20; i++)
             {
-                if (i == 5)
+                if (i == 3)
                 {
-                    Pepe = true;
+                    this.Pepe = true;
                 }
+            }
+        }
+
+        public void sum()
+        {
+            Contract.Requires(!this.Pepe);
+
+            int k = 0;
+            for (int i = 0; i < 10; i++)
+            {
+                if (i == 9)
+                {
+                    k = 10;
+                }
+            }
+            if (k == 0)
+            {
+                this.Pepe = true;
+            }
+            else
+            {
+                this.Pepe = false;
             }
         }
 
         public void param(int k)
         {
-            Contract.Requires(!Pepe);
-            Contract.Ensures(!(k < 20) || Pepe);
+            Contract.Requires(!this.Pepe);
+            Contract.Ensures(!(k < 20) || this.Pepe);
+            //Contract.Ensures(!this.Pepe);
 
             for (int i = 0; i < 20; i++)
             {
                 if (i == k)
                 {
-                    Pepe = true;
+                    this.Pepe = true;
                 }
             }
         }
 
         public void rand()
         {
-            Contract.Requires(!Pepe);
-            //Contract.Ensures(Pepe);
+            Contract.Requires(!this.Pepe);
+            //Contract.Ensures(this.Pepe);
 
             for (int i = 0; i < 20; i++)
             {
                 if (i == new Random().Next())
                 {
-                    Pepe = true;
+                    this.Pepe = true;
                 }
             }
         }
 
         public void no()
         {
-            Contract.Requires(!Pepe);
+            Contract.Requires(!this.Pepe);
         }
 
         public void si()
         {
-            Contract.Requires(Pepe);
+            Contract.Requires(this.Pepe);
         }
     }
 }
