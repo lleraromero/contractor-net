@@ -228,7 +228,7 @@ namespace Contractor.Core
 
                         if (target != null)
                         {
-                            var transition = new Transition(source, action, target, isUnproven);
+                            var transition = new Transition(action, target, isUnproven);
                             analysisResult.Transitions.Add(transition);
                         }
 

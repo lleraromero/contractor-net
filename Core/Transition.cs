@@ -6,14 +6,9 @@ namespace Contractor.Core
     // Immutable representation of an EPA transition
     public class ITransition : Transition
     {
-        public ITransition(State source, IMethodDefinition action, State target, bool isUnproven)
-            : base(source, action, target, isUnproven)
+        public ITransition(IMethodDefinition action, State target, bool isUnproven)
+            : base(action, target, isUnproven)
         { 
-        }
-
-        public new IState SourceState
-        {
-            get { return base.SourceState.EPAState; }
         }
 
         public new IState TargetState
@@ -30,13 +25,11 @@ namespace Contractor.Core
     public class Transition : IEquatable<Transition>
     {
         public IMethodDefinition Action { get; private set; }
-        public State SourceState { get; private set; }
         public State TargetState { get; private set; }
         public bool IsUnproven { get; private set; }
 
-        public Transition(State source, IMethodDefinition action, State target, bool isUnproven)
+        public Transition(IMethodDefinition action, State target, bool isUnproven)
         {
-            this.SourceState = source;
             this.Action = action;
             this.TargetState = target;
             this.IsUnproven = isUnproven;
@@ -46,18 +39,18 @@ namespace Contractor.Core
         {
             get
             {
-                return new ITransition(this.SourceState, this.Action, this.TargetState, this.IsUnproven);
+                return new ITransition(this.Action, this.TargetState, this.IsUnproven);
             }
         }
 
         public override string ToString()
         {
-            return string.Format("{0} - {1} -> {2}", this.SourceState, Utils.Extensions.GetDisplayName(this.Action), this.TargetState);
+            return string.Format("-- {0} --> {1}", Utils.Extensions.GetDisplayName(this.Action), this.TargetState);
         }
 
         public bool Equals(Transition other)
         {
-            return this.Action.Equals(other.Action) && this.SourceState.Equals(other.SourceState) && this.TargetState.Equals(other.TargetState);
+            return this.Action.Equals(other.Action) && this.TargetState.Equals(other.TargetState);
         }
 
         public override bool Equals(object obj)
@@ -75,7 +68,7 @@ namespace Contractor.Core
 
         public override int GetHashCode()
         {
-            return this.SourceState.GetHashCode() ^ this.TargetState.GetHashCode();
+            return this.Action.GetHashCode() ^ this.TargetState.GetHashCode();
         }
     }
 }

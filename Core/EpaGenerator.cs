@@ -56,10 +56,13 @@ namespace Contractor.Core
     {
         public ITransition Transition { get; private set; }
 
-        public TransitionAddedEventArgs(string typeFullName, ITransition transition)
+        public IState SourceState { get; private set; }
+
+        public TransitionAddedEventArgs(string typeFullName, ITransition transition, IState sourceState)
             : base(typeFullName)
         {
             this.Transition = transition;
+            this.SourceState = sourceState;
         }
     }
 
@@ -265,11 +268,11 @@ namespace Contractor.Core
                             }
                         }
 
-                        epa[transition.SourceState.EPAState].Add(transition.EPATransition);
+                        epa[source.EPAState].Add(transition.EPATransition);
 
                         if (this.TransitionAdded != null)
                         {
-                            var eventArgs = new TransitionAddedEventArgs(typeDisplayName, transition.EPATransition);
+                            var eventArgs = new TransitionAddedEventArgs(typeDisplayName, transition.EPATransition, source.EPAState);
                             this.TransitionAdded(this, eventArgs);
                         }
                     }

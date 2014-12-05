@@ -37,5 +37,15 @@ namespace Contractor.Core
             this.GenerationCompleted = false;
             this.Instrumented = false;
         }
+
+        public IState GetSourceState(ITransition t)
+        {
+            foreach (var key in base.Keys)
+            {
+                if (base[key].Contains(t))
+                    return key;
+            }
+            return null;
+        }
     }
 }
