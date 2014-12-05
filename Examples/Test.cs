@@ -15,11 +15,11 @@ namespace Examples
         public void acot()
         {
             Contract.Requires(!this.Pepe);
-            Contract.Ensures(this.Pepe);
+            Contract.Ensures(!this.Pepe);
 
             for (int i = 0; i < 20; i++)
             {
-                if (i == 3)
+                if (i == 21)
                 {
                     this.Pepe = true;
                 }
@@ -51,7 +51,7 @@ namespace Examples
         public void param(int k)
         {
             Contract.Requires(!this.Pepe);
-            Contract.Ensures(!(k < 20) || this.Pepe);
+            //Contract.Ensures(!(k < 20) || this.Pepe);
             //Contract.Ensures(!this.Pepe);
 
             for (int i = 0; i < 20; i++)
