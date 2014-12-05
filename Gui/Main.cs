@@ -485,8 +485,8 @@ namespace Contractor.Gui
             else
             {
                 var seconds = Math.Ceiling(analysisResult.TotalDuration.TotalSeconds);
-                var statesCount = analysisResult.States.Count;
-                var transitionsCount = analysisResult.Transitions.Count;
+                var statesCount = analysisResult.EPA.States.Count();
+                var transitionsCount = analysisResult.EPA.Transitions.Count();
 
                 this.EndBackgroundTask("Analysis for {0} done in {1} seconds: {2} states, {3} transitions", typeFullName, seconds, statesCount, transitionsCount);
                 this.OutputTypeAnalysisResult(analysisResult);
@@ -520,16 +520,17 @@ namespace Contractor.Gui
             var executionsCount = analysisResult.ExecutionsCount;
             var totalGeneratedQueriesCount = analysisResult.TotalGeneratedQueriesCount;
             var unprovenQueriesCount = analysisResult.UnprovenQueriesCount;
-            var statesCount = analysisResult.States.Count;
-            var transitionsCount = analysisResult.Transitions.Count;
-            var initialStatesCount = analysisResult.States.Count(s => s.IsInitial);
-            var unprovenTransitionsCount = analysisResult.Transitions.Count(t => t.IsUnproven);
+            var statesCount = analysisResult.EPA.States.Count();
+            var transitionsCount = analysisResult.EPA.Transitions.Count();
+            var initialStatesCount = analysisResult.EPA.States.Count(s => s.IsInitial);
+            var unprovenTransitionsCount = analysisResult.EPA.Transitions.Count(t => t.IsUnproven);
             var precision = 100 - Math.Ceiling((double)unprovenQueriesCount * 100 / totalGeneratedQueriesCount);
+            var backend = analysisResult.Backend;
 
             var sb = new StringBuilder();
-            sb.AppendFormat("   Code Contracts analysis total duration:\t{0}", totalAnalyzerDuration).AppendLine();
-            sb.AppendFormat("   Code Contracts analysis precision:\t\t{0}%", precision).AppendLine();
-            sb.AppendFormat("   Code Contracts executions:\t\t\t{0}", executionsCount).AppendLine();
+            sb.AppendFormat("   {0} analysis total duration:\t{1}", backend, totalAnalyzerDuration).AppendLine();
+            sb.AppendFormat("   {0} analysis precision:\t\t{1}%", backend, precision).AppendLine();
+            sb.AppendFormat("   {0} executions:\t\t\t{1}", backend, executionsCount).AppendLine();
             sb.AppendFormat("   Total duration:\t\t\t\t{0}", totalDuration).AppendLine();
             sb.AppendFormat("   Generated queries:\t\t\t\t{0} ({1} unproven)", totalGeneratedQueriesCount, unprovenQueriesCount).AppendLine();
             sb.AppendFormat("   States:\t\t\t\t\t{0} ({1} initial)", statesCount, initialStatesCount).AppendLine();

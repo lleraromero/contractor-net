@@ -11,7 +11,7 @@ namespace Examples
         [ContractInvariantMethod]
         private void Invariant()
         {
-            Contract.Invariant(!emergency || !closed);
+            Contract.Invariant(!this.emergency || !this.closed);
         }
 
         public DoorPost()
@@ -72,43 +72,5 @@ namespace Examples
 
             emergency = false;
         }
-
-        #region tests
-
-        //s0: {stop, safe}
-        //s1: {start, safe}
-        private void s0_stop_s1()
-        {
-            Contract.Requires(moving); //stop
-            Contract.Requires(emergency); //safe
-            Contract.Requires(emergency); //not alarm
-            Contract.Requires(!(!closed && !emergency)); //not close closed || emergency
-            Contract.Requires(!closed || moving); //not open
-            Contract.Requires(moving); //not start
-
-            Contract.Ensures(!!moving); //start
-            Contract.Ensures(!emergency); //safe
-
-            Contract.Ensures(!!moving); //not stop
-            Contract.Ensures((closed && !moving)); //not open
-            Contract.Ensures(!emergency); //not alarm
-            Contract.Ensures((!closed && !emergency)); //not close
-
-            Stop();
-        }
-
-        // Examples.DoorPost
-        private void test()
-        {
-            Contract.Assume(this != null);
-            this.closed = true;
-            this.moving = false;
-            this.emergency = false;
-            Contract.Assume(this.closed && !this.moving && !this.emergency);
-            Contract.Assert((!this.emergency && !this.emergency) || (!this.closed && !this.emergency) || (this.closed && !this.moving) || this.emergency || !this.moving || this.moving);
-        }
-
-
-        #endregion tests
     }
 }

@@ -23,7 +23,6 @@ namespace Contractor.Core
         /// <param name="returnStatement"></param>
         public override IStatement Rewrite(IReturnStatement returnStatement)
         {
-            Contract.Requires(returnStatement != null);
             Contract.Ensures(Contract.Result<IStatement>() != null);
 
             var blockStmt = new BlockStatement();

@@ -30,9 +30,7 @@ namespace Contractor.Core
 			this.type = type;
 			this.epa = epa;
 
-			var actions = from actionUniqueName in epa.Keys
-						  join action in type.Methods on actionUniqueName equals action.GetUniqueName()
-						  select action;
+            var actions = from transition in epa.Transitions.GroupBy(t => t.Action) select transition.Key;
 
 			foreach (var action in actions)
 			{
@@ -75,7 +73,12 @@ namespace Contractor.Core
 			foreach (var action in actions)
 			{
 				var actionUniqueName = action.GetUniqueName();
-				var transitions = epa[actionUniqueName];
+                // voy a agrupar las transiciones que usan esta accion por sourceState.Id
+                // transitions = Dicc<uint, List<uint>> o sea: "Dicc<from, List<to>>"
+                var transUsingAction = from t in epa.Transitions where t.Action.Equals(action) select t;
+                var transSourceIds = (from t in transUsingAction select t.SourceState.Id).Distinct();
+                var transitions = transUsingAction.GroupBy(t => t.SourceState.Id).ToDictionary(t => t.Key, t => (from tran in t select tran.TargetState.Id).ToList());
+
 				var mc = cp.GetMethodContractFor(action) as MethodContract;
 
 				if (mc == null)
@@ -323,7 +326,9 @@ namespace Contractor.Core
 
 		private IStatement generateIf(FieldDefinition field, IList<uint> to)
 		{
-			var toStates = from id in to select epa.States[id];
+			var toStates = from id in to 
+                           join state in epa.States on id equals state.Id
+                           select state;
 			var conditions = Helper.GenerateStatesConditions(host, preconditions, type, toStates);
 
 			IStatement stmt = generateAssign(field, to[0]);

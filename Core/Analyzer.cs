@@ -33,7 +33,7 @@ namespace Contractor.Core
         protected ContractProvider queryContractProvider;
         protected readonly NamespaceTypeDefinition typeToAnalyze;
 
-        protected string notPrefix = ".Not.";
+        protected string notPrefix = "_Not_";
         protected string methodNameDelimiter = "~";
 
         protected Microsoft.Cci.Immutable.GenericTypeInstance specializedInputType;
@@ -46,11 +46,17 @@ namespace Contractor.Core
             this.inputAssembly = new AssemblyInfo(host);
             inputAssembly.Load(module.Location);
 
-            this.typeToAnalyze = type;
             this.inputContractProvider = inputAssembly.ExtractContracts();
+
+            if (type.IsGeneric)
+            {
+                var typeReference = MutableModelHelper.GetGenericTypeInstanceReference(type.GenericParameters, type, host.InternFactory, null);
+                this.specializedInputType = typeReference.ResolvedType as Microsoft.Cci.Immutable.GenericTypeInstance;
+            }
 
             // Create a clone of the module as a working copy.
             CreateQueryAssembly(type);
+            this.typeToAnalyze = queryAssembly.DecompiledModule.AllTypes.Find(t => t.Name == type.Name) as NamespaceTypeDefinition;
             this.queryContractProvider = new ContractProvider(new ContractMethods(this.host), this.host.FindUnit(this.queryAssembly.Module.UnitIdentity));
         }
 
@@ -65,34 +71,47 @@ namespace Contractor.Core
             { }
         }
 
-        private void CreateQueryAssembly(NamespaceTypeDefinition type)
+        protected virtual void CreateQueryAssembly(NamespaceTypeDefinition type)
         {
-            // Load original module
-            IModule module = this.host.LoadUnitFrom(inputAssembly.Module.Location) as IModule;
-            // Make a editable copy
-            Module queryModule = new MetadataDeepCopier(this.host).Copy(module);
+            var coreAssembly = host.LoadAssembly(host.CoreAssemblySymbolicIdentity);
 
-            // Remove types that we don't need to analyse in the query assembly.
-            var types = queryModule.GetAnalyzableTypes().ToList();
-            foreach (var t in types)
+            var assembly = new Assembly()
             {
-                var tMutable = t as NamespaceTypeDefinition;
-                if (tMutable != null && tMutable.ContainingUnitNamespace.Name == type.ContainingUnitNamespace.Name && tMutable.Name != type.Name)
-                {
-                    queryModule.AllTypes.Remove(t);
-                }
-            }
+                Name = host.NameTable.GetNameFor("Query"),
+                ModuleName = host.NameTable.GetNameFor("query.dll"),
+                Kind = ModuleKind.DynamicallyLinkedLibrary,
+                TargetRuntimeVersion = coreAssembly.TargetRuntimeVersion,
+            };
 
-            // TODO: removed types are still present as RootNamespace members, remove them.
-            // How do we recognize useless types?
-            this.queryAssembly = new AssemblyInfo(this.host, queryModule);
+            assembly.AssemblyReferences.Add(coreAssembly);
+
+            var rootUnitNamespace = new RootUnitNamespace();
+            assembly.UnitNamespaceRoot = rootUnitNamespace;
+            rootUnitNamespace.Unit = assembly;
+
+            var moduleClass = new NamespaceTypeDefinition()
+            {
+                ContainingUnitNamespace = rootUnitNamespace,
+                InternFactory = host.InternFactory,
+                IsClass = true,
+                Name = host.NameTable.GetNameFor("<Module>"),
+            };
+
+
+            assembly.AllTypes.Add(moduleClass);
+
+            var queryType = new MetadataDeepCopier(this.host).Copy(type);
+            rootUnitNamespace.Members.Add(queryType);
+            assembly.AllTypes.Add(queryType);
+
+            this.queryAssembly = new AssemblyInfo(host, assembly);
         }
 
         protected string GetQueryAssemblyPath()
         {
             Contract.Requires(this.inputAssembly != null);
 
-            return Path.Combine(Configuration.TempPath, this.inputAssembly.Module.ModuleName.Value + ".tmp");
+            return Path.Combine(Configuration.TempPath, this.queryAssembly.Module.ModuleName.Value);
         }
 
         protected PdbReader GetPDBReader(IModule module, IContractAwareHost host)
@@ -139,7 +158,7 @@ namespace Contractor.Core
 
             var prefix = negate ? notPrefix : string.Empty;
             var actionName = action.GetUniqueName();
-            var stateName = state.Id;
+            var stateName = state.UniqueName;
             var targetName = target.GetUniqueName();
             var methodName = string.Format("{1}{0}{2}{0}{3}{4}", methodNameDelimiter, stateName, actionName, prefix, targetName);
             var method = CreateQueryMethod<IMethodDefinition>(state, methodName, action, target);
@@ -152,27 +171,6 @@ namespace Contractor.Core
         private MethodContract CreateQueryContract(State state, IMethodDefinition target, bool negate)
         {
             var queryContract = new MethodContract();
-
-            // Add the invariant as a precondition and postcondition of the query
-            ITypeContract typeContract = inputContractProvider.GetTypeContractFor(typeToAnalyze);
-            if (typeContract != null)
-            {
-                queryContract.Preconditions.AddRange(from i in typeContract.Invariants
-                                                     select new Precondition()
-                                                     {
-                                                         Condition = i.Condition,
-                                                         OriginalSource = i.OriginalSource,
-                                                         Locations = new List<ILocation>(i.Locations),
-                                                     });
-                queryContract.Postconditions.AddRange(from i in typeContract.Invariants
-                                                      select new Postcondition()
-                                                      {
-                                                          Condition = i.Condition,
-                                                          OriginalSource = i.OriginalSource,
-                                                          Locations = new List<ILocation>(i.Locations),
-                                                      });
-            }
-
             var targetContract = inputContractProvider.GetMethodContractFor(target);
 
             // Add preconditions of enabled actions
@@ -181,7 +179,17 @@ namespace Contractor.Core
                 var actionContract = inputContractProvider.GetMethodContractFor(a);
                 if (actionContract == null) continue;
 
-                queryContract.Preconditions.AddRange(actionContract.Preconditions);
+                var enabledActions = from p in actionContract.Preconditions
+                                     select new Precondition(p)
+                                     {
+                                         Description = new CompileTimeConstant()
+                                         {
+                                             Type = this.host.PlatformType.SystemString,
+                                             Value = string.Format("Enabled action ({0})", a.Name.Value)
+                                         }
+                                     };
+
+                queryContract.Preconditions.AddRange(enabledActions);
             }
 
             // Add negated preconditions of disabled actions
@@ -198,8 +206,16 @@ namespace Contractor.Core
                                    Type = host.PlatformType.SystemBoolean,
                                    Operand = pre.Condition
                                },
-                               OriginalSource = pre.OriginalSource
+                               Description = new CompileTimeConstant()
+                               {
+                                   Type = this.host.PlatformType.SystemString,
+                                   Value = string.Format("Disabled action ({0})", a.Name.Value)
+                               }
                            };
+                foreach (var p in pres)
+                {
+                    p.OriginalSource = Helper.PrintExpression(p.Condition);
+                }
 
                 queryContract.Preconditions.AddRange(pres);
             }
@@ -217,7 +233,8 @@ namespace Contractor.Core
                             Type = host.PlatformType.SystemBoolean,
                             Value = false
                         },
-                        OriginalSource = "false"
+                        OriginalSource = "false",
+                        Description = new CompileTimeConstant() { Value = "Target negated precondition", Type = this.host.PlatformType.SystemString }
                     };
 
                     queryContract.Postconditions.Add(post);
@@ -237,7 +254,8 @@ namespace Contractor.Core
                             Type = host.PlatformType.SystemBoolean,
                             Operand = Helper.JoinWithLogicalAnd(host, exprs, true)
                         },
-                        OriginalSource = Helper.PrintExpression(Helper.JoinWithLogicalAnd(host, exprs, true))
+                        OriginalSource = Helper.PrintExpression(Helper.JoinWithLogicalAnd(host, exprs, true)),
+                        Description = new CompileTimeConstant() { Value = "Target negated precondition", Type = this.host.PlatformType.SystemString }
                     };
 
                     queryContract.Postconditions.Add(post);
@@ -248,7 +266,8 @@ namespace Contractor.Core
                                 select new Postcondition()
                                 {
                                     Condition = pre.Condition,
-                                    OriginalSource = pre.OriginalSource
+                                    OriginalSource = pre.OriginalSource,
+                                    Description = new CompileTimeConstant() { Value = "Target precondition", Type = this.host.PlatformType.SystemString }
                                 };
 
                     queryContract.Postconditions.AddRange(posts);
@@ -274,19 +293,18 @@ namespace Contractor.Core
         {
             var contracts = new MethodContract();
 
+            // Source state invariant as a precondition
             var stateInv = Helper.GenerateStateInvariant(host, inputContractProvider, typeToAnalyze, state);
+            var precondition = new Precondition()
+            {
+                Condition = Helper.JoinWithLogicalAnd(this.host, stateInv, true),
+                OriginalSource = string.Join(" AND ", from a in stateInv select Helper.PrintExpression(a)),
+                Description = new CompileTimeConstant() { Value = "Source state invariant", Type = this.host.PlatformType.SystemString }
+            };
+            contracts.Preconditions.Add(precondition);
 
-            var precondition = from expr in stateInv
-                               select new Precondition()
-                               {
-                                   Condition = expr,
-                                   OriginalSource = Helper.PrintExpression(expr)
-                               };
-
-            contracts.Preconditions.AddRange(precondition);
-
+            // Negated target state invariant  as a postcondition
             var targetInv = Helper.GenerateStateInvariant(host, inputContractProvider, typeToAnalyze, target);
-
             var postcondition = new Postcondition()
             {
                 Condition = new LogicalNot()
@@ -294,19 +312,17 @@ namespace Contractor.Core
                     Type = host.PlatformType.SystemBoolean,
                     Operand = Helper.JoinWithLogicalAnd(host, targetInv, true)
                 },
-                OriginalSource = string.Join(" AND ", from a in targetInv select Helper.PrintExpression(a))
+                OriginalSource = string.Join(" AND ", from a in targetInv select Helper.PrintExpression(a)),
+                Description = new CompileTimeConstant() { Value = "Negated target state invariant", Type = this.host.PlatformType.SystemString }
             };
-
             contracts.Postconditions.Add(postcondition);
+
             return contracts;
         }
 
         private MethodDefinition CreateQueryMethod<T>(State state, string name, IMethodDefinition action, T target)
         {
             Contract.Requires(target is IMethodDefinition || target is State);
-
-            // I need to assign the queries to the type that I'm processing
-            var type = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == typeToAnalyze.Name) as NamespaceTypeDefinition;
 
             // Get all the parameters that the query might need
             var parameters = new HashSet<IParameterDefinition>();
@@ -327,18 +343,16 @@ namespace Contractor.Core
                 foreach (var a in stateTarget.DisabledActions)
                     parameters.UnionWith(a.Parameters);
             }
-            
-
+                 
             var method = new MethodDefinition()
             {
-                Attributes = new List<ICustomAttribute>(action.Attributes),
                 CallingConvention = Microsoft.Cci.CallingConvention.HasThis,
-                ContainingTypeDefinition = type,
+                ContainingTypeDefinition = this.typeToAnalyze,
                 InternFactory = host.InternFactory,
                 IsStatic = false,
                 Name = host.NameTable.GetNameFor(name),
                 Type = action.Type,
-                Visibility = TypeMemberVisibility.Private,
+                Visibility = TypeMemberVisibility.Public,
                 Parameters = parameters.ToList()
             };
 
@@ -350,25 +364,9 @@ namespace Contractor.Core
             }
             else
             {
+                // TODO: Calling the method is not working properly
                 block = CallMethod(action);
             }
-
-            var assumeSelfNotNull = new AssumeStatement()
-            {
-                Condition = new LogicalNot()
-                {
-                    Type = host.PlatformType.SystemBoolean,
-                    Operand = new Equality()
-                    {
-                        Type = host.PlatformType.SystemBoolean,
-                        LeftOperand = new ThisReference(),
-                        RightOperand = new CompileTimeConstant()
-                    }
-                }
-            };
-            assumeSelfNotNull.OriginalSource = Helper.PrintExpression(assumeSelfNotNull.Condition);
-
-            block.Statements.Insert(0, assumeSelfNotNull);
 
             method.Body = new SourceMethodBody(host)
             {
@@ -382,7 +380,6 @@ namespace Contractor.Core
 
         private BlockStatement CallMethod(IMethodDefinition action)
         {
-            throw new NotSupportedException(); //TODO: do the proper modifications
             var block = new BlockStatement();
             var args = new List<IExpression>();
 
@@ -421,7 +418,7 @@ namespace Contractor.Core
                 };
 
                 block.Statements.Add(call);
-                block.Statements.Add(new ReturnStatement());
+                //block.Statements.Add(new ReturnStatement());
             }
             else
             {

@@ -1,0 +1,470 @@
+﻿<?xml version="1.0"?>
+<doc>
+  <assembly>
+    <name>Microsoft.Cci.Analysis.ControlAndDataFlowGraph</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.Cci.Analysis.ControlFlowInferencer`2.SetupControlFlow(Microsoft.Cci.IMetadataHost,Microsoft.Cci.IMethodBody,Microsoft.Cci.ILocalScopeProvider)">
+      <summary />
+      <requires csharp="host != null" vb="host &lt;&gt; Nothing">host != null</requires>
+      <requires csharp="methodBody != null" vb="methodBody &lt;&gt; Nothing">methodBody != null</requires>
+      <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="T:Microsoft.Cci.Analysis.ControlGraphQueries`2">
+      <summary>
+            Presents information derived from a simple control flow graph. For example, traversal orders, predecessors, dominators and dominance frontiers.
+            </summary>
+      <invariant>this.cfg != null</invariant>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.ControlGraphQueries`2.#ctor(Microsoft.Cci.Analysis.ControlAndDataFlowGraph{`0,`1})">
+      <summary>
+            Presents information derived from a simple control flow graph. For example, traversal orders, predecessors, dominators and dominance frontiers.
+            </summary>
+      <param name="controlFlowGraph">The simple control flow graph from which to derive the information.</param>
+      <requires csharp="controlFlowGraph != null" vb="controlFlowGraph &lt;&gt; Nothing">controlFlowGraph != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.ControlGraphQueries`2.DominanceFrontierFor(`0)">
+      <summary>
+            Returns zero or more nodes that are reachable from the given basic block, but are not dominated by the given basic block.
+            </summary>
+      <requires csharp="(object)basicBlock != null" vb="((Object)basicBlock) &lt;&gt; Nothing">(object)basicBlock != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.ControlGraphQueries`2.Dominates(`0,`0)">
+      <summary>
+            Returns true if the first block dominates the second block. That is, if all control paths from the applicable root node
+            lead to the second block only via the first block.
+            </summary>
+      <requires csharp="(object)block1 != null" vb="((Object)block1) &lt;&gt; Nothing">(object)block1 != null</requires>
+      <requires csharp="(object)block2 != null" vb="((Object)block2) &lt;&gt; Nothing">(object)block2 != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.ControlGraphQueries`2.ImmediateDominator(`0)">
+      <summary>
+            Returns the last block through which all control flows from a root must pass in order to reach the given block. 
+            This block can be a root, however, it will not be the given block, except when the given block is a root.
+            </summary>
+      <requires csharp="(object)basicBlock != null" vb="((Object)basicBlock) &lt;&gt; Nothing">(object)basicBlock != null</requires>
+      <ensures csharp="(object)result != null" vb="((Object)result) &lt;&gt; Nothing">(object)result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.ControlGraphQueries`2.PredeccessorsFor(`0)">
+      <summary>
+            All basic blocks from which control can flow to the given basic block.
+            </summary>
+      <requires csharp="(object)basicBlock != null" vb="((Object)basicBlock) &lt;&gt; Nothing">(object)basicBlock != null</requires>
+    </member>
+    <member name="P:Microsoft.Cci.Analysis.ControlGraphQueries`2.BlocksInPostorder">
+      <summary>
+            Contains the same nodes as the AllBlocks property of the control flow graph, but in the order they will be visited by a depth first, post order traversal of successor nodes.
+            </summary>
+      <getter>
+        <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Analysis.ControlGraphQueries`2.BlocksInPreorder">
+      <summary>
+            Contains the same nodes as the AllBlocks property of the control flow graph, but in the order they will be visited by a depth first, pre order traversal of successor nodes.
+            </summary>
+      <getter>
+        <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="T:Microsoft.Cci.Analysis.EnhancedBasicBlock`1">
+      <summary>
+            A basic block with additional fields to help compute things such as predecessor edges, dominance and dominance frontiers.
+            </summary>
+      <typeparam name="Instruction" />
+    </member>
+    <member name="T:Microsoft.Cci.Analysis.BasicBlock`1">
+      <summary>
+            A block of instructions of which only the first instruction can be reached via explicit control flow.
+            </summary>
+    </member>
+    <member name="F:Microsoft.Cci.Analysis.BasicBlock`1.firstSuccessorEdge">
+      <summary>
+            The first edge that leaves this block. The edges are a contiguous sublist of the the SuccessorEdges list of the ControlAndDataFlowGraph that contains this block.
+            </summary>
+    </member>
+    <member name="F:Microsoft.Cci.Analysis.BasicBlock`1.successorCount">
+      <summary>
+            The number of edges that leave this block. The edges are a contiguous sublist of the the SuccessorEdges list of the ControlAndDataFlowGraph that contains this block.
+            </summary>
+    </member>
+    <member name="F:Microsoft.Cci.Analysis.BasicBlock`1.OperandStack">
+      <summary>
+            A list of pseudo instructions that initialize the operand stack when the block is entered. No actual code should be generated for these instructions
+            as the actual stack will be set up by the code transferring control to this block.
+            </summary>
+    </member>
+    <member name="F:Microsoft.Cci.Analysis.BasicBlock`1.Instructions">
+      <summary>
+            The instructions making up this block.
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.BasicBlock`1.ToString">
+      <summary>
+            Returns a string describing the basic block.
+            </summary>
+      <returns />
+      <ensures inheritedFrom="M:System.Object.ToString" inheritedFromTypeName="Object" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.Analysis.BasicBlock`1.Offset">
+      <summary>
+            The IL offset of the first instruction in this basic block. If the block is empty, it is the same as the Offset of the following block. If there is no following block, 
+            it is the offset where the next instruction would have appeared.
+            </summary>
+    </member>
+    <member name="F:Microsoft.Cci.Analysis.EnhancedBasicBlock`1.firstDominanceFrontierNode">
+      <summary>
+            The first block in a list of blocks that are reachable from, but not dominated by this block.
+            </summary>
+    </member>
+    <member name="F:Microsoft.Cci.Analysis.EnhancedBasicBlock`1.dominanceFrontierCount">
+      <summary>
+            The number of blocks that are reachable from, but not dominated by this block.
+            </summary>
+    </member>
+    <member name="F:Microsoft.Cci.Analysis.EnhancedBasicBlock`1.firstPredecessorEdge">
+      <summary>
+            The first edge that enters this block. The edges are a contiguous sublist of the the PredeccessorEdges list of the ControlAndDataFlowGraph that contains this block.
+            </summary>
+    </member>
+    <member name="F:Microsoft.Cci.Analysis.EnhancedBasicBlock`1.predeccessorCount">
+      <summary>
+            The number of edges that enter this block. The edges are a contiguous sublist of the the PredeccessorEdges list of the ControlAndDataFlowGraph that contains this block.
+            </summary>
+    </member>
+    <member name="F:Microsoft.Cci.Analysis.EnhancedBasicBlock`1.immediateDominator">
+      <summary>
+            The block through which all control flows from a root must pass in order to reach this block. Can be a root. Will not be the block itself, except when the block is a root.
+            </summary>
+    </member>
+    <member name="F:Microsoft.Cci.Analysis.EnhancedBasicBlock`1.postOrderNumber">
+      <summary>
+            The position of the node in a depth first, post order traversal of successor edges.
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.DataFlowInferencer`2.SetupDataFlow(Microsoft.Cci.IMetadataHost,Microsoft.Cci.IMethodBody,Microsoft.Cci.Analysis.ControlAndDataFlowGraph{`0,`1})">
+      <summary />
+      <requires csharp="host != null" vb="host &lt;&gt; Nothing">host != null</requires>
+      <requires csharp="methodBody != null" vb="methodBody &lt;&gt; Nothing">methodBody != null</requires>
+      <requires csharp="cdfg != null" vb="cdfg &lt;&gt; Nothing">cdfg != null</requires>
+    </member>
+    <member name="T:Microsoft.Cci.Analysis.ControlAndDataFlowGraph`2">
+      <summary>
+            A set of basic blocks, each of which has a list of successor blocks and some other information.
+            Each block consists of a list of instructions, each of which can point to previous instructions that compute the operands it consumes.
+            </summary>
+      <invariant>this.methodBody != null</invariant>
+      <invariant>this.successorEdges != null</invariant>
+      <invariant>this.allBlocks != null</invariant>
+      <invariant>this.rootBlocks != null</invariant>
+      <invariant>this.blockFor != null</invariant>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.ControlAndDataFlowGraph`2.SuccessorsFor(`0)">
+      <summary>
+            All basic blocks that can be reached via control flow out of the given basic block.
+            </summary>
+      <requires csharp="(object)basicBlock != null" vb="((Object)basicBlock) &lt;&gt; Nothing">(object)basicBlock != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.ControlAndDataFlowGraph`2.GetControlAndDataFlowGraphFor(Microsoft.Cci.IMetadataHost,Microsoft.Cci.IMethodBody,Microsoft.Cci.ILocalScopeProvider)">
+      <summary>
+            Constructs a control and data flow graph for the given method body.
+            </summary>
+      <requires csharp="host != null" vb="host &lt;&gt; Nothing">host != null</requires>
+      <requires csharp="methodBody != null" vb="methodBody &lt;&gt; Nothing">methodBody != null</requires>
+      <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.Analysis.ControlAndDataFlowGraph`2.MethodBody">
+      <summary>
+            The method body for which this instance is a Control and Data Flow Graph.
+            </summary>
+      <getter>
+        <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+      <setter>
+        <requires csharp="value != null" vb="value &lt;&gt; Nothing">value != null</requires>
+      </setter>
+    </member>
+    <member name="P:Microsoft.Cci.Analysis.ControlAndDataFlowGraph`2.RootBlocks">
+      <summary>
+            The first block in the method as well as the first blocks of any exception handlers, fault handlers and finally clauses.
+            </summary>
+      <getter>
+        <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+      <setter>
+        <requires csharp="value != null" vb="value &lt;&gt; Nothing">value != null</requires>
+      </setter>
+    </member>
+    <member name="P:Microsoft.Cci.Analysis.ControlAndDataFlowGraph`2.AllBlocks">
+      <summary>
+            A list of all basic blocks in the graph, ordered so that any block that ends on a conditional branch immediately precedes the block
+            to which it falls through and so that all blocks that make up a try body or handler are contiguous.
+            </summary>
+      <getter>
+        <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+      <setter>
+        <requires csharp="value != null" vb="value &lt;&gt; Nothing">value != null</requires>
+      </setter>
+    </member>
+    <member name="P:Microsoft.Cci.Analysis.ControlAndDataFlowGraph`2.BlockFor">
+      <summary>
+            A map from IL offset to corresponding basic block.
+            </summary>
+      <getter>
+        <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+      <setter>
+        <requires csharp="value != null" vb="value &lt;&gt; Nothing">value != null</requires>
+      </setter>
+    </member>
+    <member name="P:Microsoft.Cci.Analysis.ControlAndDataFlowGraph`2.SuccessorEdges">
+      <summary>
+            The master list of all successor edges. The successor list for each basic block is a sublist of this list.
+            </summary>
+      <getter>
+        <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+      <setter>
+        <requires csharp="value != null" vb="value &lt;&gt; Nothing">value != null</requires>
+      </setter>
+    </member>
+    <member name="T:Microsoft.Cci.Analysis.Instruction">
+      <summary>
+            A model of an IL operation, but with the implicit operand stack made explicit via the properties Operand1 and Operand2
+            that point to the previous instructions that computed the operands, if any, that the instruction consumes.
+            </summary>
+      <invariant>this.operation != null</invariant>
+      <invariant>this.type != null</invariant>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.Instruction.#ctor">
+      <summary>
+            A model of an IL operation, but with the implicit operand stack made explicit via the properties Operand1 and Operand2
+            that point to the previous instructions that computed the operands, if any, that the instruction consumes.
+            </summary>
+    </member>
+    <member name="F:Microsoft.Cci.Analysis.Instruction.Operand1">
+      <summary>
+            The instruction that results in the first operand of the operation, if an operand is required.
+            </summary>
+    </member>
+    <member name="F:Microsoft.Cci.Analysis.Instruction.Operand2">
+      <summary>
+            The instruction that results in the second operand of the operation, if a second operand is required.
+            Could also be an array of instructions if the instruction is n-ary for n &gt; 2.
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.Instruction.ToString">
+      <summary>
+            Returns a <see cref="T:System.String" /> that represents this instance.
+            </summary>
+      <returns>
+            A <see cref="T:System.String" /> that represents this instance.
+            </returns>
+      <ensures inheritedFrom="M:System.Object.ToString" inheritedFromTypeName="Object" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.Analysis.Instruction.Operation">
+      <summary>
+            The operation this instruction carries out.
+            </summary>
+      <getter>
+        <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+      <setter>
+        <requires csharp="value != null" vb="value &lt;&gt; Nothing">value != null</requires>
+      </setter>
+    </member>
+    <member name="P:Microsoft.Cci.Analysis.Instruction.Type">
+      <summary>
+            The type of the result this instruction pushes onto the stack. Void if none.
+            </summary>
+      <getter>
+        <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+      <setter>
+        <requires csharp="value != null" vb="value &lt;&gt; Nothing">value != null</requires>
+      </setter>
+    </member>
+    <member name="T:Microsoft.Cci.Analysis.TypeInferencer`2">
+      <summary />
+      <invariant>this.platformType != null</invariant>
+      <invariant>this.cfg != null</invariant>
+      <invariant>this.stack != null</invariant>
+      <invariant>this.blocksToVisit != null</invariant>
+      <invariant>this.blocksAlreadyVisited != null</invariant>
+      <invariant>this.internFactory != null</invariant>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.TypeInferencer`2.FillInTypes(Microsoft.Cci.IMetadataHost,Microsoft.Cci.Analysis.ControlAndDataFlowGraph{`0,`1})">
+      <summary />
+      <requires csharp="host != null" vb="host &lt;&gt; Nothing">host != null</requires>
+      <requires csharp="cfg != null" vb="cfg &lt;&gt; Nothing">cfg != null</requires>
+    </member>
+    <member name="T:Microsoft.Cci.Analysis.Stack`1">
+      <invariant>this.elements != null</invariant>
+      <invariant>this.elements.Length &gt; 0</invariant>
+      <invariant>this.top &lt; this.elements.Length</invariant>
+      <invariant>Contract.ForAll(0, this.top+1, (i) =&gt; this.elements[i] != null)</invariant>
+      <invariant>this.top &gt;= -1</invariant>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.Stack`1.Push(`0)">
+      <requires csharp="(() =&gt; {&#xD;&#xA;    {&#xD;&#xA;        System.Predicate&lt;int&gt; local_1 = (System.Predicate&lt;int&gt;)null;&#xD;&#xA;    }&#xD;&#xA;    return (object)instruction != null; })()" vb="(() =&gt; {&#xD;&#xA;    System.Predicate&lt;int&gt; local_1 = ((System.Predicate(Of Integer))Nothing);&#xD;&#xA;    return ((Object)instruction) &lt;&gt; Nothing; })()">(() =&gt; {
+    {
+        System.Predicate&lt;int&gt; local_1 = (System.Predicate&lt;int&gt;)null;
+    }
+    return (object)instruction != null; })()</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.Stack`1.Peek(System.Int32)">
+      <requires csharp="0 &lt;= i" vb="0 &lt;= i">0 &lt;= i</requires>
+      <requires csharp="i &lt;= this.Top" vb="i &lt;= Me.Top">i &lt;= this.Top</requires>
+      <ensures csharp="(object)result != null" vb="((Object)result) &lt;&gt; Nothing">(object)result != null</ensures>
+      <ensures csharp="this.Top == old(this.Top)" vb="Me.Top = old(Me.Top)">this.Top == old(this.Top)</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.Stack`1.Pop">
+      <ensures csharp="(object)result != null" vb="((Object)result) &lt;&gt; Nothing">(object)result != null</ensures>
+    </member>
+    <member name="T:Microsoft.Cci.Analysis.ControlFlowInferencer`2">
+      <invariant>this.platformType != null</invariant>
+      <invariant>this.internFactory != null</invariant>
+      <invariant>this.methodBody != null</invariant>
+      <invariant>this.cdfg != null</invariant>
+      <invariant>this.successorEdges != null</invariant>
+      <invariant>this.instructions != null</invariant>
+      <invariant>this.blocksThatTarget != null</invariant>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.ControlFlowInferencer`2.#ctor(Microsoft.Cci.IMetadataHost,Microsoft.Cci.IMethodBody,Microsoft.Cci.ILocalScopeProvider)">
+      <requires csharp="host != null" vb="host &lt;&gt; Nothing">host != null</requires>
+      <requires csharp="methodBody != null" vb="methodBody &lt;&gt; Nothing">methodBody != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.ControlFlowInferencer`2.CreateBlocksAndEdges">
+      <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.ControlFlowInferencer`2.CreateSuccessorEdges(`0)">
+      <requires csharp="(object)currentBlock != null" vb="((Object)currentBlock) &lt;&gt; Nothing">(object)currentBlock != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.ControlFlowInferencer`2.AddToSuccessorListIfNotAlreadyInIt(System.Collections.Generic.List{`0},System.Int32,`0,`0)">
+      <requires csharp="edges != null" vb="edges &lt;&gt; Nothing">edges != null</requires>
+      <requires csharp="startingEdge &gt;= 0" vb="startingEdge &gt;= 0">startingEdge &gt;= 0</requires>
+      <requires csharp="(object)target != null" vb="((Object)target) &lt;&gt; Nothing">(object)target != null</requires>
+      <requires csharp="(object)current != null" vb="((Object)current) &lt;&gt; Nothing">(object)current != null</requires>
+      <ensures csharp="old(edges.Count) &lt;= edges.Count" vb="old(edges.Count) &lt;= edges.Count">old(edges.Count) &lt;= edges.Count</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.ControlFlowInferencer`2.GetInstruction(Microsoft.Cci.IOperation,`0,System.Collections.Generic.List{`0},System.Boolean@)">
+      <requires csharp="ilOperation != null" vb="ilOperation &lt;&gt; Nothing">ilOperation != null</requires>
+      <requires csharp="(object)currentBlock != null" vb="((Object)currentBlock) &lt;&gt; Nothing">(object)currentBlock != null</requires>
+      <requires csharp="edges != null" vb="edges &lt;&gt; Nothing">edges != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.ControlFlowInferencer`2.AddEdgesForSwitch(Microsoft.Cci.IOperation,`0,System.Collections.Generic.List{`0},`1)">
+      <requires csharp="ilOperation != null" vb="ilOperation &lt;&gt; Nothing">ilOperation != null</requires>
+      <requires csharp="(object)currentBlock != null" vb="((Object)currentBlock) &lt;&gt; Nothing">(object)currentBlock != null</requires>
+      <requires csharp="ilOperation.OperationCode == (Microsoft.Cci.OperationCode)69" vb="ilOperation.OperationCode = ((Microsoft.Cci.OperationCode)69)">ilOperation.OperationCode == (Microsoft.Cci.OperationCode)69</requires>
+      <requires csharp="edges != null" vb="edges &lt;&gt; Nothing">edges != null</requires>
+      <requires csharp="(object)instruction != null" vb="((Object)instruction) &lt;&gt; Nothing">(object)instruction != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.ControlAndDataFlowGraph`2.#ctor(Microsoft.Cci.IMethodBody,System.Collections.Generic.List{`0},System.Collections.Generic.List{`0},System.Collections.Generic.List{`0},Microsoft.Cci.UtilityDataStructures.Hashtable{`0})">
+      <requires csharp="body != null" vb="body &lt;&gt; Nothing">body != null</requires>
+      <requires csharp="successorEdges != null" vb="successorEdges &lt;&gt; Nothing">successorEdges != null</requires>
+      <requires csharp="allBlocks != null" vb="allBlocks &lt;&gt; Nothing">allBlocks != null</requires>
+      <requires csharp="rootBlocks != null" vb="rootBlocks &lt;&gt; Nothing">rootBlocks != null</requires>
+      <requires csharp="blockFor != null" vb="blockFor &lt;&gt; Nothing">blockFor != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.TypeInferencer`2.#ctor(Microsoft.Cci.IMetadataHost,Microsoft.Cci.Analysis.ControlAndDataFlowGraph{`0,`1},Microsoft.Cci.Analysis.Stack{`1},System.Collections.Generic.Queue{`0},Microsoft.Cci.UtilityDataStructures.SetOfObjects)">
+      <requires csharp="host != null" vb="host &lt;&gt; Nothing">host != null</requires>
+      <requires csharp="cfg != null" vb="cfg &lt;&gt; Nothing">cfg != null</requires>
+      <requires csharp="stack != null" vb="stack &lt;&gt; Nothing">stack != null</requires>
+      <requires csharp="blocksToVisit != null" vb="blocksToVisit &lt;&gt; Nothing">blocksToVisit != null</requires>
+      <requires csharp="blocksAlreadyVisited != null" vb="blocksAlreadyVisited &lt;&gt; Nothing">blocksAlreadyVisited != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.TypeInferencer`2.TransferTypesFromStackTo(`0)">
+      <requires csharp="(object)successor != null" vb="((Object)successor) &lt;&gt; Nothing">(object)successor != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.TypeInferencer`2.InferTypeAndUpdateStack(`1)">
+      <requires csharp="(object)instruction != null" vb="((Object)instruction) &lt;&gt; Nothing">(object)instruction != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.TypeInferencer`2.GetUnsignedBinaryNumericOperationType(`1)">
+      <requires csharp="(object)instruction != null" vb="((Object)instruction) &lt;&gt; Nothing">(object)instruction != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.TypeInferencer`2.GetBinaryNumericOperationType(`1)">
+      <requires csharp="(object)instruction != null" vb="((Object)instruction) &lt;&gt; Nothing">(object)instruction != null</requires>
+      <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.ControlGraphQueries`2.SetupDominanceFrontier">
+      <ensures csharp="this.dominanceFrontier != null" vb="Me.dominanceFrontier &lt;&gt; Nothing">this.dominanceFrontier != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.ControlGraphQueries`2.SetupImmediateDominators">
+      <ensures csharp="this.immediateDominatorsAreInitialized" vb="Me.immediateDominatorsAreInitialized">this.immediateDominatorsAreInitialized</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.ControlGraphQueries`2.Intersect(`0,`0)">
+      <requires csharp="(object)block1 != null" vb="((Object)block1) &lt;&gt; Nothing">(object)block1 != null</requires>
+      <requires csharp="(object)block2 != null" vb="((Object)block2) &lt;&gt; Nothing">(object)block2 != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.ControlGraphQueries`2.SetupPredecessorEdges">
+      <ensures csharp="this.predecessorEdges != null" vb="Me.predecessorEdges &lt;&gt; Nothing">this.predecessorEdges != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.ControlGraphQueries`2.SetupTraversalOrders">
+      <ensures csharp="this.postOrder != null" vb="Me.postOrder &lt;&gt; Nothing">this.postOrder != null</ensures>
+      <ensures csharp="this.preOrder != null" vb="Me.preOrder &lt;&gt; Nothing">this.preOrder != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.ControlGraphQueries`2.SetupTraversalOrders(`0,Microsoft.Cci.UtilityDataStructures.SetOfObjects,System.UInt32@,System.UInt32@)">
+      <requires csharp="(object)root != null" vb="((Object)root) &lt;&gt; Nothing">(object)root != null</requires>
+      <requires csharp="alreadyTraversed != null" vb="alreadyTraversed &lt;&gt; Nothing">alreadyTraversed != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.Instruction.AppendFlowFrom(Microsoft.Cci.Analysis.Instruction,System.Text.StringBuilder)">
+      <requires csharp="instruction != null" vb="instruction &lt;&gt; Nothing">instruction != null</requires>
+      <requires csharp="stringBuilder != null" vb="stringBuilder &lt;&gt; Nothing">stringBuilder != null</requires>
+    </member>
+    <member name="T:Microsoft.Cci.Analysis.DataFlowInferencer`2">
+      <invariant>this.platformType != null</invariant>
+      <invariant>this.cdfg != null</invariant>
+      <invariant>this.stack != null</invariant>
+      <invariant>this.operandStackSetupInstructions != null</invariant>
+      <invariant>this.blocksToVisit != null</invariant>
+      <invariant>this.blocksAlreadyVisited != null</invariant>
+      <invariant>this.internFactory != null</invariant>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.DataFlowInferencer`2.#ctor(Microsoft.Cci.IMetadataHost,Microsoft.Cci.Analysis.ControlAndDataFlowGraph{`0,`1})">
+      <requires csharp="host != null" vb="host &lt;&gt; Nothing">host != null</requires>
+      <requires csharp="cdfg != null" vb="cdfg &lt;&gt; Nothing">cdfg != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.DataFlowInferencer`2.SetupDataFlowFor(Microsoft.Cci.IMethodBody)">
+      <requires csharp="methodBody != null" vb="methodBody &lt;&gt; Nothing">methodBody != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.DataFlowInferencer`2.AddStackSetupForExceptionHandlers(Microsoft.Cci.IMethodBody)">
+      <requires csharp="methodBody != null" vb="methodBody &lt;&gt; Nothing">methodBody != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.DataFlowInferencer`2.AddStackSetup(`0,Microsoft.Cci.ITypeReference)">
+      <requires csharp="(object)block != null" vb="((Object)block) &lt;&gt; Nothing">(object)block != null</requires>
+      <requires csharp="operandType != null" vb="operandType &lt;&gt; Nothing">operandType != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.DataFlowInferencer`2.SetupStackFor(`0)">
+      <requires csharp="(object)successor != null" vb="((Object)successor) &lt;&gt; Nothing">(object)successor != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.DataFlowInferencer`2.SetupDataFlowFor(`1)">
+      <requires csharp="(object)instruction != null" vb="((Object)instruction) &lt;&gt; Nothing">(object)instruction != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.DataFlowInferencer`2.InitializeArgumentsAndPushReturnResult(`1,Microsoft.Cci.Analysis.Stack{`1},Microsoft.Cci.ISignature)">
+      <requires csharp="(object)instruction != null" vb="((Object)instruction) &lt;&gt; Nothing">(object)instruction != null</requires>
+      <requires csharp="stack != null" vb="stack &lt;&gt; Nothing">stack != null</requires>
+      <requires csharp="signature != null" vb="signature &lt;&gt; Nothing">signature != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.DataFlowInferencer`2.InitializeArgumentsAndPushReturnResult(`1,Microsoft.Cci.Analysis.Stack{`1},Microsoft.Cci.IFunctionPointerTypeReference)">
+      <requires csharp="(object)instruction != null" vb="((Object)instruction) &lt;&gt; Nothing">(object)instruction != null</requires>
+      <requires csharp="stack != null" vb="stack &lt;&gt; Nothing">stack != null</requires>
+      <requires csharp="funcPointer != null" vb="funcPointer &lt;&gt; Nothing">funcPointer != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.DataFlowInferencer`2.InitializeArrayCreateInstruction(`1,Microsoft.Cci.Analysis.Stack{`1},Microsoft.Cci.IOperation)">
+      <requires csharp="(object)instruction != null" vb="((Object)instruction) &lt;&gt; Nothing">(object)instruction != null</requires>
+      <requires csharp="stack != null" vb="stack &lt;&gt; Nothing">stack != null</requires>
+      <requires csharp="currentOperation != null" vb="currentOperation &lt;&gt; Nothing">currentOperation != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.DataFlowInferencer`2.InitializeArrayIndexerInstruction(`1,Microsoft.Cci.Analysis.Stack{`1},Microsoft.Cci.IArrayTypeReference)">
+      <requires csharp="(object)instruction != null" vb="((Object)instruction) &lt;&gt; Nothing">(object)instruction != null</requires>
+      <requires csharp="stack != null" vb="stack &lt;&gt; Nothing">stack != null</requires>
+      <requires csharp="arrayType != null" vb="arrayType &lt;&gt; Nothing">arrayType != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.DataFlowInferencer`2.InitializeArraySetInstruction(`1,Microsoft.Cci.Analysis.Stack{`1},Microsoft.Cci.IArrayTypeReference)">
+      <requires csharp="(object)instruction != null" vb="((Object)instruction) &lt;&gt; Nothing">(object)instruction != null</requires>
+      <requires csharp="stack != null" vb="stack &lt;&gt; Nothing">stack != null</requires>
+      <requires csharp="arrayType != null" vb="arrayType &lt;&gt; Nothing">arrayType != null</requires>
+    </member>
+  </members>
+</doc>

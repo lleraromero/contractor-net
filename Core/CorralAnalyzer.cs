@@ -22,8 +22,8 @@ namespace Contractor.Core
         {
             Contract.Requires(module != null && host != null && type != null);
 
-            base.notPrefix = "_Not_";
-            base.methodNameDelimiter = "~";
+            ITypeContract typeContract = this.inputContractProvider.GetTypeContractFor(type);
+            this.queryContractProvider.AssociateTypeWithContract(this.typeToAnalyze, typeContract);
         }
 
         public override ActionAnalysisResults AnalyzeActions(State source, IMethodDefinition action, List<IMethodDefinition> actions)
@@ -47,8 +47,7 @@ namespace Contractor.Core
             List<MethodDefinition> queries = GenerateQueries<T>(source, action, target);
 
             // Add queries to the working assembly
-            var type = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == typeToAnalyze.Name) as NamespaceTypeDefinition;
-            type.Methods.AddRange(queries);
+            this.typeToAnalyze.Methods.AddRange(queries);
 
             // I need to replace Pre/Post with Assume/Assert
             ILocalScopeProvider localScopeProvider = new Microsoft.Cci.ILToCodeModel.Decompiler.LocalScopeProvider(GetPDBReader(queryAssembly.Module, host));
@@ -62,7 +61,7 @@ namespace Contractor.Core
             var result = ExecuteChecker(queries);
 
             // I don't need the queries anymore
-            type.Methods.RemoveAll(m => queries.Contains(m));
+            this.typeToAnalyze.Methods.RemoveAll(m => queries.Contains(m));
 
             return result;
         }
@@ -73,7 +72,6 @@ namespace Contractor.Core
             analysisResult.EnabledActions.AddRange(actions);
             analysisResult.DisabledActions.AddRange(actions);
 
-            var queryType = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == typeToAnalyze.Name) as NamespaceTypeDefinition;
             foreach (var entry in result)
             {
                 switch (entry.Value)
@@ -92,13 +90,11 @@ namespace Contractor.Core
                         if (isNegative)
                         {
                             actionName = actionName.Remove(0, notPrefix.Length);
-                            var method = typeToAnalyze.Methods.Find(m => m.GetUniqueName() == actionName);
-                            analysisResult.DisabledActions.Remove(method);
+                            analysisResult.DisabledActions.RemoveAll(m => m.GetUniqueName() == actionName);
                         }
                         else
                         {
-                            var method = typeToAnalyze.Methods.Find(m => m.GetUniqueName() == actionName);
-                            analysisResult.EnabledActions.Remove(method);
+                            analysisResult.EnabledActions.RemoveAll(m => m.GetUniqueName() == actionName);
                         }
 
                         if (entry.Value == ResultKind.RecursionBoundReached)
@@ -119,7 +115,6 @@ namespace Contractor.Core
 
             RunBCT();
 
-            var queryType = queryAssembly.DecompiledModule.AllTypes.Find(x => x.Name == typeToAnalyze.Name) as NamespaceTypeDefinition;
             foreach (var query in queries)
             {
                 var queryName = CreateUniqueMethodName(query);
@@ -141,54 +136,31 @@ namespace Contractor.Core
 
         private void RunBCT()
         {
-            //TODO: Use BCT as a library instead of an external process
-            using (var bct = new Process())
-            {
-                bct.StartInfo = new ProcessStartInfo()
-                {
-                    FileName = Configuration.BCTPath,
-                    Arguments = GetQueryAssemblyPath(),
-                    WorkingDirectory = Configuration.TempPath,
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false
-                };
+            var timer = Stopwatch.StartNew();
 
-                bct.OutputDataReceived += (sender, e) =>
-                {
-                    if (!string.IsNullOrEmpty(e.Data))
-                        LogManager.Log(LogLevel.Debug, e.Data);
-                };
-                bct.ErrorDataReceived += (sender, e) =>
-                {
-                    if (!string.IsNullOrEmpty(e.Data))
-                        LogManager.Log(LogLevel.Fatal, e.Data);
-                };
-                bct.Start();
-                bct.BeginErrorReadLine();
-                bct.BeginOutputReadLine();
-                bct.WaitForExit();
+            // I need to change the current directory so BCT can write the output in the correct folder
+            var tmp = Environment.CurrentDirectory;
+            Environment.CurrentDirectory = Configuration.TempPath;
+            if (new BytecodeTranslator.BCT().Main(new string[] { GetQueryAssemblyPath() }) != 0)
+                throw new Exception("Error translating the query assembly to boogie");
+            Environment.CurrentDirectory = tmp;
 
-                if (bct.ExitCode != 0)
-                    throw new Exception("Error translating the query assembly to boogie");
-
-                base.TotalAnalysisDuration += bct.ExitTime - bct.StartTime;
-            }
+            timer.Stop();
+            base.TotalAnalysisDuration += new TimeSpan(timer.ElapsedTicks);            
         }
 
         private string RunCorral(string method)
         {
             Contract.Requires(!string.IsNullOrEmpty(method));
 
-            var args = string.Format("{0} /main:{1} /recursionBound:{2}", GetQueryAssemblyPath().Replace("tmp", "bpl"), method, 3);    // recursionBound 3 es absolutamente arbitrario :)
+            var args = string.Format("{0} /main:{1} {2}", GetQueryAssemblyPath().Replace("dll", "bpl"), method, Configuration.CorralArguments);
 
             var timer = Stopwatch.StartNew();
 
+            var corral = new cba.Driver();
             try
             {
-                if (cba.Driver.run(args.Split(' ')) != 0)
+                if (corral.run(args.Split(' ')) != 0)
                     throw new Exception("Error executing corral");
             }
             catch (Exception ex)
@@ -203,8 +175,7 @@ namespace Contractor.Core
             base.TotalAnalysisDuration += new TimeSpan(timer.ElapsedTicks);
             base.ExecutionsCount++;
 
-            // TODO: Improve Corral as a library instead of a console application.
-            switch (cba.Driver.Result)
+            switch (corral.Result)
             {
                 case cba.CorralResult.BugFound:
                     return "true bug";

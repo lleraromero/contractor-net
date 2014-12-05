@@ -61,7 +61,7 @@ namespace Contractor.Core.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to -show errors -show progress -sortwarns=false -warninglevel=full -stats=!! -nobox -nologo -nopex -assemblyMode=standard -suggest=!! -wp -adaptive -arithmetic -bounds -enum -nonnull -typeNameSelect=@fullTypeName -libPaths:&quot;@libPaths&quot; &quot;@assemblyName&quot;.
+        ///   Looks up a localized string similar to -show errors -show progress -sortwarns=false -stats=!! -infer=!! -useCache=false -nobox -nologo -nopex -suggest=!! -premode combined -suggest codefixes -framework:v4.0 -warninglevel full  -assemblyMode=standard -maxwarnings 400 -nonnull -bounds: -arrays -wp=true -bounds:type=subpolyhedra,reduction=simplex,diseq=false  -arrays -adaptive -arithmetic -enum -check assumptions -suggest asserttocontracts -check conditionsvalidity -missingPublicRequiresAreErrors -missingPublicEnsuresAreErrors  -suggest calleeassum [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string CheckerArguments {
             get {
@@ -75,6 +75,15 @@ namespace Contractor.Core.Properties {
         internal static string CheckerFileName {
             get {
                 return ResourceManager.GetString("CheckerFileName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /recursionBound:3.
+        /// </summary>
+        internal static string CorralArguments {
+            get {
+                return ResourceManager.GetString("CorralArguments", resourceCulture);
             }
         }
         

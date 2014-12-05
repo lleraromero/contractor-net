@@ -76,6 +76,19 @@ namespace Contractor.Core
             return this.UniqueName.Equals(other.UniqueName);
         }
 
+        public override bool Equals(object obj)
+        {
+            // Again just optimization
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+
+            // Actually check the type, should not throw exception from Equals override
+            if (obj.GetType() != this.GetType()) return false;
+
+            // Call the implementation from IEquatable
+            return Equals((State)obj);
+        }
+
         public override int GetHashCode()
         {
             return this.UniqueName.GetHashCode();
