@@ -249,7 +249,7 @@ namespace Contractor.Gui
 
             if (_Options.CollapseTransitions)
             {
-                var n = _Graph.FindNode(e.Transition.SourceState.Name);
+                var n = _Graph.FindNode(e.SourceState.Name);
 
                 if (_Options.UnprovenTransitions && e.Transition.IsUnproven)
                     label = string.Format("{0}?", label);
@@ -272,7 +272,7 @@ namespace Contractor.Gui
 
             if (createEdge)
             {
-                var edge = _Graph.AddEdge(e.Transition.SourceState.Name, label, e.Transition.TargetState.Name);
+                var edge = _Graph.AddEdge(e.SourceState.Name, label, e.Transition.TargetState.Name);
 
                 edge.Label.FontName = "Cambria";
                 edge.Label.FontSize = 6;

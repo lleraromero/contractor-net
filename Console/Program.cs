@@ -224,7 +224,7 @@ namespace Contractor.Console
 
             if (options.collapseTransitions)
             {
-                var n = graph.FindNode(e.Transition.SourceState.Name);
+                var n = graph.FindNode(e.SourceState.Name);
 
                 if (options.unprovenTransitions && e.Transition.IsUnproven)
                     label = string.Format("{0}?", label);
@@ -245,7 +245,7 @@ namespace Contractor.Console
 
             if (createEdge)
             {
-                var edge = graph.AddEdge(e.Transition.SourceState.Name, label, e.Transition.TargetState.Name);
+                var edge = graph.AddEdge(e.SourceState.Name, label, e.Transition.TargetState.Name);
 
                 edge.Label.FontName = "Cambria";
                 edge.Label.FontSize = 6;
