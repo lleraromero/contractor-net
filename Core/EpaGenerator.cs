@@ -214,7 +214,7 @@ namespace Contractor.Core
             dummy.IsInitial = true;
 
             states.Add(dummy.UniqueName, dummy);
-            epa.Add(dummy.EPAState, new List<ITransition>());
+            epa.Add(dummy.EPAState, new HashSet<ITransition>());
 
             if (this.StateAdded != null)
                 this.StateAdded(this, new StateAddedEventArgs(typeDisplayName, dummy.EPAState));
@@ -255,7 +255,7 @@ namespace Contractor.Core
                             newStates.Enqueue(target);
 
                             states.Add(target.UniqueName, target);
-                            epa.Add(target.EPAState, new List<ITransition>());
+                            epa.Add(target.EPAState, new HashSet<ITransition>());
 
 
                             if (this.StateAdded != null)

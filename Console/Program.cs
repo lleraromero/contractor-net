@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using Contractor.Core;
+﻿using Contractor.Core;
 using Microsoft.Msagl.Drawing;
-using System.Drawing;
-using System.Drawing.Imaging;
 using Microsoft.Msagl.GraphViewerGdi;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Drawing.Text;
+using System.IO;
+using System.Linq;
 
 namespace Contractor.Console
 {
@@ -309,7 +308,7 @@ namespace Contractor.Console
             var executionsCount = e.AnalysisResult.ExecutionsCount;
             var totalGeneratedQueriesCount = e.AnalysisResult.TotalGeneratedQueriesCount;
             var unprovenQueriesCount = e.AnalysisResult.UnprovenQueriesCount;
-            var statesCount = e.AnalysisResult.EPA.States.Count();
+            var statesCount = e.AnalysisResult.EPA.States.Count;
             var transitionsCount = e.AnalysisResult.EPA.Transitions.Count();
             var initialStatesCount = e.AnalysisResult.EPA.States.Count(s => s.IsInitial);
             var unprovenTransitionsCount = e.AnalysisResult.EPA.Transitions.Count(t => t.IsUnproven);

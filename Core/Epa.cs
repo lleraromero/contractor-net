@@ -4,14 +4,21 @@ using System.Linq;
 namespace Contractor.Core
 {
     // Dictionary<Source, TransitionsFromSource>
-    public class Epa : Dictionary<IState, List<ITransition>>
+    public class Epa : Dictionary<IState, HashSet<ITransition>>
     {
-        public IEnumerable<IState> States { get { return base.Keys; } }
-        public IEnumerable<ITransition> Transitions
+        public HashSet<IState> States
         {
             get
             {
-                return ((IEnumerable<IEnumerable<ITransition>>)base.Values).Aggregate((acum, l) => acum.Union(l));
+                return new HashSet<IState>(base.Keys);
+            }
+        }
+
+        public HashSet<ITransition> Transitions
+        {
+            get
+            {
+                return new HashSet<ITransition>(((IEnumerable<IEnumerable<ITransition>>)base.Values).Aggregate((acum, l) => acum.Union(l)));
             }
         }
 
