@@ -91,6 +91,49 @@ namespace Tests
             Traverse(graph, epa);
         }
 
+        [TestMethod]
+        public void TestDoor()
+        {
+            var epa = epaGenerator.GenerateEpa("Examples.DoorPost").EPA;
+
+            #region Graph representation
+            var graph = new List<List<int>>();
+
+            graph.Add(new List<int>());
+            graph[0].Add(1);
+
+            graph.Add(new List<int>());
+            graph[1].Add(2);
+            graph[1].Add(3);
+            graph[1].Add(4);
+
+            graph.Add(new List<int>());
+            graph[2].Add(1);
+            graph[2].Add(3);
+            graph[2].Add(4);
+
+            graph.Add(new List<int>());
+            graph[3].Add(1);
+            graph[3].Add(5);
+
+            graph.Add(new List<int>());
+            graph[4].Add(2);
+            graph[4].Add(5);
+
+            graph.Add(new List<int>());
+            graph[5].Add(4);
+            graph[5].Add(6);
+
+            graph.Add(new List<int>());
+            graph[6].Add(2);
+            graph[6].Add(3);
+            graph[6].Add(5);
+
+            #endregion
+
+            Traverse(graph, epa);
+        }
+
         /// <summary>
         /// Traverse the EPA while comparing its structure with a graph
         /// </summary>
@@ -98,53 +141,23 @@ namespace Tests
         /// <param name="epa">EPA representation</param>
         private void Traverse(List<List<int>> nodes, Epa epa)
         {
+            //TODO: use an isomorphism algorithm to compare the epa and the graph
+            
             // Same amount of states?
             Assert.AreEqual(nodes.Count, epa.States.Count);
 
-            if (nodes.Count == 0)
+            // Check whether exists a bijection in the states/nodes. However, we are not considering
+            // a proper isomorphism.
+            var transitions = new List<int>();
+            foreach (var s in epa.States)
             {
-                return;
+                transitions.Add(epa[s].Count);
             }
 
-            var nodesToVisit = new Queue<int>();
-            var statesToVisit = new Queue<IState>();
-            var nodesSeen = new HashSet<int>();
-            var statesSeen = new HashSet<IState>();
-
-            nodesToVisit.Enqueue(0);
-            nodesSeen.Add(0);
-            statesToVisit.Enqueue(epa.Initial);
-            statesSeen.Add(epa.Initial);
-
-            while (nodesToVisit.Count > 0 && statesToVisit.Count > 0)
+            for (int i = 0; i < nodes.Count; i++)
             {
-                var currentNode = nodesToVisit.Dequeue();
-                var currentState = statesToVisit.Dequeue();
-
-                // Same amount of transitions in this state?
-                Assert.AreEqual(nodes[currentNode].Count, epa[currentState].Count);
-
-                foreach (var n in nodes[currentNode])
-                {
-                    if (!nodesSeen.Contains(n))
-                    {
-                        nodesToVisit.Enqueue(n);
-                        nodesSeen.Add(n);
-                    }
-                }
-                foreach (var s in epa[currentState])
-                {
-                    if (!statesSeen.Contains(s.TargetState))
-                    {
-                        statesToVisit.Enqueue(s.TargetState);
-                        statesSeen.Add(s.TargetState);
-                    }
-                }
-
-                // Same amount of new nodes/states to visit?
-                Assert.AreEqual(nodesToVisit.Count, statesToVisit.Count);
-                // Same amount of new nodes/states seen?
-                Assert.AreEqual(nodesSeen.Count, statesSeen.Count);
+                CollectionAssert.Contains(transitions, nodes[i].Count);
+                transitions.Remove(nodes[i].Count);
             }
         }
     }
