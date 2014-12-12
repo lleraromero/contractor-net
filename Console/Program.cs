@@ -35,7 +35,8 @@ namespace Contractor.Console
 				"-g", GraphPath,
 				"-tmp", TempPath,
 				"-il=true",
-				"-t", "Examples.FiniteStack"
+				"-t", "Examples.FiniteStack",
+                "-b", "Corral"
 			};
 #endif
             var assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName();
@@ -68,9 +69,18 @@ namespace Contractor.Console
 
                     EpaGenerator.Backend backend = EpaGenerator.Backend.Corral;
                     if (program.options.backend.Equals("CodeContracts", StringComparison.InvariantCultureIgnoreCase))
-                        backend = EpaGenerator.Backend.Corral;
+                        backend = EpaGenerator.Backend.CodeContracts;
 
-                    var epas = program.Execute(backend);
+                    // epas is a mapping between Typename and the result of the analysis.
+                    Dictionary<string, TypeAnalysisResult> epas = program.Execute(backend);
+#if DEBUG
+                    // Export the EPA as an XML
+                    var serializer = new EpaXmlSerializer();
+                    using (Stream oStream = new FileStream(GraphPath, FileMode.Create))
+                    {
+                        serializer.Serialize(oStream, epas.First().Value.EPA);
+                    }
+#endif
                 }
                 catch (Exception ex)
                 {
@@ -81,8 +91,8 @@ namespace Contractor.Console
             }
 
 #if DEBUG
-            System.Console.WriteLine("Press any key to continue");
-            System.Console.ReadKey();
+            //System.Console.WriteLine("Press any key to continue");
+            //System.Console.ReadKey();
 #endif
             return 0;
         }
@@ -219,7 +229,7 @@ namespace Contractor.Console
         private void transitionAdded(object sender, TransitionAddedEventArgs e)
         {
             var graph = graphs[e.TypeFullName];
-            var label = e.Transition.Name;
+            var label = e.Transition.Action;
             var createEdge = true;
 
             if (options.collapseTransitions)
