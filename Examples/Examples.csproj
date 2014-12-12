@@ -92,6 +92,7 @@
     <Compile Include="StackSetPos %28copia%29.cs" />
     <Compile Include="StackSetPos.cs" />
     <Compile Include="Test.cs" />
+    <Compile Include="VendingMachine.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -179,17 +179,23 @@ namespace Contractor.Core
                 var actionContract = inputContractProvider.GetMethodContractFor(a);
                 if (actionContract == null) continue;
 
-                var enabledActions = from p in actionContract.Preconditions
-                                     select new Precondition(p)
-                                     {
-                                         Description = new CompileTimeConstant()
-                                         {
-                                             Type = this.host.PlatformType.SystemString,
-                                             Value = string.Format("Enabled action ({0})", a.Name.Value)
-                                         }
-                                     };
+                var preconditions = from p in actionContract.Preconditions
+                                    select p.Condition;
+                var joinedPreconditions = Helper.JoinWithLogicalAnd(this.host, preconditions.ToList(), true);
+                var compactPrecondition = new Precondition()
+                {
+                    Condition = joinedPreconditions,
+                    // Add the user message to identify easily each precondition
+                    Description = new CompileTimeConstant()
+                                  {
+                                      Value = string.Format("Enabled action ({0})", a.Name.Value),
+                                      Type = this.host.PlatformType.SystemString
+                                  },
+                    // Add the string-ified version of the condition to help debugging
+                    OriginalSource = Helper.PrintExpression(joinedPreconditions)
+                };
 
-                queryContract.Preconditions.AddRange(enabledActions);
+                queryContract.Preconditions.Add(compactPrecondition);
             }
 
             // Add negated preconditions of disabled actions
@@ -198,26 +204,27 @@ namespace Contractor.Core
                 var actionContract = inputContractProvider.GetMethodContractFor(a);
                 if (actionContract == null || actionContract.Preconditions.Count() == 0) continue;
 
-                var pres = from pre in actionContract.Preconditions
-                           select new Precondition()
-                           {
-                               Condition = new LogicalNot()
-                               {
-                                   Type = host.PlatformType.SystemBoolean,
-                                   Operand = pre.Condition
-                               },
-                               Description = new CompileTimeConstant()
-                               {
-                                   Type = this.host.PlatformType.SystemString,
-                                   Value = string.Format("Disabled action ({0})", a.Name.Value)
-                               }
-                           };
-                foreach (var p in pres)
+                var preconditions = from p in actionContract.Preconditions
+                                    select p.Condition;
+                var joinedPreconditions = new LogicalNot()
+                                          {
+                                              Type = host.PlatformType.SystemBoolean,
+                                              Operand = Helper.JoinWithLogicalAnd(this.host, preconditions.ToList(), true)
+                                          };
+                var compactPrecondition = new Precondition()
                 {
-                    p.OriginalSource = Helper.PrintExpression(p.Condition);
-                }
+                    Condition = joinedPreconditions,
+                    // Add the user message to identify easily each precondition
+                    Description = new CompileTimeConstant()
+                    {
+                        Value = string.Format("Disabled action ({0})", a.Name.Value),
+                        Type = this.host.PlatformType.SystemString
+                    },
+                    // Add the string-ified version of the condition to help debugging
+                    OriginalSource = Helper.PrintExpression(joinedPreconditions)
+                };
 
-                queryContract.Preconditions.AddRange(pres);
+                queryContract.Preconditions.Add(compactPrecondition);
             }
 
             // Now the postconditions
@@ -262,15 +269,18 @@ namespace Contractor.Core
                 }
                 else
                 {
-                    var posts = from pre in targetContract.Preconditions
-                                select new Postcondition()
-                                {
-                                    Condition = pre.Condition,
-                                    OriginalSource = pre.OriginalSource,
-                                    Description = new CompileTimeConstant() { Value = "Target precondition", Type = this.host.PlatformType.SystemString }
-                                };
+                    var exprs = (from pre in targetContract.Preconditions
+                                 select pre.Condition).ToList();
+                    var joinedPreconditions = Helper.JoinWithLogicalAnd(host, exprs, true);
 
-                    queryContract.Postconditions.AddRange(posts);
+                    var posts = new Postcondition()
+                    {
+                        Condition = joinedPreconditions,
+                        OriginalSource = Helper.PrintExpression(joinedPreconditions),
+                        Description = new CompileTimeConstant() { Value = "Target precondition", Type = this.host.PlatformType.SystemString }
+                    };
+
+                    queryContract.Postconditions.Add(posts);
                 }
             }
             return queryContract;
@@ -295,24 +305,26 @@ namespace Contractor.Core
 
             // Source state invariant as a precondition
             var stateInv = Helper.GenerateStateInvariant(host, inputContractProvider, typeToAnalyze, state);
+            var joinedStateInv = Helper.JoinWithLogicalAnd(this.host, stateInv, true);
             var precondition = new Precondition()
             {
-                Condition = Helper.JoinWithLogicalAnd(this.host, stateInv, true),
-                OriginalSource = string.Join(" AND ", from a in stateInv select Helper.PrintExpression(a)),
+                Condition = joinedStateInv,
+                OriginalSource = Helper.PrintExpression(joinedStateInv),
                 Description = new CompileTimeConstant() { Value = "Source state invariant", Type = this.host.PlatformType.SystemString }
             };
             contracts.Preconditions.Add(precondition);
 
             // Negated target state invariant  as a postcondition
             var targetInv = Helper.GenerateStateInvariant(host, inputContractProvider, typeToAnalyze, target);
+            var joinedTargetInv = new LogicalNot()
+                                  {
+                                      Type = host.PlatformType.SystemBoolean,
+                                      Operand = Helper.JoinWithLogicalAnd(host, targetInv, true)
+                                  };
             var postcondition = new Postcondition()
             {
-                Condition = new LogicalNot()
-                {
-                    Type = host.PlatformType.SystemBoolean,
-                    Operand = Helper.JoinWithLogicalAnd(host, targetInv, true)
-                },
-                OriginalSource = string.Join(" AND ", from a in targetInv select Helper.PrintExpression(a)),
+                Condition = joinedTargetInv,
+                OriginalSource = Helper.PrintExpression(joinedTargetInv),
                 Description = new CompileTimeConstant() { Value = "Negated target state invariant", Type = this.host.PlatformType.SystemString }
             };
             contracts.Postconditions.Add(postcondition);
@@ -343,7 +355,7 @@ namespace Contractor.Core
                 foreach (var a in stateTarget.DisabledActions)
                     parameters.UnionWith(a.Parameters);
             }
-                 
+
             var method = new MethodDefinition()
             {
                 CallingConvention = Microsoft.Cci.CallingConvention.HasThis,
