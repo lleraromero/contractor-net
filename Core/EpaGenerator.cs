@@ -195,7 +195,6 @@ namespace Contractor.Core
                            .ToList();
 
             var epa = epas[typeUniqueName].EPA;
-            epa.Clear();
 
             IAnalyzer checker;
             switch (this.backend)
@@ -217,10 +216,10 @@ namespace Contractor.Core
             dummy.IsInitial = true;
 
             states.Add(dummy.UniqueName, dummy);
-            epa.Add(dummy.EPAState, new HashSet<ITransition>());
+            epa.AddState(dummy);
 
             if (this.StateAdded != null)
-                this.StateAdded(this, new StateAddedEventArgs(typeDisplayName, dummy.EPAState));
+                this.StateAdded(this, new StateAddedEventArgs(typeDisplayName, dummy as IState));
 
             var newStates = new Queue<State>();
             newStates.Enqueue(dummy);
@@ -249,7 +248,7 @@ namespace Contractor.Core
 
                         if (states.ContainsKey(target.UniqueName))
                         {
-                            target = states[target.UniqueName].EPAState;
+                            target = states[target.UniqueName];
                         }
                         else
                         {
@@ -258,21 +257,20 @@ namespace Contractor.Core
                             newStates.Enqueue(target);
 
                             states.Add(target.UniqueName, target);
-                            epa.Add(target.EPAState, new HashSet<ITransition>());
-
+                            epa.AddState(target);
 
                             if (this.StateAdded != null)
                             {
-                                var eventArgs = new StateAddedEventArgs(typeDisplayName, target.EPAState);
+                                var eventArgs = new StateAddedEventArgs(typeDisplayName, target as IState);
                                 this.StateAdded(this, eventArgs);
                             }
                         }
 
-                        epa[source.EPAState].Add(transition.EPATransition);
+                        epa.AddTransition(transition);
 
                         if (this.TransitionAdded != null)
                         {
-                            var eventArgs = new TransitionAddedEventArgs(typeDisplayName, transition.EPATransition, source.EPAState);
+                            var eventArgs = new TransitionAddedEventArgs(typeDisplayName, transition as ITransition, source as IState);
                             this.TransitionAdded(this, eventArgs);
                         }
                     }

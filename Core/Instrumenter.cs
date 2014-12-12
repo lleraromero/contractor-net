@@ -30,7 +30,7 @@ namespace Contractor.Core
 			this.type = type;
 			this.epa = epa;
 
-            var actions = from transition in epa.Transitions.GroupBy(t => t.Action) select transition.Key;
+            var actions = from transition in epa.Transitions.GroupBy(t => (t as Transition).Action) select transition.Key;
 
 			foreach (var action in actions)
 			{
@@ -76,8 +76,8 @@ namespace Contractor.Core
                 // voy a agrupar las transiciones que usan esta accion por sourceState.Id
                 // transitions = Dicc<uint, List<uint>> o sea: "Dicc<from, List<to>>"
                 var transUsingAction = from t in epa.Transitions where t.Action.Equals(action) select t;
-                var transSourceIds = (from t in transUsingAction select epa.GetSourceState(t).Id).Distinct();
-                var transitions = transUsingAction.GroupBy(t => epa.GetSourceState(t).Id).ToDictionary(t => t.Key, t => (from tran in t select tran.TargetState.Id).ToList());
+                var transSourceIds = (from t in transUsingAction select t.SourceState.Id).Distinct();
+                var transitions = transUsingAction.GroupBy(t => t.SourceState.Id).ToDictionary(t => t.Key, t => (from tran in t select tran.TargetState.Id).ToList());
 
 				var mc = cp.GetMethodContractFor(action) as MethodContract;
 
