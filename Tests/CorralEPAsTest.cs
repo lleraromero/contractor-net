@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using Contractor.Core;
 using System.IO;
+using System.Threading;
 
 namespace Tests
 {
@@ -32,7 +33,8 @@ namespace Tests
         [TestMethod]
         public void TestStack()
         {
-            var epa = epaGenerator.GenerateEpa("Examples.FiniteStack").EPA;
+            var cancellationSource = new CancellationTokenSource();
+            var epa = epaGenerator.GenerateEpa("Examples.FiniteStack", cancellationSource.Token).EPA;
             
             #region Graph representation
             var graph = new List<List<int>>();
@@ -66,7 +68,8 @@ namespace Tests
         [TestMethod]
         public void TestLinear()
         {
-            var epa = epaGenerator.GenerateEpa("Examples.Linear").EPA;
+            var cancellationSource = new CancellationTokenSource();
+            var epa = epaGenerator.GenerateEpa("Examples.Linear", cancellationSource.Token).EPA;
 
             #region Graph representation
             var graph = new List<List<int>>();
@@ -94,7 +97,8 @@ namespace Tests
         [TestMethod]
         public void TestDoor()
         {
-            var epa = epaGenerator.GenerateEpa("Examples.DoorPost").EPA;
+            var cancellationSource = new CancellationTokenSource();
+            var epa = epaGenerator.GenerateEpa("Examples.DoorPost", cancellationSource.Token).EPA;
 
             #region Graph representation
             var graph = new List<List<int>>();

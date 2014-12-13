@@ -26,6 +26,7 @@ namespace Contractor.Gui
         private INamedTypeDefinition _AnalizedType;
         private EpaGenerator _EpaGenerator;
         private Thread _AnalisisThread;
+        private CancellationTokenSource _cancellationSource;
         private Graph _Graph;
         private IViewerNode _SelectedGraphNode;
         private Options _Options;
@@ -425,11 +426,8 @@ namespace Contractor.Gui
                 var typeFullName = _AnalizedType.ToString();
                 var selectedMethods = listboxMethods.CheckedItems.Cast<string>();
 
-                _EpaGenerator.GenerateEpa(typeFullName, selectedMethods);
-            }
-            catch (ThreadAbortException)
-            {
-                this.BeginInvoke(new Action<TypeAnalysisResult>(this.UpdateAnalysisEnd), (object)null);
+                _cancellationSource = new CancellationTokenSource();
+                _EpaGenerator.GenerateEpa(typeFullName, selectedMethods, _cancellationSource.Token);
             }
             catch (Exception ex)
             {
@@ -480,7 +478,7 @@ namespace Contractor.Gui
         {
             var typeFullName = _AnalizedType.GetDisplayName();
 
-            if (analysisResult == null)
+            if (_cancellationSource.IsCancellationRequested)
             {
                 this.EndBackgroundTask("Analysis for {0} aborted", typeFullName);
             }
@@ -684,7 +682,7 @@ namespace Contractor.Gui
         {
             if (_AnalisisThread != null && _AnalisisThread.IsAlive)
             {
-                _AnalisisThread.Abort();
+                _cancellationSource.Cancel();
 
                 buttonStopAnalysis.Enabled = false;
                 menuitemStopAnalysis.Enabled = false;

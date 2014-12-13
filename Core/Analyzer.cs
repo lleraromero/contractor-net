@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace Contractor.Core
 {
@@ -19,6 +20,9 @@ namespace Contractor.Core
         public int ExecutionsCount { get; protected set; }
         public int TotalGeneratedQueriesCount { get; protected set; }
         public int UnprovenQueriesCount { get; protected set; }
+
+        // Token that allows the user to stop the analysis
+        protected CancellationToken token;
 
         public abstract ActionAnalysisResults AnalyzeActions(State source, IMethodDefinition action, List<IMethodDefinition> actions);
 
@@ -38,9 +42,9 @@ namespace Contractor.Core
 
         protected Microsoft.Cci.Immutable.GenericTypeInstance specializedInputType;
 
-        protected Analyzer(IContractAwareHost host, IModule module, NamespaceTypeDefinition type)
+        protected Analyzer(IContractAwareHost host, IModule module, NamespaceTypeDefinition type, CancellationToken token)
         {
-            Contract.Requires(host != null && module != null && type != null);
+            Contract.Requires(host != null && module != null && type != null && token != null);
 
             this.host = host;
             this.inputAssembly = new AssemblyInfo(host);
@@ -58,6 +62,8 @@ namespace Contractor.Core
             CreateQueryAssembly(type);
             this.typeToAnalyze = queryAssembly.DecompiledModule.AllTypes.Find(t => t.Name == type.Name) as NamespaceTypeDefinition;
             this.queryContractProvider = new ContractProvider(new ContractMethods(this.host), this.host.FindUnit(this.queryAssembly.Module.UnitIdentity));
+
+            this.token = token;
         }
 
         ~Analyzer()

@@ -10,6 +10,7 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace Contractor.Core
 {
@@ -17,8 +18,8 @@ namespace Contractor.Core
     {
         private enum ResultKind { TrueBug, NoBugs, RecursionBoundReached }
 
-        public CorralAnalyzer(IContractAwareHost host, IModule module, NamespaceTypeDefinition type)
-            : base(host, module, type)
+        public CorralAnalyzer(IContractAwareHost host, IModule module, NamespaceTypeDefinition type, CancellationToken token)
+            : base(host, module, type, token)
         {
             Contract.Requires(module != null && host != null && type != null);
 
@@ -117,6 +118,12 @@ namespace Contractor.Core
 
             foreach (var query in queries)
             {
+                // Check if the user stopped the analysis
+                if (base.token.IsCancellationRequested)
+                {
+                    break;
+                }
+
                 var queryName = CreateUniqueMethodName(query);
 
                 string output = RunCorral(queryName);
@@ -136,6 +143,12 @@ namespace Contractor.Core
 
         private void RunBCT()
         {
+            // Check if the user stopped the analysis
+            if (base.token.IsCancellationRequested)
+            {
+                return;
+            }
+
             var timer = Stopwatch.StartNew();
 
             // I need to change the current directory so BCT can write the output in the correct folder
