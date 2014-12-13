@@ -7,25 +7,16 @@ using System.Linq;
 namespace Contractor.Core
 {
     // Immutable representation of an EPA state
-    public class IState : State
+    public interface IState
     {
-        public string Name
-        {
-            get { return base.UniqueName; }
-        }
-
-        public new List<string> EnabledActions
-        {
-            get { return (from a in base.EnabledActions select Utils.Extensions.GetDisplayName(a)).ToList(); }
-        }
-
-        public new List<string> DisabledActions
-        {
-            get { return (from a in base.DisabledActions select Utils.Extensions.GetDisplayName(a)).ToList(); }
-        }
+        uint Id { get; }
+        bool IsInitial { get; }
+        string Name { get; }
+        List<string> EnabledActions { get; }
+        List<string> DisabledActions { get; }
     }
 
-    public class State : IEquatable<State>
+    public class State : IState, IEquatable<State>
     {
         private class NamedEntityComparer : Comparer<IMethodDefinition>
         {
@@ -37,8 +28,8 @@ namespace Contractor.Core
 
         private const string methodNameDelimiter = "$";
 
-        public uint Id;
-        public bool IsInitial;
+        public uint Id { get; set; }
+        public bool IsInitial { get; set; }
         public string UniqueName
         {
             get
@@ -58,19 +49,39 @@ namespace Contractor.Core
             this.DisabledActions = new SortedSet<IMethodDefinition>(new NamedEntityComparer());
         }
 
-        public IState EPAState
+        public override string ToString()
         {
-            get
-            {
-                var s = new IState();
-                s.Id = this.Id;
-                s.IsInitial = this.IsInitial;
-                ((State)s).EnabledActions = new SortedSet<IMethodDefinition>(this.EnabledActions, new NamedEntityComparer());
-                ((State)s).DisabledActions = new SortedSet<IMethodDefinition>(this.DisabledActions, new NamedEntityComparer());
-                return s;
-            }
+            return this.UniqueName;
         }
 
+        #region IState members
+        uint IState.Id
+        {
+            get { return this.Id; }
+        }
+
+        bool IState.IsInitial
+        {
+            get { return this.IsInitial; }
+        }
+
+        string IState.Name
+        {
+            get { return this.UniqueName; }
+        }
+
+        List<string> IState.EnabledActions
+        {
+            get { return (from a in this.EnabledActions select Utils.Extensions.GetDisplayName(a)).ToList(); }
+        }
+
+        List<string> IState.DisabledActions
+        {
+            get { return (from a in this.DisabledActions select Utils.Extensions.GetDisplayName(a)).ToList(); }
+        }
+        #endregion
+
+        #region IEquatable
         public bool Equals(State other)
         {
             return this.UniqueName.Equals(other.UniqueName);
@@ -93,10 +104,6 @@ namespace Contractor.Core
         {
             return this.UniqueName.GetHashCode();
         }
-
-        public override string ToString()
-        {
-            return this.UniqueName;
-        }
+        #endregion
     }
 }

@@ -51,7 +51,7 @@ namespace Contractor.Core
                 {
                     writer.WriteStartElement("Transition");
 
-                    writer.WriteAttributeString("Name", t.Name);
+                    writer.WriteAttributeString("Name", t.Action);
                     writer.WriteAttributeString("SourceState", t.SourceState.Id.ToString());
                     writer.WriteAttributeString("TargetState", t.TargetState.Id.ToString());
                     writer.WriteAttributeString("IsUnproven", t.IsUnproven.ToString());

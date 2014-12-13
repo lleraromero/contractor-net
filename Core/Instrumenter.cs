@@ -30,7 +30,7 @@ namespace Contractor.Core
 			this.type = type;
 			this.epa = epa;
 
-            var actions = from transition in epa.Transitions.GroupBy(t => t.Action) select transition.Key;
+            var actions = from transition in epa.Transitions.GroupBy(t => (t as Transition).Action) select transition.Key;
 
 			foreach (var action in actions)
 			{

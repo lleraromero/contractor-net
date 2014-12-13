@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace Contractor.Core
 {
@@ -31,8 +32,8 @@ namespace Contractor.Core
         private readonly Regex outputParser;
         private StringBuilder output;
 
-        public CodeContractsAnalyzer(IContractAwareHost host, AssemblyInfo assembly, NamespaceTypeDefinition type)
-            : base(host, assembly.Module, type)
+        public CodeContractsAnalyzer(IContractAwareHost host, AssemblyInfo assembly, NamespaceTypeDefinition type, CancellationToken token)
+            : base(host, assembly.Module, type, token)
         {
             Contract.Requires(assembly != null && host != null && type != null);
 
@@ -151,30 +152,34 @@ namespace Contractor.Core
             cccheckArgs = cccheckArgs.Replace("@fullTypeName", typeName);
             cccheckArgs = cccheckArgs.Replace("@libPaths", libPaths);
 
-            using (var cccheck = new Process())
+            // If the user didn't stop the analysis, execute cccheck
+            if (!base.token.IsCancellationRequested)
             {
-                cccheck.StartInfo = new ProcessStartInfo()
+                using (var cccheck = new Process())
                 {
-                    FileName = Configuration.CheckerFileName,
-                    Arguments = cccheckArgs,
-                    WorkingDirectory = Directory.GetCurrentDirectory(),
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false
-                };
+                    cccheck.StartInfo = new ProcessStartInfo()
+                    {
+                        FileName = Configuration.CheckerFileName,
+                        Arguments = cccheckArgs,
+                        WorkingDirectory = Directory.GetCurrentDirectory(),
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false
+                    };
 
-                cccheck.OutputDataReceived += cccheck_DataReceived;
-                cccheck.ErrorDataReceived += cccheck_DataReceived;
-                cccheck.Start();
-                cccheck.BeginErrorReadLine();
-                cccheck.BeginOutputReadLine();
-                cccheck.WaitForExit();
+                    cccheck.OutputDataReceived += cccheck_DataReceived;
+                    cccheck.ErrorDataReceived += cccheck_DataReceived;
+                    cccheck.Start();
+                    cccheck.BeginErrorReadLine();
+                    cccheck.BeginOutputReadLine();
+                    cccheck.WaitForExit();
 
-                var analysisDuration = cccheck.ExitTime - cccheck.StartTime;
-                this.TotalAnalysisDuration += analysisDuration;
-                this.ExecutionsCount++;
+                    var analysisDuration = cccheck.ExitTime - cccheck.StartTime;
+                    this.TotalAnalysisDuration += analysisDuration;
+                    this.ExecutionsCount++;
+                }
             }
 
             var outputString = output.ToString();
@@ -269,7 +274,7 @@ namespace Contractor.Core
 
                     if (target != null)
                     {
-                        var transition = new Transition(source, action, target, isUnproven);
+                        var transition = new Transition(action, source, target, isUnproven);
                         analysisResult.Transitions.Add(transition);
                     }
 

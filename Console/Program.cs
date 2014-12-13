@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using Contractor.Core;
+﻿using Contractor.Core;
 using Microsoft.Msagl.Drawing;
-using System.Drawing;
-using System.Drawing.Imaging;
 using Microsoft.Msagl.GraphViewerGdi;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Drawing.Text;
+using System.IO;
+using System.Linq;
+using System.Threading;
 
 namespace Contractor.Console
 {
@@ -36,7 +36,8 @@ namespace Contractor.Console
 				"-g", GraphPath,
 				"-tmp", TempPath,
 				"-il=true",
-				"-t", "Examples.FiniteStack"
+				"-t", "Examples.FiniteStack",
+                "-b", "Corral"
 			};
 #endif
             var assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName();
@@ -69,9 +70,18 @@ namespace Contractor.Console
 
                     EpaGenerator.Backend backend = EpaGenerator.Backend.Corral;
                     if (program.options.backend.Equals("CodeContracts", StringComparison.InvariantCultureIgnoreCase))
-                        backend = EpaGenerator.Backend.Corral;
+                        backend = EpaGenerator.Backend.CodeContracts;
 
-                    var epas = program.Execute(backend);
+                    // epas is a mapping between Typename and the result of the analysis.
+                    Dictionary<string, TypeAnalysisResult> epas = program.Execute(backend);
+#if DEBUG
+                    // Export the EPA as an XML
+                    var serializer = new EpaXmlSerializer();
+                    using (Stream oStream = new FileStream(GraphPath, FileMode.Create))
+                    {
+                        serializer.Serialize(oStream, epas.First().Value.EPA);
+                    }
+#endif
                 }
                 catch (Exception ex)
                 {
@@ -82,8 +92,8 @@ namespace Contractor.Console
             }
 
 #if DEBUG
-            System.Console.WriteLine("Press any key to continue");
-            System.Console.ReadKey();
+            //System.Console.WriteLine("Press any key to continue");
+            //System.Console.ReadKey();
 #endif
             return 0;
         }
@@ -131,10 +141,11 @@ namespace Contractor.Console
                 generator.StateAdded += stateAdded;
                 generator.TransitionAdded += transitionAdded;
 
+                var cancellationSource = new CancellationTokenSource();
                 if (string.IsNullOrEmpty(options.type))
-                    epas = generator.GenerateEpas();
+                    epas = generator.GenerateEpas(cancellationSource.Token);
                 else
-                    epas = new Dictionary<string, TypeAnalysisResult>() { { options.type, generator.GenerateEpa(options.type) } };
+                    epas = new Dictionary<string, TypeAnalysisResult>() { { options.type, generator.GenerateEpa(options.type, cancellationSource.Token) } };
 
                 if (options.generateAssembly)
                 {
@@ -220,12 +231,12 @@ namespace Contractor.Console
         private void transitionAdded(object sender, TransitionAddedEventArgs e)
         {
             var graph = graphs[e.TypeFullName];
-            var label = e.Transition.Name;
+            var label = e.Transition.Action;
             var createEdge = true;
 
             if (options.collapseTransitions)
             {
-                var n = graph.FindNode(e.Transition.SourceState.Name);
+                var n = graph.FindNode(e.SourceState.Name);
 
                 if (options.unprovenTransitions && e.Transition.IsUnproven)
                     label = string.Format("{0}?", label);
@@ -246,7 +257,7 @@ namespace Contractor.Console
 
             if (createEdge)
             {
-                var edge = graph.AddEdge(e.Transition.SourceState.Name, label, e.Transition.TargetState.Name);
+                var edge = graph.AddEdge(e.SourceState.Name, label, e.Transition.TargetState.Name);
 
                 edge.Label.FontName = "Cambria";
                 edge.Label.FontSize = 6;
@@ -309,7 +320,7 @@ namespace Contractor.Console
             var executionsCount = e.AnalysisResult.ExecutionsCount;
             var totalGeneratedQueriesCount = e.AnalysisResult.TotalGeneratedQueriesCount;
             var unprovenQueriesCount = e.AnalysisResult.UnprovenQueriesCount;
-            var statesCount = e.AnalysisResult.EPA.States.Count();
+            var statesCount = e.AnalysisResult.EPA.States.Count;
             var transitionsCount = e.AnalysisResult.EPA.Transitions.Count();
             var initialStatesCount = e.AnalysisResult.EPA.States.Count(s => s.IsInitial);
             var unprovenTransitionsCount = e.AnalysisResult.EPA.Transitions.Count(t => t.IsUnproven);

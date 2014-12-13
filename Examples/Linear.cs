@@ -8,27 +8,13 @@ namespace Examples
 {
     public class Linear
     {
-        #region Fields
-
-        private int n;
-
-        #endregion Fields
-
-        #region Properties
-
-        public int N
-        {
-            get { return n; }
-            set { n = value; }
-        }
-
-        #endregion Properties
+        public int N { get; private set; }
 
         public Linear()
         {
             Contract.Ensures(N == 0);
 
-            n = 0;
+            N = 0;
         }
 
         public void a0()
@@ -52,31 +38,10 @@ namespace Examples
             N++;
         }
 
-        public void a3()
-        {
-            Contract.Requires(N == 3);
-            Contract.Ensures(N == Contract.OldValue<int>(N) + 1);
-            N++;
-        }
-
-        public void a4()
-        {
-            Contract.Requires(N == 4);
-            Contract.Ensures(N == Contract.OldValue<int>(N) + 1);
-            N++;
-        }
-
-        public void a5()
-        {
-            Contract.Requires(N == 5);
-            Contract.Ensures(N == Contract.OldValue<int>(N) + 1);
-            N++;
-        }
-
         [ContractInvariantMethod]
         private void Invariant()
         {
-            Contract.Invariant(N >= 0 && N <= 6);
+            Contract.Invariant(N >= 0 && N <= 3);
         }
     }
 }

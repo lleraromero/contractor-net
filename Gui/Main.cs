@@ -26,6 +26,7 @@ namespace Contractor.Gui
         private INamedTypeDefinition _AnalizedType;
         private EpaGenerator _EpaGenerator;
         private Thread _AnalisisThread;
+        private CancellationTokenSource _cancellationSource;
         private Graph _Graph;
         private IViewerNode _SelectedGraphNode;
         private Options _Options;
@@ -244,12 +245,13 @@ namespace Contractor.Gui
                 return;
             }
 
-            var label = e.Transition.Name;
+            var label = e.Transition.Action;
             var createEdge = true;
+            Style lineStyle = e.Transition.IsUnproven ? Style.Dashed : Style.Solid;
 
             if (_Options.CollapseTransitions)
             {
-                var n = _Graph.FindNode(e.Transition.SourceState.Name);
+                var n = _Graph.FindNode(e.SourceState.Name);
 
                 if (_Options.UnprovenTransitions && e.Transition.IsUnproven)
                     label = string.Format("{0}?", label);
@@ -260,7 +262,7 @@ namespace Contractor.Gui
 
                     foreach (var ed in edges)
                     {
-                        if (ed.Target == e.Transition.TargetState.Name)
+                        if (ed.Target == e.Transition.TargetState.Name && ed.Attr.Styles.Contains(lineStyle))
                         {
                             ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
                             createEdge = false;
@@ -272,10 +274,11 @@ namespace Contractor.Gui
 
             if (createEdge)
             {
-                var edge = _Graph.AddEdge(e.Transition.SourceState.Name, label, e.Transition.TargetState.Name);
+                var edge = _Graph.AddEdge(e.SourceState.Name, label, e.Transition.TargetState.Name);
 
                 edge.Label.FontName = "Cambria";
                 edge.Label.FontSize = 6;
+                edge.Attr.AddStyle(lineStyle);
             }
 
             this.UpdateAnalysisProgress();
@@ -423,11 +426,8 @@ namespace Contractor.Gui
                 var typeFullName = _AnalizedType.ToString();
                 var selectedMethods = listboxMethods.CheckedItems.Cast<string>();
 
-                _EpaGenerator.GenerateEpa(typeFullName, selectedMethods);
-            }
-            catch (ThreadAbortException)
-            {
-                this.BeginInvoke(new Action<TypeAnalysisResult>(this.UpdateAnalysisEnd), (object)null);
+                _cancellationSource = new CancellationTokenSource();
+                _EpaGenerator.GenerateEpa(typeFullName, selectedMethods, _cancellationSource.Token);
             }
             catch (Exception ex)
             {
@@ -478,7 +478,7 @@ namespace Contractor.Gui
         {
             var typeFullName = _AnalizedType.GetDisplayName();
 
-            if (analysisResult == null)
+            if (_cancellationSource.IsCancellationRequested)
             {
                 this.EndBackgroundTask("Analysis for {0} aborted", typeFullName);
             }
@@ -682,7 +682,7 @@ namespace Contractor.Gui
         {
             if (_AnalisisThread != null && _AnalisisThread.IsAlive)
             {
-                _AnalisisThread.Abort();
+                _cancellationSource.Cancel();
 
                 buttonStopAnalysis.Enabled = false;
                 menuitemStopAnalysis.Enabled = false;
@@ -820,7 +820,7 @@ namespace Contractor.Gui
                 xml.WriteAttributeString("type", typeFullName);
                 xml.WriteStartElement("states");
 
-                foreach (var n in nodes)
+                foreach (var n in nodes.OrderBy(n => n.Id))
                 {
                     var node = n.UserData as Node;
                     var state = node.UserData as IState;
@@ -841,7 +841,7 @@ namespace Contractor.Gui
                 xml.WriteEndElement();
                 xml.WriteStartElement("transitions");
 
-                foreach (var edge in graphViewer.Graph.Edges)
+                foreach (var edge in graphViewer.Graph.Edges.OrderBy(e => e.SourceNode.Id + e.TargetNode.Id))
                 {
                     var from = edge.SourceNode.Id;
                     var to = edge.TargetNode.Id;

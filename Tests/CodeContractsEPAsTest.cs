@@ -8,7 +8,7 @@ using System.Threading;
 namespace Tests
 {
     [TestClass]
-    public class CorralEPAsTest
+    public class CodeContractsEPAsTest
     {
         private static EpaGenerator epaGenerator;
 
@@ -19,7 +19,7 @@ namespace Tests
             Configuration.TempPath = Directory.GetParent(tc.TestDir).ToString();
             Configuration.InlineMethodsBody = true;
 
-            epaGenerator = new EpaGenerator(EpaGenerator.Backend.Corral);
+            epaGenerator = new EpaGenerator(EpaGenerator.Backend.CodeContracts);
             var ExamplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\Examples\obj\Debug\Decl\Examples.dll"));
             epaGenerator.LoadAssembly(ExamplesPath);
         }
