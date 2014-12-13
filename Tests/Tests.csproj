@@ -50,6 +50,9 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="..\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="CodeContractsEPAsTest.cs" />
     <Compile Include="CorralEPAsTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

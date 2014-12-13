@@ -78,6 +78,9 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="ATM.cs" />
     <Compile Include="Door.cs" />
     <Compile Include="DoorPost.cs" />
