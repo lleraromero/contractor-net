@@ -9,6 +9,7 @@ using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace Contractor.Console
 {
@@ -140,10 +141,11 @@ namespace Contractor.Console
                 generator.StateAdded += stateAdded;
                 generator.TransitionAdded += transitionAdded;
 
+                var cancellationSource = new CancellationTokenSource();
                 if (string.IsNullOrEmpty(options.type))
-                    epas = generator.GenerateEpas();
+                    epas = generator.GenerateEpas(cancellationSource.Token);
                 else
-                    epas = new Dictionary<string, TypeAnalysisResult>() { { options.type, generator.GenerateEpa(options.type) } };
+                    epas = new Dictionary<string, TypeAnalysisResult>() { { options.type, generator.GenerateEpa(options.type, cancellationSource.Token) } };
 
                 if (options.generateAssembly)
                 {

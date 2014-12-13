@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Threading;
 
 namespace Contractor.Core
 {
@@ -113,7 +114,7 @@ namespace Contractor.Core
                 typeAnalysis.EPA.Instrumented = false;
         }
 
-        public Dictionary<string, TypeAnalysisResult> GenerateEpas()
+        public Dictionary<string, TypeAnalysisResult> GenerateEpas(CancellationToken token)
         {
             var types = inputAssembly.DecompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
             var analysisResults = new Dictionary<string, TypeAnalysisResult>();
@@ -122,14 +123,14 @@ namespace Contractor.Core
             {
                 var typeUniqueName = type.GetUniqueName();
 
-                var result = GenerateEpa(type.ToString());
+                var result = GenerateEpa(type.ToString(), token);
                 analysisResults.Add(typeUniqueName, result);
             }
 
             return analysisResults;
         }
 
-        public TypeAnalysisResult GenerateEpa(string typeFullName)
+        public TypeAnalysisResult GenerateEpa(string typeFullName, CancellationToken token)
         {
             //Borramos del nombre los parametros de generics
             int start = typeFullName.IndexOf('<');
@@ -142,10 +143,10 @@ namespace Contractor.Core
 
             var methods = from m in type.GetPublicInstanceMethods()
                           select m.GetDisplayName();
-            return GenerateEpa(typeFullName, methods);
+            return GenerateEpa(typeFullName, methods, token);
         }
 
-        public TypeAnalysisResult GenerateEpa(string typeFullName, IEnumerable<string> selectedMethods)
+        public TypeAnalysisResult GenerateEpa(string typeFullName, IEnumerable<string> selectedMethods, CancellationToken token)
         {
             //Borramos del nombre los parametros de generics
             int start = typeFullName.IndexOf('<');
@@ -168,14 +169,13 @@ namespace Contractor.Core
                               join m in type.Methods
                               on name equals m.GetDisplayName()
                               select m;
-
-                GenerateEpa(type, methods);
+                GenerateEpa(type, methods, token);
             }
 
             return typeAnalysis;
         }
 
-        private void GenerateEpa(NamespaceTypeDefinition type, IEnumerable<IMethodDefinition> methods)
+        private void GenerateEpa(NamespaceTypeDefinition type, IEnumerable<IMethodDefinition> methods, CancellationToken token)
         {
             var typeDisplayName = type.GetDisplayName();
             var typeUniqueName = type.GetUniqueName();
@@ -200,10 +200,10 @@ namespace Contractor.Core
             switch (this.backend)
             {
                 case Backend.CodeContracts:
-                    checker = new CodeContractsAnalyzer(host, inputAssembly, type);
+                    checker = new CodeContractsAnalyzer(host, inputAssembly, type, token);
                     break;
                 case Backend.Corral:
-                    checker = new CorralAnalyzer(host, inputAssembly.Module, type);
+                    checker = new CorralAnalyzer(host, inputAssembly.Module, type, token);
                     break;
                 default:
                     throw new NotImplementedException("Unknown backend");
@@ -224,7 +224,7 @@ namespace Contractor.Core
             var newStates = new Queue<State>();
             newStates.Enqueue(dummy);
 
-            while (newStates.Count > 0)
+            while (newStates.Count > 0 && !token.IsCancellationRequested)
             {
                 var source = newStates.Dequeue();
                 foreach (var action in source.EnabledActions)
