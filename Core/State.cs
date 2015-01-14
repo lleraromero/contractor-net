@@ -43,7 +43,7 @@ namespace Contractor.Core
 
         public State()
         {
-            this.Id = 0;
+            this.Id = uint.MaxValue;
             this.IsInitial = false;
             this.EnabledActions = new SortedSet<IMethodDefinition>(new NamedEntityComparer());
             this.DisabledActions = new SortedSet<IMethodDefinition>(new NamedEntityComparer());
