@@ -52,19 +52,56 @@ namespace Contractor.Core
 
         public void AddState(State s)
         {
-            Contract.Requires(!States.Contains(s as IState));
-            Contract.Ensures(States.Contains(s as IState));
+            Contract.Requires(!States.Contains(s));
+            Contract.Ensures(States.Contains(s));
          
             graph[s as IState] = new HashSet<ITransition>(); 
         }
 
+        public void RemoveState(State s)
+        {
+            Contract.Requires(States.Contains(s));
+
+            var existingTransitions = Transitions.Where(t => t.SourceState == s || t.TargetState == s);
+            if (existingTransitions.Count() == 0)
+            {
+                graph.Remove(s);
+            }
+            else
+            {
+                foreach (var t in existingTransitions)
+                {
+                    RemoveTransition(t as Transition);
+                }
+            }
+        }
+
         public void AddTransition(Transition t)
         {
-            Contract.Requires(States.Contains(t.SourceState as IState));
-            Contract.Requires(States.Contains(t.TargetState as IState));
-            Contract.Requires(!Transitions.Contains(t as ITransition));
+            Contract.Requires(States.Contains(t.SourceState));
+            Contract.Requires(States.Contains(t.TargetState));
+            Contract.Requires(!Transitions.Contains(t));
 
-            graph[t.SourceState as IState].Add(t as ITransition);
+            graph[t.SourceState as IState].Add(t);
+        }
+
+        public void RemoveTransition(Transition t)
+        {
+            Contract.Requires(Transitions.Contains(t));
+
+            graph[t.SourceState as IState].Remove(t);
+            // If sourceState has no transitions from or to it, it has to be deleted
+            var sourceState = t.SourceState;
+            if (Transitions.All(x => x.SourceState != sourceState && x.TargetState != sourceState))
+            {
+                RemoveState(sourceState);
+            }
+            // If targetState has no transitions from or to it, it has to be deleted
+            var targetState = t.TargetState;
+            if (Transitions.All(x => x.SourceState != targetState && x.TargetState != targetState))
+            {
+                RemoveState(targetState);
+            }
         }
 
         public HashSet<ITransition> this[IState s]
