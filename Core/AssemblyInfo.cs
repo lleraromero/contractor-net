@@ -66,6 +66,7 @@ namespace Contractor.Utils
             var contractAwareHost = this.Host as IContractAwareHost;
 
             // Extracting contracts from this assembly and the contract reference assembly previously loaded with this host
+            // Important: the contracts are NOT removed from the module
             var contractExtractor = contractAwareHost.GetContractExtractor(this.Module.UnitIdentity);
             var contractProvider = new AggregatingContractProvider(contractExtractor);
 
