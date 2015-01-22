@@ -155,11 +155,21 @@
     <Reference Include="Microsoft.Cci.SourceModel">
       <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.SourceModel.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Msagl">
+      <HintPath>..\Dependencies\Msagl\Microsoft.Msagl.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Msagl.Drawing">
+      <HintPath>..\Dependencies\Msagl\Microsoft.Msagl.Drawing.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Msagl.GraphViewerGdi">
+      <HintPath>..\Dependencies\Msagl\Microsoft.Msagl.GraphViewerGdi.dll</HintPath>
+    </Reference>
     <Reference Include="NLog">
       <HintPath>..\Dependencies\NLog-3.0\NLog.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
@@ -175,6 +185,7 @@
     <Compile Include="ContractRewriter.cs" />
     <Compile Include="CorralAnalyzer.cs" />
     <Compile Include="Epa.cs" />
+    <Compile Include="EpaBinarySerializer.cs" />
     <Compile Include="EpaGenerator.cs" />
     <Compile Include="EpaXmlSerializer.cs" />
     <Compile Include="Extensions.cs" />
