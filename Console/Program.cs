@@ -203,7 +203,7 @@ namespace Contractor.Console
                 img.Save(imgName);
             }
 
-            printTypeAnalysisResult(e);
+            System.Console.WriteLine(e.AnalysisResult.ToString());
         }
 
         private void stateAdded(object sender, StateAddedEventArgs e)
@@ -311,31 +311,6 @@ namespace Contractor.Console
             }
 
             return true;
-        }
-
-        private void printTypeAnalysisResult(TypeAnalysisDoneEventArgs e)
-        {
-            var totalDuration = e.AnalysisResult.TotalDuration;
-            var totalAnalyzerDuration = e.AnalysisResult.TotalAnalyzerDuration;
-            var executionsCount = e.AnalysisResult.ExecutionsCount;
-            var totalGeneratedQueriesCount = e.AnalysisResult.TotalGeneratedQueriesCount;
-            var unprovenQueriesCount = e.AnalysisResult.UnprovenQueriesCount;
-            var statesCount = e.AnalysisResult.EPA.States.Count;
-            var transitionsCount = e.AnalysisResult.EPA.Transitions.Count();
-            var initialStatesCount = e.AnalysisResult.EPA.States.Count(s => s.IsInitial);
-            var unprovenTransitionsCount = e.AnalysisResult.EPA.Transitions.Count(t => t.IsUnproven);
-            var precision = 100 - Math.Ceiling((double)unprovenQueriesCount * 100 / totalGeneratedQueriesCount);
-            var backend = e.AnalysisResult.Backend;
-
-            System.Console.WriteLine("Analysis for type {0} done", e.TypeFullName);
-            System.Console.WriteLine("\t{0} analysis total duration:\t{1}", backend, totalAnalyzerDuration);
-            System.Console.WriteLine("\t{0} analysis precision:\t{1}%", backend, precision);
-            System.Console.WriteLine("\t{0} executions:\t\t{1}", backend, executionsCount);
-            System.Console.WriteLine("\tTotal duration:\t\t\t\t{0}", totalDuration);
-            System.Console.WriteLine("\tGenerated queries:\t\t\t{0} ({1} unproven)", totalGeneratedQueriesCount, unprovenQueriesCount);
-            System.Console.WriteLine("\tStates:\t\t\t\t\t{0} ({1} initial)", statesCount, initialStatesCount);
-            System.Console.WriteLine("\tTransitions:\t\t\t\t{0} ({1} unproven)", transitionsCount, unprovenTransitionsCount);
-            System.Console.WriteLine();
         }
     }
 }
