@@ -87,8 +87,9 @@
     <Compile Include="FiniteStack.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ICSE2011\PipedOutputStream.cs" />
     <Compile Include="Linear.cs" />
-    <Compile Include="LinkedList.cs" />
+    <Compile Include="ICSE2011\LinkedList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GenericStackFields.cs" />
     <Compile Include="GenericStack.cs" />
@@ -96,6 +97,7 @@
     <Compile Include="GenericStackSet.cs" />
     <Compile Include="VendingMachine.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

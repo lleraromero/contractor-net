@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 
-namespace Examples
+namespace Examples.ICSE2011
 {
     public class LinkedList
     {
