@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -154,7 +155,7 @@ namespace Contractor.Core
             // I need to change the current directory so BCT can write the output in the correct folder
             var tmp = Environment.CurrentDirectory;
             Environment.CurrentDirectory = Configuration.TempPath;
-            if (new BytecodeTranslator.BCT().Main(new string[] { GetQueryAssemblyPath() }) != 0)
+            if (new BytecodeTranslator.BCT().Main(new string[] { GetQueryAssemblyPath(), "/lib:" + Path.GetDirectoryName(inputAssembly.Module.ContainingAssembly.Location) }) != 0)
                 throw new Exception("Error translating the query assembly to boogie");
             Environment.CurrentDirectory = tmp;
 
