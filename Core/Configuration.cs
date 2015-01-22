@@ -15,7 +15,6 @@ namespace Contractor.Core
 		public static string TempPath;
 		public static string CheckerFileName;
 		public static string CheckerArguments;
-        public static string BCTPath;
         public static string CorralArguments;
 		public static bool InlineMethodsBody;
 
@@ -36,7 +35,6 @@ namespace Contractor.Core
 			CheckerFileName = ExpandVariables(Resources.CheckerFileName);
 			CheckerArguments = Resources.CheckerArguments;
             var dependenciesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\Dependencies"));
-            BCTPath = Path.GetFullPath(Path.Combine(dependenciesPath, @"BCT\BytecodeTranslator.exe"));
             CorralArguments = Resources.CorralArguments;
 
 #if DEBUG
