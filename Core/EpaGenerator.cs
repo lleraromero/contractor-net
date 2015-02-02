@@ -1,4 +1,6 @@
-﻿using Contractor.Utils;
+﻿#define PROPAGATION
+
+using Contractor.Utils;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;
@@ -10,6 +12,8 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Threading;
+
+
 
 namespace Contractor.Core
 {
@@ -294,6 +298,8 @@ namespace Contractor.Core
             analysisResult.Backend = this.backend;
 
             #region PropagationExperiment
+            
+#if PROPAGATION
             var pngSerializer = new EpaBinarySerializer();
             using (var epa1 = File.Create(string.Format("{0}\\{1}.png", Environment.GetFolderPath(Environment.SpecialFolder.Desktop), TypeHelper.GetTypeName(type, NameFormattingOptions.OmitContainingNamespace))))
             {
@@ -312,6 +318,7 @@ namespace Contractor.Core
             {
                 pngSerializer.Serialize(epa2, epa);
             }
+#endif
             #endregion
 
             if (this.TypeAnalysisDone != null)
@@ -322,6 +329,7 @@ namespace Contractor.Core
         }
 
         #region Propagation experiment
+#if PROPAGATION
         private void PropagateCode(Epa epa, IAnalyzer checker, AssemblyInfo assembly)
         {
             var CodeOf = new Dictionary<IState, MethodDefinition>();
@@ -517,7 +525,7 @@ namespace Contractor.Core
             block.Statements.AddRange(secondBodyBlock.Statements);
             return block.Statements;
         }
-
+#endif
         #endregion
 
         private List<State> generatePossibleStates(List<IMethodDefinition> actions, ActionAnalysisResults actionsResult, HashSet<IState> knownStates)
