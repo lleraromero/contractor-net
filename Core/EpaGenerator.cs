@@ -298,7 +298,7 @@ namespace Contractor.Core
             analysisResult.Backend = this.backend;
 
             #region PropagationExperiment
-            
+
 #if PROPAGATION
             var pngSerializer = new EpaBinarySerializer();
             using (var epa1 = File.Create(string.Format("{0}\\{1}.png", Environment.GetFolderPath(Environment.SpecialFolder.Desktop), TypeHelper.GetTypeName(type, NameFormattingOptions.OmitContainingNamespace))))
@@ -332,36 +332,48 @@ namespace Contractor.Core
 #if PROPAGATION
         private void PropagateCode(Epa epa, IAnalyzer checker, AssemblyInfo assembly)
         {
-            var CodeOf = new Dictionary<IState, MethodDefinition>();
-            var PreviousState = new Dictionary<IState, State>();
+            var CodeOf = new Dictionary<IState, List<MethodDefinition>>();
+            var PreviousState = new Dictionary<IState, List<State>>();
             var cp = assembly.ExtractContracts();
 
-            // Perform a DFS traversal of the EPA to find states with a single input action.
-            Stack<IState> toVisit = new Stack<IState>();
-            HashSet<IState> visited = new HashSet<IState>();
-            toVisit.Push(epa.Initial);
-            visited.Add(epa.Initial);
+            // Perform a topological traversal of the EPA to find states that already have its method dependencies computed.
+            // Which means, all the paths from the constructor to the current state are represented in the current state code.
 
-            while (toVisit.Count > 0)
+            // TODO(lleraromero): Replace the Dictionary with an implementation of a Priority Queue
+            var toVisit = new Dictionary<IState, int>(epa.States.Count);
+            foreach (var s in epa.States)
             {
-                var currentState = toVisit.Pop();
+                toVisit.Add(s, epa.Transitions.Count(t => t.TargetState == s));
+            }
+
+            while (toVisit.Any(kvp => kvp.Value == 0))
+            {
+                var currentState = toVisit.First(kvp => kvp.Value == 0).Key;
+                toVisit[currentState] = int.MaxValue;
 
                 // currentState's code has changed?
-                if (CodeOf.ContainsKey(currentState) && CodeOf[currentState] != null)
+                if (CodeOf.ContainsKey(currentState) && CodeOf[currentState] != null && CodeOf[currentState].Count > 0)
                 {
                     // Analyse existing transitions in currentState
                     var possibleTargets = epa[currentState].Select(t => t.TargetState as State).ToList();
                     var possibleActions = epa[currentState].Select(t => (t as Transition).Action).ToList();
-                    
+
                     foreach (var action in possibleActions)
                     {
-                        // Merge the code this state depend on with 'action' in a new MethodDefinition
-                        var previousActions = CodeOf[currentState];
-                        var mergedAction = Concat(previousActions, action as MethodDefinition, cp);
-                        var previousState = PreviousState[currentState];
-                        var transitionsResults = checker.AnalyzeTransitions(previousState, mergedAction, possibleTargets);
-                        
-                        var persistentTransitions = transitionsResults.Transitions;
+                        var persistentTransitions = new HashSet<Transition>();
+                        for (int i = 0; i < CodeOf[currentState].Count; i++)
+                        {
+                            // Merge the code this state depend on with 'action' in a new MethodDefinition
+                            var previousActions = CodeOf[currentState][i];
+                            var mergedAction = Concat(previousActions, action as MethodDefinition, cp);
+                            var previousState = PreviousState[currentState][i];
+                            var transitionsResults = checker.AnalyzeTransitions(previousState, mergedAction, possibleTargets);
+
+                            if (i == 0)
+                                persistentTransitions.UnionWith(transitionsResults.Transitions);
+                            else
+                                persistentTransitions.IntersectWith(transitionsResults.Transitions);
+                        }
 
                         Contract.Assert(persistentTransitions.Count <= epa[currentState].Count(t => (t as Transition).Action == action));
                         if (persistentTransitions.Count < epa[currentState].Count(t => (t as Transition).Action == action))
@@ -382,27 +394,28 @@ namespace Contractor.Core
                 foreach (var t in transToNeighbours)
                 {
                     var neighbour = t.TargetState;
-                    if (visited.Contains(neighbour)) continue;
 
-                    // Input degree of 'neighbour'
-                    int inputDegree = epa.Transitions.Count(tran => tran.TargetState == neighbour);
-                    if (inputDegree == 1)
+                    // Propagate CodeOf[currentState] to CodeOf[neighbour], ie. CodeOf[neighbour] = CodeOf[currentState]++CodeOf[t]
+                    if (!CodeOf.ContainsKey(neighbour) || CodeOf[neighbour] == null)
                     {
-                        // Propagate CodeOf[currentState] to CodeOf[neighbour], ie. CodeOf[neighbour] = CodeOf[currentState]++CodeOf[t]
-                        if (CodeOf.ContainsKey(currentState) && CodeOf[currentState] != null)
-                        {
-                            CodeOf[neighbour] = Concat(CodeOf[currentState], (t as Transition).Action as MethodDefinition, cp);
-                            PreviousState[neighbour] = PreviousState[currentState];
-                        }
-                        else
-                        {
-                            CodeOf[neighbour] = (t as Transition).Action as MethodDefinition;
-                            PreviousState[neighbour] = currentState as State;
-                        }
+                        CodeOf[neighbour] = new List<MethodDefinition>();
+                        PreviousState[neighbour] = new List<State>();
                     }
 
-                    toVisit.Push(neighbour);
-                    visited.Add(neighbour);
+                    if (CodeOf.ContainsKey(currentState) && CodeOf[currentState] != null)
+                    {
+                        for (int j = 0; j < CodeOf[currentState].Count; j++)
+                        {
+                            CodeOf[neighbour].Add(Concat(CodeOf[currentState][j], (t as Transition).Action as MethodDefinition, cp));
+                            PreviousState[neighbour].Add(PreviousState[currentState][j]);
+                        }
+                    }
+                    else
+                    {
+                        CodeOf[neighbour].Add((t as Transition).Action as MethodDefinition);
+                        PreviousState[neighbour].Add(currentState as State);
+                    }
+                    toVisit[neighbour]--;
                 }
             }
 
