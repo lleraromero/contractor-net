@@ -201,6 +201,7 @@ namespace Contractor.Core
                            .ToList();
 
             var epa = epas[typeUniqueName].EPA;
+            epa.Type = typeUniqueName;
 
             IAnalyzer checker;
             switch (this.backend)
