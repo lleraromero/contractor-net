@@ -73,22 +73,23 @@ namespace Tests
 
             #region Graph representation
             var graph = new List<List<int>>();
-            for (int i = 0; i < epa.States.Count; i++)
-            {
-                graph.Add(new List<int>());
-                graph[i] = new List<int>();
+            graph.Add(new List<int>());
+            graph[0].Add(1);
 
-                if (i > 0)
-                {
-                    // Get Property
-                    graph[i].Add(i);
-                }
-                if (i < epa.States.Count - 1)
-                {
-                    // a_{i+1}
-                    graph[i].Add(i + 1);
-                }
-            }
+            graph.Add(new List<int>());
+            graph[1].Add(1);
+            graph[1].Add(2);
+
+            graph.Add(new List<int>());
+            graph[2].Add(2);
+            graph[2].Add(3);
+
+            graph.Add(new List<int>());
+            graph[3].Add(3);
+            graph[3].Add(4);
+
+            graph.Add(new List<int>());
+            graph[4].Add(4);
             #endregion
 
             Traverse(graph, epa);
