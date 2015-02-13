@@ -1,6 +1,4 @@
-﻿#define PROPAGATION
-
-using Contractor.Utils;
+﻿using Contractor.Utils;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;
@@ -12,8 +10,6 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Threading;
-
-
 
 namespace Contractor.Core
 {
@@ -298,27 +294,24 @@ namespace Contractor.Core
             analysisResult.Backend = this.backend;
 
             #region PropagationExperiment
-
-#if PROPAGATION
             var pngSerializer = new EpaBinarySerializer();
-            using (var epa1 = File.Create(string.Format("{0}\\{1}.png", Environment.GetFolderPath(Environment.SpecialFolder.Desktop), TypeHelper.GetTypeName(type, NameFormattingOptions.OmitContainingNamespace))))
+            using (var epa1 = File.Create(string.Format("{0}\\{1}.png", Configuration.TempPath, TypeHelper.GetTypeName(type, NameFormattingOptions.OmitContainingNamespace))))
             {
                 pngSerializer.Serialize(epa1, epa);
             }
 
             var transitionsCount = epa.Transitions.Count;
             var propagationAnalysis = Stopwatch.StartNew();
-            PropagateCode(epa, checker, inputAssembly);
+            new FeasiblePathsPass(this.host).Run(epa, checker, inputAssembly);
             propagationAnalysis.Stop();
 
             analysisResult.Statistics["PropagationPhaseDuration"] = propagationAnalysis.Elapsed;
             analysisResult.Statistics["PropagationPhaseRemovedTransitions"] = transitionsCount - epa.Transitions.Count;
 
-            using (var epa2 = File.Create(string.Format("{0}\\{1}.png", Environment.GetFolderPath(Environment.SpecialFolder.Desktop), TypeHelper.GetTypeName(type, NameFormattingOptions.OmitContainingNamespace) + "_post")))
+            using (var epa2 = File.Create(string.Format("{0}\\{1}_post.png", Configuration.TempPath, TypeHelper.GetTypeName(type, NameFormattingOptions.OmitContainingNamespace))))
             {
                 pngSerializer.Serialize(epa2, epa);
             }
-#endif
             #endregion
 
             if (this.TypeAnalysisDone != null)
@@ -327,219 +320,6 @@ namespace Contractor.Core
                 this.TypeAnalysisDone(this, eventArgs);
             }
         }
-
-        #region Propagation experiment
-#if PROPAGATION
-        private void PropagateCode(Epa epa, IAnalyzer checker, AssemblyInfo assembly)
-        {
-            var CodeOf = new Dictionary<IState, List<MethodDefinition>>();
-            var PreviousState = new Dictionary<IState, List<State>>();
-            var cp = assembly.ExtractContracts();
-
-            // Perform a topological traversal of the EPA to find states that already have its method dependencies computed.
-            // Which means, all the paths from the constructor to the current state are represented in the current state code.
-
-            // TODO(lleraromero): Replace the Dictionary with an implementation of a Priority Queue
-            var toVisit = new Dictionary<IState, int>(epa.States.Count);
-            foreach (var s in epa.States)
-            {
-                toVisit.Add(s, epa.Transitions.Count(t => t.TargetState == s));
-            }
-
-            while (toVisit.Any(kvp => kvp.Value == 0))
-            {
-                var currentState = toVisit.First(kvp => kvp.Value == 0).Key;
-                toVisit[currentState] = int.MaxValue;
-
-                // currentState's code has changed?
-                if (CodeOf.ContainsKey(currentState) && CodeOf[currentState] != null && CodeOf[currentState].Count > 0)
-                {
-                    // Analyse existing transitions in currentState
-                    var possibleTargets = epa[currentState].Select(t => t.TargetState as State).ToList();
-                    var possibleActions = epa[currentState].Select(t => (t as Transition).Action).ToList();
-
-                    foreach (var action in possibleActions)
-                    {
-                        var persistentTransitions = new HashSet<Transition>();
-                        for (int i = 0; i < CodeOf[currentState].Count; i++)
-                        {
-                            // Merge the code this state depend on with 'action' in a new MethodDefinition
-                            var previousActions = CodeOf[currentState][i];
-                            var mergedAction = Concat(previousActions, action as MethodDefinition, cp);
-                            var previousState = PreviousState[currentState][i];
-                            var transitionsResults = checker.AnalyzeTransitions(previousState, mergedAction, possibleTargets);
-
-                            if (i == 0)
-                                persistentTransitions.UnionWith(transitionsResults.Transitions);
-                            else
-                                persistentTransitions.IntersectWith(transitionsResults.Transitions);
-                        }
-
-                        Contract.Assert(persistentTransitions.Count <= epa[currentState].Count(t => (t as Transition).Action == action));
-                        if (persistentTransitions.Count < epa[currentState].Count(t => (t as Transition).Action == action))
-                        {
-                            var transitions = epa[currentState].Where(t => (t as Transition).Action == action);
-                            foreach (var t in transitions)
-                            {
-                                if (!persistentTransitions.Any(trans => trans.TargetState.Equals(t.TargetState)))
-                                {
-                                    epa.RemoveTransition(t as Transition);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                var transToNeighbours = epa[currentState];
-                foreach (var t in transToNeighbours)
-                {
-                    var neighbour = t.TargetState;
-
-                    // Propagate CodeOf[currentState] to CodeOf[neighbour], ie. CodeOf[neighbour] = CodeOf[currentState]++CodeOf[t]
-                    if (!CodeOf.ContainsKey(neighbour) || CodeOf[neighbour] == null)
-                    {
-                        CodeOf[neighbour] = new List<MethodDefinition>();
-                        PreviousState[neighbour] = new List<State>();
-                    }
-
-                    if (CodeOf.ContainsKey(currentState) && CodeOf[currentState] != null)
-                    {
-                        for (int j = 0; j < CodeOf[currentState].Count; j++)
-                        {
-                            CodeOf[neighbour].Add(Concat(CodeOf[currentState][j], (t as Transition).Action as MethodDefinition, cp));
-                            PreviousState[neighbour].Add(PreviousState[currentState][j]);
-                        }
-                    }
-                    else
-                    {
-                        CodeOf[neighbour].Add((t as Transition).Action as MethodDefinition);
-                        PreviousState[neighbour].Add(currentState as State);
-                    }
-                    toVisit[neighbour]--;
-                }
-            }
-
-        }
-
-        private MethodDefinition Concat(MethodDefinition first, MethodDefinition second, ContractProvider cp)
-        {
-            var mergedMethods = new MethodDefinition()
-            {
-                CallingConvention = CallingConvention.HasThis,
-                ContainingTypeDefinition = first.ContainingTypeDefinition,
-                InternFactory = this.host.InternFactory,
-                IsStatic = false,
-                Name = this.host.NameTable.GetNameFor(MemberHelper.GetMethodSignature(first, NameFormattingOptions.None) + MemberHelper.GetMethodSignature(second, NameFormattingOptions.None)),
-                Type = this.host.PlatformType.SystemVoid,
-                Visibility = TypeMemberVisibility.Public
-            };
-
-            // The new contract will contain first's precondition and second's postconditions
-            cp.AssociateMethodWithContract(mergedMethods, ConcatedContracts(first, second, cp));
-
-            var mergedBlock = new BlockStatement();
-            mergedBlock.Statements.AddRange(GetFirstStmtBlock(first, cp));
-            mergedBlock.Statements.AddRange(GetSecondStmtBlock(second, cp));
-
-            var newSourceMethodBody = new SourceMethodBody(this.host)
-            {
-                Block = mergedBlock,
-                IsNormalized = false,
-                LocalsAreZeroed = first.Body.LocalsAreZeroed,
-                MethodDefinition = mergedMethods,
-            };
-
-            mergedMethods.Body = newSourceMethodBody;
-            return mergedMethods;
-        }
-
-        private MethodContract ConcatedContracts(MethodDefinition first, MethodDefinition second, IContractProvider cp)
-        {
-            var contract = new MethodContract();
-            if (cp.GetMethodContractFor(first) != null && cp.GetMethodContractFor(first).Preconditions != null)
-            {
-                contract.Preconditions.AddRange(cp.GetMethodContractFor(first).Preconditions);
-            }
-            if (cp.GetMethodContractFor(second) != null && cp.GetMethodContractFor(second).Postconditions != null)
-            {
-                contract.Postconditions.AddRange(cp.GetMethodContractFor(second).Postconditions);
-            }
-            return contract;
-        }
-
-        private IEnumerable<IStatement> GetFirstStmtBlock(MethodDefinition first, IContractProvider cp)
-        {
-            var block = new BlockStatement();
-
-            IBlockStatement firstBodyBlock = null;
-            if (first.Body is Microsoft.Cci.ILToCodeModel.SourceMethodBody)
-            {
-                var firstBody = first.Body as Microsoft.Cci.ILToCodeModel.SourceMethodBody;
-                firstBodyBlock = firstBody.Block;
-            }
-            else if (first.Body is SourceMethodBody)
-            {
-                var firstBody = first.Body as SourceMethodBody;
-                firstBodyBlock = firstBody.Block;
-            }
-
-            block.Statements.AddRange(firstBodyBlock.Statements);
-            // We need to remove return statements, otherwise, the second block won't make any sense
-            if (block.Statements.Last() is IReturnStatement)
-            {
-                block.Statements.RemoveAt(block.Statements.Count - 1);
-            }
-
-            // After the last statement of the block we are going to assume the postcondition of the first block
-            var mc = cp.GetMethodContractFor(first);
-            if (mc != null && mc.Postconditions.Count() > 0)
-            {
-                var assumes = from post in mc.Postconditions
-                              select new AssumeStatement()
-                              {
-                                  Condition = post.Condition,
-                                  OriginalSource = post.OriginalSource
-                              };
-                block.Statements.AddRange(assumes);
-            }
-            return block.Statements;
-        }
-
-        private IEnumerable<IStatement> GetSecondStmtBlock(MethodDefinition second, IContractProvider cp)
-        {
-            var block = new BlockStatement();
-
-            // Before the first statement of the block we are going to assert the precondition of the second block
-            var mc = cp.GetMethodContractFor(second);
-
-            if (mc != null && mc.Preconditions.Count() > 0)
-            {
-                var asserts = from pre in mc.Preconditions
-                              select new AssertStatement()
-                              {
-                                  Condition = pre.Condition,
-                                  OriginalSource = pre.OriginalSource
-                              };
-
-                block.Statements.AddRange(asserts);
-            }
-
-            IBlockStatement secondBodyBlock = null;
-            if (second.Body is Microsoft.Cci.ILToCodeModel.SourceMethodBody)
-            {
-                var secondBody = second.Body as Microsoft.Cci.ILToCodeModel.SourceMethodBody;
-                secondBodyBlock = secondBody.Block;
-            }
-            else if (second.Body is SourceMethodBody)
-            {
-                var secondBody = second.Body as SourceMethodBody;
-                secondBodyBlock = secondBody.Block;
-            }
-            block.Statements.AddRange(secondBodyBlock.Statements);
-            return block.Statements;
-        }
-#endif
-        #endregion
 
         private List<State> generatePossibleStates(List<IMethodDefinition> actions, ActionAnalysisResults actionsResult, HashSet<IState> knownStates)
         {

@@ -73,7 +73,8 @@
     <CodeContractsBeingOptimisticOnExternal>True</CodeContractsBeingOptimisticOnExternal>
     <CodeContractsRuntimeCheckingLevel>Full</CodeContractsRuntimeCheckingLevel>
     <CodeContractsReferenceAssembly>%28none%29</CodeContractsReferenceAssembly>
-    <CodeContractsAnalysisWarningLevel>0</CodeContractsAnalysisWarningLevel>
+    <CodeContractsAnalysisWarningLevel>3</CodeContractsAnalysisWarningLevel>
+    <CodeContractsInferEnsuresAutoProperties>True</CodeContractsInferEnsuresAutoProperties>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
@@ -189,9 +190,11 @@
     <Compile Include="EpaGenerator.cs" />
     <Compile Include="EpaXmlSerializer.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="FeasiblePathsPass.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="IAnalyzer.cs" />
     <Compile Include="LogManager.cs" />
+    <Compile Include="PriorityQueue.cs" />
     <Compile Include="ReturnRewriter.cs" />
     <Compile Include="Transition.cs" />
     <None Include="API.cd" />
