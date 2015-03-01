@@ -66,7 +66,7 @@ namespace Contractor.Core
                 if (CodeOf.ContainsKey(currentState) && CodeOf[currentState] != null && CodeOf[currentState].Count > 0)
                 {
                     // Analyse existing transitions in currentState
-                    var possibleTargets = epa[currentState].Select(t => t.TargetState as State).ToList();
+                    var possibleTargets = new HashSet<State>(epa[currentState].Select(t => t.TargetState as State)).ToList();
                     var possibleActions = new HashSet<IMethodDefinition>(epa[currentState].Select(t => (t as Transition).Action)).ToList();
 
                     foreach (var action in possibleActions)
@@ -80,15 +80,10 @@ namespace Contractor.Core
                             var previousState = PreviousState[currentState][i];
 
                             var actionsResult = checker.AnalyzeActions(previousState as State, previousActions, possibleActions);
-                            var inconsistentActions = actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).ToList();
 
-                            foreach (var act in inconsistentActions)
-                            {
-                                actionsResult.EnabledActions.Remove(act);
-                                actionsResult.DisabledActions.Remove(act);
-                            }
+                            var inconsistentActions = actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions);
+                            Contract.Assert(inconsistentActions.Count() == 0);
 
-                            //var possibleTargets = generatePossibleStates(possibleActions, actionsResult, epa.States);
                             // Which states are reachable from the current state (aka source) using 'action'?
                             var transitionsResults = checker.AnalyzeTransitions(previousState, mergedAction, possibleTargets);
                             var transToAdd = from t in transitionsResults.Transitions select new Transition(action, currentState as State, t.TargetState, t.IsUnproven);

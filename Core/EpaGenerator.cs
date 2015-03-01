@@ -238,13 +238,9 @@ namespace Contractor.Core
                     var actionUniqueName = action.GetUniqueName();
                     // Which actions are enabled or disabled if 'action' is called from 'source'?
                     var actionsResult = checker.AnalyzeActions(source, action, actions);
-                    var inconsistentActions = actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).ToList();
 
-                    foreach (var act in inconsistentActions)
-                    {
-                        actionsResult.EnabledActions.Remove(act);
-                        actionsResult.DisabledActions.Remove(act);
-                    }
+                    var inconsistentActions = actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions);
+                    Contract.Assert(inconsistentActions.Count() == 0);
 
                     var possibleTargets = generatePossibleStates(actions, actionsResult, epa.States);
                     // Which states are reachable from the current state (aka source) using 'action'?
