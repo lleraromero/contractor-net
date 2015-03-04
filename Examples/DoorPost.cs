@@ -58,8 +58,8 @@ namespace Examples
 
         public void Alarm()
         {
-            Contract.Requires(!emergency && !emergency);
-            Contract.Ensures(emergency && emergency && !closed);
+            Contract.Requires(!emergency);
+            Contract.Ensures(emergency && !closed);
 
             emergency = true;
             closed = false;

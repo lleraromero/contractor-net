@@ -348,7 +348,7 @@ namespace Examples.ICSE2011
 
         public void connect()
         {
-            Contract.Requires(this.sink == null || !this.sink._connected);
+            //Contract.Requires(this.sink == null || !this.sink._connected);
 
             this.sink = new PipedInputStream();
             this.sink._in = -1;
@@ -369,7 +369,7 @@ namespace Examples.ICSE2011
         //    }
         public void write(int b)
         {
-            Contract.Requires(this.sink != null);
+            //Contract.Requires(this.sink != null);
 
             this.sink.recieve(b);
         }
