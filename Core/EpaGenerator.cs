@@ -240,8 +240,13 @@ namespace Contractor.Core
                     // Which actions are enabled or disabled if 'action' is called from 'source'?
                     var actionsResult = checker.AnalyzeActions(source, action, actions);
 
-                    var inconsistentActions = actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions);
-                    Contract.Assert(inconsistentActions.Count() == 0);
+                    // Remove any inconsistency
+                    var inconsistentActions = actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).ToList();
+                    foreach (var act in inconsistentActions)
+                    {
+                        actionsResult.EnabledActions.Remove(act);
+                        actionsResult.DisabledActions.Remove(act);
+                    }
 
                     var possibleTargets = generatePossibleStates(actions, actionsResult, epa.States);
                     // Which states are reachable from the current state (aka source) using 'action'?
@@ -281,38 +286,39 @@ namespace Contractor.Core
             analysisTimer.Stop();
 
             epa.GenerationCompleted = true;
-            var analysisResult = new TypeAnalysisResult();
-            analysisResult.EPA = epa;
-            analysisResult.TotalDuration = analysisTimer.Elapsed;
-            analysisResult.Statistics["TotalAnalyzerDuration"] = checker.TotalAnalysisDuration;
-            analysisResult.Statistics["ExecutionsCount"] = checker.ExecutionsCount;
-            analysisResult.Statistics["TotalGeneratedQueriesCount"] = checker.TotalGeneratedQueriesCount;
-            analysisResult.Statistics["UnprovenQueriesCount"] = checker.UnprovenQueriesCount;
-            analysisResult.Backend = this.backend;
 
-            #region PropagationExperiment
-            var pngSerializer = new EpaBinarySerializer();
-            using (var epa1 = File.Create(string.Format("{0}\\{1}.png", Configuration.TempPath, TypeHelper.GetTypeName(type, NameFormattingOptions.OmitContainingNamespace))))
-            {
-                pngSerializer.Serialize(epa1, epa);
-            }
+            //#region PropagationExperiment
+            //var pngSerializer = new EpaBinarySerializer();
+            //using (var epa1 = File.Create(string.Format("{0}\\{1}.png", Configuration.TempPath, TypeHelper.GetTypeName(type, NameFormattingOptions.OmitContainingNamespace))))
+            //{
+            //    pngSerializer.Serialize(epa1, epa);
+            //}
 
-            var transitionsCount = epa.Transitions.Count;
-            var propagationAnalysis = Stopwatch.StartNew();
-            new FeasiblePathsPass(this.host).Run(epa, checker, inputAssembly);
-            propagationAnalysis.Stop();
+            //var transitionsCount = epa.Transitions.Count;
+            //var propagationAnalysis = Stopwatch.StartNew();
+            //new FeasiblePathsPass(this.host).Run(epa, checker, inputAssembly);
+            //propagationAnalysis.Stop();
 
-            analysisResult.Statistics["PropagationPhaseDuration"] = propagationAnalysis.Elapsed;
-            analysisResult.Statistics["PropagationPhaseRemovedTransitions"] = transitionsCount - epa.Transitions.Count;
+            //analysisResult.Statistics["PropagationPhaseDuration"] = propagationAnalysis.Elapsed;
+            //analysisResult.Statistics["PropagationPhaseRemovedTransitions"] = transitionsCount - epa.Transitions.Count;
 
-            using (var epa2 = File.Create(string.Format("{0}\\{1}_post.png", Configuration.TempPath, TypeHelper.GetTypeName(type, NameFormattingOptions.OmitContainingNamespace))))
-            {
-                pngSerializer.Serialize(epa2, epa);
-            }
-            #endregion
+            //using (var epa2 = File.Create(string.Format("{0}\\{1}_post.png", Configuration.TempPath, TypeHelper.GetTypeName(type, NameFormattingOptions.OmitContainingNamespace))))
+            //{
+            //    pngSerializer.Serialize(epa2, epa);
+            //}
+            //#endregion
 
             if (this.TypeAnalysisDone != null)
             {
+                var analysisResult = new TypeAnalysisResult();
+                analysisResult.EPA = epa;
+                analysisResult.TotalDuration = analysisTimer.Elapsed;
+                analysisResult.Statistics["TotalAnalyzerDuration"] = checker.TotalAnalysisDuration;
+                analysisResult.Statistics["ExecutionsCount"] = checker.ExecutionsCount;
+                analysisResult.Statistics["TotalGeneratedQueriesCount"] = checker.TotalGeneratedQueriesCount;
+                analysisResult.Statistics["UnprovenQueriesCount"] = checker.UnprovenQueriesCount;
+                analysisResult.Backend = this.backend;
+
                 var eventArgs = new TypeAnalysisDoneEventArgs(typeDisplayName, analysisResult);
                 this.TypeAnalysisDone(this, eventArgs);
             }

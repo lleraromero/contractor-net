@@ -3,9 +3,10 @@ using Contractor.Utils;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;
-using Microsoft.Cci.MutableCodeModel.Contracts;
-using Microsoft.Cci.MutableContracts;
+using Microsoft.Research.CodeAnalysis;
+using System.Collections;
 using System.Collections.Generic;
+using System.Compiler.Analysis;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
@@ -30,12 +31,11 @@ namespace Contractor.Core
         private const string pattern = @"^ Method \W* \d+ \W* : (< [a-z ]+ >)? \W* (?<MethodName> [^(\r]+ (\( [^)]* \))?) \r | ^ [^( ]+ (\( [^)]* \))? \W* (\[ [^]]* \])? \W* : \W* ([^:]+ :)? \W* (?<Message> [^\r]+) \r";
 
         private readonly Regex outputParser;
-        private StringBuilder output;
 
         public CodeContractsAnalyzer(IContractAwareHost host, AssemblyInfo assembly, NamespaceTypeDefinition type, CancellationToken token)
             : base(host, assembly.Module, type, token)
         {
-            Contract.Requires(assembly != null && host != null && type != null);
+            Contract.Requires(host != null && assembly != null && type != null && token != null);
 
             ITypeContract typeContract = this.inputContractProvider.GetTypeContractFor(type);
             this.queryContractProvider.AssociateTypeWithContract(this.typeToAnalyze, typeContract);
@@ -48,6 +48,8 @@ namespace Contractor.Core
 
         private void AddVerifierAttribute()
         {
+            Contract.Requires(this.typeToAnalyze != null);
+
             foreach (var m in this.typeToAnalyze.Methods)
             {
                 if (m.Visibility != TypeMemberVisibility.Public)
@@ -73,6 +75,9 @@ namespace Contractor.Core
 
         public override ActionAnalysisResults AnalyzeActions(State source, IMethodDefinition action, List<IMethodDefinition> actions)
         {
+            Contract.Requires(source != null && action != null && actions != null);
+            Contract.Requires(actions.Count > 0);
+
             var queries = base.GenerateQueries<IMethodDefinition>(source, action, actions);
             this.typeToAnalyze.Methods.AddRange(queries);
             queryAssembly.InjectContracts(this.queryContractProvider);
@@ -146,65 +151,54 @@ namespace Contractor.Core
             if (this.typeToAnalyze.IsGeneric)
                 typeName = string.Format("{0}`{1}", typeName, this.typeToAnalyze.GenericParameterCount);
 
-            output = new StringBuilder();
+            var output = new StringWriter();
+
             var cccheckArgs = Configuration.CheckerArguments;
-            cccheckArgs = cccheckArgs.Replace("@assemblyName", queryAssemblyName);
+            cccheckArgs = cccheckArgs.Replace("\"@assemblyName\"", queryAssemblyName);
             cccheckArgs = cccheckArgs.Replace("@fullTypeName", typeName);
-            cccheckArgs = cccheckArgs.Replace("@libPaths", libPaths);
 
             // If the user didn't stop the analysis, execute cccheck
             if (!base.token.IsCancellationRequested)
             {
-                using (var cccheck = new Process())
+                var cccheckTime = Stopwatch.StartNew();    
+                IOutputFullResultsFactory<System.Compiler.Method, System.Compiler.AssemblyNode> outputFactory = 
+                    new FullTextWriterOutputFactory<System.Compiler.Method, System.Compiler.AssemblyNode>(output);
+                var assemblyCache = new Hashtable();
+                var args = cccheckArgs.Split(' ');
+                args[args.Length-2] = args[args.Length-2].Replace("@libPaths", libPaths);
+                var errorCode = Clousot.ClousotMain(args, CCIMDDecoder.Value, CCIContractDecoder.Value, assemblyCache, outputFactory);
+                cccheckTime.Stop();
+
+                if (errorCode != 0)
                 {
-                    cccheck.StartInfo = new ProcessStartInfo()
-                    {
-                        FileName = Configuration.CheckerFileName,
-                        Arguments = cccheckArgs,
-                        WorkingDirectory = Directory.GetCurrentDirectory(),
-                        CreateNoWindow = true,
-                        WindowStyle = ProcessWindowStyle.Hidden,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        UseShellExecute = false
-                    };
-
-                    cccheck.OutputDataReceived += cccheck_DataReceived;
-                    cccheck.ErrorDataReceived += cccheck_DataReceived;
-                    cccheck.Start();
-                    cccheck.BeginErrorReadLine();
-                    cccheck.BeginOutputReadLine();
-                    cccheck.WaitForExit();
-
-                    var analysisDuration = cccheck.ExitTime - cccheck.StartTime;
-                    this.TotalAnalysisDuration += analysisDuration;
-                    this.ExecutionsCount++;
+                    LogManager.Log(LogLevel.Warn, string.Format("Clousot exited with code {0}", errorCode));
                 }
+
+                var analysisDuration = cccheckTime.Elapsed;
+                this.TotalAnalysisDuration += analysisDuration;
+                this.ExecutionsCount++;
             }
 
             var outputString = output.ToString();
             var matches = outputParser.Matches(outputString);
-            output = null;
 
             var result = new Dictionary<string, List<ResultKind>>();
             string currentMethod = null;
 
             foreach (Match m in matches)
             {
-                if (m.Groups["MethodName"].Success)
-                {
-                    currentMethod = m.Groups["MethodName"].Value;
-                    //Para el caso de .#ctor
-                    currentMethod = currentMethod.Replace("#", string.Empty);
+                currentMethod = m.Groups[0].Value.Substring(0, m.Groups[0].Value.IndexOf('['));
+                //Para el caso de .#ctor
+                currentMethod = currentMethod.Replace("#", string.Empty);
 
+                if (!result.ContainsKey(currentMethod))
+                {
                     result.Add(currentMethod, new List<ResultKind>());
                 }
-                else if (m.Groups["Message"].Success)
-                {
-                    var message = m.Groups["Message"].Value;
-                    var resultKind = parseResultKind(message);
-                    result[currentMethod].Add(resultKind);
-                }
+
+                var message = m.Groups["Message"].Value;
+                var resultKind = parseResultKind(message);
+                result[currentMethod].Add(resultKind);
             }
 
             return result;
@@ -228,11 +222,6 @@ namespace Contractor.Core
                 return ResultKind.FalseRequires;
 
             else return ResultKind.None;
-        }
-
-        private void cccheck_DataReceived(object sender, DataReceivedEventArgs e)
-        {
-            output.AppendLine(e.Data);
         }
 
         public override TransitionAnalysisResult AnalyzeTransitions(State source, IMethodDefinition action, List<State> targets)
