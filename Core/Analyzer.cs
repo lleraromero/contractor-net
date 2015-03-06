@@ -150,6 +150,8 @@ namespace Contractor.Core
                 else if (typeof(T) == typeof(State))
                 {
                     queries.Add(GenerateQuery(state, action, (State)(object)target));
+                    // Negative
+                    queries.Add(GenerateQuery(state, action, (State)(object)target, true));
                 }
             }
 
@@ -186,22 +188,17 @@ namespace Contractor.Core
                 if (actionContract == null) continue;
 
                 var preconditions = from p in actionContract.Preconditions
-                                    select p.Condition;
-                var joinedPreconditions = Helper.JoinWithLogicalAnd(this.host, preconditions.ToList(), true);
-                var compactPrecondition = new Precondition()
-                {
-                    Condition = joinedPreconditions,
-                    // Add the user message to identify easily each precondition
-                    Description = new CompileTimeConstant()
-                                  {
-                                      Value = string.Format("Enabled action ({0})", a.Name.Value),
-                                      Type = this.host.PlatformType.SystemString
-                                  },
-                    // Add the string-ified version of the condition to help debugging
-                    OriginalSource = Helper.PrintExpression(joinedPreconditions)
-                };
-
-                queryContract.Preconditions.Add(compactPrecondition);
+                                    select new Precondition()
+                                    {
+                                        Condition = p.Condition,
+                                        Description = new CompileTimeConstant()
+                                        {
+                                            Value = string.Format("Enabled action ({0})", a.Name.Value),
+                                            Type = this.host.PlatformType.SystemString
+                                        },
+                                        OriginalSource = Helper.PrintExpression(p.Condition)
+                                    };
+                queryContract.Preconditions.AddRange(preconditions);
             }
 
             // Add negated preconditions of disabled actions
@@ -229,7 +226,6 @@ namespace Contractor.Core
                     // Add the string-ified version of the condition to help debugging
                     OriginalSource = Helper.PrintExpression(joinedPreconditions)
                 };
-
                 queryContract.Preconditions.Add(compactPrecondition);
             }
 
@@ -270,70 +266,84 @@ namespace Contractor.Core
                         OriginalSource = Helper.PrintExpression(Helper.JoinWithLogicalAnd(host, exprs, true)),
                         Description = new CompileTimeConstant() { Value = "Target negated precondition", Type = this.host.PlatformType.SystemString }
                     };
-
                     queryContract.Postconditions.Add(post);
                 }
                 else
                 {
-                    var exprs = (from pre in targetContract.Preconditions
-                                 select pre.Condition).ToList();
-                    var joinedPreconditions = Helper.JoinWithLogicalAnd(host, exprs, true);
-
-                    var posts = new Postcondition()
+                    var targetPreconditions = from pre in targetContract.Preconditions
+                                              select new Postcondition()
                     {
-                        Condition = joinedPreconditions,
-                        OriginalSource = Helper.PrintExpression(joinedPreconditions),
+                        Condition = pre.Condition,
+                        OriginalSource = Helper.PrintExpression(pre.Condition),
                         Description = new CompileTimeConstant() { Value = "Target precondition", Type = this.host.PlatformType.SystemString }
                     };
-
-                    queryContract.Postconditions.Add(posts);
+                    queryContract.Postconditions.AddRange(targetPreconditions);
                 }
             }
             return queryContract;
         }
 
-        private MethodDefinition GenerateQuery(State state, IMethodDefinition action, State target)
+        private MethodDefinition GenerateQuery(State state, IMethodDefinition action, State target, bool negate = false)
         {
+            var prefix = negate ? notPrefix : string.Empty;
             var actionName = action.GetUniqueName();
             var stateName = state.UniqueName;
             var targetName = target.UniqueName;
-            var methodName = string.Format("{1}{0}{2}{0}{3}", methodNameDelimiter, stateName, actionName, targetName);
+            var methodName = string.Format("{1}{0}{2}{0}{3}{4}", methodNameDelimiter, stateName, actionName, prefix, targetName);
             var method = CreateQueryMethod<State>(state, methodName, action, target);
 
-            var queryContract = CreateQueryContract(state, target);
+            var queryContract = CreateQueryContract(state, target, negate);
             queryContractProvider.AssociateMethodWithContract(method, queryContract);
             return method;
         }
 
-        private MethodContract CreateQueryContract(State state, State target)
+        private MethodContract CreateQueryContract(State state, State target, bool negate)
         {
             var contracts = new MethodContract();
 
             // Source state invariant as a precondition
             var stateInv = Helper.GenerateStateInvariant(host, inputContractProvider, typeToAnalyze, state);
-            var joinedStateInv = Helper.JoinWithLogicalAnd(this.host, stateInv, true);
-            var precondition = new Precondition()
-            {
-                Condition = joinedStateInv,
-                OriginalSource = Helper.PrintExpression(joinedStateInv),
-                Description = new CompileTimeConstant() { Value = "Source state invariant", Type = this.host.PlatformType.SystemString }
-            };
-            contracts.Preconditions.Add(precondition);
 
-            // Negated target state invariant  as a postcondition
+            var preconditions = from condition in stateInv
+                                select new Precondition()
+                                {
+                                    Condition = condition,
+                                    OriginalSource = Helper.PrintExpression(condition),
+                                    Description = new CompileTimeConstant() { Value = "Source state invariant", Type = this.host.PlatformType.SystemString }
+                                };
+            contracts.Preconditions.AddRange(preconditions);
+
+            // Negated target state invariant as a postcondition
             var targetInv = Helper.GenerateStateInvariant(host, inputContractProvider, typeToAnalyze, target);
-            var joinedTargetInv = new LogicalNot()
+
+            IExpression joinedTargetInv = null;
+            if (!negate)
+            {
+                joinedTargetInv = new LogicalNot()
                                   {
                                       Type = host.PlatformType.SystemBoolean,
                                       Operand = Helper.JoinWithLogicalAnd(host, targetInv, true)
                                   };
-            var postcondition = new Postcondition()
+
+                var postcondition = new Postcondition()
+                {
+                    Condition = joinedTargetInv,
+                    OriginalSource = Helper.PrintExpression(joinedTargetInv),
+                    Description = new CompileTimeConstant() { Value = "Negated target state invariant", Type = this.host.PlatformType.SystemString }
+                };
+                contracts.Postconditions.Add(postcondition);
+            }
+            else
             {
-                Condition = joinedTargetInv,
-                OriginalSource = Helper.PrintExpression(joinedTargetInv),
-                Description = new CompileTimeConstant() { Value = "Negated target state invariant", Type = this.host.PlatformType.SystemString }
-            };
-            contracts.Postconditions.Add(postcondition);
+                var postconditions = from condition in targetInv
+                                     select new Postcondition()
+                                     {
+                                         Condition = condition,
+                                         OriginalSource = Helper.PrintExpression(condition),
+                                         Description = new CompileTimeConstant() { Value = "Negated target state invariant", Type = this.host.PlatformType.SystemString }
+                                     };
+                contracts.Postconditions.AddRange(postconditions);
+            }
 
             return contracts;
         }

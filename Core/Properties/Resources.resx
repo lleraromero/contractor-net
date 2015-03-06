@@ -121,7 +121,7 @@
     <value>@codeContracts\Bin\cccheck.exe</value>
   </data>
   <data name="CheckerArguments" xml:space="preserve">
-    <value>-stats=!! -nobox -nologo -nopex -remote  -suggest=!! -premode combined -suggest codefixes -framework:v4.0 -warninglevel full  -maxwarnings 400 -nonnull -bounds: -arrays -wp=true -bounds:type=subpolyhedra,reduction=simplex,diseq=false  -arrays -adaptive -arithmetic -enum -check assumptions -check conditionsvalidity  -suggest calleeassumes  -typeNameSelect=@fullTypeName -libPaths:"@libPaths" "@assemblyName"</value>
+    <value>-stats=!! -remote -show=errors,validations -nobox -nologo -nopex -assemblyMode=standard -suggest=!! -warninglevel full -wp -adaptive -arithmetic -bounds -enum -nonnull -sortwarns=false -typeNameSelect=@fullTypeName -libPaths:"@libPaths" "@assemblyName"</value>
   </data>
   <data name="Netv40" xml:space="preserve">
     <value>

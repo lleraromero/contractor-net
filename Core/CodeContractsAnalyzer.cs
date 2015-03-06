@@ -28,10 +28,6 @@ namespace Contractor.Core
             FalseEnsures
         }
 
-        private const string pattern = @"^ Method \W* \d+ \W* : (< [a-z ]+ >)? \W* (?<MethodName> [^(\r]+ (\( [^)]* \))?) \r | ^ [^( ]+ (\( [^)]* \))? \W* (\[ [^]]* \])? \W* : \W* ([^:]+ :)? \W* (?<Message> [^\r]+) \r";
-
-        private readonly Regex outputParser;
-
         public CodeContractsAnalyzer(IContractAwareHost host, AssemblyInfo assembly, NamespaceTypeDefinition type, CancellationToken token)
             : base(host, assembly.Module, type, token)
         {
@@ -42,8 +38,6 @@ namespace Contractor.Core
 
             // We assume that the methods were already proved by cccheck during the compilation
             AddVerifierAttribute();
-
-            this.outputParser = new Regex(pattern, RegexOptions.ExplicitCapture | RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline | RegexOptions.Compiled);
         }
 
         private void AddVerifierAttribute()
@@ -151,54 +145,60 @@ namespace Contractor.Core
             if (this.typeToAnalyze.IsGeneric)
                 typeName = string.Format("{0}`{1}", typeName, this.typeToAnalyze.GenericParameterCount);
 
-            var output = new StringWriter();
-
-            var cccheckArgs = Configuration.CheckerArguments;
-            cccheckArgs = cccheckArgs.Replace("\"@assemblyName\"", queryAssemblyName);
-            cccheckArgs = cccheckArgs.Replace("@fullTypeName", typeName);
-
-            // If the user didn't stop the analysis, execute cccheck
-            if (!base.token.IsCancellationRequested)
+            string outputString;
+            using (var output = new StringWriter())
             {
-                var cccheckTime = Stopwatch.StartNew();    
-                IOutputFullResultsFactory<System.Compiler.Method, System.Compiler.AssemblyNode> outputFactory = 
-                    new FullTextWriterOutputFactory<System.Compiler.Method, System.Compiler.AssemblyNode>(output);
-                var assemblyCache = new Hashtable();
-                var args = cccheckArgs.Split(' ');
-                args[args.Length-2] = args[args.Length-2].Replace("@libPaths", libPaths);
-                var errorCode = Clousot.ClousotMain(args, CCIMDDecoder.Value, CCIContractDecoder.Value, assemblyCache, outputFactory);
-                cccheckTime.Stop();
+                var cccheckArgs = Configuration.CheckerArguments;
+                cccheckArgs = cccheckArgs.Replace("\"@assemblyName\"", queryAssemblyName);
+                cccheckArgs = cccheckArgs.Replace("@fullTypeName", typeName);
 
-                if (errorCode != 0)
+                // If the user didn't stop the analysis, execute cccheck
+                if (!base.token.IsCancellationRequested)
                 {
-                    LogManager.Log(LogLevel.Warn, string.Format("Clousot exited with code {0}", errorCode));
+                    var cccheckTime = Stopwatch.StartNew();
+
+                    var args = cccheckArgs.Split(' ');
+                    args[args.Length - 2] = args[args.Length - 2].Replace("@libPaths", libPaths);
+
+                    IOutputFullResultsFactory<System.Compiler.Method, System.Compiler.AssemblyNode> outputFactory =
+                        new FullTextWriterOutputFactory<System.Compiler.Method, System.Compiler.AssemblyNode>(output);
+                    var errorCode = Clousot.ClousotMain(args, CCIMDDecoder.Value, CCIContractDecoder.Value, new Hashtable(), outputFactory);
+
+                    cccheckTime.Stop();
+
+                    if (errorCode != 0)
+                    {
+                        LogManager.Log(LogLevel.Warn, string.Format("Clousot exited with code {0}", errorCode));
+                    }
+
+                    var analysisDuration = cccheckTime.Elapsed;
+                    this.TotalAnalysisDuration += analysisDuration;
+                    this.ExecutionsCount++;
                 }
 
-                var analysisDuration = cccheckTime.Elapsed;
-                this.TotalAnalysisDuration += analysisDuration;
-                this.ExecutionsCount++;
+                outputString = output.ToString();
             }
 
-            var outputString = output.ToString();
-            var matches = outputParser.Matches(outputString);
-
             var result = new Dictionary<string, List<ResultKind>>();
-            string currentMethod = null;
-
-            foreach (Match m in matches)
+            using (var reader = new StringReader(outputString))
             {
-                currentMethod = m.Groups[0].Value.Substring(0, m.Groups[0].Value.IndexOf('['));
-                //Para el caso de .#ctor
-                currentMethod = currentMethod.Replace("#", string.Empty);
-
-                if (!result.ContainsKey(currentMethod))
+                for (string ccMessage = reader.ReadLine(); ccMessage != null; ccMessage = reader.ReadLine())
                 {
-                    result.Add(currentMethod, new List<ResultKind>());
-                }
+                    try
+                    {
+                        string currentMethod = ccMessage.Substring(0, ccMessage.IndexOf('['));
+                        //Para el caso de .#ctor
+                        currentMethod = currentMethod.Replace("#", string.Empty);
 
-                var message = m.Groups["Message"].Value;
-                var resultKind = parseResultKind(message);
-                result[currentMethod].Add(resultKind);
+                        if (!result.ContainsKey(currentMethod))
+                            result.Add(currentMethod, new List<ResultKind>());
+
+                        var message = ccMessage.Substring(ccMessage.IndexOf(':') + 1).Trim();
+                        var resultKind = parseResultKind(message);
+                        result[currentMethod].Add(resultKind);
+                    }
+                    catch { }
+                }
             }
 
             return result;
@@ -210,6 +210,9 @@ namespace Contractor.Core
                 return ResultKind.UnsatisfiableRequires;
 
             else if (message.Contains("ensures unproven"))
+                return ResultKind.UnprovenEnsures;
+
+            else if (message.Contains("ensures unreachable"))
                 return ResultKind.UnprovenEnsures;
 
             else if (message.Contains("ensures is false"))
@@ -258,8 +261,20 @@ namespace Contractor.Core
 
                     var targetNameStart = query.LastIndexOf(methodNameDelimiter) + 1;
                     var targetName = query.Substring(targetNameStart);
+
+                    // El negado es solo por chequeo
+                    if (targetName.StartsWith(notPrefix))
+                        continue;
+
                     var target = targets.Find(s => s.UniqueName == targetName);
                     var isUnproven = entry.Value.Contains(ResultKind.UnprovenEnsures);
+                    if (isUnproven)
+                    {
+                        // If the negated query has any false ensure or unproven ensure then the transition remains unproven
+                        // TODO: si hay un false ensures me garantiza que no va la transicion?
+                        var negativeEntry = result.First(kvp => kvp.Key.Contains(notPrefix) && kvp.Key.Contains(targetName));
+                        isUnproven = negativeEntry.Value.Contains(ResultKind.FalseEnsures) || negativeEntry.Value.Contains(ResultKind.UnprovenEnsures);
+                    }
 
                     if (target != null)
                     {

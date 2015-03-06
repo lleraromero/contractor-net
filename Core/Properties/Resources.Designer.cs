@@ -61,7 +61,7 @@ namespace Contractor.Core.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to -stats=!! -nobox -nologo -nopex -remote  -suggest=!! -premode combined -suggest codefixes -framework:v4.0 -warninglevel full  -maxwarnings 400 -nonnull -bounds: -arrays -wp=true -bounds:type=subpolyhedra,reduction=simplex,diseq=false  -arrays -adaptive -arithmetic -enum -check assumptions -check conditionsvalidity  -suggest calleeassumes  -typeNameSelect=@fullTypeName -libPaths:&quot;@libPaths&quot; &quot;@assemblyName&quot;.
+        ///   Looks up a localized string similar to -stats=!! -remote -show=errors,validations -nobox -nologo -nopex -assemblyMode=standard -suggest=!! -warninglevel full -wp -adaptive -arithmetic -bounds -enum -nonnull -sortwarns=false -typeNameSelect=@fullTypeName -libPaths:&quot;@libPaths&quot; &quot;@assemblyName&quot;.
         /// </summary>
         internal static string CheckerArguments {
             get {
