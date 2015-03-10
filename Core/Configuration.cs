@@ -38,11 +38,11 @@ namespace Contractor.Core
             CorralArguments = Resources.CorralArguments;
 
 #if DEBUG
-            //TempPath = Path.Combine(Directory.GetCurrentDirectory(), "Temp");
+            TempPath = Path.Combine(Directory.GetCurrentDirectory(), "Temp");
 
-            //if (!Directory.Exists(TempPath))
-            //    Directory.CreateDirectory(TempPath);
-            TempPath = @"R:\";
+            if (!Directory.Exists(TempPath))
+                Directory.CreateDirectory(TempPath);
+            //TempPath = @"R:\";
 #else
 			TempPath = Path.GetTempPath();
 #endif
