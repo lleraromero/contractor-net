@@ -4,6 +4,7 @@ namespace Examples
 {
     public class FiniteStack
     {
+        // TODO: CodeContracts demora mucho mas cuando se usan properties en vez de fields
         public int Max { get; private set; }
         public int Next { get; private set; }
         
