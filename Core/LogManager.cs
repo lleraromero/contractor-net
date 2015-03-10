@@ -16,7 +16,7 @@ namespace Contractor.Core
 
         public static void Log(LogLevel level, string message)
         {
-            Contract.Requires(!string.IsNullOrEmpty(message));
+            Contract.Requires(message != null);
 
             NLog.LogManager.GetCurrentClassLogger().Log(ToLibraryLogLevel(level), message);
         }

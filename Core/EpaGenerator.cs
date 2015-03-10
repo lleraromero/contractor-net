@@ -1,11 +1,13 @@
 ﻿using Contractor.Utils;
 using Microsoft.Cci;
+using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableContracts;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.IO;
 using System.Linq;
 using System.Threading;
 
@@ -175,6 +177,10 @@ namespace Contractor.Core
             return typeAnalysis;
         }
 
+        /// <summary>
+        /// Method to create an EPA of a particular type considering only the subset 'methods'
+        /// </summary>
+        /// <see cref="http://publicaciones.dc.uba.ar/Publications/2011/DBGU11/paper-icse-2011.pdf">Algorithm 1</see>
         private void GenerateEpa(NamespaceTypeDefinition type, IEnumerable<IMethodDefinition> methods, CancellationToken token)
         {
             var typeDisplayName = type.GetDisplayName();
@@ -195,6 +201,7 @@ namespace Contractor.Core
                            .ToList();
 
             var epa = epas[typeUniqueName].EPA;
+            epa.Type = typeUniqueName;
 
             IAnalyzer checker;
             switch (this.backend)
@@ -219,7 +226,7 @@ namespace Contractor.Core
             epa.AddState(dummy);
 
             if (this.StateAdded != null)
-                this.StateAdded(this, new StateAddedEventArgs(typeDisplayName, dummy as IState));
+                this.StateAdded(this, new StateAddedEventArgs(typeDisplayName, dummy));
 
             var newStates = new Queue<State>();
             newStates.Enqueue(dummy);
@@ -230,27 +237,26 @@ namespace Contractor.Core
                 foreach (var action in source.EnabledActions)
                 {
                     var actionUniqueName = action.GetUniqueName();
+                    // Which actions are enabled or disabled if 'action' is called from 'source'?
                     var actionsResult = checker.AnalyzeActions(source, action, actions);
-                    var inconsistentActions = actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).ToList();
 
+                    // Remove any inconsistency
+                    var inconsistentActions = actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).ToList();
                     foreach (var act in inconsistentActions)
                     {
                         actionsResult.EnabledActions.Remove(act);
                         actionsResult.DisabledActions.Remove(act);
                     }
 
-                    var possibleTargets = generatePossibleStates(actions, actionsResult);
+                    var possibleTargets = generatePossibleStates(actions, actionsResult, epa.States);
+                    // Which states are reachable from the current state (aka source) using 'action'?
                     var transitionsResults = checker.AnalyzeTransitions(source, action, possibleTargets);
 
                     foreach (var transition in transitionsResults.Transitions)
                     {
                         var target = transition.TargetState;
-
-                        if (states.ContainsKey(target.UniqueName))
-                        {
-                            target = states[target.UniqueName];
-                        }
-                        else
+                        // Do I have to add a new state to the EPA?
+                        if (!states.ContainsKey(target.UniqueName))
                         {
                             target.Id = (uint)states.Keys.Count;
                             target.IsInitial = false;
@@ -278,24 +284,47 @@ namespace Contractor.Core
             }
 
             analysisTimer.Stop();
+
             epa.GenerationCompleted = true;
-            var analysisResult = new TypeAnalysisResult();
-            analysisResult.EPA = epa;
-            analysisResult.TotalDuration = analysisTimer.Elapsed;
-            analysisResult.TotalAnalyzerDuration = checker.TotalAnalysisDuration;
-            analysisResult.ExecutionsCount = checker.ExecutionsCount;
-            analysisResult.TotalGeneratedQueriesCount = checker.TotalGeneratedQueriesCount;
-            analysisResult.UnprovenQueriesCount = checker.UnprovenQueriesCount;
-            analysisResult.Backend = this.backend;
+
+            //#region PropagationExperiment
+            //var pngSerializer = new EpaBinarySerializer();
+            //using (var epa1 = File.Create(string.Format("{0}\\{1}.png", Configuration.TempPath, TypeHelper.GetTypeName(type, NameFormattingOptions.OmitContainingNamespace))))
+            //{
+            //    pngSerializer.Serialize(epa1, epa);
+            //}
+
+            //var transitionsCount = epa.Transitions.Count;
+            //var propagationAnalysis = Stopwatch.StartNew();
+            //new FeasiblePathsPass(this.host).Run(epa, checker, inputAssembly);
+            //propagationAnalysis.Stop();
+
+            //analysisResult.Statistics["PropagationPhaseDuration"] = propagationAnalysis.Elapsed;
+            //analysisResult.Statistics["PropagationPhaseRemovedTransitions"] = transitionsCount - epa.Transitions.Count;
+
+            //using (var epa2 = File.Create(string.Format("{0}\\{1}_post.png", Configuration.TempPath, TypeHelper.GetTypeName(type, NameFormattingOptions.OmitContainingNamespace))))
+            //{
+            //    pngSerializer.Serialize(epa2, epa);
+            //}
+            //#endregion
 
             if (this.TypeAnalysisDone != null)
             {
+                var analysisResult = new TypeAnalysisResult();
+                analysisResult.EPA = epa;
+                analysisResult.TotalDuration = analysisTimer.Elapsed;
+                analysisResult.Statistics["TotalAnalyzerDuration"] = checker.TotalAnalysisDuration;
+                analysisResult.Statistics["ExecutionsCount"] = checker.ExecutionsCount;
+                analysisResult.Statistics["TotalGeneratedQueriesCount"] = checker.TotalGeneratedQueriesCount;
+                analysisResult.Statistics["UnprovenQueriesCount"] = checker.UnprovenQueriesCount;
+                analysisResult.Backend = this.backend;
+
                 var eventArgs = new TypeAnalysisDoneEventArgs(typeDisplayName, analysisResult);
                 this.TypeAnalysisDone(this, eventArgs);
             }
         }
 
-        private List<State> generatePossibleStates(List<IMethodDefinition> actions, ActionAnalysisResults actionsResult)
+        private List<State> generatePossibleStates(List<IMethodDefinition> actions, ActionAnalysisResults actionsResult, HashSet<IState> knownStates)
         {
             var unknownActions = new HashSet<IMethodDefinition>(actions);
 
@@ -308,6 +337,10 @@ namespace Contractor.Core
             v.EnabledActions.UnionWith(actionsResult.EnabledActions);
             v.DisabledActions.UnionWith(actionsResult.DisabledActions);
             v.DisabledActions.UnionWith(unknownActions);
+            if (knownStates.Contains(v))
+            {
+                v = knownStates.Single(s => s.Equals(v)) as State;
+            }
             states.Add(v);
 
             while (unknownActions.Count > 0)
@@ -325,6 +358,11 @@ namespace Contractor.Core
                     w.EnabledActions.UnionWith(states[i].EnabledActions);
                     w.DisabledActions.UnionWith(states[i].DisabledActions);
                     w.DisabledActions.Remove(m);
+
+                    if (knownStates.Contains(w))
+                    {
+                        w = knownStates.Single(s => s.Equals(w)) as State;
+                    }
 
                     states.Add(w);
                 }

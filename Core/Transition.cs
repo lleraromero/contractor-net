@@ -1,5 +1,6 @@
 ﻿using Microsoft.Cci;
 using System;
+using Contractor.Utils;
 
 namespace Contractor.Core
 {
@@ -57,7 +58,7 @@ namespace Contractor.Core
         #region IEquatable members
         public bool Equals(Transition other)
         {
-            return this.Action.Equals(other.Action) && this.SourceState.Equals(other.SourceState) && this.TargetState.Equals(other.TargetState);
+            return this.Action.GetUniqueName().Equals(other.Action.GetUniqueName()) && this.SourceState.Equals(other.SourceState) && this.TargetState.Equals(other.TargetState);
         }
 
         public override bool Equals(object obj)

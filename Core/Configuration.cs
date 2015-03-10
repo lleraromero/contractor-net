@@ -15,7 +15,6 @@ namespace Contractor.Core
 		public static string TempPath;
 		public static string CheckerFileName;
 		public static string CheckerArguments;
-        public static string BCTPath;
         public static string CorralArguments;
 		public static bool InlineMethodsBody;
 
@@ -36,14 +35,14 @@ namespace Contractor.Core
 			CheckerFileName = ExpandVariables(Resources.CheckerFileName);
 			CheckerArguments = Resources.CheckerArguments;
             var dependenciesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\Dependencies"));
-            BCTPath = Path.GetFullPath(Path.Combine(dependenciesPath, @"BCT\BytecodeTranslator.exe"));
             CorralArguments = Resources.CorralArguments;
 
 #if DEBUG
-			TempPath = Path.Combine(Directory.GetCurrentDirectory(), "Temp");
+            //TempPath = Path.Combine(Directory.GetCurrentDirectory(), "Temp");
 
-			if (!Directory.Exists(TempPath))
-				Directory.CreateDirectory(TempPath);
+            //if (!Directory.Exists(TempPath))
+            //    Directory.CreateDirectory(TempPath);
+            TempPath = @"R:\";
 #else
 			TempPath = Path.GetTempPath();
 #endif
@@ -83,7 +82,7 @@ namespace Contractor.Core
 
             // Step 3. Set target properties 
             fileTarget.FileName = Path.Combine(TempPath, "contractor.out");
-            fileTarget.Layout = "${longdate} | ${level} | ${newline} ${message}";
+            fileTarget.Layout = "${longdate} | ${level} | ${newline}${message}";
 
             // Step 4. Define rules
             var rule = new LoggingRule("*", NLog.LogLevel.Trace, fileTarget);

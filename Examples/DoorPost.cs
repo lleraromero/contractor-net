@@ -58,8 +58,11 @@ namespace Examples
 
         public void Alarm()
         {
-            Contract.Requires(!emergency && !emergency);
-            Contract.Ensures(emergency && emergency && !closed);
+            Contract.Requires(!emergency);
+            Contract.Ensures(emergency && !closed);
+            // TODO: Investigar por que duplicar las condiciones hace fallar el algoritmo 
+            //Contract.Requires(!emergency && !emergency);
+            //Contract.Ensures(emergency && emergency && !closed);
 
             emergency = true;
             closed = false;

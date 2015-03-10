@@ -56,6 +56,7 @@
     <Compile Include="CodeContractsEPAsTest.cs" />
     <Compile Include="CorralEPAsTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="EpaXmlSerializerTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj">

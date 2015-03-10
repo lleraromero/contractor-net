@@ -6,6 +6,7 @@ using Microsoft.Msagl.GraphViewerGdi;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -476,6 +477,8 @@ namespace Contractor.Gui
 
         private void UpdateAnalysisEnd(TypeAnalysisResult analysisResult)
         {
+            Contract.Requires(analysisResult != null);
+
             var typeFullName = _AnalizedType.GetDisplayName();
 
             if (_cancellationSource.IsCancellationRequested)
@@ -515,28 +518,7 @@ namespace Contractor.Gui
 
         private void OutputTypeAnalysisResult(TypeAnalysisResult analysisResult)
         {
-            var totalDuration = analysisResult.TotalDuration;
-            var totalAnalyzerDuration = analysisResult.TotalAnalyzerDuration;
-            var executionsCount = analysisResult.ExecutionsCount;
-            var totalGeneratedQueriesCount = analysisResult.TotalGeneratedQueriesCount;
-            var unprovenQueriesCount = analysisResult.UnprovenQueriesCount;
-            var statesCount = analysisResult.EPA.States.Count();
-            var transitionsCount = analysisResult.EPA.Transitions.Count();
-            var initialStatesCount = analysisResult.EPA.States.Count(s => s.IsInitial);
-            var unprovenTransitionsCount = analysisResult.EPA.Transitions.Count(t => t.IsUnproven);
-            var precision = 100 - Math.Ceiling((double)unprovenQueriesCount * 100 / totalGeneratedQueriesCount);
-            var backend = analysisResult.Backend;
-
-            var sb = new StringBuilder();
-            sb.AppendFormat("   {0} analysis total duration:\t{1}", backend, totalAnalyzerDuration).AppendLine();
-            sb.AppendFormat("   {0} analysis precision:\t\t{1}%", backend, precision).AppendLine();
-            sb.AppendFormat("   {0} executions:\t\t\t{1}", backend, executionsCount).AppendLine();
-            sb.AppendFormat("   Total duration:\t\t\t\t{0}", totalDuration).AppendLine();
-            sb.AppendFormat("   Generated queries:\t\t\t\t{0} ({1} unproven)", totalGeneratedQueriesCount, unprovenQueriesCount).AppendLine();
-            sb.AppendFormat("   States:\t\t\t\t\t{0} ({1} initial)", statesCount, initialStatesCount).AppendLine();
-            sb.AppendFormat("   Transitions:\t\t\t\t\t{0} ({1} unproven)", transitionsCount, unprovenTransitionsCount).AppendLine();
-
-            textboxOutput.AppendText(sb.ToString());
+            textboxOutput.AppendText(analysisResult.ToString());
             textboxOutput.AppendText(Environment.NewLine);
         }
 
