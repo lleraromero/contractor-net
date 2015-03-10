@@ -392,7 +392,6 @@ namespace Contractor.Core
             }
             else
             {
-                // TODO: Calling the method is not working properly
                 block = CallMethod(action);
             }
 
@@ -413,13 +412,13 @@ namespace Contractor.Core
 
             foreach (var arg in action.Parameters)
             {
-                var defaultValue = new DefaultValue()
+                args.Add(new BoundExpression()
                 {
-                    DefaultValueType = arg.Type,
+                    Definition = arg,
+                    Instance = null,
+                    Locations = new List<ILocation>(arg.Locations),
                     Type = arg.Type
-                };
-
-                args.Add(defaultValue);
+                });
             }
 
             IMethodReference methodReference = action;
@@ -428,14 +427,15 @@ namespace Contractor.Core
             {
                 methodReference = specializedInputType.SpecializeMember(action, host.InternFactory) as IMethodReference;
             }
-
+            
             var callExpr = new MethodCall()
             {
+                Arguments = args,
                 IsStaticCall = false,
                 MethodToCall = methodReference,
                 Type = action.Type,
                 ThisArgument = new ThisReference(),
-                Arguments = args
+                Locations = new List<ILocation>(action.Locations)
             };
 
             if (action.Type.TypeCode == PrimitiveTypeCode.Void)
@@ -446,7 +446,6 @@ namespace Contractor.Core
                 };
 
                 block.Statements.Add(call);
-                //block.Statements.Add(new ReturnStatement());
             }
             else
             {
