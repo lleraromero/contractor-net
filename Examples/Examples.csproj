@@ -87,7 +87,6 @@
     <Compile Include="FiniteStack.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ICSE2011\PipedOutputStream.cs" />
     <Compile Include="Linear.cs" />
     <Compile Include="ICSE2011\LinkedList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
