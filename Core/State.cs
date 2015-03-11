@@ -51,7 +51,8 @@ namespace Contractor.Core
 
         public override string ToString()
         {
-            return this.UniqueName;
+            return (this.EnabledActions.Count > 0) ? string.Join(",", from a in this.EnabledActions select a.GetDisplayName())
+                                                       : "empty";
         }
 
         #region IState members

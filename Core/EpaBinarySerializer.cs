@@ -71,7 +71,7 @@ namespace Contractor.Core
 
         private void AddState(IState s, Graph graph)
         {
-            var n = graph.AddNode(s.Name);
+            var n = graph.AddNode(s.Id.ToString());
 
             n.UserData = s;
             n.DrawNodeDelegate += this.OnDrawNode;
@@ -83,7 +83,7 @@ namespace Contractor.Core
             // TODO: Permitir elegir la descripcion
             //if (_Options.StateDescription)
             //{
-                n.LabelText = string.Join(Environment.NewLine, s.EnabledActions);
+                n.LabelText = s.ToString();
             //}
             //else
             //{
@@ -152,7 +152,7 @@ namespace Contractor.Core
             // TODO: Permitir elegir
             if (/*_Options.CollapseTransitions*/ true)
             {
-                var n = graph.FindNode(t.SourceState.Name);
+                var n = graph.FindNode(t.SourceState.Id.ToString());
 
                 // TODO: Permitir elegir
                 if (/*_Options.UnprovenTransitions &&*/ t.IsUnproven)
@@ -164,7 +164,7 @@ namespace Contractor.Core
 
                     foreach (var ed in edges)
                     {
-                        if (ed.Target == t.TargetState.Name && ed.Attr.Styles.Contains(lineStyle))
+                        if (ed.Target == t.TargetState.Id.ToString() && ed.Attr.Styles.Contains(lineStyle))
                         {
                             ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
                             createEdge = false;
@@ -176,7 +176,7 @@ namespace Contractor.Core
 
             if (createEdge)
             {
-                var edge = graph.AddEdge(t.SourceState.Name, label, t.TargetState.Name);
+                var edge = graph.AddEdge(t.SourceState.Id.ToString(), label, t.TargetState.Id.ToString());
 
                 edge.Label.FontName = "Cambria";
                 edge.Label.FontSize = 6;
