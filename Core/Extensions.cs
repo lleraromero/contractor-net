@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Cci;
+using System.Diagnostics.Contracts;
 
 namespace Contractor.Utils
 {
@@ -57,6 +58,7 @@ namespace Contractor.Utils
 			return name.ToString();
 		}
 
+        [Pure]
 		public static string GetUniqueName(this INamedTypeDefinition type)
 		{
 			var name = new StringBuilder();
