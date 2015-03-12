@@ -76,7 +76,7 @@ namespace Contractor.Core
         public enum Backend { CodeContracts, Corral };
 
         private AssemblyInfo inputAssembly;
-        private Dictionary<string, TypeAnalysisResult> epas;
+        private static Dictionary<string, TypeAnalysisResult> epas = new Dictionary<string,TypeAnalysisResult>();
         private CodeContractAwareHostEnvironment host;
         private Backend backend;
 
@@ -87,9 +87,10 @@ namespace Contractor.Core
 
         public EpaGenerator(Backend backend)
         {
+            Contract.Requires(backend != null);
+
             host = new CodeContractAwareHostEnvironment(true);
             inputAssembly = new AssemblyInfo(host);
-            epas = new Dictionary<string, TypeAnalysisResult>();
             this.backend = backend;
         }
 
@@ -100,20 +101,20 @@ namespace Contractor.Core
 
         public void LoadAssembly(string inputFileName)
         {
+            Contract.Requires(!string.IsNullOrEmpty(inputFileName));
+
             inputAssembly.Load(inputFileName);
+            // Cleaning the EPAs that were generated with another assembly
+            epas.Clear();
         }
 
         // Loads the contract reference assembly in the host.
         public void LoadContractReferenceAssembly(string inputFileName)
         {
+            Contract.Requires(!string.IsNullOrEmpty(inputFileName));
+
             var contractsAssembly = new AssemblyInfo(host);
             contractsAssembly.Load(inputFileName);
-        }
-
-        public void UnloadAssembly()
-        {
-            foreach (var typeAnalysis in epas.Values)
-                typeAnalysis.EPA.Instrumented = false;
         }
 
         public Dictionary<string, TypeAnalysisResult> GenerateEpas(CancellationToken token)
