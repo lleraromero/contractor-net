@@ -302,8 +302,10 @@ namespace Contractor.Core
             return switchStmt;
         }
 
-        private ISwitchCase generateSwitchCase(FieldDefinition field, uint fromId, IList<uint> to)
+        private ISwitchCase generateSwitchCase(FieldDefinition field, uint fromId, List<uint> to)
         {
+            Contract.Requires(field != null && to != null && to.Count > 0);
+
             var caseStmt = new SwitchCase()
             {
                 Expression = new CompileTimeConstant()
@@ -326,8 +328,10 @@ namespace Contractor.Core
             return caseStmt;
         }
 
-        private IStatement generateIf(FieldDefinition field, IList<uint> to)
+        private IStatement generateIf(FieldDefinition field, List<uint> to)
         {
+            Contract.Requires(field != null && to != null && to.Count > 0);
+
             var toStates = from id in to
                            join state in epa.States on id equals state.Id
                            select state;

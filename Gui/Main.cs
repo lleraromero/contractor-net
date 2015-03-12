@@ -217,7 +217,7 @@ namespace Contractor.Gui
                 return;
             }
 
-            var n = _Graph.AddNode(e.State.Name);
+            var n = _Graph.AddNode(e.State.Id.ToString());
 
             n.UserData = e.State;
             n.DrawNodeDelegate += this.OnDrawNode;
@@ -228,7 +228,7 @@ namespace Contractor.Gui
 
             if (_Options.StateDescription)
             {
-                n.LabelText = string.Join(Environment.NewLine, e.State.EnabledActions);
+                n.LabelText = string.Join(Environment.NewLine, e.State.ToString());
             }
             else
             {
@@ -252,7 +252,7 @@ namespace Contractor.Gui
 
             if (_Options.CollapseTransitions)
             {
-                var n = _Graph.FindNode(e.SourceState.Name);
+                var n = _Graph.FindNode(e.SourceState.Id.ToString());
 
                 if (_Options.UnprovenTransitions && e.Transition.IsUnproven)
                     label = string.Format("{0}?", label);
@@ -263,7 +263,7 @@ namespace Contractor.Gui
 
                     foreach (var ed in edges)
                     {
-                        if (ed.Target == e.Transition.TargetState.Name && ed.Attr.Styles.Contains(lineStyle))
+                        if (ed.Target == e.Transition.TargetState.Id.ToString() && ed.Attr.Styles.Contains(lineStyle))
                         {
                             ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
                             createEdge = false;
@@ -275,7 +275,7 @@ namespace Contractor.Gui
 
             if (createEdge)
             {
-                var edge = _Graph.AddEdge(e.SourceState.Name, label, e.Transition.TargetState.Name);
+                var edge = _Graph.AddEdge(e.SourceState.Id.ToString(), label, e.Transition.TargetState.Id.ToString());
 
                 edge.Label.FontName = "Cambria";
                 edge.Label.FontSize = 6;

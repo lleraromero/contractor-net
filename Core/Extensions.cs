@@ -128,6 +128,8 @@ namespace Contractor.Utils
 
 		public static IEnumerable<IMethodDefinition> GetPublicInstanceMethods(this INamedTypeDefinition type)
 		{
+            Contract.Requires(type != null);
+
 			var methods = from m in type.Methods
 						  where m.Visibility == TypeMemberVisibility.Public &&
 								!m.IsStatic &&

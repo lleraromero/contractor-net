@@ -51,7 +51,7 @@ namespace Contractor.Core
 
         public override string ToString()
         {
-            return (this.EnabledActions.Count > 0) ? string.Join(",", from a in this.EnabledActions select a.GetDisplayName())
+            return (this.EnabledActions.Count > 0) ? string.Join(Environment.NewLine, from a in this.EnabledActions select a.GetDisplayName())
                                                        : "empty";
         }
 
@@ -73,12 +73,12 @@ namespace Contractor.Core
 
         List<string> IState.EnabledActions
         {
-            get { return (from a in this.EnabledActions select Utils.Extensions.GetDisplayName(a)).ToList(); }
+            get { return (from a in this.EnabledActions select Utils.Extensions.GetUniqueName(a)).ToList(); }
         }
 
         List<string> IState.DisabledActions
         {
-            get { return (from a in this.DisabledActions select Utils.Extensions.GetDisplayName(a)).ToList(); }
+            get { return (from a in this.DisabledActions select Utils.Extensions.GetUniqueName(a)).ToList(); }
         }
         #endregion
 

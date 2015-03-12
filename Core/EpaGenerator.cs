@@ -221,6 +221,7 @@ namespace Contractor.Core
             var dummy = new State();
             dummy.EnabledActions.UnionWith(constructors);
             dummy.IsInitial = true;
+            dummy.Id = 0;
 
             states.Add(dummy.UniqueName, dummy);
             epa.AddState(dummy);
@@ -304,6 +305,7 @@ namespace Contractor.Core
 
             //using (var epa2 = File.Create(string.Format("{0}\\{1}_post.png", Configuration.TempPath, TypeHelper.GetTypeName(type, NameFormattingOptions.OmitContainingNamespace))))
             //{
+            //    epa = FeasiblePathsPass.GetLineEpa(epa);
             //    pngSerializer.Serialize(epa2, epa);
             //}
             //#endregion
