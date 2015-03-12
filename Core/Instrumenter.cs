@@ -61,18 +61,29 @@ namespace Contractor.Core
             var field = new FieldDefinition()
             {
                 Name = host.NameTable.GetNameFor("$state"),
-                Type = host.PlatformType.SystemUInt32,
+                Type = host.PlatformType.SystemInt32,
                 Visibility = TypeMemberVisibility.Private,
                 ContainingTypeDefinition = type,
                 InternFactory = type.InternFactory,
                 CompileTimeValue = new CompileTimeConstant()
                 {
-                    Type = host.PlatformType.SystemUInt32,
+                    Type = host.PlatformType.SystemInt32,
                     Value = 0
                 }
             };
 
             type.Fields.Add(field);
+
+            // Como el $state es int, necesito el invariante ya que no puede ser negativo.
+            // Se usa int en vez de uint, para que no haya problemas con la traduccion de BCT
+            tc.Invariants.Add(new TypeInvariant()
+            {
+                Condition = new GreaterThanOrEqual()
+                {
+                    LeftOperand = new BoundExpression() { Definition = field, Instance = new ThisReference(), Type = field.Type},
+                    RightOperand = new CompileTimeConstant() { Type = host.PlatformType.SystemInt32, Value = 0 }
+                },
+            });
 
             foreach (var action in actions)
             {
