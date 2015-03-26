@@ -2,14 +2,12 @@
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;
-using Microsoft.Cci.MutableContracts;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -127,16 +125,7 @@ namespace Contractor.Core
 
                 var queryName = CreateUniqueMethodName(query);
 
-                string output = RunCorral(queryName);
-                const string pattern = @"(true bug)|(reached recursion bound)|(has no bugs)";
-                Regex outputParser = new Regex(pattern, RegexOptions.ExplicitCapture |
-                                                RegexOptions.Multiline | RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                var matches = outputParser.Matches(output);
-
-                if (matches.Count == 1)
-                    result[query] = ParseResultKind(matches[0].Value);
-                else
-                    throw new NotSupportedException("Unknown result");
+                result[query] = RunCorral(queryName);
             }
 
             return result;
@@ -163,7 +152,7 @@ namespace Contractor.Core
             base.TotalAnalysisDuration += new TimeSpan(timer.ElapsedTicks);            
         }
 
-        private string RunCorral(string method)
+        private ResultKind RunCorral(string method)
         {
             Contract.Requires(!string.IsNullOrEmpty(method));
 
@@ -192,29 +181,17 @@ namespace Contractor.Core
             switch (corral.Result)
             {
                 case cba.CorralResult.BugFound:
-                    return "true bug";
+                    return ResultKind.TrueBug;
 
                 case cba.CorralResult.NoBugs:
-                    return "has no bugs";
+                    return ResultKind.NoBugs;
 
                 case cba.CorralResult.RecursionBoundReached:
-                    return "reached recursion bound";
+                    return ResultKind.RecursionBoundReached;
+
+                default:
+                    throw new NotImplementedException("The result was not understood");
             }
-
-            throw new NotImplementedException("bug");
-        }
-
-        private ResultKind ParseResultKind(string message)
-        {
-            message = message.ToLower();
-            if (message.Contains("true bug"))
-                return ResultKind.TrueBug;
-            else if (message.Contains("has no bugs"))
-                return ResultKind.NoBugs;
-            else if (message.Contains("reached recursion bound"))
-                return ResultKind.RecursionBoundReached;
-            else
-                throw new NotImplementedException("The result was not understood");
         }
 
         private TransitionAnalysisResult EvaluateQueries(State source, IMethodDefinition action, List<State> targets, Dictionary<MethodDefinition, ResultKind> result)
