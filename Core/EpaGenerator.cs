@@ -87,7 +87,8 @@ namespace Contractor.Core
 
         public EpaGenerator(Backend backend)
         {
-            Contract.Requires(backend != null);
+            Contract.Ensures(host != null);
+            Contract.Ensures(inputAssembly != null);
 
             host = new CodeContractAwareHostEnvironment(true);
             inputAssembly = new AssemblyInfo(host);
@@ -119,6 +120,8 @@ namespace Contractor.Core
 
         public Dictionary<string, TypeAnalysisResult> GenerateEpas(CancellationToken token)
         {
+            Contract.Requires(token != null);
+
             var types = inputAssembly.DecompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
             var analysisResults = new Dictionary<string, TypeAnalysisResult>();
 
@@ -135,6 +138,9 @@ namespace Contractor.Core
 
         public TypeAnalysisResult GenerateEpa(string typeFullName, CancellationToken token)
         {
+            Contract.Requires(!string.IsNullOrEmpty(typeFullName));
+            Contract.Requires(token != null);
+
             //Borramos del nombre los parametros de generics
             int start = typeFullName.IndexOf('<');
 
@@ -151,6 +157,10 @@ namespace Contractor.Core
 
         public TypeAnalysisResult GenerateEpa(string typeFullName, IEnumerable<string> selectedMethods, CancellationToken token)
         {
+            Contract.Requires(!string.IsNullOrEmpty(typeFullName));
+            Contract.Requires(selectedMethods != null && selectedMethods.Count() > 0);
+            Contract.Requires(token != null);
+
             //Borramos del nombre los parametros de generics
             int start = typeFullName.IndexOf('<');
 
@@ -184,6 +194,10 @@ namespace Contractor.Core
         /// <see cref="http://publicaciones.dc.uba.ar/Publications/2011/DBGU11/paper-icse-2011.pdf">Algorithm 1</see>
         private void GenerateEpa(NamespaceTypeDefinition type, IEnumerable<IMethodDefinition> methods, CancellationToken token)
         {
+            Contract.Requires(type != null);
+            Contract.Requires(methods != null && methods.Count() > 0);
+            Contract.Requires(token != null);
+
             var typeDisplayName = type.GetDisplayName();
             var typeUniqueName = type.GetUniqueName();
             var analysisTimer = Stopwatch.StartNew();
@@ -329,6 +343,10 @@ namespace Contractor.Core
 
         private List<State> generatePossibleStates(List<IMethodDefinition> actions, ActionAnalysisResults actionsResult, HashSet<IState> knownStates)
         {
+            Contract.Requires(actions != null && actions.Count > 0);
+            Contract.Requires(actionsResult != null);
+            Contract.Requires(knownStates != null);
+
             var unknownActions = new HashSet<IMethodDefinition>(actions);
 
             unknownActions.ExceptWith(actionsResult.EnabledActions);
@@ -376,6 +394,8 @@ namespace Contractor.Core
 
         public void GenerateOutputAssembly(string outputFileName)
         {
+            Contract.Requires(!string.IsNullOrEmpty(outputFileName));
+
             var contractProvider = inputAssembly.ExtractContracts();
             var instrumenter = new Instrumenter(host, contractProvider);
 
