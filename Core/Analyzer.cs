@@ -504,7 +504,7 @@ namespace Contractor.Core
                                   OriginalSource = post.OriginalSource
                               };
                 //Ponemos los assume antes del return
-                if (block.Statements.Last() is IReturnStatement)
+                if (block.Statements.Count > 0 && block.Statements.Last() is IReturnStatement)
                 {
                     block.Statements.InsertRange(block.Statements.Count - 1, assumes);
                 }
