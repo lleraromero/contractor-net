@@ -13,6 +13,8 @@ namespace Contractor.Core
     class FeasiblePathsPass
     {
         private IContractAwareHost host;
+        private ContractProvider cp;
+        private NamespaceTypeDefinition type;
 
         public FeasiblePathsPass(IContractAwareHost host)
         {
@@ -264,5 +266,301 @@ namespace Contractor.Core
             block.Statements.AddRange(secondBodyBlock.Statements);
             return block.Statements;
         }
+
+        #region Line EPA
+        private class LineState : IState
+        {
+            public uint id;
+            public bool isInitial;
+            public uint source;
+            public uint target;
+            public string action;
+
+            uint IState.Id
+            {
+                get { return id; }
+            }
+
+            bool IState.IsInitial
+            {
+                get { return isInitial; }
+            }
+
+            string IState.Name
+            {
+                get { return action; }
+            }
+
+            List<string> IState.EnabledActions
+            {
+                get { return new List<string>(); }
+            }
+
+            List<string> IState.DisabledActions
+            {
+                get { return new List<string>(); }
+            }
+
+            public override string ToString()
+            {
+                return action;
+            }
+        }
+
+        private class LineTransition : ITransition
+        {
+            public IState source;
+            public IState target;
+            public string inv;
+
+            string ITransition.Action
+            {
+                get { return inv; }
+            }
+
+            IState ITransition.SourceState
+            {
+                get { return source; }
+            }
+
+            IState ITransition.TargetState
+            {
+                get { return target; }
+            }
+
+            bool ITransition.IsUnproven
+            {
+                get { return false; ; }
+            }
+        }
+
+        public static Epa GetLineEpa(Epa epa)
+        {
+            Contract.Requires(epa != null);
+            //Contract.Ensures(Contract.Result<Epa>().States.Count == epa.Transitions.Count);
+
+            //var st = new State()
+            //{
+            //    Id = Convert.ToUInt32(epa.States.Count),
+            //    IsInitial = true,
+            //};
+
+            //epa.AddState(st);
+            //epa.AddTransition(new Transition(null, st, epa.Initial as State, true));
+            
+            //st = new State()
+            //{
+            //    Id = Convert.ToUInt32(epa.States.Count),
+            //    IsInitial = false,
+            //};
+            //epa.AddState(st);
+            //epa.AddTransition(new Transition(null, epa.States.First(s => epa.Transitions.All(t => t.SourceState != s)) as State, st, true));
+
+            Epa lineEpa = new Epa();
+
+            lineEpa.AddState(new LineState()
+            {
+                id = Convert.ToUInt32(lineEpa.States.Count),
+                isInitial = true,
+                action = "entry"
+            });
+
+            foreach (var t in epa.Transitions)
+            {
+                lineEpa.AddState(new LineState()
+                {
+                    id = Convert.ToUInt32(lineEpa.States.Count),
+                    isInitial = t.SourceState.IsInitial,
+                    source = t.SourceState.Id,
+                    target = t.TargetState.Id,
+                    action = t.Action
+                });
+            }
+
+            lineEpa.AddState(new LineState()
+            {
+                id = Convert.ToUInt32(lineEpa.States.Count),
+                isInitial = false,
+                action = "exit"
+            });
+
+            foreach (var t in epa.Transitions)
+            {
+                foreach (var t2 in epa.Transitions)
+                {
+                    if (t == t2)
+                        continue;
+
+                    if (t.TargetState.Id == t2.SourceState.Id)
+                    {
+                        lineEpa.AddTransition(new LineTransition()
+                        {
+                            source = lineEpa.States.First(s => ((LineState)s).source == t.SourceState.Id && ((LineState)s).target == t.TargetState.Id),
+                            target = lineEpa.States.First(s => ((LineState)s).source == t2.SourceState.Id && ((LineState)s).target == t2.TargetState.Id),
+                            inv = string.Format("INV: {0}", string.Join(",", t.TargetState.EnabledActions))
+                        });
+                    }
+
+                }
+            }
+
+            lineEpa.AddTransition(new LineTransition() 
+            {
+                source = lineEpa.States.First(s => s.Id == 0),
+                target = lineEpa.States.First(s => s.Id == 1),
+                inv = "INV: ctor"
+            });
+
+            var estados = from s in lineEpa.States where lineEpa.Transitions.All(t => t.SourceState != s) && s.Id != lineEpa.States.Count - 1 select s;
+            foreach (var pepe in estados)
+            {
+                lineEpa.AddTransition(new LineTransition()
+                {
+                    source = pepe,
+                    target = lineEpa.States.First(s => s.Id == lineEpa.States.Count - 1),
+                    inv = "INV: empty"
+                });    
+            }
+            
+
+            return lineEpa;
+        }
+        #endregion
+
+        #region One Method
+
+        MethodDefinition CreateMethodFromEPA(Epa epa)
+        {
+            List<ParameterDefinition> parameters = new List<ParameterDefinition>();
+            int paramCount = GetParameterCount(epa);
+            for (int i = 0; i < paramCount; i++)
+            {
+                parameters.Add(new ParameterDefinition()
+                {
+                    IsIn = true,
+                    Name = this.host.NameTable.GetNameFor(string.Format("d{0}", i)),
+                    Type = this.host.PlatformType.SystemInt8
+                });
+            }
+
+            var epaMethod = new MethodDefinition()
+            {
+                CallingConvention = Microsoft.Cci.CallingConvention.HasThis,
+                ContainingTypeDefinition = this.type,
+                InternFactory = this.host.InternFactory,
+                IsStatic = false,
+                Name = host.NameTable.GetNameFor("EpaMethod"),
+                Type = this.host.PlatformType.SystemVoid,
+                Visibility = TypeMemberVisibility.Public,
+                Parameters = new List<IParameterDefinition>(parameters)
+            };
+
+            HashSet<State> visited = new HashSet<State>();
+            int paramIndex = 0;
+            BlockStatement block = CreateMethod(epa, epa.Initial as State, visited, parameters, ref paramIndex);
+            epaMethod.Body = new SourceMethodBody(host)
+            {
+                MethodDefinition = epaMethod,
+                Block = block,
+                LocalsAreZeroed = true
+            };
+
+            return epaMethod;
+        }
+
+        private int GetParameterCount(Epa epa)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        BlockStatement CreateMethod(Epa epa, State s, HashSet<State> visited, List<ParameterDefinition> methodParams, ref int paramIndex)
+        {
+            if (s == null || visited.Contains(s))
+                return null;
+
+            visited.Add(s);
+
+            BlockStatement block = new BlockStatement();
+            var assertStmt = new AssertStatement()
+            {
+                Condition = Utils.Helper.JoinWithLogicalAnd(this.host, Utils.Helper.GenerateStateInvariant(this.host, this.cp, this.type, s), true),
+                OriginalSource = "INV: " + s.ToString()
+            };
+            block.Statements.Add(assertStmt);
+
+            var transitions = epa[s];
+            if (transitions.Count == 1)
+            {
+                var transition = transitions.First() as Transition;
+
+                var callExpr = new MethodCall()
+                {
+                    IsStaticCall = false,
+                    MethodToCall = transition.Action,
+                    Type = transition.Action.Type,
+                    ThisArgument = new ThisReference()
+                };
+                var callStmt = new ExpressionStatement()
+                {
+                    Expression = callExpr
+                };
+                block.Statements.Add(callStmt);
+
+                // agrego el resto del EPA
+                var followingBlock = CreateMethod(epa, transition.TargetState as State, visited, methodParams, ref paramIndex);
+                if (followingBlock != null)
+                {
+                    block.Statements.AddRange(followingBlock.Statements);
+                }
+            }
+            else
+            {
+                var param = methodParams[paramIndex];
+                ++paramIndex;
+
+                var switchStmt = new SwitchStatement()
+                {
+                    Expression = new BoundExpression()
+                    {
+                        Definition = param,
+                        Instance = new ThisReference(),
+                        Type = param.Type,
+                    }
+                };
+
+                for (int i = 0; i < transitions.Count; ++i)
+                {
+                    var followingBlock = CreateMethod(epa, transitions.ElementAt(i).TargetState as State, visited, methodParams, ref paramIndex);
+                    if (followingBlock != null)
+                    {
+                        var caseStmt = GenerateSwitchCase(param, i, followingBlock);
+                        switchStmt.Cases.Add(caseStmt);
+                    }
+                }
+
+                block.Statements.Add(switchStmt);
+            }
+
+            return block;
+        }
+
+        private ISwitchCase GenerateSwitchCase(ParameterDefinition param, int value, BlockStatement block)
+        {
+            var caseStmt = new SwitchCase()
+            {
+                Expression = new CompileTimeConstant()
+                {
+                    Type = param.Type,
+                    Value = value
+                }
+            };
+
+            caseStmt.Body.AddRange(block.Statements);
+            caseStmt.Body.Add(new BreakStatement());
+            return caseStmt;
+        }
+
+        #endregion
     }
 }

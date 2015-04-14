@@ -409,8 +409,8 @@ namespace Contractor.Gui
         {
             this.BeginInvoke(new Action(this.UpdateAnalysisInitialize));
 
-            try
-            {
+            //try
+            //{
                 var fileName = Path.GetFileName(_AssemblyInfo.FileName);
                 this.BeginInvoke(new System.Action<string, string>(this.SetBackgroundStatus), "Decompiling assembly {0}...", fileName);
 
@@ -429,12 +429,12 @@ namespace Contractor.Gui
 
                 _cancellationSource = new CancellationTokenSource();
                 _EpaGenerator.GenerateEpa(typeFullName, selectedMethods, _cancellationSource.Token);
-            }
-            catch (Exception ex)
-            {
-                this.BeginInvoke(new Action<Exception>(this.HandleException), ex);
-                this.BeginInvoke(new Action<TypeAnalysisResult>(this.UpdateAnalysisEnd), (object)null);
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    this.BeginInvoke(new Action<Exception>(this.HandleException), ex);
+            //    this.BeginInvoke(new Action<TypeAnalysisResult>(this.UpdateAnalysisEnd), (object)null);
+            //}
         }
 
         private void UpdateAnalysisInitialize()
@@ -568,14 +568,14 @@ namespace Contractor.Gui
                 this.StartBackgroundTask("Generating assembly {0}...", name);
             });
 
-            try
-            {
+            //try
+            //{
                 _EpaGenerator.GenerateOutputAssembly(fileName);
-            }
-            catch (Exception ex)
-            {
-                this.BeginInvoke(new Action<Exception>(this.HandleException), ex);
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    this.BeginInvoke(new Action<Exception>(this.HandleException), ex);
+            //}
 
             this.BeginInvoke((Action)delegate
             {
