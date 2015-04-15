@@ -61,8 +61,6 @@ namespace Contractor.Core
             sb.AppendFormat(@"Generated queries:          {0} ({1} unproven)"  , totalGeneratedQueriesCount, unprovenQueriesCount).AppendLine();
             sb.AppendFormat(@"States:                     {0} ({1} initial)"   , statesCount, initialStatesCount).AppendLine();
             sb.AppendFormat(@"Transitions:                {0} ({1} unproven)"  , transitionsCount, unprovenTransitionsCount).AppendLine();
-            //sb.AppendFormat(@"Propagation phase duration: {0}", this.Statistics["PropagationPhaseDuration"]).AppendLine();
-            //sb.AppendFormat(@"Transitions removed:        {0}", this.Statistics["PropagationPhaseRemovedTransitions"]).AppendLine();
                                  
             return sb.ToString();
         }

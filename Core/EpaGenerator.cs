@@ -303,28 +303,6 @@ namespace Contractor.Core
 
             epa.GenerationCompleted = true;
 
-            //#region PropagationExperiment
-            //var pngSerializer = new EpaBinarySerializer();
-            //using (var epa1 = File.Create(string.Format("{0}\\{1}.png", Configuration.TempPath, TypeHelper.GetTypeName(type, NameFormattingOptions.OmitContainingNamespace))))
-            //{
-            //    pngSerializer.Serialize(epa1, epa);
-            //}
-
-            //var transitionsCount = epa.Transitions.Count;
-            //var propagationAnalysis = Stopwatch.StartNew();
-            //new FeasiblePathsPass(this.host).Run(epa, checker, inputAssembly);
-            //propagationAnalysis.Stop();
-
-            //analysisResult.Statistics["PropagationPhaseDuration"] = propagationAnalysis.Elapsed;
-            //analysisResult.Statistics["PropagationPhaseRemovedTransitions"] = transitionsCount - epa.Transitions.Count;
-
-            //using (var epa2 = File.Create(string.Format("{0}\\{1}_post.png", Configuration.TempPath, TypeHelper.GetTypeName(type, NameFormattingOptions.OmitContainingNamespace))))
-            //{
-            //    epa = FeasiblePathsPass.GetLineEpa(epa);
-            //    pngSerializer.Serialize(epa2, epa);
-            //}
-            //#endregion
-
             if (this.TypeAnalysisDone != null)
             {
                 var analysisResult = new TypeAnalysisResult();
