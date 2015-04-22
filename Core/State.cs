@@ -35,7 +35,7 @@ namespace Contractor.Core
             get
             {
                 return (this.EnabledActions.Count > 0) ? string.Join(methodNameDelimiter, from a in this.EnabledActions select a.GetUniqueName())
-                                                       : "empty";
+                                                       : "deadlock";
             }
         }
         public SortedSet<IMethodDefinition> EnabledActions { get; private set; }
@@ -52,7 +52,7 @@ namespace Contractor.Core
         public override string ToString()
         {
             return (this.EnabledActions.Count > 0) ? string.Join(Environment.NewLine, from a in this.EnabledActions select a.GetDisplayName())
-                                                       : "empty";
+                                                       : "{no methods}";
         }
 
         #region IState members

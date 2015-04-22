@@ -144,8 +144,14 @@ namespace Contractor.Core
             // I need to change the current directory so BCT can write the output in the correct folder
             var tmp = Environment.CurrentDirectory;
             Environment.CurrentDirectory = Configuration.TempPath;
-            if (new BytecodeTranslator.BCT().Main(new string[] { GetQueryAssemblyPath(), "/lib:" + Path.GetDirectoryName(inputAssembly.Module.ContainingAssembly.Location) }) != 0)
+            var boogieTranslator = new BytecodeTranslator.BCT();
+            var args = new string[] { GetQueryAssemblyPath(), "/lib:" + Path.GetDirectoryName(inputAssembly.Module.ContainingAssembly.Location) };
+            if (boogieTranslator.Main(args) != 0)
+            {
+                LogManager.Log(LogLevel.Fatal, "Error translating the query assembly to boogie");
+                LogManager.Log(LogLevel.Info, string.Format("args: {0}, {1}", args));
                 throw new Exception("Error translating the query assembly to boogie");
+            }
             Environment.CurrentDirectory = tmp;
 
             timer.Stop();

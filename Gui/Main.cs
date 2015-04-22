@@ -30,6 +30,7 @@ namespace Contractor.Gui
         private CancellationTokenSource _cancellationSource;
         private Graph _Graph;
         private IViewerNode _SelectedGraphNode;
+        private TypeAnalysisResult _LastResult;
         private Options _Options;
         private string _ContractReferenceAssemblyFileName;
         private string _EnvironmentInfo;
@@ -429,6 +430,7 @@ namespace Contractor.Gui
                 var selectedMethods = listboxMethods.CheckedItems.Cast<string>();
 
                 _cancellationSource = new CancellationTokenSource();
+
                 _EpaGenerator.GenerateEpa(typeFullName, selectedMethods, _cancellationSource.Token);
 #if !DEBUG
             }
@@ -496,6 +498,8 @@ namespace Contractor.Gui
 
                 this.EndBackgroundTask("Analysis for {0} done in {1} seconds: {2} states, {3} transitions", typeFullName, seconds, statesCount, transitionsCount);
                 this.OutputTypeAnalysisResult(analysisResult);
+
+                _LastResult = analysisResult;
             }
 
             _AnalisisThread = null;
@@ -797,53 +801,12 @@ namespace Contractor.Gui
 
         private void ExportXmlGraph(string fileName)
         {
-            using (var xml = new XmlTextWriter(fileName, Encoding.UTF8))
+            Contract.Requires(!string.IsNullOrEmpty(fileName));
+            Contract.Requires(_LastResult != null && _LastResult.EPA != null);
+
+            using (var stream = File.Create(fileName))
             {
-                var typeFullName = _AnalizedType.GetDisplayName();
-                var nodes = graphViewer.Graph.GeometryGraph.CollectAllNodes();
-
-                xml.Formatting = Formatting.Indented;
-                xml.WriteStartDocument();
-                xml.WriteStartElement("graph");
-                xml.WriteAttributeString("type", typeFullName);
-                xml.WriteStartElement("states");
-
-                foreach (var n in nodes.OrderBy(n => n.Id))
-                {
-                    var node = n.UserData as Node;
-                    var state = node.UserData as IState;
-                    var name = node.LabelText.Replace(Environment.NewLine, @"\n");
-
-                    xml.WriteStartElement("state");
-                    xml.WriteAttributeString("name", node.Id);
-
-                    if (state.IsInitial)
-                    {
-                        xml.WriteAttributeString("initial", "true");
-                    }
-
-                    xml.WriteString(name);
-                    xml.WriteEndElement();
-                }
-
-                xml.WriteEndElement();
-                xml.WriteStartElement("transitions");
-
-                foreach (var edge in graphViewer.Graph.Edges.OrderBy(e => e.SourceNode.Id + e.TargetNode.Id))
-                {
-                    var from = edge.SourceNode.Id;
-                    var to = edge.TargetNode.Id;
-                    var label = edge.LabelText.Replace(Environment.NewLine, @"\n");
-
-                    xml.WriteStartElement("transition");
-                    xml.WriteAttributeString("from", from);
-                    xml.WriteAttributeString("to", to);
-                    xml.WriteString(label);
-                    xml.WriteEndElement();
-                }
-
-                xml.WriteEndElement();
-                xml.WriteEndElement();
+                new EpaXmlSerializer().Serialize(stream, _LastResult.EPA);
             }
         }
 

@@ -210,7 +210,6 @@
     <Compile Include="Helper.cs" />
     <Compile Include="IAnalyzer.cs" />
     <Compile Include="LogManager.cs" />
-    <Compile Include="PriorityQueue.cs" />
     <Compile Include="ReturnRewriter.cs" />
     <Compile Include="Transition.cs" />
     <None Include="API.cd" />
