@@ -228,7 +228,7 @@ namespace Contractor.Core
             var label = t.Action;
             var createEdge = true;
             Style lineStyle = t.IsUnproven ? Style.Dashed : Style.Solid;
-            Microsoft.Msagl.Drawing.Color lineColour = overlapped ? Microsoft.Msagl.Drawing.Color.DarkRed : Microsoft.Msagl.Drawing.Color.Black;
+            Microsoft.Msagl.Drawing.Color lineColour = overlapped ? Microsoft.Msagl.Drawing.Color.Red : Microsoft.Msagl.Drawing.Color.Black;
 
 
             var n = graph.FindNode(t.SourceState.Id.ToString());
