@@ -1261,7 +1261,7 @@
     </member>
     <member name="M:Microsoft.Cci.MemberHelper.QualifiedMethodNameBeginsWith(System.String,System.String)">
       <summary>
-            For event/property accessors, the name mihgt be "T.U.get_P",
+            For event/property accessors, the name might be "T.U.get_P",
             i.e., the "get_" doesn't necessarily come at the beginning of the name,
             but it always comes before the event/property name.
             </summary>
@@ -12946,6 +12946,420 @@
         <requires csharp="this.IsValid" vb="Me.IsValid">this.IsValid</requires>
       </getter>
     </member>
+    <member name="T:Microsoft.Cci.UtilityDataStructures.FList">
+      <summary>
+            Functional List Extension methods
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.Append``1(Microsoft.Cci.UtilityDataStructures.FList{``0},Microsoft.Cci.UtilityDataStructures.FList{``0})">
+      <summary>
+            Returns a new list representing the appended lists
+            </summary>
+      <pure />
+      <ensures csharp="(() =&gt; {&#xD;&#xA;    {&#xD;&#xA;        if (l1 != default(Microsoft.Cci.UtilityDataStructures.FList&lt;T&gt;))&#xD;&#xA;        {&#xD;&#xA;            if (l2 != default(Microsoft.Cci.UtilityDataStructures.FList&lt;T&gt;))&#xD;&#xA;            else            goto IL_001c;&#xD;&#xA;            push result != null;&#xD;&#xA;        }&#xD;&#xA;        else&#xD;&#xA;        {&#xD;&#xA;        IL_001c:&#xD;&#xA;            push 1;&#xD;&#xA;        }&#xD;&#xA;    }&#xD;&#xA;    return pop != 0; })()" vb="(() =&gt; {&#xD;&#xA;    If l1 &lt;&gt; Nothing Then&#xD;&#xA;    If l2 &lt;&gt; Nothing Then&#xD;&#xA;&#xD;&#xA;    else    goto IL_001c;&#xD;&#xA;    push result &lt;&gt; Nothing;&#xD;&#xA;    elseIL_001c:&#xD;&#xA;    push 1;&#xD;&#xA;    return pop &lt;&gt; 0; })()">(() =&gt; {
+    {
+        if (l1 != default(Microsoft.Cci.UtilityDataStructures.FList&lt;T&gt;))
+        {
+            if (l2 != default(Microsoft.Cci.UtilityDataStructures.FList&lt;T&gt;))
+            else            goto IL_001c;
+            push result != null;
+        }
+        else
+        {
+        IL_001c:
+            push 1;
+        }
+    }
+    return pop != 0; })()</ensures>
+      <ensures csharp="l1 != default(Microsoft.Cci.UtilityDataStructures.FList&lt;T&gt;) || result == l2" vb="l1 &lt;&gt; Nothing OrElse result = l2">l1 != default(Microsoft.Cci.UtilityDataStructures.FList&lt;T&gt;) || result == l2</ensures>
+      <ensures csharp="l2 != default(Microsoft.Cci.UtilityDataStructures.FList&lt;T&gt;) || result == l1" vb="l2 &lt;&gt; Nothing OrElse result = l1">l2 != default(Microsoft.Cci.UtilityDataStructures.FList&lt;T&gt;) || result == l1</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.Length``1(Microsoft.Cci.UtilityDataStructures.FList{``0})">
+      <summary>
+            Gives the length of the list
+            </summary>
+      <pure />
+      <ensures csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
+      <ensures csharp="result &gt;= 1 || l == null" vb="result &gt;= 1 OrElse (l = Nothing)">result &gt;= 1 || l == null</ensures>
+      <ensures csharp="result &lt;= 0 || l != null" vb="result &lt;= 0 OrElse (l &lt;&gt; Nothing)">result &lt;= 0 || l != null</ensures>
+      <ensures csharp="result &lt;= 1 || l.Tail != null" vb="result &lt;= 1 OrElse (l.Tail &lt;&gt; Nothing)">result &lt;= 1 || l.Tail != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.Cons``1(Microsoft.Cci.UtilityDataStructures.FList{``0},``0)">
+      <summary>
+            Construct a new list by consing the element to the head of tail list
+            </summary>
+      <pure />
+      <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.Reverse``1(Microsoft.Cci.UtilityDataStructures.FList{``0})">
+      <summary>
+            Constructs a new list that represents the reversed original list
+            </summary>
+      <pure />
+      <ensures csharp="list == default(Microsoft.Cci.UtilityDataStructures.FList&lt;T&gt;) || result != null" vb="list = Nothing OrElse result &lt;&gt; Nothing">list == default(Microsoft.Cci.UtilityDataStructures.FList&lt;T&gt;) || result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.Reverse``2(Microsoft.Cci.UtilityDataStructures.FList{``0},System.Func{``0,``1})">
+      <summary>
+            Constructs a new list that represents the reversed original list with the applied conversion
+            </summary>
+      <pure />
+      <ensures csharp="list == default(Microsoft.Cci.UtilityDataStructures.FList&lt;T&gt;) || result != null" vb="list = Nothing OrElse result &lt;&gt; Nothing">list == default(Microsoft.Cci.UtilityDataStructures.FList&lt;T&gt;) || result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.Filter``1(Microsoft.Cci.UtilityDataStructures.FList{``0},System.Predicate{``0})">
+      <summary>
+            Return a list that only contains elements satisfying predicate in the same order 
+            </summary>
+      <param name="list">List from which to filter</param>
+      <param name="predicate">Predicate to be satisfied to be in result</param>
+      <pure />
+      <requires csharp="predicate != null" vb="predicate &lt;&gt; Nothing">predicate != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.Apply``1(Microsoft.Cci.UtilityDataStructures.FList{``0},System.Action{``0})">
+      <summary>
+            Applies action to each element in list
+            </summary>
+      <param name="list">List iterated over</param>
+      <param name="action">Action called on each element</param>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.GetEnumerable``1(Microsoft.Cci.UtilityDataStructures.FList{``0})">
+      <summary>
+            Enumerable over a functional list
+            </summary>
+      <pure />
+      <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.IsEmpty``1(Microsoft.Cci.UtilityDataStructures.FList{``0})">
+      <summary>
+            Is the list empty
+            </summary>
+      <pure />
+      <ensures csharp="result == list == null" vb="result = list = Nothing">result == list == null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.Last``1(Microsoft.Cci.UtilityDataStructures.FList{``0})">
+      <summary>
+            Returns last element of the non-empty list
+            </summary>
+      <pure />
+      <requires csharp="!IsEmpty&lt;T&gt;(list)" vb="Not IsEmpty(list)">!Microsoft.Cci.UtilityDataStructures.FList.IsEmpty&lt;T&gt;(list)</requires>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.ButLast``1(Microsoft.Cci.UtilityDataStructures.FList{``0})">
+      <summary>
+            Returns second to the last element in a list of at least 2 elements.
+            </summary>
+      <pure />
+      <requires csharp="!IsEmpty&lt;T&gt;(list)" vb="Not IsEmpty(list)">!Microsoft.Cci.UtilityDataStructures.FList.IsEmpty&lt;T&gt;(list)</requires>
+      <requires csharp="list.Tail != null" vb="list.Tail &lt;&gt; Nothing">list.Tail != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.Coerce``2(Microsoft.Cci.UtilityDataStructures.FList{``0})">
+      <summary>
+            Coerce the list elements from S to T
+            </summary>
+      <pure />
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.Contains``1(Microsoft.Cci.UtilityDataStructures.FList{``0},``0)">
+      <summary>
+            True if the list contains the value
+            </summary>
+      <pure />
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.Singleton``1(``0)">
+      <summary>
+            Return a list containing just that value
+            </summary>
+      <pure />
+      <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.Cons``1(``0,Microsoft.Cci.UtilityDataStructures.FList{``0})">
+      <summary>
+            Add the value to the head of the list and return this new list
+            </summary>
+      <pure />
+      <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.Product``3(Microsoft.Cci.UtilityDataStructures.FList{``0},Microsoft.Cci.UtilityDataStructures.FList{``1},System.Func{``0,``1,``2},Microsoft.Cci.UtilityDataStructures.FList{``2})">
+      <summary>
+            Given a list of A's and a list of B's, pair up each A with each B via the mapper to produce a C and return this C list
+            </summary>
+      <param name="alist">List of A's</param>
+      <param name="blist">List of B's</param>
+      <param name="mapper">function combining one A and one B into a C</param>
+      <param name="accumulator">Is the tail of the returned list.</param>
+      <returns />
+      <pure />
+      <requires csharp="mapper != null" vb="mapper &lt;&gt; Nothing">mapper != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.Product``2(Microsoft.Cci.UtilityDataStructures.FList{Microsoft.Cci.UtilityDataStructures.FList{``0}},System.Func{Microsoft.Cci.UtilityDataStructures.FList{``0},``1},Microsoft.Cci.UtilityDataStructures.FList{``1})">
+      <summary>
+            Produces all tuples of A's, one from each list in the argument lists and passes it to the combine function
+            whose results are accumulated and returned in the final list.
+            If the combine function is the identity, it will produce the product of the original lists.
+            </summary>
+      <pure />
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.Map``2(System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1})">
+      <summary>
+            Produces a list by mapping the mapper over an enumerable. The elements in the list are in the same order as
+            in the enumerable
+            </summary>
+      <pure />
+      <requires csharp="enumerable != null" vb="enumerable &lt;&gt; Nothing">enumerable != null</requires>
+      <requires csharp="mapper != null" vb="mapper &lt;&gt; Nothing">mapper != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.Map``2(Microsoft.Cci.UtilityDataStructures.FList{``0},System.Converter{``0,``1},Microsoft.Cci.UtilityDataStructures.FList{``1})">
+      <summary>
+            Transforms a T list into an S list using the converter
+            </summary>
+      <pure />
+      <requires csharp="converter != null" vb="converter &lt;&gt; Nothing">converter != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.ToArray``1(Microsoft.Cci.UtilityDataStructures.FList{``0})">
+      <summary>
+            Produce an array containing the elements of the list in the same order
+            </summary>
+      <pure />
+      <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.LongestCommonTail``1(Microsoft.Cci.UtilityDataStructures.FList{``0},Microsoft.Cci.UtilityDataStructures.FList{``0})">
+      <summary>
+            Return the longest common tail of the two lists, possibly null if nothing is in common.
+            Uses pointer equality to determine that the tails are equal.
+            </summary>
+    </member>
+    <member name="T:Microsoft.Cci.UtilityDataStructures.FList`1">
+      <summary>
+            Functional lists. null represents the empty list.
+            </summary>
+    </member>
+    <member name="F:Microsoft.Cci.UtilityDataStructures.FList`1.Empty">
+      <summary>
+            Reusable Empty list representation
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList`1.Cons(`0,Microsoft.Cci.UtilityDataStructures.FList{`0})">
+      <summary>
+            Produces a new list consisting of the element at the head and the list at the tail
+            </summary>
+      <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList`1.Reverse(Microsoft.Cci.UtilityDataStructures.FList{`0})">
+      <summary>
+            Constructs a new list that represents the reversed original list
+            </summary>
+      <ensures csharp="result != default(Microsoft.Cci.UtilityDataStructures.FList&lt;T&gt;) || list == null" vb="result &lt;&gt; Nothing OrElse list = Nothing">result != default(Microsoft.Cci.UtilityDataStructures.FList&lt;T&gt;) || list == null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList`1.Reverse``1(Microsoft.Cci.UtilityDataStructures.FList{`0},System.Func{`0,``0})">
+      <summary>
+            Constructs a new list that represents the reversed original list
+            </summary>
+      <ensures csharp="result != default(Microsoft.Cci.UtilityDataStructures.FList&lt;R&gt;) || list == null" vb="result &lt;&gt; Nothing OrElse list = Nothing">result != default(Microsoft.Cci.UtilityDataStructures.FList&lt;R&gt;) || list == null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList`1.Contains(Microsoft.Cci.UtilityDataStructures.FList{`0},`0)">
+      <summary>
+            Query the list for the presence of an element
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList`1.Apply(Microsoft.Cci.UtilityDataStructures.FList{`0},System.Action{`0})">
+      <summary>
+            Applies action to each element in list
+            </summary>
+      <param name="list">List iterated over</param>
+      <param name="action">Action called on each element</param>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList`1.Intersect(Microsoft.Cci.UtilityDataStructures.FList{`0},Microsoft.Cci.UtilityDataStructures.FList{`0})">
+      <summary>
+            Given two sorted lists, compute their intersection
+            </summary>
+      <param name="l1">sorted list</param>
+      <param name="l2">sorted list</param>
+      <returns>sorted intersection</returns>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList`1.Sort(Microsoft.Cci.UtilityDataStructures.FList{`0})">
+      <summary>
+            Returns a new list that contains the elements of the argument list in increasing order
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList`1.Length(Microsoft.Cci.UtilityDataStructures.FList{`0})">
+      <summary>
+            Gives the length of the list
+            </summary>
+      <pure />
+      <ensures csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList`1.ToString">
+      <summary>
+            Generates a string representing the list
+            </summary>
+      <returns />
+      <ensures inheritedFrom="M:System.Object.ToString" inheritedFromTypeName="Object" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList`1.BuildString(System.Text.StringBuilder)">
+      <summary>
+            Adds a string representation of the list to the StringBuilder
+            </summary>
+    </member>
+    <member name="P:Microsoft.Cci.UtilityDataStructures.FList`1.Head">
+      <summary>
+            The head element of the list
+            </summary>
+    </member>
+    <member name="P:Microsoft.Cci.UtilityDataStructures.FList`1.Tail">
+      <summary>
+            The tail of the list
+            </summary>
+    </member>
+    <member name="T:Microsoft.Cci.UtilityDataStructures.InternedComparer`1">
+      <summary>
+            A comparer for objects implementing IInternedKey
+            </summary>
+    </member>
+    <member name="F:Microsoft.Cci.UtilityDataStructures.InternedComparer`1.Default">
+      <summary>
+            A comparer for objects implementing IInternedKey
+            </summary>
+    </member>
+    <member name="T:Microsoft.Cci.UtilityDataStructures.InternedSet`1">
+      <summary>
+            A set datastructure for objects implementing IInternedKey
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.InternedSet`1.#ctor">
+      <summary>
+            Create an empty set
+            </summary>
+    </member>
+    <member name="T:Microsoft.Cci.UtilityDataStructures.InternedTable`2">
+      <summary>
+            A table whose keys are objects implementing IInternedKey
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.InternedTable`2.#ctor">
+      <summary>
+            Create atable whose keys are objects implementing IInternedKey
+            </summary>
+    </member>
+    <member name="T:Microsoft.Cci.UtilityDataStructures.FMap`2">
+      <summary>
+            A functional map from K to V. Requires function from K to int.
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FMap`2.#ctor(System.Func{`0,System.Int32})">
+      <summary>
+            Create an empty map.
+            </summary>
+      <param name="converter" />
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FMap`2.Insert(`0,`1)">
+      <summary>
+            Produces a new map from the old map with the given key value mapping inserted. Does not change original map.
+            </summary>
+      <param name="key" />
+      <param name="value" />
+      <returns />
+      <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FMap`2.TryGetValue(`0,`1@)">
+      <summary>
+            Lookup the key in the map and return the value if found.
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FMap`2.GetEnumerator">
+      <summary>
+            Return list of key value pairs ordered by increasing key number
+            </summary>
+      <returns />
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
+    </member>
+    <member name="T:Microsoft.Cci.UtilityDataStructures.FMap">
+      <summary>
+            Extensions for functional map datastructure
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FMap.Insert``1(Microsoft.Cci.UtilityDataStructures.FIntMap{``0},System.Int32,``0)">
+      <summary>
+            Insert the key value into the map. Returns the new map without modifying existing map.
+            
+            Null is the empty map
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FMap.Contains``1(Microsoft.Cci.UtilityDataStructures.FIntMap{``0},System.Int32)">
+      <summary>
+            Returns true if the given key is in the map.
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FMap.Depth``1(Microsoft.Cci.UtilityDataStructures.FIntMap{``0})">
+      <summary>
+            Depth of map tree
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FMap.Count``1(Microsoft.Cci.UtilityDataStructures.FIntMap{``0})">
+      <summary>
+            Number of elements in map
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FMap.TryGetValue``1(Microsoft.Cci.UtilityDataStructures.FIntMap{``0},System.Int32,``0@)">
+      <summary>
+            Lookup a key in the map. Returns false if not in the map, otherwise retrieves the value associated with the key.
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FMap.Apply``1(Microsoft.Cci.UtilityDataStructures.FIntMap{``0},Microsoft.Cci.Action{System.Int32,``0})">
+      <summary>
+            Apply given function over all elements of the map in increasing key order
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FMap.Split``1(Microsoft.Cci.UtilityDataStructures.FIntMap{``0},Microsoft.Cci.UtilityDataStructures.FIntMap{``0})">
+      <summary>
+            Knowing that the node needs to be split create the new nodes
+            </summary>
+      <param name="node">Node to split</param>
+      <param name="toInsert">Is a 1 node</param>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FMap.Print``1(Microsoft.Cci.UtilityDataStructures.FIntMap{``0},System.String)">
+      <summary>
+            Print the map data structure to console out (for debugging)
+            </summary>
+    </member>
+    <member name="T:Microsoft.Cci.UtilityDataStructures.FIntMap`1">
+      <summary>
+            Functional Int key map Type. Null is the empty map. All methods are extension methods.
+            </summary>
+    </member>
+    <member name="P:Microsoft.Cci.UtilityDataStructures.FIntMap`1.Item(System.Int32)">
+      <summary>
+            If key is known to be in the map, one can use this to look up the value. Throws exception otherwise.
+            </summary>
+    </member>
+    <member name="T:Microsoft.Cci.UtilityDataStructures.FSet`1">
+      <summary>
+            Functional set
+            </summary>
+      <typeparam name="K" />
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FSet`1.#ctor(System.Func{`0,System.Int32})">
+      <summary>
+            Create an empty set.
+            </summary>
+      <param name="converter" />
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FSet`1.Add(`0)">
+      <summary>
+            Produces a new set from the old set with the given key inserted. Does not change original set.
+            </summary>
+      <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FSet`1.Contains(`0)">
+      <summary>
+            Return true if the key is in the set
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FSet`1.GetEnumerator">
+      <summary>
+            Return list of key value pairs ordered by increasing key number
+            </summary>
+      <returns />
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
+    </member>
     <member name="T:Microsoft.Cci.MetadataValidator">
       <summary>
             A class that checks an object model node (and its children) for validity according to the rules of Partition II or the ECMA-335 Standard.
@@ -15676,6 +16090,23 @@
         <ensures inheritedFrom="M:Microsoft.Cci.IBinaryDocumentMemoryBlock.get_BinaryDocument" inheritedFromTypeName="IBinaryDocumentMemoryBlock" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FMap`2.System#Collections#IEnumerable#GetEnumerator">
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_CurrentIndex == -1" vb="result.get_CurrentIndex = -1">result.get_CurrentIndex == -1</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList.ButLastInternal``1(Microsoft.Cci.UtilityDataStructures.FList{``0},``0)">
+      <pure />
+      <requires csharp="list != null" vb="list &lt;&gt; Nothing">list != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FList`1.PrivateGetEnumerable(Microsoft.Cci.UtilityDataStructures.FList{`0})">
+      <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.FSet`1.System#Collections#IEnumerable#GetEnumerator">
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_CurrentIndex == -1" vb="result.get_CurrentIndex = -1">result.get_CurrentIndex == -1</ensures>
+    </member>
     <member name="M:Microsoft.Cci.UtilityDataStructures.HashtableUlong`1.KeyValuePair.ToString">
       <ensures inheritedFrom="M:System.ValueType.ToString" inheritedFromTypeName="ValueType" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       <ensures inheritedFrom="M:System.Object.ToString" inheritedFromTypeName="Object" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
@@ -15833,6 +16264,34 @@
         <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_ResolvedType" inheritedFromTypeName="ITypeReference" csharp="this is Microsoft.Cci.ITypeDefinition ⇒ result == this" vb="Me Is Microsoft.Cci.ITypeDefinition Implies result = Me">!(this is Microsoft.Cci.ITypeDefinition) || result == this</ensures>
       </getter>
     </member>
+    <member name="M:Microsoft.Cci.Immutable.SpecializedMethodDefinition.Microsoft#Cci#ISpecializedMethodDefinition#get_UnspecializedVersion">
+      <ensures inheritedFrom="M:Microsoft.Cci.ISpecializedMethodDefinition.get_UnspecializedVersion" inheritedFromTypeName="ISpecializedMethodDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.Immutable.SpecializedMethodDefinition.Microsoft#Cci#ISignature#get_Parameters">
+      <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_Parameters" inheritedFromTypeName="ISignature" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_Parameters" inheritedFromTypeName="ISignature" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.Immutable.SpecializedMethodDefinition.Microsoft#Cci#ISpecializedMethodReference#get_UnspecializedVersion">
+      <ensures inheritedFrom="M:Microsoft.Cci.ISpecializedMethodReference.get_UnspecializedVersion" inheritedFromTypeName="ISpecializedMethodReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.ISpecializedMethodReference.get_UnspecializedVersion" inheritedFromTypeName="ISpecializedMethodReference" csharp="!(result is Microsoft.Cci.ISpecializedMethodReference)" vb="Not result Is Microsoft.Cci.ISpecializedMethodReference">!(result is Microsoft.Cci.ISpecializedMethodReference)</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.Immutable.SpecializedMethodDefinition.Microsoft#Cci#ISpecializedMethodDefinition#UnspecializedVersion">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISpecializedMethodDefinition.get_UnspecializedVersion" inheritedFromTypeName="ISpecializedMethodDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Immutable.SpecializedMethodDefinition.Microsoft#Cci#ISignature#Parameters">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_Parameters" inheritedFromTypeName="ISignature" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_Parameters" inheritedFromTypeName="ISignature" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Immutable.SpecializedMethodDefinition.Microsoft#Cci#ISpecializedMethodReference#UnspecializedVersion">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISpecializedMethodReference.get_UnspecializedVersion" inheritedFromTypeName="ISpecializedMethodReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISpecializedMethodReference.get_UnspecializedVersion" inheritedFromTypeName="ISpecializedMethodReference" csharp="!(result is Microsoft.Cci.ISpecializedMethodReference)" vb="Not result Is Microsoft.Cci.ISpecializedMethodReference">!(result is Microsoft.Cci.ISpecializedMethodReference)</ensures>
+      </getter>
+    </member>
     <member name="M:Microsoft.Cci.Immutable.Matrix.GetMatrix(Microsoft.Cci.ITypeReference,System.UInt32,Microsoft.Cci.IInternFactory)">
       <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
@@ -15984,6 +16443,26 @@
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ISpecializedFieldReference.get_UnspecializedVersion" inheritedFromTypeName="ISpecializedFieldReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
         <ensures inheritedFrom="M:Microsoft.Cci.ISpecializedFieldReference.get_UnspecializedVersion" inheritedFromTypeName="ISpecializedFieldReference" csharp="!(result is Microsoft.Cci.ISpecializedFieldReference)" vb="Not result Is Microsoft.Cci.ISpecializedFieldReference">!(result is Microsoft.Cci.ISpecializedFieldReference)</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.Immutable.AggregatedNamespace`2.Microsoft#Cci#IContainer{Microsoft#Cci#INamespaceMember}#get_Members">
+      <ensures inheritedFrom="M:Microsoft.Cci.IContainer`1.get_Members" inheritedFromTypeName="IContainer" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.IContainer`1.get_Members" inheritedFromTypeName="IContainer" csharp="for all x in result (object)x != null" vb="for all x in result ((Object)x) &lt;&gt; Nothing">for all x in result (object)x != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.Immutable.AggregatedNamespace`2.Microsoft#Cci#INamespaceDefinition#get_Members">
+      <ensures inheritedFrom="M:Microsoft.Cci.INamespaceDefinition.get_Members" inheritedFromTypeName="INamespaceDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.INamespaceDefinition.get_Members" inheritedFromTypeName="INamespaceDefinition" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.Immutable.AggregatedNamespace`2.Microsoft#Cci#IContainer{Microsoft#Cci#INamespaceMember}#Members">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IContainer`1.get_Members" inheritedFromTypeName="IContainer" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IContainer`1.get_Members" inheritedFromTypeName="IContainer" csharp="for all x in result (object)x != null" vb="for all x in result ((Object)x) &lt;&gt; Nothing">for all x in result (object)x != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Immutable.AggregatedNamespace`2.Microsoft#Cci#INamespaceDefinition#Members">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.INamespaceDefinition.get_Members" inheritedFromTypeName="INamespaceDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.INamespaceDefinition.get_Members" inheritedFromTypeName="INamespaceDefinition" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
       </getter>
     </member>
     <member name="M:Microsoft.Cci.Immutable.ManagedPointerType.GetManagedPointerType(Microsoft.Cci.ITypeReference,Microsoft.Cci.IInternFactory)">
@@ -16170,26 +16649,6 @@
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_ResolvedType" inheritedFromTypeName="ITypeReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
         <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_ResolvedType" inheritedFromTypeName="ITypeReference" csharp="this is Microsoft.Cci.ITypeDefinition ⇒ result == this" vb="Me Is Microsoft.Cci.ITypeDefinition Implies result = Me">!(this is Microsoft.Cci.ITypeDefinition) || result == this</ensures>
-      </getter>
-    </member>
-    <member name="M:Microsoft.Cci.Immutable.AggregatedNamespace`2.Microsoft#Cci#IContainer{Microsoft#Cci#INamespaceMember}#get_Members">
-      <ensures inheritedFrom="M:Microsoft.Cci.IContainer`1.get_Members" inheritedFromTypeName="IContainer" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.IContainer`1.get_Members" inheritedFromTypeName="IContainer" csharp="for all x in result (object)x != null" vb="for all x in result ((Object)x) &lt;&gt; Nothing">for all x in result (object)x != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.Immutable.AggregatedNamespace`2.Microsoft#Cci#INamespaceDefinition#get_Members">
-      <ensures inheritedFrom="M:Microsoft.Cci.INamespaceDefinition.get_Members" inheritedFromTypeName="INamespaceDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.INamespaceDefinition.get_Members" inheritedFromTypeName="INamespaceDefinition" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-    </member>
-    <member name="P:Microsoft.Cci.Immutable.AggregatedNamespace`2.Microsoft#Cci#IContainer{Microsoft#Cci#INamespaceMember}#Members">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IContainer`1.get_Members" inheritedFromTypeName="IContainer" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.IContainer`1.get_Members" inheritedFromTypeName="IContainer" csharp="for all x in result (object)x != null" vb="for all x in result ((Object)x) &lt;&gt; Nothing">for all x in result (object)x != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Immutable.AggregatedNamespace`2.Microsoft#Cci#INamespaceDefinition#Members">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.INamespaceDefinition.get_Members" inheritedFromTypeName="INamespaceDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.INamespaceDefinition.get_Members" inheritedFromTypeName="INamespaceDefinition" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
       </getter>
     </member>
     <member name="M:Microsoft.Cci.Immutable.SpecializedGenericTypeParameter.Microsoft#Cci#IGenericTypeParameter#get_DefiningType">
@@ -16440,38 +16899,6 @@
         <ensures inheritedFrom="M:Microsoft.Cci.IOperationExceptionInformation.get_HandlerEndOffset" inheritedFromTypeName="IOperationExceptionInformation" csharp="result &gt;= this.HandlerStartOffset" vb="result &gt;= Me.HandlerStartOffset">result &gt;= this.HandlerStartOffset</ensures>
       </getter>
     </member>
-    <member name="M:Microsoft.Cci.Immutable.SpecializedGenericParameter`1.Microsoft#Cci#ITypeReference#get_ResolvedType">
-      <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_ResolvedType" inheritedFromTypeName="ITypeReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_ResolvedType" inheritedFromTypeName="ITypeReference" csharp="this is Microsoft.Cci.ITypeDefinition ⇒ result == this" vb="Me Is Microsoft.Cci.ITypeDefinition Implies result = Me">!(this is Microsoft.Cci.ITypeDefinition) || result == this</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.Immutable.SpecializedMethodDefinition.Microsoft#Cci#ISpecializedMethodDefinition#get_UnspecializedVersion">
-      <ensures inheritedFrom="M:Microsoft.Cci.ISpecializedMethodDefinition.get_UnspecializedVersion" inheritedFromTypeName="ISpecializedMethodDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.Immutable.SpecializedMethodDefinition.Microsoft#Cci#ISignature#get_Parameters">
-      <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_Parameters" inheritedFromTypeName="ISignature" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_Parameters" inheritedFromTypeName="ISignature" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.Immutable.SpecializedMethodDefinition.Microsoft#Cci#ISpecializedMethodReference#get_UnspecializedVersion">
-      <ensures inheritedFrom="M:Microsoft.Cci.ISpecializedMethodReference.get_UnspecializedVersion" inheritedFromTypeName="ISpecializedMethodReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.ISpecializedMethodReference.get_UnspecializedVersion" inheritedFromTypeName="ISpecializedMethodReference" csharp="!(result is Microsoft.Cci.ISpecializedMethodReference)" vb="Not result Is Microsoft.Cci.ISpecializedMethodReference">!(result is Microsoft.Cci.ISpecializedMethodReference)</ensures>
-    </member>
-    <member name="P:Microsoft.Cci.Immutable.SpecializedMethodDefinition.Microsoft#Cci#ISpecializedMethodDefinition#UnspecializedVersion">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ISpecializedMethodDefinition.get_UnspecializedVersion" inheritedFromTypeName="ISpecializedMethodDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Immutable.SpecializedMethodDefinition.Microsoft#Cci#ISignature#Parameters">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_Parameters" inheritedFromTypeName="ISignature" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_Parameters" inheritedFromTypeName="ISignature" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Immutable.SpecializedMethodDefinition.Microsoft#Cci#ISpecializedMethodReference#UnspecializedVersion">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ISpecializedMethodReference.get_UnspecializedVersion" inheritedFromTypeName="ISpecializedMethodReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.ISpecializedMethodReference.get_UnspecializedVersion" inheritedFromTypeName="ISpecializedMethodReference" csharp="!(result is Microsoft.Cci.ISpecializedMethodReference)" vb="Not result Is Microsoft.Cci.ISpecializedMethodReference">!(result is Microsoft.Cci.ISpecializedMethodReference)</ensures>
-      </getter>
-    </member>
     <member name="M:Microsoft.Cci.Immutable.BaseTypeReference.Microsoft#Cci#ITypeReference#get_ResolvedType">
       <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_ResolvedType" inheritedFromTypeName="ITypeReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_ResolvedType" inheritedFromTypeName="ITypeReference" csharp="this is Microsoft.Cci.ITypeDefinition ⇒ result == this" vb="Me Is Microsoft.Cci.ITypeDefinition Implies result = Me">!(this is Microsoft.Cci.ITypeDefinition) || result == this</ensures>
@@ -16515,48 +16942,9 @@
         <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
       </getter>
     </member>
-    <member name="P:Microsoft.Cci.Immutable.ModifiedTypeReference.CustomModifiers">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IModifiedTypeReference.get_CustomModifiers" inheritedFromTypeName="IModifiedTypeReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.IModifiedTypeReference.get_CustomModifiers" inheritedFromTypeName="IModifiedTypeReference" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Immutable.ModifiedTypeReference.UnmodifiedType">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IModifiedTypeReference.get_UnmodifiedType" inheritedFromTypeName="IModifiedTypeReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Immutable.ModifiedTypeReference.AliasForType">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_AliasForType" inheritedFromTypeName="ITypeReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Immutable.ModifiedTypeReference.IsAlias">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_IsAlias" inheritedFromTypeName="ITypeReference" csharp="result ⇒ !(this is Microsoft.Cci.ITypeDefinition)" vb="result Implies Not Me Is Microsoft.Cci.ITypeDefinition">!result || !(this is Microsoft.Cci.ITypeDefinition)</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Immutable.ModifiedTypeReference.PlatformType">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_PlatformType" inheritedFromTypeName="ITypeReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Immutable.ModifiedTypeReference.ResolvedType">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_ResolvedType" inheritedFromTypeName="ITypeReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_ResolvedType" inheritedFromTypeName="ITypeReference" csharp="this is Microsoft.Cci.ITypeDefinition ⇒ result == this" vb="Me Is Microsoft.Cci.ITypeDefinition Implies result = Me">!(this is Microsoft.Cci.ITypeDefinition) || result == this</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Immutable.ModifiedTypeReference.Attributes">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IReference.get_Attributes" inheritedFromTypeName="IReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Immutable.ModifiedTypeReference.Locations">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-      </getter>
+    <member name="M:Microsoft.Cci.Immutable.SpecializedGenericParameter`1.Microsoft#Cci#ITypeReference#get_ResolvedType">
+      <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_ResolvedType" inheritedFromTypeName="ITypeReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_ResolvedType" inheritedFromTypeName="ITypeReference" csharp="this is Microsoft.Cci.ITypeDefinition ⇒ result == this" vb="Me Is Microsoft.Cci.ITypeDefinition Implies result = Me">!(this is Microsoft.Cci.ITypeDefinition) || result == this</ensures>
     </member>
     <member name="M:Microsoft.Cci.Immutable.NestedUnitSetNamespace.Microsoft#Cci#INamespaceMember#get_ContainingNamespace">
       <ensures inheritedFrom="M:Microsoft.Cci.INamespaceMember.get_ContainingNamespace" inheritedFromTypeName="INamespaceMember" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
@@ -16665,6 +17053,49 @@
       </getter>
     </member>
     <member name="P:Microsoft.Cci.Immutable.RootUnitNamespaceReference.Microsoft#Cci#IObjectWithLocations#Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Immutable.ModifiedTypeReference.CustomModifiers">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IModifiedTypeReference.get_CustomModifiers" inheritedFromTypeName="IModifiedTypeReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IModifiedTypeReference.get_CustomModifiers" inheritedFromTypeName="IModifiedTypeReference" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Immutable.ModifiedTypeReference.UnmodifiedType">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IModifiedTypeReference.get_UnmodifiedType" inheritedFromTypeName="IModifiedTypeReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Immutable.ModifiedTypeReference.AliasForType">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_AliasForType" inheritedFromTypeName="ITypeReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Immutable.ModifiedTypeReference.IsAlias">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_IsAlias" inheritedFromTypeName="ITypeReference" csharp="result ⇒ !(this is Microsoft.Cci.ITypeDefinition)" vb="result Implies Not Me Is Microsoft.Cci.ITypeDefinition">!result || !(this is Microsoft.Cci.ITypeDefinition)</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Immutable.ModifiedTypeReference.PlatformType">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_PlatformType" inheritedFromTypeName="ITypeReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Immutable.ModifiedTypeReference.ResolvedType">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_ResolvedType" inheritedFromTypeName="ITypeReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_ResolvedType" inheritedFromTypeName="ITypeReference" csharp="this is Microsoft.Cci.ITypeDefinition ⇒ result == this" vb="Me Is Microsoft.Cci.ITypeDefinition Implies result = Me">!(this is Microsoft.Cci.ITypeDefinition) || result == this</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Immutable.ModifiedTypeReference.Attributes">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IReference.get_Attributes" inheritedFromTypeName="IReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Immutable.ModifiedTypeReference.Locations">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
         <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>

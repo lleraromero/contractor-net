@@ -995,34 +995,6 @@
             Windows.UI.Xaml.Media.Media3D.Matrix3D
             </summary>
     </member>
-    <member name="M:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.GetEnumerator">
-      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.System#Collections#IEnumerable#GetEnumerator">
-      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
-      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_CurrentIndex == -1" vb="result.get_CurrentIndex = -1">result.get_CurrentIndex == -1</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.MemoryBlockEnumerator.System#Collections#IEnumerator#get_Current">
-      <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.MemoryBlockEnumerator.MoveNext">
-      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_Model == old(this.get_Model)" vb="Me.get_Model = old(Me.get_Model)">this.get_Model == old(this.get_Model)</ensures>
-      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex &lt; this.get_Model.Length" vb="Me.get_CurrentIndex &lt; Me.get_Model.Length">this.get_CurrentIndex &lt; this.get_Model.Length</ensures>
-      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex &gt;= 0" vb="Me.get_CurrentIndex &gt;= 0">this.get_CurrentIndex &gt;= 0</ensures>
-      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex == old(this.get_CurrentIndex) + 1" vb="Me.get_CurrentIndex = old(Me.get_CurrentIndex) + 1">this.get_CurrentIndex == old(this.get_CurrentIndex) + 1</ensures>
-    </member>
-    <member name="P:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.MemoryBlockEnumerator.Current">
-      <getter>
-        <ensures inheritedFrom="M:System.Collections.Generic.IEnumerator`1.get_Current" inheritedFromTypeName="IEnumerator" csharp="(object)result == this.get_Model[this.get_CurrentIndex]" vb="((Object)result) = Me.get_Model(Me.get_CurrentIndex)">(object)result == this.get_Model[this.get_CurrentIndex]</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.MemoryBlockEnumerator.System#Collections#IEnumerator#Current">
-      <getter>
-        <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
-      </getter>
-    </member>
     <member name="M:Microsoft.Cci.UtilityDataStructures.EnumerableArrayWrapper`2.GetEnumerator">
       <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
@@ -1047,6 +1019,34 @@
       </getter>
     </member>
     <member name="P:Microsoft.Cci.UtilityDataStructures.EnumerableArrayWrapper`2.ArrayEnumerator.System#Collections#IEnumerator#Current">
+      <getter>
+        <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.GetEnumerator">
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.System#Collections#IEnumerable#GetEnumerator">
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_CurrentIndex == -1" vb="result.get_CurrentIndex = -1">result.get_CurrentIndex == -1</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.MemoryBlockEnumerator.System#Collections#IEnumerator#get_Current">
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.MemoryBlockEnumerator.MoveNext">
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_Model == old(this.get_Model)" vb="Me.get_Model = old(Me.get_Model)">this.get_Model == old(this.get_Model)</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex &lt; this.get_Model.Length" vb="Me.get_CurrentIndex &lt; Me.get_Model.Length">this.get_CurrentIndex &lt; this.get_Model.Length</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex &gt;= 0" vb="Me.get_CurrentIndex &gt;= 0">this.get_CurrentIndex &gt;= 0</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex == old(this.get_CurrentIndex) + 1" vb="Me.get_CurrentIndex = old(Me.get_CurrentIndex) + 1">this.get_CurrentIndex == old(this.get_CurrentIndex) + 1</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.MemoryBlockEnumerator.Current">
+      <getter>
+        <ensures inheritedFrom="M:System.Collections.Generic.IEnumerator`1.get_Current" inheritedFromTypeName="IEnumerator" csharp="(object)result == this.get_Model[this.get_CurrentIndex]" vb="((Object)result) = Me.get_Model(Me.get_CurrentIndex)">(object)result == this.get_Model[this.get_CurrentIndex]</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.MemoryBlockEnumerator.System#Collections#IEnumerator#Current">
       <getter>
         <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
       </getter>
@@ -1680,6 +1680,62 @@
     <member name="P:Microsoft.Cci.MetadataReader.ObjectModelImplementation.TypeNameTypeReference.Name">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.INamedEntity.get_Name" inheritedFromTypeName="INamedEntity" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.MetadataReader.ObjectModelImplementation.ScopedContainerMetadataObject`3.Contains(`1)">
+      <pure />
+    </member>
+    <member name="M:Microsoft.Cci.MetadataReader.ObjectModelImplementation.ScopedContainerMetadataObject`3.GetMatchingMembersNamed(Microsoft.Cci.IName,System.Boolean,Microsoft.Cci.Function{`1,System.Boolean})">
+      <pure />
+      <requires inheritedFrom="M:Microsoft.Cci.IScope`1.GetMatchingMembersNamed(Microsoft.Cci.IName,System.Boolean,Microsoft.Cci.Function{`0,System.Boolean})" inheritedFromTypeName="IScope" csharp="name != null" vb="name &lt;&gt; Nothing">name != null</requires>
+      <requires inheritedFrom="M:Microsoft.Cci.IScope`1.GetMatchingMembersNamed(Microsoft.Cci.IName,System.Boolean,Microsoft.Cci.Function{`0,System.Boolean})" inheritedFromTypeName="IScope" csharp="predicate != null" vb="predicate &lt;&gt; Nothing">predicate != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMatchingMembersNamed(Microsoft.Cci.IName,System.Boolean,Microsoft.Cci.Function{`0,System.Boolean})" inheritedFromTypeName="IScope" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMatchingMembersNamed(Microsoft.Cci.IName,System.Boolean,Microsoft.Cci.Function{`0,System.Boolean})" inheritedFromTypeName="IScope" csharp="for all x in result (object)x != null" vb="for all x in result ((Object)x) &lt;&gt; Nothing">for all x in result (object)x != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMatchingMembersNamed(Microsoft.Cci.IName,System.Boolean,Microsoft.Cci.Function{`0,System.Boolean})" inheritedFromTypeName="IScope" csharp="for all x in result this.Contains(x)" vb="for all x in result Me.Contains(x)">for all x in result this.Contains(x)</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMatchingMembersNamed(Microsoft.Cci.IName,System.Boolean,Microsoft.Cci.Function{`0,System.Boolean})" inheritedFromTypeName="IScope" csharp="for all x in result &#xD;&#xA;{&#xD;&#xA;    if (!ignoreCase)&#xD;&#xA;    {&#xD;&#xA;        return x.Name == name;&#xD;&#xA;&#xD;&#xA;    }&#xD;&#xA;    return x.Name.UniqueKeyIgnoringCase == x.Name.UniqueKeyIgnoringCase;&#xD;&#xA;&#xD;&#xA;}&#xD;&#xA;" vb="for all x in result &lt;unprintable lambda&gt;">for all x in result 
+{
+    if (!ignoreCase)
+    {
+        return x.Name == name;
+
+    }
+    return x.Name.UniqueKeyIgnoringCase == x.Name.UniqueKeyIgnoringCase;
+
+}
+</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.MetadataReader.ObjectModelImplementation.ScopedContainerMetadataObject`3.GetMatchingMembers(Microsoft.Cci.Function{`1,System.Boolean})">
+      <pure />
+      <requires inheritedFrom="M:Microsoft.Cci.IScope`1.GetMatchingMembers(Microsoft.Cci.Function{`0,System.Boolean})" inheritedFromTypeName="IScope" csharp="predicate != null" vb="predicate &lt;&gt; Nothing">predicate != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMatchingMembers(Microsoft.Cci.Function{`0,System.Boolean})" inheritedFromTypeName="IScope" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMatchingMembers(Microsoft.Cci.Function{`0,System.Boolean})" inheritedFromTypeName="IScope" csharp="for all x in result (object)x != null" vb="for all x in result ((Object)x) &lt;&gt; Nothing">for all x in result (object)x != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMatchingMembers(Microsoft.Cci.Function{`0,System.Boolean})" inheritedFromTypeName="IScope" csharp="for all x in result this.Contains(x)" vb="for all x in result Me.Contains(x)">for all x in result this.Contains(x)</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.MetadataReader.ObjectModelImplementation.ScopedContainerMetadataObject`3.GetMembersNamed(Microsoft.Cci.IName,System.Boolean)">
+      <pure />
+      <requires inheritedFrom="M:Microsoft.Cci.IScope`1.GetMembersNamed(Microsoft.Cci.IName,System.Boolean)" inheritedFromTypeName="IScope" csharp="name != null" vb="name &lt;&gt; Nothing">name != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMembersNamed(Microsoft.Cci.IName,System.Boolean)" inheritedFromTypeName="IScope" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMembersNamed(Microsoft.Cci.IName,System.Boolean)" inheritedFromTypeName="IScope" csharp="for all x in result (object)x != null" vb="for all x in result ((Object)x) &lt;&gt; Nothing">for all x in result (object)x != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMembersNamed(Microsoft.Cci.IName,System.Boolean)" inheritedFromTypeName="IScope" csharp="for all x in result this.Contains(x)" vb="for all x in result Me.Contains(x)">for all x in result this.Contains(x)</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMembersNamed(Microsoft.Cci.IName,System.Boolean)" inheritedFromTypeName="IScope" csharp="for all x in result &#xD;&#xA;{&#xD;&#xA;    if (!ignoreCase)&#xD;&#xA;    {&#xD;&#xA;        return x.Name == name;&#xD;&#xA;&#xD;&#xA;    }&#xD;&#xA;    return x.Name.UniqueKeyIgnoringCase == x.Name.UniqueKeyIgnoringCase;&#xD;&#xA;&#xD;&#xA;}&#xD;&#xA;" vb="for all x in result &lt;unprintable lambda&gt;">for all x in result 
+{
+    if (!ignoreCase)
+    {
+        return x.Name == name;
+
+    }
+    return x.Name.UniqueKeyIgnoringCase == x.Name.UniqueKeyIgnoringCase;
+
+}
+</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.MetadataReader.ObjectModelImplementation.ScopedContainerMetadataObject`3.Members">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IContainer`1.get_Members" inheritedFromTypeName="IContainer" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IContainer`1.get_Members" inheritedFromTypeName="IContainer" csharp="for all x in result (object)x != null" vb="for all x in result ((Object)x) &lt;&gt; Nothing">for all x in result (object)x != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.get_Members" inheritedFromTypeName="IScope" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.get_Members" inheritedFromTypeName="IScope" csharp="for all x in result (object)x != null" vb="for all x in result ((Object)x) &lt;&gt; Nothing">for all x in result (object)x != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.get_Members" inheritedFromTypeName="IScope" csharp="for all x in result this.Contains(x)" vb="for all x in result Me.Contains(x)">for all x in result this.Contains(x)</ensures>
       </getter>
     </member>
     <member name="M:Microsoft.Cci.MetadataReader.ObjectModelImplementation.NamespaceReference.ToString">
@@ -2479,62 +2535,6 @@
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.IGenericTypeParameterReference.get_ResolvedType" inheritedFromTypeName="IGenericTypeParameterReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
         <ensures inheritedFrom="M:Microsoft.Cci.IGenericTypeParameterReference.get_ResolvedType" inheritedFromTypeName="IGenericTypeParameterReference" csharp="this is Microsoft.Cci.IGenericTypeParameter ⇒ result == this" vb="Me Is Microsoft.Cci.IGenericTypeParameter Implies result = Me">!(this is Microsoft.Cci.IGenericTypeParameter) || result == this</ensures>
-      </getter>
-    </member>
-    <member name="M:Microsoft.Cci.MetadataReader.ObjectModelImplementation.ScopedContainerMetadataObject`3.Contains(`1)">
-      <pure />
-    </member>
-    <member name="M:Microsoft.Cci.MetadataReader.ObjectModelImplementation.ScopedContainerMetadataObject`3.GetMatchingMembersNamed(Microsoft.Cci.IName,System.Boolean,Microsoft.Cci.Function{`1,System.Boolean})">
-      <pure />
-      <requires inheritedFrom="M:Microsoft.Cci.IScope`1.GetMatchingMembersNamed(Microsoft.Cci.IName,System.Boolean,Microsoft.Cci.Function{`0,System.Boolean})" inheritedFromTypeName="IScope" csharp="name != null" vb="name &lt;&gt; Nothing">name != null</requires>
-      <requires inheritedFrom="M:Microsoft.Cci.IScope`1.GetMatchingMembersNamed(Microsoft.Cci.IName,System.Boolean,Microsoft.Cci.Function{`0,System.Boolean})" inheritedFromTypeName="IScope" csharp="predicate != null" vb="predicate &lt;&gt; Nothing">predicate != null</requires>
-      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMatchingMembersNamed(Microsoft.Cci.IName,System.Boolean,Microsoft.Cci.Function{`0,System.Boolean})" inheritedFromTypeName="IScope" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMatchingMembersNamed(Microsoft.Cci.IName,System.Boolean,Microsoft.Cci.Function{`0,System.Boolean})" inheritedFromTypeName="IScope" csharp="for all x in result (object)x != null" vb="for all x in result ((Object)x) &lt;&gt; Nothing">for all x in result (object)x != null</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMatchingMembersNamed(Microsoft.Cci.IName,System.Boolean,Microsoft.Cci.Function{`0,System.Boolean})" inheritedFromTypeName="IScope" csharp="for all x in result this.Contains(x)" vb="for all x in result Me.Contains(x)">for all x in result this.Contains(x)</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMatchingMembersNamed(Microsoft.Cci.IName,System.Boolean,Microsoft.Cci.Function{`0,System.Boolean})" inheritedFromTypeName="IScope" csharp="for all x in result &#xD;&#xA;{&#xD;&#xA;    if (!ignoreCase)&#xD;&#xA;    {&#xD;&#xA;        return x.Name == name;&#xD;&#xA;&#xD;&#xA;    }&#xD;&#xA;    return x.Name.UniqueKeyIgnoringCase == x.Name.UniqueKeyIgnoringCase;&#xD;&#xA;&#xD;&#xA;}&#xD;&#xA;" vb="for all x in result &lt;unprintable lambda&gt;">for all x in result 
-{
-    if (!ignoreCase)
-    {
-        return x.Name == name;
-
-    }
-    return x.Name.UniqueKeyIgnoringCase == x.Name.UniqueKeyIgnoringCase;
-
-}
-</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.MetadataReader.ObjectModelImplementation.ScopedContainerMetadataObject`3.GetMatchingMembers(Microsoft.Cci.Function{`1,System.Boolean})">
-      <pure />
-      <requires inheritedFrom="M:Microsoft.Cci.IScope`1.GetMatchingMembers(Microsoft.Cci.Function{`0,System.Boolean})" inheritedFromTypeName="IScope" csharp="predicate != null" vb="predicate &lt;&gt; Nothing">predicate != null</requires>
-      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMatchingMembers(Microsoft.Cci.Function{`0,System.Boolean})" inheritedFromTypeName="IScope" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMatchingMembers(Microsoft.Cci.Function{`0,System.Boolean})" inheritedFromTypeName="IScope" csharp="for all x in result (object)x != null" vb="for all x in result ((Object)x) &lt;&gt; Nothing">for all x in result (object)x != null</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMatchingMembers(Microsoft.Cci.Function{`0,System.Boolean})" inheritedFromTypeName="IScope" csharp="for all x in result this.Contains(x)" vb="for all x in result Me.Contains(x)">for all x in result this.Contains(x)</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.MetadataReader.ObjectModelImplementation.ScopedContainerMetadataObject`3.GetMembersNamed(Microsoft.Cci.IName,System.Boolean)">
-      <pure />
-      <requires inheritedFrom="M:Microsoft.Cci.IScope`1.GetMembersNamed(Microsoft.Cci.IName,System.Boolean)" inheritedFromTypeName="IScope" csharp="name != null" vb="name &lt;&gt; Nothing">name != null</requires>
-      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMembersNamed(Microsoft.Cci.IName,System.Boolean)" inheritedFromTypeName="IScope" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMembersNamed(Microsoft.Cci.IName,System.Boolean)" inheritedFromTypeName="IScope" csharp="for all x in result (object)x != null" vb="for all x in result ((Object)x) &lt;&gt; Nothing">for all x in result (object)x != null</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMembersNamed(Microsoft.Cci.IName,System.Boolean)" inheritedFromTypeName="IScope" csharp="for all x in result this.Contains(x)" vb="for all x in result Me.Contains(x)">for all x in result this.Contains(x)</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.GetMembersNamed(Microsoft.Cci.IName,System.Boolean)" inheritedFromTypeName="IScope" csharp="for all x in result &#xD;&#xA;{&#xD;&#xA;    if (!ignoreCase)&#xD;&#xA;    {&#xD;&#xA;        return x.Name == name;&#xD;&#xA;&#xD;&#xA;    }&#xD;&#xA;    return x.Name.UniqueKeyIgnoringCase == x.Name.UniqueKeyIgnoringCase;&#xD;&#xA;&#xD;&#xA;}&#xD;&#xA;" vb="for all x in result &lt;unprintable lambda&gt;">for all x in result 
-{
-    if (!ignoreCase)
-    {
-        return x.Name == name;
-
-    }
-    return x.Name.UniqueKeyIgnoringCase == x.Name.UniqueKeyIgnoringCase;
-
-}
-</ensures>
-    </member>
-    <member name="P:Microsoft.Cci.MetadataReader.ObjectModelImplementation.ScopedContainerMetadataObject`3.Members">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IContainer`1.get_Members" inheritedFromTypeName="IContainer" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.IContainer`1.get_Members" inheritedFromTypeName="IContainer" csharp="for all x in result (object)x != null" vb="for all x in result ((Object)x) &lt;&gt; Nothing">for all x in result (object)x != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.get_Members" inheritedFromTypeName="IScope" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.get_Members" inheritedFromTypeName="IScope" csharp="for all x in result (object)x != null" vb="for all x in result ((Object)x) &lt;&gt; Nothing">for all x in result (object)x != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.IScope`1.get_Members" inheritedFromTypeName="IScope" csharp="for all x in result this.Contains(x)" vb="for all x in result Me.Contains(x)">for all x in result this.Contains(x)</ensures>
       </getter>
     </member>
     <member name="M:Microsoft.Cci.MetadataReader.ObjectModelImplementation.NestedType.Dispatch(Microsoft.Cci.IMetadataVisitor)">

@@ -1,0 +1,23 @@
+BCT: https://hg.codeplex.com/forks/lleraromero/bct 
+Changeset: d89185495f29 Merge (only local)
+Date: 2015-04-24
+
+Boogie: https://hg.codeplex.com/boogie
+Changeset: 4026 (c652ee8c5ff7) Worked on the verification result caching. 
+Date: 2014-11-03 12:45:42 +0100
+
+CCI: https://cciast.svn.codeplex.com/svn/
+Revision: 73110 Sync with internal version. 
+Date: lunes, 12 de enero de 2015 08:29:12 p.m.
+
+CodeContracts: https://github.com/Microsoft/CodeContracts
+Commit: 22baf4311a2a8e69fffdd7532a092c6bd30c3a40 Fixed the .gitignore and Added missing files to build CC distribution. 
+Date: 2015-01-08 12:05:37 -0800
+
+Corral: https://git01.codeplex.com/forks/lleraromero/corral
+Commit: 1bb59af844a8d55ccf56b6e7919e3660395f7ff1 Corral as a library
+Date: 2015-04-24
+
+Z3: https://github.com/Z3Prover/z3
+Commit: 89c1785b73225a1b363c0e485f854613121b70a7 fixed clang++ for linux
+Date: 2012-11-14 02:49:37 -0800

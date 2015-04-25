@@ -5807,6 +5807,12 @@
     <member name="P:Microsoft.Cci.MutableCodeModel.SourceMethodBody.SynchronizationInformation">
       <summary />
     </member>
+    <member name="P:Microsoft.Cci.MutableCodeModel.SourceMethodBody.PrivateHelperTypesImplementation">
+      <summary>
+            Implementation of IMethodBody.PrivateHelperTypes. Exposed here so that sub types can implement
+            IMethodBody interface, while calling the base implementation if necessary
+            </summary>
+    </member>
     <member name="T:Microsoft.Cci.MutableCodeModel.CodeRewriter">
       <summary>
             A class that traverses a mutable code and metadata model in depth first, left to right order,
