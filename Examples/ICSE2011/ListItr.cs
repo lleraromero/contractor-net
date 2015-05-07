@@ -118,14 +118,36 @@ namespace Examples.ICSE2011
         [ContractInvariantMethod]
         private void ObjectInvariant()
         {
+            //Guido's Invariants
             Contract.Invariant(0 <= cursor && cursor <= array.size);
             Contract.Invariant(0 <= array.size && array.size <= array.elementData.Length);
-            Contract.Invariant(-1 == lastRet
-                                || (cursor < array.size && lastRet == cursor)
-                                || (cursor > 0 && lastRet == cursor - 1));
+            Contract.Invariant(-1 == lastRet                                    //haven't showed anything or is invalid
+                                || (cursor < array.size && lastRet == cursor)   // going backwards
+                                || (cursor > 0 && lastRet == cursor - 1));      // going forward
             Contract.Invariant(0 <= expectedModCount);
             Contract.Invariant(0 <= array.modCount);
             Contract.Invariant(10 <= array.elementData.Length);
+
+            //New candidate
+            //Contract.Invariant(lastRet == -1 || cursor - 1 <= lastRet);
+            //Contract.Invariant(lastRet <= cursor);
+
+            //Daikon's Invariants
+            //Contract.Invariant(cursor >= 0);
+            //Contract.Invariant(lastRet >= -1);
+            ////Contract.Invariant(expectedModCount >= 0);
+            //Contract.Invariant(cursor >= lastRet);
+            ////Contract.Invariant(cursor <= expectedModCount);
+            ////Contract.Invariant(lastRet < expectedModCount);
+
+
+            //Contract.Invariant(this.array.size == this.array.elementData.Length); //Fix add elementData: this.outer.size == size(this.outer[])
+            //Contract.Invariant(this.array != null);
+            //Contract.Invariant(Contract.ForAll(this.array.elementData, x => x != null)); //Fix add elementData: this.outer[] elements != null
+            //Contract.Invariant(this.array.elementData != null);
+            //Contract.Invariant(this.array.elementData.Length == 10);
+            //Contract.Invariant(this.array.elementData[this.array.size] == null);
+            //Contract.Invariant(this.array.size < this.array.elementData.Length - 1);
         }
 
 

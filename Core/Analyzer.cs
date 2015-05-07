@@ -60,6 +60,7 @@ namespace Contractor.Core
 
             // Create a clone of the module as a working copy.
             CreateQueryAssembly(type);
+
             this.typeToAnalyze = queryAssembly.DecompiledModule.AllTypes.Find(t => t.Name == type.Name) as NamespaceTypeDefinition;
             this.queryContractProvider = new ContractProvider(new ContractMethods(this.host), this.host.FindUnit(this.queryAssembly.Module.UnitIdentity));
 
@@ -79,6 +80,10 @@ namespace Contractor.Core
 
         protected virtual void CreateQueryAssembly(NamespaceTypeDefinition type)
         {
+            // TODO: fix the query assembly to include the class being analysed and all its dependencies
+            this.queryAssembly = new AssemblyInfo(host, new MetadataDeepCopier(this.host).Copy(inputAssembly.DecompiledModule));
+            return;
+
             var coreAssembly = host.LoadAssembly(host.CoreAssemblySymbolicIdentity);
 
             var assembly = new Assembly()
@@ -150,8 +155,6 @@ namespace Contractor.Core
                 else if (typeof(T) == typeof(State))
                 {
                     queries.Add(GenerateQuery(state, action, (State)(object)target));
-                    // Negative
-                    queries.Add(GenerateQuery(state, action, (State)(object)target, true));
                 }
             }
 
