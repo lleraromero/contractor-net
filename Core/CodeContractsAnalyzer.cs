@@ -261,20 +261,8 @@ namespace Contractor.Core
 
                     var targetNameStart = query.LastIndexOf(methodNameDelimiter) + 1;
                     var targetName = query.Substring(targetNameStart);
-
-                    // El negado es solo por chequeo
-                    if (targetName.StartsWith(notPrefix))
-                        continue;
-
                     var target = targets.Find(s => s.UniqueName == targetName);
                     var isUnproven = entry.Value.Contains(ResultKind.UnprovenEnsures);
-                    if (isUnproven)
-                    {
-                        // If the negated query has any false ensure or unproven ensure then the transition remains unproven
-                        // TODO: si hay un false ensures me garantiza que no va la transicion?
-                        var negativeEntry = result.First(kvp => kvp.Key.Contains(notPrefix) && kvp.Key.Contains(targetName));
-                        isUnproven = negativeEntry.Value.Contains(ResultKind.FalseEnsures) || negativeEntry.Value.Contains(ResultKind.UnprovenEnsures);
-                    }
 
                     if (target != null)
                     {
