@@ -286,21 +286,20 @@ namespace Contractor.Core
             return queryContract;
         }
 
-        private MethodDefinition GenerateQuery(State state, IMethodDefinition action, State target, bool negate = false)
+        private MethodDefinition GenerateQuery(State state, IMethodDefinition action, State target)
         {
-            var prefix = negate ? notPrefix : string.Empty;
             var actionName = action.GetUniqueName();
             var stateName = state.UniqueName;
             var targetName = target.UniqueName;
-            var methodName = string.Format("{1}{0}{2}{0}{3}{4}", methodNameDelimiter, stateName, actionName, prefix, targetName);
+            var methodName = string.Format("{1}{0}{2}{0}{3}", methodNameDelimiter, stateName, actionName, targetName);
             var method = CreateQueryMethod<State>(state, methodName, action, target);
 
-            var queryContract = CreateQueryContract(state, target, negate);
+            var queryContract = CreateQueryContract(state, target);
             queryContractProvider.AssociateMethodWithContract(method, queryContract);
             return method;
         }
 
-        private MethodContract CreateQueryContract(State state, State target, bool negate)
+        private MethodContract CreateQueryContract(State state, State target)
         {
             var contracts = new MethodContract();
 
@@ -316,42 +315,23 @@ namespace Contractor.Core
                                 };
             contracts.Preconditions.AddRange(preconditions);
 
-            // Negated target state invariant as a postcondition
+            // Target state invariant as a postcondition
             var targetInv = Helper.GenerateStateInvariant(host, inputContractProvider, typeToAnalyze, target);
 
-            IExpression joinedTargetInv = null;
-            if (!negate)
-            {
-                joinedTargetInv = new LogicalNot()
-                                  {
-                                      Type = host.PlatformType.SystemBoolean,
-                                      Operand = Helper.JoinWithLogicalAnd(host, targetInv, true)
-                                  };
+            var postconditions = from condition in targetInv
+                                 select new Postcondition()
+                                 {
+                                     Condition = condition,
+                                     OriginalSource = Helper.PrintExpression(condition),
+                                     Description = new CompileTimeConstant() { Value = "Target state invariant", Type = this.host.PlatformType.SystemString }
+                                 };
+            contracts.Postconditions.AddRange(postconditions);
 
-                var postcondition = new Postcondition()
-                {
-                    Condition = joinedTargetInv,
-                    OriginalSource = Helper.PrintExpression(joinedTargetInv),
-                    Description = new CompileTimeConstant() { Value = "Negated target state invariant", Type = this.host.PlatformType.SystemString }
-                };
-                contracts.Postconditions.Add(postcondition);
-            }
-            else
-            {
-                var postconditions = from condition in targetInv
-                                     select new Postcondition()
-                                     {
-                                         Condition = condition,
-                                         OriginalSource = Helper.PrintExpression(condition),
-                                         Description = new CompileTimeConstant() { Value = "Negated target state invariant", Type = this.host.PlatformType.SystemString }
-                                     };
-                contracts.Postconditions.AddRange(postconditions);
-            }
 
             return contracts;
         }
 
-        private MethodDefinition CreateQueryMethod<T>(State state, string name, IMethodDefinition action, T target)
+        protected MethodDefinition CreateQueryMethod<T>(State state, string name, IMethodDefinition action, T target)
         {
             Contract.Requires(target is IMethodDefinition || target is State);
 
@@ -430,7 +410,7 @@ namespace Contractor.Core
             {
                 methodReference = specializedInputType.SpecializeMember(action, host.InternFactory) as IMethodReference;
             }
-            
+
             var callExpr = new MethodCall()
             {
                 Arguments = args,
