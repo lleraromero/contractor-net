@@ -315,18 +315,22 @@ namespace Contractor.Core
                                 };
             contracts.Preconditions.AddRange(preconditions);
 
-            // Target state invariant as a postcondition
+            // Negated target state invariant as a postcondition
             var targetInv = Helper.GenerateStateInvariant(host, inputContractProvider, typeToAnalyze, target);
 
-            var postconditions = from condition in targetInv
-                                 select new Postcondition()
-                                 {
-                                     Condition = condition,
-                                     OriginalSource = Helper.PrintExpression(condition),
-                                     Description = new CompileTimeConstant() { Value = "Target state invariant", Type = this.host.PlatformType.SystemString }
-                                 };
-            contracts.Postconditions.AddRange(postconditions);
+            IExpression joinedTargetInv = new LogicalNot()
+            {
+                Type = host.PlatformType.SystemBoolean,
+                Operand = Helper.JoinWithLogicalAnd(host, targetInv, true)
+            };
 
+            var postcondition = new Postcondition()
+            {
+                Condition = joinedTargetInv,
+                OriginalSource = Helper.PrintExpression(joinedTargetInv),
+                Description = new CompileTimeConstant() { Value = "Negated target state invariant", Type = this.host.PlatformType.SystemString }
+            };
+            contracts.Postconditions.Add(postcondition);
 
             return contracts;
         }
