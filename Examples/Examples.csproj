@@ -83,7 +83,6 @@
     </Compile>
     <Compile Include="ATM.cs" />
     <Compile Include="Door.cs" />
-    <Compile Include="DoorPost.cs" />
     <Compile Include="FiniteStack.cs">
       <SubType>Code</SubType>
     </Compile>
