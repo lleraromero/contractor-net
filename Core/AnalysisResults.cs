@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.Diagnostics.Contracts;
 
 namespace Contractor.Core
 {
@@ -16,6 +17,14 @@ namespace Contractor.Core
             this.EnabledActions = new List<IMethodDefinition>();
             this.DisabledActions = new List<IMethodDefinition>();
         }
+
+        [ContractInvariantMethod]
+        private void ObjectInvariant()
+        {
+            Contract.Invariant(!this.EnabledActions.Contains(null));
+            Contract.Invariant(!this.DisabledActions.Contains(null));
+        }
+
     }
 
     class TransitionAnalysisResult
