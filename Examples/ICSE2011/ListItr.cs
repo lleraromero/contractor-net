@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NoSuchElementException = System.Exception;
+using System.Diagnostics.Contracts;
 using ConcurrentModificationException = System.Exception;
 using IllegalStateException = System.Exception;
-using System.Diagnostics.Contracts;
+using NoSuchElementException = System.Exception;
 
 namespace Examples.ICSE2011
 {
+    /// <summary>
+    /// Java 1.6 implementation of ArrayList and ListItr
+    /// </summary>
     public class ArrayListJava
     {
         // AbstractList
@@ -102,7 +102,7 @@ namespace Examples.ICSE2011
     }
 
     /*
-    The preconditions and invariants were extracted from ListItr.c
+    The preconditions were extracted from ListItr.c
     */
     // TODO: add support for nested classes
     public class ListItr
@@ -118,43 +118,15 @@ namespace Examples.ICSE2011
         [ContractInvariantMethod]
         private void ObjectInvariant()
         {
-            //Guido's Invariants
-            Contract.Invariant(0 <= cursor && cursor <= array.size);
-            Contract.Invariant(0 <= array.size && array.size <= array.elementData.Length);
-            Contract.Invariant(-1 == lastRet                                    //haven't showed anything or is invalid
-                                || (cursor < array.size && lastRet == cursor)   // going backwards
-                                || (cursor > 0 && lastRet == cursor - 1));      // going forward
-            Contract.Invariant(0 <= expectedModCount);
-            Contract.Invariant(0 <= array.modCount);
-            Contract.Invariant(10 <= array.elementData.Length);
-
-            //New candidate
-            //Contract.Invariant(lastRet == -1 || cursor - 1 <= lastRet);
-            //Contract.Invariant(lastRet <= cursor);
-
-            //Daikon's Invariants
-            //Contract.Invariant(cursor >= 0);
-            //Contract.Invariant(lastRet >= -1);
-            ////Contract.Invariant(expectedModCount >= 0);
-            //Contract.Invariant(cursor >= lastRet);
-            ////Contract.Invariant(cursor <= expectedModCount);
-            ////Contract.Invariant(lastRet < expectedModCount);
-
-
-            //Contract.Invariant(this.array.size == this.array.elementData.Length); //Fix add elementData: this.outer.size == size(this.outer[])
-            //Contract.Invariant(this.array != null);
-            //Contract.Invariant(Contract.ForAll(this.array.elementData, x => x != null)); //Fix add elementData: this.outer[] elements != null
-            //Contract.Invariant(this.array.elementData != null);
-            //Contract.Invariant(this.array.elementData.Length == 10);
-            //Contract.Invariant(this.array.elementData[this.array.size] == null);
-            //Contract.Invariant(this.array.size < this.array.elementData.Length - 1);
+            Contract.Invariant(lastRet == -1 || cursor - 1 <= lastRet);
+            Contract.Invariant(lastRet <= cursor);
         }
 
 
         public ListItr(ArrayListJava a, int index)
         {
-            //Contract.Requires(a != null);
-            //Contract.Requires(a.elementData != null);
+            Contract.Requires(a != null);
+            Contract.Requires(a.elementData != null);
 
             Contract.Requires(0 <= index && index <= a.size);
             Contract.Requires(0 <= a.size && a.size <= a.elementData.Length);
@@ -181,7 +153,7 @@ namespace Examples.ICSE2011
             return cursor != array.size;
         }
 
-        //DIFF
+        // DIFF with Java 1.4
         public Object next()
         {
             Contract.Requires(array.elementData != null);
@@ -203,7 +175,7 @@ namespace Examples.ICSE2011
             return (Object)elementData[lastRet = i];
         }
 
-        // DIFF
+        // DIFF with Java 1.4
         public void remove()
         {
             Contract.Requires(array.elementData != null);
@@ -236,7 +208,7 @@ namespace Examples.ICSE2011
             return cursor != 0;
         }
 
-        // DIFF
+        // DIFF with Java 1.4
         public object previous()
         {
             Contract.Requires(array.elementData != null);
@@ -268,7 +240,7 @@ namespace Examples.ICSE2011
             return cursor - 1;
         }
 
-        // DIFF
+        // DIFF with Java 1.4
         public void set(Object e)
         {
             Contract.Requires(array.elementData != null);
