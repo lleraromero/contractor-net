@@ -585,12 +585,12 @@ namespace Contractor.Gui
             {
                 this.BeginInvoke(new Action<Exception>(this.HandleException), ex);
             }
-
+#endif
             this.BeginInvoke((Action)delegate
             {
                 this.EndBackgroundTask();
             });
-#endif
+
         }
 
         public void HandleException(Exception ex)
