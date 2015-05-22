@@ -321,7 +321,7 @@ namespace Contractor.Core
 
         private List<State> generatePossibleStates(List<IMethodDefinition> actions, ActionAnalysisResults actionsResult, HashSet<IState> knownStates)
         {
-            Contract.Requires(actions != null && actions.Count > 0);
+            Contract.Requires(actions != null);
             Contract.Requires(actionsResult != null);
             Contract.Requires(knownStates != null);
 
