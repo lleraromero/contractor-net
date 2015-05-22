@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abstraction initial_state="0" input_format="code-with-pre" name="Examples.Door">
+  <label name="Alarm" />
+  <label name="Close" />
+  <label name="Door" />
+  <label name="Open" />
+  <label name="Safe" />
+  <label name="Start" />
+  <label name="Stop" />
+  <state name="0">
+    <enabled_label name="Door" />
+    <transition destination="1" label="Door" uncertain="false" violates_invariant="false" />
+  </state>
+  <state name="1">
+    <enabled_label name="Alarm" />
+    <enabled_label name="Open" />
+    <enabled_label name="Start" />
+    <transition destination="2" label="Alarm" uncertain="false" violates_invariant="false" />
+    <transition destination="3" label="Open" uncertain="false" violates_invariant="false" />
+    <transition destination="4" label="Start" uncertain="false" violates_invariant="false" />
+  </state>
+  <state name="2">
+    <enabled_label name="Safe" />
+    <enabled_label name="Start" />
+    <transition destination="3" label="Safe" uncertain="false" violates_invariant="false" />
+    <transition destination="5" label="Start" uncertain="false" violates_invariant="false" />
+  </state>
+  <state name="3">
+    <enabled_label name="Alarm" />
+    <enabled_label name="Close" />
+    <enabled_label name="Start" />
+    <transition destination="1" label="Close" uncertain="false" violates_invariant="false" />
+    <transition destination="2" label="Alarm" uncertain="false" violates_invariant="false" />
+    <transition destination="4" label="Start" uncertain="false" violates_invariant="false" />
+  </state>
+  <state name="4">
+    <enabled_label name="Alarm" />
+    <enabled_label name="Stop" />
+    <transition destination="1" label="Stop" uncertain="false" violates_invariant="false" />
+    <transition destination="5" label="Alarm" uncertain="false" violates_invariant="false" />
+  </state>
+  <state name="5">
+    <enabled_label name="Safe" />
+    <enabled_label name="Stop" />
+    <transition destination="2" label="Stop" uncertain="false" violates_invariant="false" />
+    <transition destination="6" label="Safe" uncertain="false" violates_invariant="false" />
+  </state>
+  <state name="6">
+    <enabled_label name="Alarm" />
+    <enabled_label name="Close" />
+    <enabled_label name="Stop" />
+    <transition destination="3" label="Stop" uncertain="false" violates_invariant="false" />
+    <transition destination="4" label="Close" uncertain="false" violates_invariant="false" />
+    <transition destination="5" label="Alarm" uncertain="false" violates_invariant="false" />
+  </state>
+</abstraction>

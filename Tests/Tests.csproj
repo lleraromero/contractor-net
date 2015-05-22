@@ -64,6 +64,12 @@
       <Name>Core</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="EPAs\Door.xml" />
+    <Content Include="EPAs\FiniteStack.xml" />
+    <Content Include="EPAs\Linear.xml" />
+    <Content Include="EPAs\ListItr.xml" />
+  </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

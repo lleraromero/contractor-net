@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Contractor.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Contractor.Core;
-using System.IO;
+using System;
 using System.Diagnostics.Contracts;
+using System.IO;
 using System.Threading;
 
 namespace Tests
@@ -32,19 +32,20 @@ namespace Tests
         }
 
         [TestMethod]
-        public void SerializeAndDeserialize01()
+        public void SerializeAndDeserializeLinear()
         {
             var cancellationSource = new CancellationTokenSource();
             var epa = epaGenerator.GenerateEpa("Examples.Linear", cancellationSource.Token).EPA;
 
             SerializeAndDeserialize(epa);
         }
+
         public void SerializeAndDeserialize(Epa epa)
         {
             var filePath = Path.Combine(Configuration.TempPath, "epa.xml");
             // Export the EPA as an XML
             var serializer = new EpaXmlSerializer();
-            using (Stream oStream = new FileStream(filePath, FileMode.OpenOrCreate))
+            using (Stream oStream = new FileStream(filePath, FileMode.Create))
             {
                 serializer.Serialize(oStream, epa);
             }

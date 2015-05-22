@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Contractor.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
-using Contractor.Core;
+using System.Diagnostics.Contracts;
 using System.IO;
+using System.Linq;
 using System.Threading;
 
 namespace Tests
@@ -11,6 +13,7 @@ namespace Tests
     public class CorralEPAsTest
     {
         private static EpaGenerator epaGenerator;
+        private const string InputFilePath = @"..\..\..\Examples\obj\Debug\Decl\Examples.dll";
 
         [ClassInitialize()]
         public static void GenerateEPAs(TestContext tc)
@@ -20,7 +23,7 @@ namespace Tests
             Configuration.InlineMethodsBody = true;
 
             epaGenerator = new EpaGenerator(EpaGenerator.Backend.Corral);
-            var ExamplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\Examples\obj\Debug\Decl\Examples.dll"));
+            var ExamplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, InputFilePath));
             epaGenerator.LoadAssembly(ExamplesPath);
         }
 
@@ -31,38 +34,17 @@ namespace Tests
         }
 
         [TestMethod]
-        public void TestStack()
+        public void TestFiniteStack()
         {
             var cancellationSource = new CancellationTokenSource();
             var epa = epaGenerator.GenerateEpa("Examples.FiniteStack", cancellationSource.Token).EPA;
-            
-            #region Graph representation
-            var graph = new List<List<int>>();
 
-            graph.Add(new List<int>());
-            graph[0].Add(1);
-            graph[0].Add(1);
-
-            graph.Add(new List<int>());
-            graph[1].Add(1);
-            graph[1].Add(1);
-            graph[1].Add(2);
-
-            graph.Add(new List<int>());
-            graph[2].Add(1);
-            graph[2].Add(2);
-            graph[2].Add(2);
-            graph[2].Add(2);
-            graph[2].Add(2);
-            graph[2].Add(3);
-
-            graph.Add(new List<int>());
-            graph[3].Add(2);
-            graph[3].Add(3);
-            graph[3].Add(3);
-            #endregion
-
-            Traverse(graph, epa);
+            var filePath = Path.Combine(Configuration.TempPath, @"..\Tests\EPAs\FiniteStack.xml");
+            using (Stream oStream = new FileStream(filePath, FileMode.Open))
+            {
+                var deserializedEPA = new EpaXmlSerializer().Deserialize(oStream, InputFilePath);
+                IsAnOverapproximation(epa, deserializedEPA);
+            }
         }
 
         [TestMethod]
@@ -71,99 +53,50 @@ namespace Tests
             var cancellationSource = new CancellationTokenSource();
             var epa = epaGenerator.GenerateEpa("Examples.Linear", cancellationSource.Token).EPA;
 
-            #region Graph representation
-            var graph = new List<List<int>>();
-            graph.Add(new List<int>());
-            graph[0].Add(1);
-
-            graph.Add(new List<int>());
-            graph[1].Add(1);
-            graph[1].Add(2);
-
-            graph.Add(new List<int>());
-            graph[2].Add(2);
-            graph[2].Add(3);
-
-            graph.Add(new List<int>());
-            graph[3].Add(3);
-            graph[3].Add(4);
-
-            graph.Add(new List<int>());
-            graph[4].Add(4);
-            #endregion
-
-            Traverse(graph, epa);
+            var filePath = Path.Combine(Configuration.TempPath, @"..\Tests\EPAs\Linear.xml");
+            using (Stream oStream = new FileStream(filePath, FileMode.Open))
+            {
+                var deserializedEPA = new EpaXmlSerializer().Deserialize(oStream, InputFilePath);
+                IsAnOverapproximation(epa, deserializedEPA);
+            }
         }
 
         [TestMethod]
         public void TestDoor()
         {
             var cancellationSource = new CancellationTokenSource();
-            var epa = epaGenerator.GenerateEpa("Examples.DoorPost", cancellationSource.Token).EPA;
+            var epa = epaGenerator.GenerateEpa("Examples.Door", cancellationSource.Token).EPA;
 
-            #region Graph representation
-            var graph = new List<List<int>>();
-
-            graph.Add(new List<int>());
-            graph[0].Add(1);
-
-            graph.Add(new List<int>());
-            graph[1].Add(2);
-            graph[1].Add(3);
-            graph[1].Add(4);
-
-            graph.Add(new List<int>());
-            graph[2].Add(1);
-            graph[2].Add(3);
-            graph[2].Add(4);
-
-            graph.Add(new List<int>());
-            graph[3].Add(1);
-            graph[3].Add(5);
-
-            graph.Add(new List<int>());
-            graph[4].Add(2);
-            graph[4].Add(5);
-
-            graph.Add(new List<int>());
-            graph[5].Add(4);
-            graph[5].Add(6);
-
-            graph.Add(new List<int>());
-            graph[6].Add(2);
-            graph[6].Add(3);
-            graph[6].Add(5);
-
-            #endregion
-
-            Traverse(graph, epa);
+            var filePath = Path.Combine(Configuration.TempPath, @"..\Tests\EPAs\Door.xml");
+            using (Stream oStream = new FileStream(filePath, FileMode.Open))
+            {
+                var deserializedEPA = new EpaXmlSerializer().Deserialize(oStream, InputFilePath);
+                IsAnOverapproximation(epa, deserializedEPA);
+            }
         }
 
-        /// <summary>
-        /// Traverse the EPA while comparing its structure with a graph
-        /// </summary>
-        /// <param name="nodes">Graph representation</param>
-        /// <param name="epa">EPA representation</param>
-        private void Traverse(List<List<int>> nodes, Epa epa)
+        [TestMethod]
+        public void TestListItr()
         {
-            //TODO: use an isomorphism algorithm to compare the epa and the graph
-            
-            // Same amount of states?
-            Assert.AreEqual(nodes.Count, epa.States.Count);
+            var cancellationSource = new CancellationTokenSource();
+            var epa = epaGenerator.GenerateEpa("Examples.ICSE2011.ListItr",
+                new List<string>(){"ListItr", "add", "next", "previous", "remove", "set"},
+                cancellationSource.Token).EPA;
 
-            // Check whether exists a bijection in the states/nodes. However, we are not considering
-            // a proper isomorphism.
-            var transitions = new List<int>();
-            foreach (var s in epa.States)
+            var filePath = Path.Combine(Configuration.TempPath, @"..\Tests\EPAs\ListItr.xml");
+            using (Stream oStream = new FileStream(filePath, FileMode.Open))
             {
-                transitions.Add(epa[s].Count);
+                var deserializedEPA = new EpaXmlSerializer().Deserialize(oStream, InputFilePath);
+                IsAnOverapproximation(epa, deserializedEPA);
             }
+        }
 
-            for (int i = 0; i < nodes.Count; i++)
-            {
-                CollectionAssert.Contains(transitions, nodes[i].Count);
-                transitions.Remove(nodes[i].Count);
-            }
+        private void IsAnOverapproximation(Epa epaUnderTest, Epa epaOracle)
+        {
+            Assert.IsTrue(Contract.ForAll(epaOracle.States, s => epaUnderTest.States.Any(s2 => s.Equals(s2))), 
+                            "Does not contain all the states");
+            Assert.IsTrue(Contract.ForAll(epaOracle.Transitions, t => epaUnderTest.Transitions.Any(t2 => t.Equals(t2) )), 
+                            "Does not contain all the transitions");
         }
     }
 }
