@@ -14,11 +14,9 @@ namespace Contractor.Console
 
         public static int Main(string[] args)
         {
+            Configuration.Initialize();
 #if DEBUG
-            var TempPath = Path.Combine(Directory.GetCurrentDirectory(), "Temp");
-            if (!Directory.Exists(TempPath))
-                Directory.CreateDirectory(TempPath);
-            var GraphPath = Path.Combine(@"R:\", "Graph");
+            var GraphPath = Path.Combine(Configuration.TempPath, "Graph");
             if (!Directory.Exists(GraphPath))
                 Directory.CreateDirectory(GraphPath);
 
@@ -28,7 +26,7 @@ namespace Contractor.Console
             {
                 "-i", ExamplesPath,
                 "-g", GraphPath,
-                "-tmp", TempPath,
+                "-tmp", Configuration.TempPath,
                 "-il=true",
                 "-t", "Examples.Linear",
                 "-b", "Corral"
@@ -74,7 +72,7 @@ namespace Contractor.Console
                 foreach (var result in epas)
                 {
                     var typeName = result.Key.Replace('.', '_');
-                    using (var stream = File.Create(string.Format("{0}\\{1}.png", GraphPath, typeName)))
+                    using (var stream = File.Create(string.Format("{0}\\{1}.png", options.graph, typeName)))
                     {
                         (new EpaBinarySerializer()).Serialize(stream, result.Value.EPA);
                     }
@@ -101,7 +99,6 @@ namespace Contractor.Console
             this.options = options;
 
             var wrkdir = Directory.GetCurrentDirectory();
-            Configuration.Initialize();
 
             if (string.IsNullOrEmpty(options.output))
                 options.output = Path.Combine(wrkdir, "Output");

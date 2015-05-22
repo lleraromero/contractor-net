@@ -44,6 +44,8 @@ namespace Contractor.Core
 #else
 			TempPath = Path.GetTempPath();
 #endif
+            if (!Directory.Exists(TempPath))
+                Directory.CreateDirectory(TempPath);
 
             codeContracts = Environment.GetEnvironmentVariable("CodeContractsInstallDir");
             if (string.IsNullOrEmpty(codeContracts))
