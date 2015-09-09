@@ -36,14 +36,8 @@ namespace Contractor.Core
             var dependenciesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\Dependencies"));
             CorralArguments = Resources.CorralArguments;
 
-#if DEBUG
-            TempPath = Path.Combine(Directory.GetCurrentDirectory(), "Temp");
-
-            if (!Directory.Exists(TempPath))
-                Directory.CreateDirectory(TempPath);
-#else
 			TempPath = Path.GetTempPath();
-#endif
+
             if (!Directory.Exists(TempPath))
                 Directory.CreateDirectory(TempPath);
 
