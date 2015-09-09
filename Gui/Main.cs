@@ -409,10 +409,8 @@ namespace Contractor.Gui
         private void GenerateGraph()
         {
             this.BeginInvoke(new Action(this.UpdateAnalysisInitialize));
-#if !DEBUG
             try
             {
-#endif
                 var fileName = Path.GetFileName(_AssemblyInfo.FileName);
                 this.BeginInvoke(new System.Action<string, string>(this.SetBackgroundStatus), "Decompiling assembly {0}...", fileName);
 
@@ -432,14 +430,12 @@ namespace Contractor.Gui
                 _cancellationSource = new CancellationTokenSource();
 
                 _EpaGenerator.GenerateEpa(typeFullName, selectedMethods, _cancellationSource.Token);
-#if !DEBUG
             }
             catch (Exception ex)
             {
                 this.BeginInvoke(new Action<Exception>(this.HandleException), ex);
                 this.BeginInvoke(new Action<TypeAnalysisResult>(this.UpdateAnalysisEnd), (object)null);
             }
-#endif
         }
 
         private void UpdateAnalysisInitialize()
@@ -574,18 +570,16 @@ namespace Contractor.Gui
                 var name = Path.GetFileName(fileName);
                 this.StartBackgroundTask("Generating assembly {0}...", name);
             });
-#if !DEBUG
+
             try
             {
-#endif
                 _EpaGenerator.GenerateOutputAssembly(fileName);
-#if !DEBUG
             }
             catch (Exception ex)
             {
                 this.BeginInvoke(new Action<Exception>(this.HandleException), ex);
             }
-#endif
+
             this.BeginInvoke((Action)delegate
             {
                 this.EndBackgroundTask();

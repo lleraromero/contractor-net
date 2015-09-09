@@ -55,10 +55,9 @@ namespace Contractor.Console
             {
                 options.PrintErrorsAndExit(System.Console.Error);
             }
-#if !DEBUG
+
             try
             {
-#endif
                 var program = new Program(options);
 
                 EpaGenerator.Backend backend = EpaGenerator.Backend.Corral;
@@ -77,13 +76,12 @@ namespace Contractor.Console
                         (new EpaBinarySerializer()).Serialize(stream, result.Value.EPA);
                     }
                 }
-#if !DEBUG
             }
             catch (Exception ex)
             {
                 System.Console.WriteLine("Error: {0}", ex.Message);
             }
-#endif
+
             System.Console.WriteLine("Done!");
 #if DEBUG
             System.Console.WriteLine("Press any key to continue");
