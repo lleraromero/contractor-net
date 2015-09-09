@@ -192,7 +192,7 @@ namespace Contractor.Core
                             case "state":
                                 if (s != null)
                                 {
-                                    epa.AddState(s);
+                                    epa.Add(s);
                                 }
                                 s = new State();
                                 s.Id = uint.Parse(reader.GetAttribute("name").Replace("Sinit", "0").Replace("S", ""));
@@ -222,7 +222,7 @@ namespace Contractor.Core
                         {
                             if (s != null)
                             {
-                                epa.AddState(s);
+                                epa.Add(s);
                             }
                             read = false;
                         }
@@ -238,7 +238,7 @@ namespace Contractor.Core
                 {
                     var targetState = epa.States.First(state => state.Id == t.TargetState.Id) as State;
                     var newTrans = new Transition(t.Action, t.SourceState, targetState, t.IsUnproven);
-                    epa.AddTransition(newTrans);
+                    epa.Add(newTrans);
                 }
             }
         }

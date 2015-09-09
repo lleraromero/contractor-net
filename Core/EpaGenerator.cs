@@ -239,7 +239,7 @@ namespace Contractor.Core
             dummy.Id = 0;
 
             states.Add(dummy.UniqueName, dummy);
-            epa.AddState(dummy);
+            epa.Add(dummy);
 
             if (this.StateAdded != null)
                 this.StateAdded(this, new StateAddedEventArgs(typeDisplayName, dummy));
@@ -279,7 +279,7 @@ namespace Contractor.Core
                             newStates.Enqueue(target);
 
                             states.Add(target.UniqueName, target);
-                            epa.AddState(target);
+                            epa.Add(target);
 
                             if (this.StateAdded != null)
                             {
@@ -288,7 +288,7 @@ namespace Contractor.Core
                             }
                         }
 
-                        epa.AddTransition(transition);
+                        epa.Add(transition);
 
                         if (this.TransitionAdded != null)
                         {

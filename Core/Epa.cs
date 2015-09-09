@@ -53,7 +53,7 @@ namespace Contractor.Core
             }
         }
 
-        public void AddState(IState s)
+        public void Add(IState s)
         {
             Contract.Requires(!States.Contains(s));
             Contract.Ensures(States.Contains(s));
@@ -61,7 +61,7 @@ namespace Contractor.Core
             graph[s] = new HashSet<ITransition>(); 
         }
 
-        public void RemoveState(IState s)
+        public void Remove(IState s)
         {
             Contract.Requires(States.Contains(s));
 
@@ -74,12 +74,12 @@ namespace Contractor.Core
             {
                 foreach (var t in existingTransitions)
                 {
-                    RemoveTransition(t as Transition);
+                    Remove(t as Transition);
                 }
             }
         }
 
-        public void AddTransition(ITransition t)
+        public void Add(ITransition t)
         {
             Contract.Requires(States.Contains(t.SourceState));
             Contract.Requires(States.Contains(t.TargetState));
@@ -88,7 +88,7 @@ namespace Contractor.Core
             graph[t.SourceState].Add(t);
         }
 
-        public void RemoveTransition(ITransition t)
+        public void Remove(ITransition t)
         {
             Contract.Requires(Transitions.Contains(t));
 
@@ -97,13 +97,13 @@ namespace Contractor.Core
             var sourceState = t.SourceState;
             if (Transitions.All(x => x.SourceState != sourceState && x.TargetState != sourceState))
             {
-                RemoveState(sourceState);
+                Remove(sourceState);
             }
             // If targetState has no transitions from or to it, it has to be deleted
             var targetState = t.TargetState;
             if (Transitions.All(x => x.SourceState != targetState && x.TargetState != targetState))
             {
-                RemoveState(targetState);
+                Remove(targetState);
             }
         }
 
