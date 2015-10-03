@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
@@ -9,18 +8,12 @@ namespace Contractor.Core
     public class Epa : IEquatable<Epa>
     {
         private Dictionary<IState, HashSet<ITransition>> graph;
-        internal bool GenerationCompleted { get; set; }
-        internal bool Instrumented { get; set; }
+
         public string Type { get; set; }
 
         public Epa()
         {
-            Contract.Ensures(!this.GenerationCompleted && !this.Instrumented);
-
             this.graph = new Dictionary<IState, HashSet<ITransition>>();
-            
-            this.GenerationCompleted = false;
-            this.Instrumented = false;
         }
 
         public HashSet<IState> States

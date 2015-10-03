@@ -77,6 +77,7 @@ namespace Contractor.Core
 
         private AssemblyInfo inputAssembly;
         private static Dictionary<string, TypeAnalysisResult> epas = new Dictionary<string,TypeAnalysisResult>();
+        private HashSet<string> instrumentedEpas;
         private CodeContractAwareHostEnvironment host;
         private Backend backend;
 
@@ -93,6 +94,8 @@ namespace Contractor.Core
             host = new CodeContractAwareHostEnvironment(true);
             inputAssembly = new AssemblyInfo(host);
             this.backend = backend;
+
+            instrumentedEpas = new HashSet<string>();
         }
 
         public void Dispose()
@@ -172,12 +175,9 @@ namespace Contractor.Core
             var typeUniqueName = type.GetUniqueName();
 
             if (!epas.ContainsKey(typeUniqueName))
+            {
                 epas.Add(typeUniqueName, new TypeAnalysisResult());
 
-            var typeAnalysis = epas[typeUniqueName];
-
-            if (!typeAnalysis.EPA.GenerationCompleted)
-            {
                 var methods = from name in selectedMethods
                               join m in type.Methods
                               on name equals m.GetDisplayName()
@@ -185,7 +185,7 @@ namespace Contractor.Core
                 GenerateEpa(type, methods, token);
             }
 
-            return typeAnalysis;
+            return epas[typeUniqueName];
         }
 
         /// <summary>
@@ -301,8 +301,6 @@ namespace Contractor.Core
 
             analysisTimer.Stop();
 
-            epa.GenerationCompleted = true;
-
             if (this.TypeAnalysisDone != null)
             {
                 var analysisResult = new TypeAnalysisResult();
@@ -381,7 +379,7 @@ namespace Contractor.Core
             {
                 var typeAnalysis = epas[typeUniqueName];
 
-                if (!typeAnalysis.EPA.Instrumented)
+                if (!instrumentedEpas.Contains(typeUniqueName))
                 {
                     var type = (from t in inputAssembly.DecompiledModule.AllTypes
                                 where typeUniqueName == t.GetUniqueName()
@@ -389,7 +387,7 @@ namespace Contractor.Core
                                 .First();
 
                     instrumenter.InstrumentType(type, typeAnalysis.EPA);
-                    typeAnalysis.EPA.Instrumented = true;
+                    instrumentedEpas.Add(typeUniqueName);
                 }
             }
 
