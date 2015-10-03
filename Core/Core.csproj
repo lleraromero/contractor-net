@@ -209,7 +209,7 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="IAnalyzer.cs" />
-    <Compile Include="LogManager.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="ReturnRewriter.cs" />
     <Compile Include="Transition.cs" />
     <None Include="API.cd" />

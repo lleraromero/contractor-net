@@ -5,7 +5,7 @@ namespace Contractor.Core
 {
     internal enum LogLevel { Fatal, Error, Warn, Info, Debug, Trace };
 
-    internal sealed class LogManager
+    internal class Logger
     {
         public static void Log(LogLevel level, Exception ex)
         {

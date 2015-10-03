@@ -168,7 +168,7 @@ namespace Contractor.Core
 
                     if (errorCode != 0)
                     {
-                        LogManager.Log(LogLevel.Warn, string.Format("Clousot exited with code {0}", errorCode));
+                        Logger.Log(LogLevel.Warn, string.Format("Clousot exited with code {0}", errorCode));
                     }
 
                     var analysisDuration = cccheckTime.Elapsed;

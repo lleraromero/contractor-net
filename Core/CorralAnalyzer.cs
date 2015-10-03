@@ -148,8 +148,8 @@ namespace Contractor.Core
             var args = new string[] { GetQueryAssemblyPath(), "/lib:" + Path.GetDirectoryName(inputAssembly.Module.ContainingAssembly.Location) };
             if (boogieTranslator.Main(args) != 0)
             {
-                LogManager.Log(LogLevel.Fatal, "Error translating the query assembly to boogie");
-                LogManager.Log(LogLevel.Info, string.Format("args: {0}, {1}", args));
+                Logger.Log(LogLevel.Fatal, "Error translating the query assembly to boogie");
+                Logger.Log(LogLevel.Info, string.Format("args: {0}, {1}", args));
                 throw new Exception("Error translating the query assembly to boogie");
             }
             Environment.CurrentDirectory = tmp;
@@ -174,8 +174,8 @@ namespace Contractor.Core
             }
             catch (Exception ex)
             {
-                LogManager.Log(LogLevel.Fatal, ex);
-                LogManager.Log(LogLevel.Info, args);
+                Logger.Log(LogLevel.Fatal, ex);
+                Logger.Log(LogLevel.Info, args);
                 throw;
             }
 
