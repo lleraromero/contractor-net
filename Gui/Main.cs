@@ -202,12 +202,12 @@ namespace Contractor.Gui
 
         private void OnTypeAnalysisStarted(object sender, TypeAnalysisStartedEventArgs e)
         {
-            this.BeginInvoke(new Action(this.UpdateAnalysisStart));
+            this.BeginInvoke(new System.Action(this.UpdateAnalysisStart));
         }
 
         private void OnTypeAnalysisDone(object sender, TypeAnalysisDoneEventArgs e)
         {
-            this.BeginInvoke(new Action<TypeAnalysisResult>(this.UpdateAnalysisEnd), e.AnalysisResult);
+            this.BeginInvoke(new System.Action<TypeAnalysisResult>(this.UpdateAnalysisEnd), e.AnalysisResult);
         }
 
         private void OnStateAdded(object sender, StateAddedEventArgs e)
@@ -408,7 +408,7 @@ namespace Contractor.Gui
 
         private void GenerateGraph()
         {
-            this.BeginInvoke(new Action(this.UpdateAnalysisInitialize));
+            this.BeginInvoke(new System.Action(this.UpdateAnalysisInitialize));
             try
             {
                 var fileName = Path.GetFileName(_AssemblyInfo.FileName);
@@ -433,8 +433,8 @@ namespace Contractor.Gui
             }
             catch (Exception ex)
             {
-                this.BeginInvoke(new Action<Exception>(this.HandleException), ex);
-                this.BeginInvoke(new Action<TypeAnalysisResult>(this.UpdateAnalysisEnd), (object)null);
+                this.BeginInvoke(new System.Action<Exception>(this.HandleException), ex);
+                this.BeginInvoke(new System.Action<TypeAnalysisResult>(this.UpdateAnalysisEnd), (object)null);
             }
         }
 
@@ -565,7 +565,7 @@ namespace Contractor.Gui
 
         private void GenerateAssembly(string fileName)
         {
-            this.BeginInvoke((Action)delegate
+            this.BeginInvoke((System.Action)delegate
             {
                 var name = Path.GetFileName(fileName);
                 this.StartBackgroundTask("Generating assembly {0}...", name);
@@ -577,10 +577,10 @@ namespace Contractor.Gui
             }
             catch (Exception ex)
             {
-                this.BeginInvoke(new Action<Exception>(this.HandleException), ex);
+                this.BeginInvoke(new System.Action<Exception>(this.HandleException), ex);
             }
 
-            this.BeginInvoke((Action)delegate
+            this.BeginInvoke((System.Action)delegate
             {
                 this.EndBackgroundTask();
             });
@@ -649,14 +649,14 @@ namespace Contractor.Gui
             if (state.EnabledActions.Any())
             {
                 info.Append(@" \b Enabled Actions \b0 \par ");
-                var text = string.Join<string>(@" \par ", state.EnabledActions);
+                var text = string.Join<Contractor.Core.Action>(@" \par ", state.EnabledActions);
                 info.Append(text);
             }
 
             if (state.DisabledActions.Any())
             {
                 info.Append(@" \fs8\par\par\fs18 \b Disabled Actions \b0 \par ");
-                var text = string.Join<string>(@" \par ", state.DisabledActions);
+                var text = string.Join<Contractor.Core.Action>(@" \par ", state.DisabledActions);
                 info.Append(text);
             }
 
@@ -752,7 +752,7 @@ namespace Contractor.Gui
 
         private void ExportGraph(string fileName)
         {
-            this.BeginInvoke((Action)delegate
+            this.BeginInvoke((System.Action)delegate
             {
                 var name = Path.GetFileName(fileName);
                 this.StartBackgroundTask("Exporting graph to {0}...", name);
@@ -784,10 +784,10 @@ namespace Contractor.Gui
             }
             catch (Exception ex)
             {
-                this.BeginInvoke(new Action<Exception>(this.HandleException), ex);
+                this.BeginInvoke(new System.Action<Exception>(this.HandleException), ex);
             }
 
-            this.BeginInvoke((Action)delegate
+            this.BeginInvoke((System.Action)delegate
             {
                 this.EndBackgroundTask();
             });
@@ -979,7 +979,7 @@ namespace Contractor.Gui
 
         private void LoadAssembly(string fileName)
         {
-            this.BeginInvoke((Action)delegate
+            this.BeginInvoke((System.Action)delegate
             {
                 var name = Path.GetFileName(fileName);
                 this.StartBackgroundTask("Loading assembly {0}...", name);
@@ -988,7 +988,7 @@ namespace Contractor.Gui
             _AssemblyInfo.Load(fileName);
             var root = this.LoadAssemblyTypes();
 
-            this.BeginInvoke((Action)delegate
+            this.BeginInvoke((System.Action)delegate
             {
                 treeviewTypes.BeginUpdate();
                 treeviewTypes.Nodes.Add(root);

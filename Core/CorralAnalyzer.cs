@@ -26,7 +26,7 @@ namespace Contractor.Core
             this.queryContractProvider.AssociateTypeWithContract(this.typeToAnalyze, typeContract);
         }
 
-        public override ActionAnalysisResults AnalyzeActions(State source, IMethodDefinition action, List<IMethodDefinition> actions)
+        public override ActionAnalysisResults AnalyzeActions(CciState source, IMethodDefinition action, List<IMethodDefinition> actions)
         {
             var result = Analyze<IMethodDefinition>(source, action, actions);
             var analysisResult = EvaluateQueries(actions, result);
@@ -34,15 +34,15 @@ namespace Contractor.Core
             return analysisResult;
         }
 
-        public override TransitionAnalysisResult AnalyzeTransitions(State source, IMethodDefinition action, List<State> targets)
+        public override TransitionAnalysisResult AnalyzeTransitions(CciState source, IMethodDefinition action, List<CciState> targets)
         {
-            var result = Analyze<State>(source, action, targets);
+            var result = Analyze<CciState>(source, action, targets);
             var resultAnalysis = EvaluateQueries(source, action, targets, result);
 
             return resultAnalysis;
         }
 
-        private Dictionary<MethodDefinition, ResultKind> Analyze<T>(State source, IMethodDefinition action, List<T> target)
+        private Dictionary<MethodDefinition, ResultKind> Analyze<T>(CciState source, IMethodDefinition action, List<T> target)
         {
             List<MethodDefinition> queries = GenerateQueries<T>(source, action, target);
 
@@ -200,7 +200,7 @@ namespace Contractor.Core
             }
         }
 
-        private TransitionAnalysisResult EvaluateQueries(State source, IMethodDefinition action, List<State> targets, Dictionary<MethodDefinition, ResultKind> result)
+        private TransitionAnalysisResult EvaluateQueries(CciState source, IMethodDefinition action, List<CciState> targets, Dictionary<MethodDefinition, ResultKind> result)
         {
             var analysisResult = new TransitionAnalysisResult();
 

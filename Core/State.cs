@@ -6,17 +6,41 @@ using System.Linq;
 
 namespace Contractor.Core
 {
+    public class StringAction : Action
+    {
+        protected string name;
+        public override string Name
+        {
+            get { return name; }
+        }
+
+        public StringAction(string name)
+        {
+            this.name = name;
+        }
+
+        public override string ToString()
+        {
+            return this.name;
+        }
+    }
+
+    public abstract class Action
+    {
+        public abstract string Name { get; }
+    }
+
     // Immutable representation of an EPA state
     public interface IState
     {
         uint Id { get; }
         bool IsInitial { get; }
         string Name { get; }
-        List<string> EnabledActions { get; }
-        List<string> DisabledActions { get; }
+        List<Action> EnabledActions { get; }
+        List<Action> DisabledActions { get; }
     }
 
-    public class State : IState, IEquatable<State>
+    public class CciState : IState, IEquatable<CciState>
     {
         private class NamedEntityComparer : Comparer<IMethodDefinition>
         {
@@ -41,7 +65,7 @@ namespace Contractor.Core
         public SortedSet<IMethodDefinition> EnabledActions { get; private set; }
         public SortedSet<IMethodDefinition> DisabledActions { get; private set; }
 
-        public State()
+        public CciState()
         {
             this.Id = uint.MaxValue;
             this.IsInitial = false;
@@ -71,19 +95,19 @@ namespace Contractor.Core
             get { return this.UniqueName; }
         }
 
-        List<string> IState.EnabledActions
+        List<Action> IState.EnabledActions
         {
-            get { return (from a in this.EnabledActions select Utils.Extensions.GetUniqueName(a)).ToList(); }
+            get { return (from a in this.EnabledActions select (Action)new StringAction(Utils.Extensions.GetUniqueName(a))).ToList(); }
         }
 
-        List<string> IState.DisabledActions
+        List<Action> IState.DisabledActions
         {
-            get { return (from a in this.DisabledActions select Utils.Extensions.GetUniqueName(a)).ToList(); }
+            get { return (from a in this.DisabledActions select (Action)new StringAction(Utils.Extensions.GetUniqueName(a))).ToList(); }
         }
         #endregion
 
         #region IEquatable
-        public bool Equals(State other)
+        public bool Equals(CciState other)
         {
             return this.UniqueName.Equals(other.UniqueName);
         }
@@ -98,7 +122,7 @@ namespace Contractor.Core
             if (obj.GetType() != this.GetType()) return false;
 
             // Call the implementation from IEquatable
-            return Equals((State)obj);
+            return Equals((CciState)obj);
         }
 
         public override int GetHashCode()

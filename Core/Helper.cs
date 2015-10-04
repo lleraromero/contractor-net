@@ -103,8 +103,8 @@ namespace Contractor.Utils
 			//Optimizacion: calculamos la interseccion de todas las acciones habilitadas
 			//y desabilitadas de todos los estados y se la restamos a todos
 			var firstState = states.First();
-			var enabledIntersection = states.Aggregate(firstState.EnabledActions, (IEnumerable<string> a, IState s) => a.Intersect(s.EnabledActions));
-			var disabledIntersection = states.Aggregate(firstState.DisabledActions, (IEnumerable<string> a, IState s) => a.Intersect(s.DisabledActions));
+			var enabledIntersection = states.Aggregate(firstState.EnabledActions, (IEnumerable<Contractor.Core.Action> a, IState s) => a.Intersect(s.EnabledActions));
+			var disabledIntersection = states.Aggregate(firstState.DisabledActions, (IEnumerable<Contractor.Core.Action> a, IState s) => a.Intersect(s.DisabledActions));
 			var conditions = new List<IExpression>();
 
 			foreach (var state in states)
@@ -121,7 +121,7 @@ namespace Contractor.Utils
 		}
 
 		// Do not include the type invariant
-		public static List<IExpression> GenerateStateInvariant(IMetadataHost host, ContractProvider cp, NamespaceTypeDefinition type, State state)
+		public static List<IExpression> GenerateStateInvariant(IMetadataHost host, ContractProvider cp, NamespaceTypeDefinition type, CciState state)
 		{
 			var preconditions = new Dictionary<string, List<IPrecondition>>();
 
@@ -148,16 +148,16 @@ namespace Contractor.Utils
 
 		// Do not include the type invariant
 		private static List<IExpression> generateStateInvariant(IMetadataHost host, Dictionary<string, List<IPrecondition>> preconditions,
-			NamespaceTypeDefinition type, IEnumerable<string> enabledActionsId, IEnumerable<string> disabledActionsId)
+			NamespaceTypeDefinition type, IEnumerable<Contractor.Core.Action> enabledActionsId, IEnumerable<Contractor.Core.Action> disabledActionsId)
 		{
 			var exprs = new List<IExpression>();
 
 			var enabledActions = from actionUniqueName in enabledActionsId
-								 join action in type.Methods on actionUniqueName equals action.GetUniqueName()
+								 join action in type.Methods on actionUniqueName.Name equals action.GetUniqueName()
 								 select action;
 
 			var disabledActions = from actionUniqueName in disabledActionsId
-								  join action in type.Methods on actionUniqueName equals action.GetUniqueName()
+								  join action in type.Methods on actionUniqueName.Name equals action.GetUniqueName()
 								  select action;
 
 			return generateStateInvariant(host, preconditions, type, enabledActions, disabledActions);

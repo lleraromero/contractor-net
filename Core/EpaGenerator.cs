@@ -231,9 +231,9 @@ namespace Contractor.Core
                     throw new NotImplementedException("Unknown backend");
             }
 
-            var states = new Dictionary<string, State>();
+            var states = new Dictionary<string, CciState>();
 
-            var dummy = new State();
+            var dummy = new CciState();
             dummy.EnabledActions.UnionWith(constructors);
             dummy.IsInitial = true;
             dummy.Id = 0;
@@ -244,7 +244,7 @@ namespace Contractor.Core
             if (this.StateAdded != null)
                 this.StateAdded(this, new StateAddedEventArgs(typeDisplayName, dummy));
 
-            var newStates = new Queue<State>();
+            var newStates = new Queue<CciState>();
             newStates.Enqueue(dummy);
 
             while (newStates.Count > 0 && !token.IsCancellationRequested)
@@ -318,7 +318,7 @@ namespace Contractor.Core
             return analysisResult;
         }
 
-        private List<State> generatePossibleStates(List<IMethodDefinition> actions, ActionAnalysisResults actionsResult, HashSet<IState> knownStates)
+        private List<CciState> generatePossibleStates(List<IMethodDefinition> actions, ActionAnalysisResults actionsResult, HashSet<IState> knownStates)
         {
             Contract.Requires(actions != null);
             Contract.Requires(actionsResult != null);
@@ -329,15 +329,15 @@ namespace Contractor.Core
             unknownActions.ExceptWith(actionsResult.EnabledActions);
             unknownActions.ExceptWith(actionsResult.DisabledActions);
 
-            var states = new List<State>();
+            var states = new List<CciState>();
 
-            var v = new State();
+            var v = new CciState();
             v.EnabledActions.UnionWith(actionsResult.EnabledActions);
             v.DisabledActions.UnionWith(actionsResult.DisabledActions);
             v.DisabledActions.UnionWith(unknownActions);
             if (knownStates.Contains(v))
             {
-                v = knownStates.Single(s => s.Equals(v)) as State;
+                v = knownStates.Single(s => s.Equals(v)) as CciState;
             }
             states.Add(v);
 
@@ -350,7 +350,7 @@ namespace Contractor.Core
 
                 for (int i = 0; i < count; ++i)
                 {
-                    var w = new State();
+                    var w = new CciState();
 
                     w.EnabledActions.Add(m);
                     w.EnabledActions.UnionWith(states[i].EnabledActions);
@@ -359,7 +359,7 @@ namespace Contractor.Core
 
                     if (knownStates.Contains(w))
                     {
-                        w = knownStates.Single(s => s.Equals(w)) as State;
+                        w = knownStates.Single(s => s.Equals(w)) as CciState;
                     }
 
                     states.Add(w);

@@ -16,11 +16,11 @@ namespace Contractor.Core
     public class Transition : ITransition, IEquatable<Transition>
     {
         public IMethodDefinition Action { get; private set; }
-        public State SourceState { get; private set; }
-        public State TargetState { get; private set; }
+        public CciState SourceState { get; private set; }
+        public CciState TargetState { get; private set; }
         public bool IsUnproven { get; private set; }
 
-        public Transition(IMethodDefinition action, State source, State target, bool isUnproven)
+        public Transition(IMethodDefinition action, CciState source, CciState target, bool isUnproven)
         {
             this.Action = action;
             this.SourceState = source;
