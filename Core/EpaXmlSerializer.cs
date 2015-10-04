@@ -115,22 +115,23 @@ namespace Contractor.Core
             Contract.Requires(!string.IsNullOrEmpty(inputAssemblyPath));
             Contract.Ensures(Contract.Result<Epa>() != null);
 
-            var epa = new Epa();
+            EpaBuilder epaBuilder;
             using (var reader = new XmlTextReader(stream))
             {
                 reader.Read(); // Document
                 reader.Read();
                 reader.Read(); // Epa
-                epa.Type = reader.GetAttribute("name");
+
+                epaBuilder = new EpaBuilder(reader.GetAttribute("name"));
                 uint initialState = uint.Parse(reader.GetAttribute("initial_state").Replace("Sinit", "0"));
 
-                var resolvedType = FindType(inputAssemblyPath, epa.Type);
+                var resolvedType = FindType(inputAssemblyPath, epaBuilder.Type);
                 Contract.Assert(resolvedType != null);
                 DeserializeActions(reader);
-                DeserializeStates(reader, epa, resolvedType, initialState);
+                DeserializeStates(reader, epaBuilder, resolvedType, initialState);
             }
 
-            return epa;
+            return epaBuilder.Build();
         }
 
         private void DeserializeActions(XmlTextReader reader)
@@ -174,9 +175,9 @@ namespace Contractor.Core
             return resolvedType;
         }
 
-        private void DeserializeStates(XmlTextReader reader, Epa epa, NamespaceTypeDefinition type, uint initialState)
+        private void DeserializeStates(XmlTextReader reader, EpaBuilder epaBuilder, NamespaceTypeDefinition type, uint initialState)
         {
-            Contract.Requires(reader != null && epa != null && type != null);
+            Contract.Requires(reader != null && epaBuilder != null && type != null);
 
             Dictionary<uint, List<Transition>> epaStructure = new Dictionary<uint, List<Transition>>();
 
@@ -192,7 +193,7 @@ namespace Contractor.Core
                             case "state":
                                 if (s != null)
                                 {
-                                    epa.Add(s);
+                                    epaBuilder.Add(s);
                                 }
                                 s = new State();
                                 s.Id = uint.Parse(reader.GetAttribute("name").Replace("Sinit", "0").Replace("S", ""));
@@ -222,7 +223,7 @@ namespace Contractor.Core
                         {
                             if (s != null)
                             {
-                                epa.Add(s);
+                                epaBuilder.Add(s);
                             }
                             read = false;
                         }
@@ -236,9 +237,9 @@ namespace Contractor.Core
             {
                 foreach (var t in kvp.Value)
                 {
-                    var targetState = epa.States.First(state => state.Id == t.TargetState.Id) as State;
+                    var targetState = epaBuilder.States.First(state => state.Id == t.TargetState.Id) as State;
                     var newTrans = new Transition(t.Action, t.SourceState, targetState, t.IsUnproven);
-                    epa.Add(newTrans);
+                    epaBuilder.Add(newTrans);
                 }
             }
         }

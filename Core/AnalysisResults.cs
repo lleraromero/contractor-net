@@ -39,16 +39,17 @@ namespace Contractor.Core
 
     public class TypeAnalysisResult
     {
-        public Epa EPA { get; internal set; }
-        public EpaGenerator.Backend Backend { get; internal set; }
-        public TimeSpan TotalDuration { get; internal set; }
-        public Dictionary<string, object> Statistics { get; internal set; }        
+        public Epa EPA { get; protected set; }
+        public EpaGenerator.Backend Backend { get; protected set; }
+        public TimeSpan TotalDuration { get; protected set; }
+        public Dictionary<string, object> Statistics { get; protected set; }        
 
-        public TypeAnalysisResult()
+        public TypeAnalysisResult(Epa epa, EpaGenerator.Backend backend, TimeSpan totalTime, Dictionary<string, object> statistics)
         {
-            EPA = new Epa();
-            TotalDuration = TimeSpan.Zero;
-            Statistics = new Dictionary<string, object>();
+            this.EPA = epa;
+            this.Backend = backend;
+            this.TotalDuration = totalTime;
+            this.Statistics = statistics;
         }
 
         public override string ToString()

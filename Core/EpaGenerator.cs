@@ -155,6 +155,7 @@ namespace Contractor.Core
 
             var methods = from m in type.GetPublicInstanceMethods()
                           select m.GetDisplayName();
+
             return GenerateEpa(typeFullName, methods, token);
         }
 
@@ -176,13 +177,13 @@ namespace Contractor.Core
 
             if (!epas.ContainsKey(typeUniqueName))
             {
-                epas.Add(typeUniqueName, new TypeAnalysisResult());
-
                 var methods = from name in selectedMethods
                               join m in type.Methods
                               on name equals m.GetDisplayName()
                               select m;
-                GenerateEpa(type, methods, token);
+
+                var analysisResult = GenerateEpa(type, methods, token);
+                epas.Add(typeUniqueName, analysisResult);
             }
 
             return epas[typeUniqueName];
@@ -192,7 +193,7 @@ namespace Contractor.Core
         /// Method to create an EPA of a particular type considering only the subset 'methods'
         /// </summary>
         /// <see cref="http://publicaciones.dc.uba.ar/Publications/2011/DBGU11/paper-icse-2011.pdf">Algorithm 1</see>
-        private void GenerateEpa(NamespaceTypeDefinition type, IEnumerable<IMethodDefinition> methods, CancellationToken token)
+        private TypeAnalysisResult GenerateEpa(NamespaceTypeDefinition type, IEnumerable<IMethodDefinition> methods, CancellationToken token)
         {
             Contract.Requires(type != null);
             Contract.Requires(methods != null && methods.Count() > 0);
@@ -215,8 +216,7 @@ namespace Contractor.Core
                            select m)
                            .ToList();
 
-            var epa = epas[typeUniqueName].EPA;
-            epa.Type = typeUniqueName;
+            var epaBuilder = new EpaBuilder(typeUniqueName);
 
             IAnalyzer checker;
             switch (this.backend)
@@ -239,7 +239,7 @@ namespace Contractor.Core
             dummy.Id = 0;
 
             states.Add(dummy.UniqueName, dummy);
-            epa.Add(dummy);
+            epaBuilder.Add(dummy);
 
             if (this.StateAdded != null)
                 this.StateAdded(this, new StateAddedEventArgs(typeDisplayName, dummy));
@@ -264,7 +264,7 @@ namespace Contractor.Core
                         actionsResult.DisabledActions.Remove(act);
                     }
 
-                    var possibleTargets = generatePossibleStates(actions, actionsResult, epa.States);
+                    var possibleTargets = generatePossibleStates(actions, actionsResult, epaBuilder.States);
                     // Which states are reachable from the current state (aka source) using 'action'?
                     var transitionsResults = checker.AnalyzeTransitions(source, action, possibleTargets);
 
@@ -279,7 +279,7 @@ namespace Contractor.Core
                             newStates.Enqueue(target);
 
                             states.Add(target.UniqueName, target);
-                            epa.Add(target);
+                            epaBuilder.Add(target);
 
                             if (this.StateAdded != null)
                             {
@@ -288,7 +288,7 @@ namespace Contractor.Core
                             }
                         }
 
-                        epa.Add(transition);
+                        epaBuilder.Add(transition);
 
                         if (this.TransitionAdded != null)
                         {
@@ -301,20 +301,21 @@ namespace Contractor.Core
 
             analysisTimer.Stop();
 
+            var statistics = new Dictionary<string, object>();
+            statistics["TotalAnalyzerDuration"] = checker.TotalAnalysisDuration;
+            statistics["ExecutionsCount"] = checker.ExecutionsCount;
+            statistics["TotalGeneratedQueriesCount"] = checker.TotalGeneratedQueriesCount;
+            statistics["UnprovenQueriesCount"] = checker.UnprovenQueriesCount;
+
+            var analysisResult = new TypeAnalysisResult(epaBuilder.Build(), this.backend, analysisTimer.Elapsed, statistics);
+
             if (this.TypeAnalysisDone != null)
             {
-                var analysisResult = new TypeAnalysisResult();
-                analysisResult.EPA = epa;
-                analysisResult.TotalDuration = analysisTimer.Elapsed;
-                analysisResult.Statistics["TotalAnalyzerDuration"] = checker.TotalAnalysisDuration;
-                analysisResult.Statistics["ExecutionsCount"] = checker.ExecutionsCount;
-                analysisResult.Statistics["TotalGeneratedQueriesCount"] = checker.TotalGeneratedQueriesCount;
-                analysisResult.Statistics["UnprovenQueriesCount"] = checker.UnprovenQueriesCount;
-                analysisResult.Backend = this.backend;
-
                 var eventArgs = new TypeAnalysisDoneEventArgs(typeDisplayName, analysisResult);
                 this.TypeAnalysisDone(this, eventArgs);
             }
+
+            return analysisResult;
         }
 
         private List<State> generatePossibleStates(List<IMethodDefinition> actions, ActionAnalysisResults actionsResult, HashSet<IState> knownStates)
