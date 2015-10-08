@@ -220,7 +220,7 @@ namespace Contractor.Core
 
                         var targetNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
                         var targetName = actionName.Substring(targetNameStart);
-                        var target = targets.Find(s => s.UniqueName == targetName);
+                        var target = targets.Find(s => s.Name == targetName);
                         var isUnproven = entry.Value == ResultKind.RecursionBoundReached;
 
                         if (target != null)

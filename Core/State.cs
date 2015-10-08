@@ -1,66 +1,10 @@
 ﻿using Contractor.Utils;
-using Microsoft.Cci;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Contractor.Core
 {
-    public class StringAction : Action
-    {
-        protected string name;
-        public override string Name
-        {
-            get { return name; }
-        }
-
-        protected IMethodDefinition method;
-        public override IMethodDefinition Method
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public StringAction(string name)
-        {
-            this.name = name;
-        }
-
-        public override string ToString()
-        {
-            return this.name;
-        }
-    }
-
-    public class CciAction : Action
-    {
-        public override string Name
-        {
-            get { return method.Name.Value; }
-        }
-
-        protected IMethodDefinition method;
-        public override IMethodDefinition Method
-        {
-            get { return method; }
-        }
-
-        public CciAction(IMethodDefinition method)
-        {
-            this.method = method;
-        }
-
-        public override string ToString()
-        {
-            return method.GetUniqueName();
-        }
-    }
-
-    public abstract class Action
-    {
-        public abstract string Name { get; }
-        public abstract IMethodDefinition Method { get; }
-    }
-
     public class State : IEquatable<State>
     {
         private class NamedEntityComparer : Comparer<Action>
@@ -88,18 +32,13 @@ namespace Contractor.Core
             this.DisabledActions = new SortedSet<Action>(new NamedEntityComparer());
         }
 
-        public string UniqueName
+        public string Name
         {
             get
             {
                 return (this.EnabledActions.Count > 0) ? string.Join(methodNameDelimiter, from a in this.EnabledActions select a.Method.GetUniqueName())
-                                                       : "deadlock";
+                                                     : "deadlock";
             }
-        }
-
-        public string Name
-        {
-            get { return this.UniqueName; }
         }
 
         public override string ToString()
@@ -111,7 +50,7 @@ namespace Contractor.Core
         #region IEquatable
         public bool Equals(State other)
         {
-            return this.UniqueName.Equals(other.UniqueName);
+            return this.Name.Equals(other.Name);
         }
 
         public override bool Equals(object obj)
@@ -129,7 +68,7 @@ namespace Contractor.Core
 
         public override int GetHashCode()
         {
-            return this.UniqueName.GetHashCode();
+            return this.Name.GetHashCode();
         }
         #endregion
     }

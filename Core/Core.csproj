@@ -194,6 +194,7 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Action.cs" />
     <Compile Include="AggregatingContractProvider.cs" />
     <Compile Include="AnalysisResults.cs" />
     <Compile Include="Analyzer.cs" />

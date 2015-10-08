@@ -237,7 +237,7 @@ namespace Contractor.Core
             dummy.EnabledActions.UnionWith(constructors);
             dummy.Id = 0;
 
-            states.Add(dummy.UniqueName, dummy);
+            states.Add(dummy.Name, dummy);
             epaBuilder.Add(dummy);
             epaBuilder.Initial = dummy;
 
@@ -272,12 +272,12 @@ namespace Contractor.Core
                     {
                         var target = transition.TargetState;
                         // Do I have to add a new state to the EPA?
-                        if (!states.ContainsKey(target.UniqueName))
+                        if (!states.ContainsKey(target.Name))
                         {
                             target.Id = (uint)states.Keys.Count;
                             newStates.Enqueue(target);
 
-                            states.Add(target.UniqueName, target);
+                            states.Add(target.Name, target);
                             epaBuilder.Add(target);
 
                             if (this.StateAdded != null)

@@ -169,7 +169,7 @@ namespace Contractor.Core
 
             var prefix = negate ? notPrefix : string.Empty;
             var actionName = action.GetUniqueName();
-            var stateName = state.UniqueName;
+            var stateName = state.Name;
             var targetName = target.GetUniqueName();
             var methodName = string.Format("{1}{0}{2}{0}{3}{4}", methodNameDelimiter, stateName, actionName, prefix, targetName);
             var method = CreateQueryMethod<IMethodDefinition>(state, methodName, action, target);
@@ -289,8 +289,8 @@ namespace Contractor.Core
         private MethodDefinition GenerateQuery(State state, IMethodDefinition action, State target)
         {
             var actionName = action.GetUniqueName();
-            var stateName = state.UniqueName;
-            var targetName = target.UniqueName;
+            var stateName = state.Name;
+            var targetName = target.Name;
             var methodName = string.Format("{1}{0}{2}{0}{3}", methodNameDelimiter, stateName, actionName, targetName);
             var method = CreateQueryMethod<State>(state, methodName, action, target);
 

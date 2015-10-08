@@ -261,7 +261,7 @@ namespace Contractor.Core
 
                     var targetNameStart = query.LastIndexOf(methodNameDelimiter) + 1;
                     var targetName = query.Substring(targetNameStart);
-                    var target = targets.Find(s => s.UniqueName == targetName);
+                    var target = targets.Find(s => s.Name == targetName);
                     var isUnproven = entry.Value.Contains(ResultKind.UnprovenEnsures);
 
                     if (target != null)
