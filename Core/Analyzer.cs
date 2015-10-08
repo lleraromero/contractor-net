@@ -187,7 +187,7 @@ namespace Contractor.Core
             // Add preconditions of enabled actions
             foreach (var a in state.EnabledActions)
             {
-                var actionContract = inputContractProvider.GetMethodContractFor(a);
+                var actionContract = inputContractProvider.GetMethodContractFor(a.Method);
                 if (actionContract == null) continue;
 
                 var preconditions = from p in actionContract.Preconditions
@@ -196,7 +196,7 @@ namespace Contractor.Core
                                         Condition = p.Condition,
                                         Description = new CompileTimeConstant()
                                         {
-                                            Value = string.Format("Enabled action ({0})", a.Name.Value),
+                                            Value = string.Format("Enabled action ({0})", a.Name),
                                             Type = this.host.PlatformType.SystemString
                                         },
                                         OriginalSource = Helper.PrintExpression(p.Condition)
@@ -207,7 +207,7 @@ namespace Contractor.Core
             // Add negated preconditions of disabled actions
             foreach (var a in state.DisabledActions)
             {
-                var actionContract = inputContractProvider.GetMethodContractFor(a);
+                var actionContract = inputContractProvider.GetMethodContractFor(a.Method);
                 if (actionContract == null || actionContract.Preconditions.Count() == 0) continue;
 
                 var preconditions = from p in actionContract.Preconditions
@@ -223,7 +223,7 @@ namespace Contractor.Core
                     // Add the user message to identify easily each precondition
                     Description = new CompileTimeConstant()
                     {
-                        Value = string.Format("Disabled action ({0})", a.Name.Value),
+                        Value = string.Format("Disabled action ({0})", a.Name),
                         Type = this.host.PlatformType.SystemString
                     },
                     // Add the string-ified version of the condition to help debugging
@@ -342,9 +342,9 @@ namespace Contractor.Core
             // Get all the parameters that the query might need
             var parameters = new HashSet<IParameterDefinition>();
             foreach (var a in state.EnabledActions)
-                parameters.UnionWith(a.Parameters);
+                parameters.UnionWith(a.Method.Parameters);
             foreach (var a in state.DisabledActions)
-                parameters.UnionWith(a.Parameters);
+                parameters.UnionWith(a.Method.Parameters);
 
             parameters.UnionWith(action.Parameters);
 
@@ -354,9 +354,9 @@ namespace Contractor.Core
             {
                 var stateTarget = target as CciState;
                 foreach (var a in stateTarget.EnabledActions)
-                    parameters.UnionWith(a.Parameters);
+                    parameters.UnionWith(a.Method.Parameters);
                 foreach (var a in stateTarget.DisabledActions)
-                    parameters.UnionWith(a.Parameters);
+                    parameters.UnionWith(a.Method.Parameters);
             }
 
             var method = new MethodDefinition()

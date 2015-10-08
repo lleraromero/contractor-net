@@ -68,7 +68,7 @@ namespace Contractor.Core
                 foreach (var a in (s as CciState).EnabledActions)
                 {
                     writer.WriteStartElement("enabled_label");
-                    writer.WriteAttributeString("name", a.GetDisplayName());
+                    writer.WriteAttributeString("name", a.Method.GetDisplayName());
                     writer.WriteEndElement();
                 }
 
@@ -203,7 +203,7 @@ namespace Contractor.Core
                                 break;
                             case "enabled_label":
                                 var method = type.Methods.First(m => m.GetDisplayName() == reader.GetAttribute("name"));
-                                s.EnabledActions.Add(method);
+                                s.EnabledActions.Add(new CciAction(method));
                                 break;
                             case "transition":
                                 method = type.Methods.First(m => m.GetDisplayName() == reader.GetAttribute("label"));

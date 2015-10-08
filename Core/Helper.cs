@@ -127,19 +127,19 @@ namespace Contractor.Utils
 
 			foreach (var action in state.EnabledActions)
 			{
-				var mc = cp.GetMethodContractFor(action);
+				var mc = cp.GetMethodContractFor(action.Method);
 				if (mc == null) continue;
 
-				var actionUniqueName = action.GetUniqueName();
+				var actionUniqueName = action.Method.GetUniqueName();
 				preconditions.Add(actionUniqueName, mc.Preconditions.ToList());
 			}
 
 			foreach (var action in state.DisabledActions)
 			{
-				var mc = cp.GetMethodContractFor(action);
+				var mc = cp.GetMethodContractFor(action.Method);
 				if (mc == null) continue;
 
-				var actionUniqueName = action.GetUniqueName();
+				var actionUniqueName = action.Method.GetUniqueName();
 				preconditions.Add(actionUniqueName, mc.Preconditions.ToList());
 			}
 
@@ -153,11 +153,11 @@ namespace Contractor.Utils
 			var exprs = new List<IExpression>();
 
 			var enabledActions = from actionUniqueName in enabledActionsId
-								 join action in type.Methods on actionUniqueName.Name equals action.GetUniqueName()
+								 join action in type.Methods on actionUniqueName.Method.GetUniqueName() equals action.GetUniqueName()
 								 select action;
 
 			var disabledActions = from actionUniqueName in disabledActionsId
-								  join action in type.Methods on actionUniqueName.Name equals action.GetUniqueName()
+								  join action in type.Methods on actionUniqueName.Method.GetUniqueName() equals action.GetUniqueName()
 								  select action;
 
 			return generateStateInvariant(host, preconditions, type, enabledActions, disabledActions);

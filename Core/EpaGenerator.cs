@@ -208,7 +208,7 @@ namespace Contractor.Core
 
             var constructors = (from m in methods
                                 where m.IsConstructor
-                                select m)
+                                select new CciAction(m))
                                 .ToList();
 
             var actions = (from m in methods
@@ -252,9 +252,9 @@ namespace Contractor.Core
                 var source = newStates.Dequeue();
                 foreach (var action in source.EnabledActions)
                 {
-                    var actionUniqueName = action.GetUniqueName();
+                    var actionUniqueName = action.Method.GetUniqueName();
                     // Which actions are enabled or disabled if 'action' is called from 'source'?
-                    var actionsResult = checker.AnalyzeActions(source, action, actions);
+                    var actionsResult = checker.AnalyzeActions(source, action.Method, actions);
 
                     // Remove any inconsistency
                     var inconsistentActions = actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).ToList();
@@ -266,7 +266,7 @@ namespace Contractor.Core
 
                     var possibleTargets = generatePossibleStates(actions, actionsResult, epaBuilder.States);
                     // Which states are reachable from the current state (aka source) using 'action'?
-                    var transitionsResults = checker.AnalyzeTransitions(source, action, possibleTargets);
+                    var transitionsResults = checker.AnalyzeTransitions(source, action.Method, possibleTargets);
 
                     foreach (var transition in transitionsResults.Transitions)
                     {
@@ -332,9 +332,10 @@ namespace Contractor.Core
             var states = new List<CciState>();
 
             var v = new CciState();
-            v.EnabledActions.UnionWith(actionsResult.EnabledActions);
-            v.DisabledActions.UnionWith(actionsResult.DisabledActions);
-            v.DisabledActions.UnionWith(unknownActions);
+            //TODO: sacar los linq cuando se cambie el modelo completamente
+            v.EnabledActions.UnionWith(from a in actionsResult.EnabledActions select new CciAction(a));
+            v.DisabledActions.UnionWith(from a in actionsResult.DisabledActions select new CciAction(a));
+            v.DisabledActions.UnionWith(from a in unknownActions select new CciAction(a));
             if (knownStates.Contains(v))
             {
                 v = knownStates.Single(s => s.Equals(v)) as CciState;
@@ -352,10 +353,10 @@ namespace Contractor.Core
                 {
                     var w = new CciState();
 
-                    w.EnabledActions.Add(m);
+                    w.EnabledActions.Add(new CciAction(m));
                     w.EnabledActions.UnionWith(states[i].EnabledActions);
                     w.DisabledActions.UnionWith(states[i].DisabledActions);
-                    w.DisabledActions.Remove(m);
+                    w.DisabledActions.Remove(new CciAction(m));
 
                     if (knownStates.Contains(w))
                     {

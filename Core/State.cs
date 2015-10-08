@@ -14,6 +14,12 @@ namespace Contractor.Core
             get { return name; }
         }
 
+        protected IMethodDefinition method;
+        public override IMethodDefinition Method
+        {
+            get { throw new NotImplementedException(); }
+        }
+
         public StringAction(string name)
         {
             this.name = name;
@@ -25,86 +31,89 @@ namespace Contractor.Core
         }
     }
 
+    public class CciAction : Action
+    {
+        public override string Name
+        {
+            get { return method.Name.Value; }
+        }
+
+        protected IMethodDefinition method;
+        public override IMethodDefinition Method
+        {
+            get { return method; }
+        }
+
+        public CciAction(IMethodDefinition method)
+        {
+            this.method = method;
+        }
+
+        public override string ToString()
+        {
+            return method.GetUniqueName();
+        }
+    }
+
     public abstract class Action
     {
         public abstract string Name { get; }
+        public abstract IMethodDefinition Method { get; }
     }
 
     // Immutable representation of an EPA state
-    public interface IState
+    public abstract class IState
     {
-        uint Id { get; }
-        bool IsInitial { get; }
-        string Name { get; }
-        List<Action> EnabledActions { get; }
-        List<Action> DisabledActions { get; }
+        public abstract uint Id { get; set; }
+        public abstract bool IsInitial { get; set; }
+        public abstract string Name { get; }
+        public SortedSet<Action> EnabledActions { get; set; }
+        public SortedSet<Action> DisabledActions { get; set; }
     }
 
     public class CciState : IState, IEquatable<CciState>
     {
-        private class NamedEntityComparer : Comparer<IMethodDefinition>
+        private class NamedEntityComparer : Comparer<Action>
         {
-            public override int Compare(IMethodDefinition x, IMethodDefinition y)
+            public override int Compare(Action x, Action y)
             {
-                return x.GetUniqueName().CompareTo(y.GetUniqueName());
+                return x.Method.GetUniqueName().CompareTo(y.Method.GetUniqueName());
             }
         }
 
         private const string methodNameDelimiter = "$";
 
-        public uint Id { get; set; }
-        public bool IsInitial { get; set; }
+        protected uint id;
+        public override uint Id { get { return id; } set { id = value; } }
+        protected bool isInitial;
+        public override bool IsInitial { get { return isInitial; } set { isInitial = value; } }
         public string UniqueName
         {
             get
             {
-                return (this.EnabledActions.Count > 0) ? string.Join(methodNameDelimiter, from a in this.EnabledActions select a.GetUniqueName())
+                return (this.EnabledActions.Count > 0) ? string.Join(methodNameDelimiter, from a in this.EnabledActions select a.Method.GetUniqueName())
                                                        : "deadlock";
             }
         }
-        public SortedSet<IMethodDefinition> EnabledActions { get; private set; }
-        public SortedSet<IMethodDefinition> DisabledActions { get; private set; }
 
-        public CciState()
-        {
-            this.Id = uint.MaxValue;
-            this.IsInitial = false;
-            this.EnabledActions = new SortedSet<IMethodDefinition>(new NamedEntityComparer());
-            this.DisabledActions = new SortedSet<IMethodDefinition>(new NamedEntityComparer());
-        }
-
-        public override string ToString()
-        {
-            return (this.EnabledActions.Count > 0) ? string.Join(Environment.NewLine, from a in this.EnabledActions select a.GetDisplayName())
-                                                       : "{no methods}";
-        }
-
-        #region IState members
-        uint IState.Id
-        {
-            get { return this.Id; }
-        }
-
-        bool IState.IsInitial
-        {
-            get { return this.IsInitial; }
-        }
-
-        string IState.Name
+        public override string Name
         {
             get { return this.UniqueName; }
         }
 
-        List<Action> IState.EnabledActions
+        public CciState()
         {
-            get { return (from a in this.EnabledActions select (Action)new StringAction(Utils.Extensions.GetUniqueName(a))).ToList(); }
+            this.id = uint.MaxValue;
+            this.isInitial = false;
+            this.EnabledActions = new SortedSet<Action>(new NamedEntityComparer());
+            this.DisabledActions = new SortedSet<Action>(new NamedEntityComparer());
         }
 
-        List<Action> IState.DisabledActions
+        public override string ToString()
         {
-            get { return (from a in this.DisabledActions select (Action)new StringAction(Utils.Extensions.GetUniqueName(a))).ToList(); }
+            return (this.EnabledActions.Count > 0) ? string.Join(Environment.NewLine, from a in this.EnabledActions select a.Method.GetDisplayName())
+                                                       : "{no methods}";
         }
-        #endregion
 
         #region IEquatable
         public bool Equals(CciState other)
