@@ -65,7 +65,7 @@ namespace Contractor.Core
                 writer.WriteStartElement("state");
                 writer.WriteAttributeString("name", s.Id.ToString());
 
-                foreach (var a in (s as CciState).EnabledActions)
+                foreach (var a in (s as State).EnabledActions)
                 {
                     writer.WriteStartElement("enabled_label");
                     writer.WriteAttributeString("name", a.Method.GetDisplayName());
@@ -79,7 +79,7 @@ namespace Contractor.Core
 
         }
 
-        private void SerializeTransitions(Epa epa, XmlTextWriter writer, IState s)
+        private void SerializeTransitions(Epa epa, XmlTextWriter writer, State s)
         {
             Contract.Requires(epa != null && !string.IsNullOrEmpty(epa.Type));
             Contract.Requires(writer != null);
@@ -182,7 +182,7 @@ namespace Contractor.Core
             Dictionary<uint, List<Transition>> epaStructure = new Dictionary<uint, List<Transition>>();
 
 
-            CciState s = null;
+            State s = null;
             for (bool read = true; read; reader.Read())
             {
                 switch (reader.NodeType)
@@ -195,7 +195,7 @@ namespace Contractor.Core
                                 {
                                     epaBuilder.Add(s);
                                 }
-                                s = new CciState();
+                                s = new State();
                                 s.Id = uint.Parse(reader.GetAttribute("name").Replace("Sinit", "0").Replace("S", ""));
 
                                 epaStructure[s.Id] = new List<Transition>();
@@ -208,7 +208,7 @@ namespace Contractor.Core
                                 method = type.Methods.First(m => m.GetDisplayName() == reader.GetAttribute("label"));
                                 Contract.Assert(s != null);
                                 var sourceState = s;
-                                var targetState = new CciState() { Id = uint.Parse(reader.GetAttribute("destination").Replace("S", "")) };
+                                var targetState = new State() { Id = uint.Parse(reader.GetAttribute("destination").Replace("S", "")) };
                                 var isUnproven = bool.Parse(reader.GetAttribute("uncertain"));
                                 var t = new Transition(method, sourceState, targetState, isUnproven);
                                 epaStructure[s.Id].Add(t);
@@ -238,7 +238,7 @@ namespace Contractor.Core
             {
                 foreach (var t in kvp.Value)
                 {
-                    var targetState = epaBuilder.States.First(state => state.Id == t.TargetState.Id) as CciState;
+                    var targetState = epaBuilder.States.First(state => state.Id == t.TargetState.Id) as State;
                     var newTrans = new Transition(t.Action, t.SourceState, targetState, t.IsUnproven);
                     epaBuilder.Add(newTrans);
                 }

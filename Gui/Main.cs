@@ -300,7 +300,7 @@ namespace Contractor.Gui
             using (var pen = new Pen(System.Drawing.Color.Black, penWidth))
                 g.DrawEllipse(pen, (float)x, (float)y, (float)w, (float)h);
 
-            var epaAndState = node.UserData as Tuple<EpaBuilder, IState>;
+            var epaAndState = node.UserData as Tuple<EpaBuilder, State>;
             if (epaAndState.Item1.Initial.Equals(epaAndState.Item2))
             {
                 const double offset = 3.1;
@@ -342,7 +342,7 @@ namespace Contractor.Gui
         private void OnNodeMarkedForDragging(object sender, EventArgs e)
         {
             _SelectedGraphNode = sender as IViewerNode;
-            var state = _SelectedGraphNode.Node.UserData as Tuple<EpaBuilder, IState>;
+            var state = _SelectedGraphNode.Node.UserData as Tuple<EpaBuilder, State>;
             var info = this.GetStateInfo(state.Item1, state.Item2);
 
             richtextboxInformation.Rtf = info;
@@ -637,7 +637,7 @@ namespace Contractor.Gui
             return sb.ToString();
         }
 
-        private string GetStateInfo(EpaBuilder epaBuilder, IState state)
+        private string GetStateInfo(EpaBuilder epaBuilder, State state)
         {
             var info = new StringBuilder();
             info.Append(@"{\rtf1\ansi\fs8\par\fs18");
@@ -813,8 +813,8 @@ namespace Contractor.Gui
             //{
             //    var typeFullName = _AnalizedType.GetDisplayName();
             //    var nodes = graphViewer.Graph.GeometryGraph.CollectAllNodes();
-            //    var initialNodes = nodes.Where(n => ((n.UserData as Node).UserData as IState).IsInitial);
-            //    var otherNodes = nodes.Where(n => !((n.UserData as Node).UserData as IState).IsInitial);
+            //    var initialNodes = nodes.Where(n => ((n.UserData as Node).UserData as State).IsInitial);
+            //    var otherNodes = nodes.Where(n => !((n.UserData as Node).UserData as State).IsInitial);
 
             //    sw.WriteLine("digraph \"{0}\"", typeFullName);
             //    sw.WriteLine("{");

@@ -114,7 +114,7 @@ namespace Contractor.Core
             }
         }
 
-        private void AddState(IState s, Graph graph)
+        private void AddState(State s, Graph graph)
         {
             var n = graph.AddNode(s.Id.ToString());
 
@@ -150,7 +150,7 @@ namespace Contractor.Core
             using (var pen = new Pen(System.Drawing.Color.Black, penWidth))
                 g.DrawEllipse(pen, (float)x, (float)y, (float)w, (float)h);
 
-            if ((node.UserData as IState).Equals(this.epa.Initial))
+            if ((node.UserData as State).Equals(this.epa.Initial))
             {
                 const double offset = 3.1;
                 x += offset / 2.0;

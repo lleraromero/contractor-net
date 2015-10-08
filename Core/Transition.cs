@@ -8,19 +8,19 @@ namespace Contractor.Core
     public interface ITransition
     {
         string Action { get; }
-        IState SourceState { get; }
-        IState TargetState { get; }
+        State SourceState { get; }
+        State TargetState { get; }
         bool IsUnproven { get; }
     }
 
     public class Transition : ITransition, IEquatable<Transition>
     {
         public IMethodDefinition Action { get; private set; }
-        public CciState SourceState { get; private set; }
-        public CciState TargetState { get; private set; }
+        public State SourceState { get; private set; }
+        public State TargetState { get; private set; }
         public bool IsUnproven { get; private set; }
 
-        public Transition(IMethodDefinition action, CciState source, CciState target, bool isUnproven)
+        public Transition(IMethodDefinition action, State source, State target, bool isUnproven)
         {
             this.Action = action;
             this.SourceState = source;
@@ -39,14 +39,14 @@ namespace Contractor.Core
             get { return Utils.Extensions.GetDisplayName(this.Action); }
         }
 
-        IState ITransition.SourceState
+        State ITransition.SourceState
         {
-            get { return this.SourceState as IState; }
+            get { return this.SourceState as State; }
         }
 
-        IState ITransition.TargetState
+        State ITransition.TargetState
         {
-            get { return this.TargetState as IState; }
+            get { return this.TargetState as State; }
         }
 
         bool ITransition.IsUnproven

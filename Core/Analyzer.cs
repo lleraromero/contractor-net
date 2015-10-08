@@ -24,9 +24,9 @@ namespace Contractor.Core
         // Token that allows the user to stop the analysis
         protected CancellationToken token;
 
-        public abstract ActionAnalysisResults AnalyzeActions(CciState source, IMethodDefinition action, List<IMethodDefinition> actions);
+        public abstract ActionAnalysisResults AnalyzeActions(State source, IMethodDefinition action, List<IMethodDefinition> actions);
 
-        public abstract TransitionAnalysisResult AnalyzeTransitions(CciState source, IMethodDefinition action, List<CciState> targets);
+        public abstract TransitionAnalysisResult AnalyzeTransitions(State source, IMethodDefinition action, List<State> targets);
 
         #endregion IAnalyzer interface
 
@@ -137,9 +137,9 @@ namespace Contractor.Core
             return pdbReader;
         }
 
-        protected virtual List<MethodDefinition> GenerateQueries<T>(CciState state, IMethodDefinition action, List<T> actions /*states*/)
+        protected virtual List<MethodDefinition> GenerateQueries<T>(State state, IMethodDefinition action, List<T> actions /*states*/)
         {
-            Contract.Requires(typeof(T) == typeof(IMethodDefinition) || typeof(T) == typeof(CciState));
+            Contract.Requires(typeof(T) == typeof(IMethodDefinition) || typeof(T) == typeof(State));
 
             var queries = new List<MethodDefinition>();
 
@@ -152,9 +152,9 @@ namespace Contractor.Core
                     // Add negative query
                     queries.Add(GenerateQuery(state, action, (IMethodDefinition)target, true));
                 }
-                else if (typeof(T) == typeof(CciState))
+                else if (typeof(T) == typeof(State))
                 {
-                    queries.Add(GenerateQuery(state, action, (CciState)(object)target));
+                    queries.Add(GenerateQuery(state, action, (State)(object)target));
                 }
             }
 
@@ -163,7 +163,7 @@ namespace Contractor.Core
             return queries;
         }
 
-        private MethodDefinition GenerateQuery(CciState state, IMethodDefinition action, IMethodDefinition target, bool negate = false)
+        private MethodDefinition GenerateQuery(State state, IMethodDefinition action, IMethodDefinition target, bool negate = false)
         {
             Contract.Requires(state != null && action != null && target != null);
 
@@ -179,7 +179,7 @@ namespace Contractor.Core
             return method;
         }
 
-        private MethodContract CreateQueryContract(CciState state, IMethodDefinition target, bool negate)
+        private MethodContract CreateQueryContract(State state, IMethodDefinition target, bool negate)
         {
             var queryContract = new MethodContract();
             var targetContract = inputContractProvider.GetMethodContractFor(target);
@@ -286,20 +286,20 @@ namespace Contractor.Core
             return queryContract;
         }
 
-        private MethodDefinition GenerateQuery(CciState state, IMethodDefinition action, CciState target)
+        private MethodDefinition GenerateQuery(State state, IMethodDefinition action, State target)
         {
             var actionName = action.GetUniqueName();
             var stateName = state.UniqueName;
             var targetName = target.UniqueName;
             var methodName = string.Format("{1}{0}{2}{0}{3}", methodNameDelimiter, stateName, actionName, targetName);
-            var method = CreateQueryMethod<CciState>(state, methodName, action, target);
+            var method = CreateQueryMethod<State>(state, methodName, action, target);
 
             var queryContract = CreateQueryContract(state, target);
             queryContractProvider.AssociateMethodWithContract(method, queryContract);
             return method;
         }
 
-        private MethodContract CreateQueryContract(CciState state, CciState target)
+        private MethodContract CreateQueryContract(State state, State target)
         {
             var contracts = new MethodContract();
 
@@ -335,9 +335,9 @@ namespace Contractor.Core
             return contracts;
         }
 
-        protected MethodDefinition CreateQueryMethod<T>(CciState state, string name, IMethodDefinition action, T target)
+        protected MethodDefinition CreateQueryMethod<T>(State state, string name, IMethodDefinition action, T target)
         {
-            Contract.Requires(target is IMethodDefinition || target is CciState);
+            Contract.Requires(target is IMethodDefinition || target is State);
 
             // Get all the parameters that the query might need
             var parameters = new HashSet<IParameterDefinition>();
@@ -352,7 +352,7 @@ namespace Contractor.Core
                 parameters.UnionWith(((IMethodDefinition)target).Parameters);
             else
             {
-                var stateTarget = target as CciState;
+                var stateTarget = target as State;
                 foreach (var a in stateTarget.EnabledActions)
                     parameters.UnionWith(a.Method.Parameters);
                 foreach (var a in stateTarget.DisabledActions)

@@ -6,21 +6,21 @@ namespace Contractor.Core
 {
     public class EpaBuilder
     {
-        protected Dictionary<IState, HashSet<ITransition>> graph;
+        protected Dictionary<State, HashSet<ITransition>> graph;
         protected string type;
-        protected IState initial;
+        protected State initial;
 
         public EpaBuilder(string Type)
         {
             this.type = Type;
-            this.graph = new Dictionary<IState, HashSet<ITransition>>();
+            this.graph = new Dictionary<State, HashSet<ITransition>>();
         }
 
         public string Type { get { return this.type; } }
 
-        public HashSet<IState> States
+        public HashSet<State> States
         {
-            get { return new HashSet<IState>(graph.Keys); }
+            get { return new HashSet<State>(graph.Keys); }
         }
 
         public HashSet<ITransition> Transitions
@@ -38,7 +38,7 @@ namespace Contractor.Core
             }
         }
 
-        public void Add(IState s)
+        public void Add(State s)
         {
             Contract.Requires(!States.Contains(s));
             Contract.Ensures(States.Contains(s));
@@ -46,7 +46,7 @@ namespace Contractor.Core
             graph[s] = new HashSet<ITransition>();
         }
 
-        public void Remove(IState s)
+        public void Remove(State s)
         {
             Contract.Requires(States.Contains(s));
 
@@ -92,7 +92,7 @@ namespace Contractor.Core
             }
         }
 
-        public IState Initial
+        public State Initial
         {
             get
             {

@@ -46,9 +46,9 @@ namespace Contractor.Core
 
     public class StateAddedEventArgs : TypeEventArgs
     {
-        public Tuple<EpaBuilder,IState> EpaAndState { get; private set; }
+        public Tuple<EpaBuilder,State> EpaAndState { get; private set; }
 
-        public StateAddedEventArgs(string typeFullName, Tuple<EpaBuilder, IState> epaAndState)
+        public StateAddedEventArgs(string typeFullName, Tuple<EpaBuilder, State> epaAndState)
             : base(typeFullName)
         {
             this.EpaAndState = epaAndState;
@@ -59,9 +59,9 @@ namespace Contractor.Core
     {
         public ITransition Transition { get; private set; }
 
-        public IState SourceState { get; private set; }
+        public State SourceState { get; private set; }
 
-        public TransitionAddedEventArgs(string typeFullName, ITransition transition, IState sourceState)
+        public TransitionAddedEventArgs(string typeFullName, ITransition transition, State sourceState)
             : base(typeFullName)
         {
             this.Transition = transition;
@@ -231,9 +231,9 @@ namespace Contractor.Core
                     throw new NotImplementedException("Unknown backend");
             }
 
-            var states = new Dictionary<string, CciState>();
+            var states = new Dictionary<string, State>();
 
-            var dummy = new CciState();
+            var dummy = new State();
             dummy.EnabledActions.UnionWith(constructors);
             dummy.Id = 0;
 
@@ -242,9 +242,9 @@ namespace Contractor.Core
             epaBuilder.Initial = dummy;
 
             if (this.StateAdded != null)
-                this.StateAdded(this, new StateAddedEventArgs(typeDisplayName, new Tuple<EpaBuilder, IState>(epaBuilder, dummy)));
+                this.StateAdded(this, new StateAddedEventArgs(typeDisplayName, new Tuple<EpaBuilder, State>(epaBuilder, dummy)));
 
-            var newStates = new Queue<CciState>();
+            var newStates = new Queue<State>();
             newStates.Enqueue(dummy);
 
             while (newStates.Count > 0 && !token.IsCancellationRequested)
@@ -282,7 +282,7 @@ namespace Contractor.Core
 
                             if (this.StateAdded != null)
                             {
-                                var eventArgs = new StateAddedEventArgs(typeDisplayName, new Tuple<EpaBuilder, IState>(epaBuilder, target as IState));
+                                var eventArgs = new StateAddedEventArgs(typeDisplayName, new Tuple<EpaBuilder, State>(epaBuilder, target as State));
                                 this.StateAdded(this, eventArgs);
                             }
                         }
@@ -291,7 +291,7 @@ namespace Contractor.Core
 
                         if (this.TransitionAdded != null)
                         {
-                            var eventArgs = new TransitionAddedEventArgs(typeDisplayName, transition as ITransition, source as IState);
+                            var eventArgs = new TransitionAddedEventArgs(typeDisplayName, transition as ITransition, source as State);
                             this.TransitionAdded(this, eventArgs);
                         }
                     }
@@ -317,7 +317,7 @@ namespace Contractor.Core
             return analysisResult;
         }
 
-        private List<CciState> generatePossibleStates(List<IMethodDefinition> actions, ActionAnalysisResults actionsResult, HashSet<IState> knownStates)
+        private List<State> generatePossibleStates(List<IMethodDefinition> actions, ActionAnalysisResults actionsResult, HashSet<State> knownStates)
         {
             Contract.Requires(actions != null);
             Contract.Requires(actionsResult != null);
@@ -328,16 +328,16 @@ namespace Contractor.Core
             unknownActions.ExceptWith(actionsResult.EnabledActions);
             unknownActions.ExceptWith(actionsResult.DisabledActions);
 
-            var states = new List<CciState>();
+            var states = new List<State>();
 
-            var v = new CciState();
+            var v = new State();
             //TODO: sacar los linq cuando se cambie el modelo completamente
             v.EnabledActions.UnionWith(from a in actionsResult.EnabledActions select new CciAction(a));
             v.DisabledActions.UnionWith(from a in actionsResult.DisabledActions select new CciAction(a));
             v.DisabledActions.UnionWith(from a in unknownActions select new CciAction(a));
             if (knownStates.Contains(v))
             {
-                v = knownStates.Single(s => s.Equals(v)) as CciState;
+                v = knownStates.Single(s => s.Equals(v)) as State;
             }
             states.Add(v);
 
@@ -350,7 +350,7 @@ namespace Contractor.Core
 
                 for (int i = 0; i < count; ++i)
                 {
-                    var w = new CciState();
+                    var w = new State();
 
                     w.EnabledActions.Add(new CciAction(m));
                     w.EnabledActions.UnionWith(states[i].EnabledActions);
@@ -359,7 +359,7 @@ namespace Contractor.Core
 
                     if (knownStates.Contains(w))
                     {
-                        w = knownStates.Single(s => s.Equals(w)) as CciState;
+                        w = knownStates.Single(s => s.Equals(w)) as State;
                     }
 
                     states.Add(w);

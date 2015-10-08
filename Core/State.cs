@@ -61,16 +61,7 @@ namespace Contractor.Core
         public abstract IMethodDefinition Method { get; }
     }
 
-    // Immutable representation of an EPA state
-    public abstract class IState
-    {
-        public abstract uint Id { get; set; }
-        public abstract string Name { get; }
-        public SortedSet<Action> EnabledActions { get; set; }
-        public SortedSet<Action> DisabledActions { get; set; }
-    }
-
-    public class CciState : IState, IEquatable<CciState>
+    public class State : IEquatable<State>
     {
         private class NamedEntityComparer : Comparer<Action>
         {
@@ -83,7 +74,20 @@ namespace Contractor.Core
         private const string methodNameDelimiter = "$";
 
         protected uint id;
-        public override uint Id { get { return id; } set { id = value; } }
+        protected SortedSet<Action> enabledActions;
+        protected SortedSet<Action> disabledActions;
+
+        public uint Id { get { return id; } set { id = value; } }
+        public SortedSet<Action> EnabledActions { get { return enabledActions; } set { enabledActions = value; } }
+        public SortedSet<Action> DisabledActions { get { return disabledActions; } set { disabledActions = value; } }
+
+        public State()
+        {
+            this.id = uint.MaxValue;
+            this.EnabledActions = new SortedSet<Action>(new NamedEntityComparer());
+            this.DisabledActions = new SortedSet<Action>(new NamedEntityComparer());
+        }
+
         public string UniqueName
         {
             get
@@ -93,16 +97,9 @@ namespace Contractor.Core
             }
         }
 
-        public override string Name
+        public string Name
         {
             get { return this.UniqueName; }
-        }
-
-        public CciState()
-        {
-            this.id = uint.MaxValue;
-            this.EnabledActions = new SortedSet<Action>(new NamedEntityComparer());
-            this.DisabledActions = new SortedSet<Action>(new NamedEntityComparer());
         }
 
         public override string ToString()
@@ -112,7 +109,7 @@ namespace Contractor.Core
         }
 
         #region IEquatable
-        public bool Equals(CciState other)
+        public bool Equals(State other)
         {
             return this.UniqueName.Equals(other.UniqueName);
         }
@@ -127,7 +124,7 @@ namespace Contractor.Core
             if (obj.GetType() != this.GetType()) return false;
 
             // Call the implementation from IEquatable
-            return Equals((CciState)obj);
+            return Equals((State)obj);
         }
 
         public override int GetHashCode()

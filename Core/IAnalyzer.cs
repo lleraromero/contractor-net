@@ -11,8 +11,8 @@ namespace Contractor.Core
         int TotalGeneratedQueriesCount { get; }
         int UnprovenQueriesCount { get; }
 
-        ActionAnalysisResults AnalyzeActions(CciState source, IMethodDefinition action, List<IMethodDefinition> actions);
+        ActionAnalysisResults AnalyzeActions(State source, IMethodDefinition action, List<IMethodDefinition> actions);
 
-        TransitionAnalysisResult AnalyzeTransitions(CciState source, IMethodDefinition action, List<CciState> targets);
+        TransitionAnalysisResult AnalyzeTransitions(State source, IMethodDefinition action, List<State> targets);
     }
 }

@@ -98,13 +98,13 @@ namespace Contractor.Utils
 		}
 
 		public static List<IExpression> GenerateStatesConditions(IMetadataHost host, Dictionary<string, List<IPrecondition>> preconditions,
-			NamespaceTypeDefinition type, IEnumerable<IState> states)
+			NamespaceTypeDefinition type, IEnumerable<State> states)
 		{
 			//Optimizacion: calculamos la interseccion de todas las acciones habilitadas
 			//y desabilitadas de todos los estados y se la restamos a todos
 			var firstState = states.First();
-			var enabledIntersection = states.Aggregate(firstState.EnabledActions, (IEnumerable<Contractor.Core.Action> a, IState s) => a.Intersect(s.EnabledActions));
-			var disabledIntersection = states.Aggregate(firstState.DisabledActions, (IEnumerable<Contractor.Core.Action> a, IState s) => a.Intersect(s.DisabledActions));
+			var enabledIntersection = states.Aggregate(firstState.EnabledActions, (IEnumerable<Contractor.Core.Action> a, State s) => a.Intersect(s.EnabledActions));
+			var disabledIntersection = states.Aggregate(firstState.DisabledActions, (IEnumerable<Contractor.Core.Action> a, State s) => a.Intersect(s.DisabledActions));
 			var conditions = new List<IExpression>();
 
 			foreach (var state in states)
@@ -121,7 +121,7 @@ namespace Contractor.Utils
 		}
 
 		// Do not include the type invariant
-		public static List<IExpression> GenerateStateInvariant(IMetadataHost host, ContractProvider cp, NamespaceTypeDefinition type, CciState state)
+		public static List<IExpression> GenerateStateInvariant(IMetadataHost host, ContractProvider cp, NamespaceTypeDefinition type, State state)
 		{
 			var preconditions = new Dictionary<string, List<IPrecondition>>();
 

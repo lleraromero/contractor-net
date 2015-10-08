@@ -67,7 +67,7 @@ namespace Contractor.Core
             }
         }
 
-        public override ActionAnalysisResults AnalyzeActions(CciState source, IMethodDefinition action, List<IMethodDefinition> actions)
+        public override ActionAnalysisResults AnalyzeActions(State source, IMethodDefinition action, List<IMethodDefinition> actions)
         {
             Contract.Requires(source != null && action != null && actions != null);
             Contract.Requires(actions.Count > 0);
@@ -227,9 +227,9 @@ namespace Contractor.Core
             else return ResultKind.None;
         }
 
-        public override TransitionAnalysisResult AnalyzeTransitions(CciState source, IMethodDefinition action, List<CciState> targets)
+        public override TransitionAnalysisResult AnalyzeTransitions(State source, IMethodDefinition action, List<State> targets)
         {
-            var queries = base.GenerateQueries<CciState>(source, action, targets);
+            var queries = base.GenerateQueries<State>(source, action, targets);
             this.typeToAnalyze.Methods.AddRange(queries);
             queryAssembly.InjectContracts(this.queryContractProvider);
 
@@ -243,7 +243,7 @@ namespace Contractor.Core
             return evalResult;
         }
 
-        private TransitionAnalysisResult evaluateQueries(CciState source, IMethodDefinition action, List<CciState> targets, Dictionary<string, List<ResultKind>> result)
+        private TransitionAnalysisResult evaluateQueries(State source, IMethodDefinition action, List<State> targets, Dictionary<string, List<ResultKind>> result)
         {
             var analysisResult = new TransitionAnalysisResult();
 
