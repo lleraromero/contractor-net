@@ -8,6 +8,7 @@ namespace Contractor.Core
     {
         protected Dictionary<IState, HashSet<ITransition>> graph;
         protected string type;
+        protected IState initial;
 
         public EpaBuilder(string Type)
         {
@@ -95,15 +96,19 @@ namespace Contractor.Core
         {
             get
             {
-                Contract.Requires(States.Where(s => s.IsInitial).Count() == 1);
-
-                return States.First<IState>(s => s.IsInitial);
+                Contract.Requires(Initial != null);
+                return initial;
+            }
+            set
+            {
+                Contract.Requires(States.Contains(value));
+                initial = value;
             }
         }
 
         public Epa Build()
         {
-            return new Epa(type, graph, Initial);
+            return new Epa(type, graph, initial);
         }
     }
 }

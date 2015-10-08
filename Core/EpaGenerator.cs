@@ -46,12 +46,12 @@ namespace Contractor.Core
 
     public class StateAddedEventArgs : TypeEventArgs
     {
-        public IState State { get; private set; }
+        public Tuple<EpaBuilder,IState> EpaAndState { get; private set; }
 
-        public StateAddedEventArgs(string typeFullName, IState state)
+        public StateAddedEventArgs(string typeFullName, Tuple<EpaBuilder, IState> epaAndState)
             : base(typeFullName)
         {
-            this.State = state;
+            this.EpaAndState = epaAndState;
         }
     }
 
@@ -235,14 +235,14 @@ namespace Contractor.Core
 
             var dummy = new CciState();
             dummy.EnabledActions.UnionWith(constructors);
-            dummy.IsInitial = true;
             dummy.Id = 0;
 
             states.Add(dummy.UniqueName, dummy);
             epaBuilder.Add(dummy);
+            epaBuilder.Initial = dummy;
 
             if (this.StateAdded != null)
-                this.StateAdded(this, new StateAddedEventArgs(typeDisplayName, dummy));
+                this.StateAdded(this, new StateAddedEventArgs(typeDisplayName, new Tuple<EpaBuilder, IState>(epaBuilder, dummy)));
 
             var newStates = new Queue<CciState>();
             newStates.Enqueue(dummy);
@@ -275,7 +275,6 @@ namespace Contractor.Core
                         if (!states.ContainsKey(target.UniqueName))
                         {
                             target.Id = (uint)states.Keys.Count;
-                            target.IsInitial = false;
                             newStates.Enqueue(target);
 
                             states.Add(target.UniqueName, target);
@@ -283,7 +282,7 @@ namespace Contractor.Core
 
                             if (this.StateAdded != null)
                             {
-                                var eventArgs = new StateAddedEventArgs(typeDisplayName, target as IState);
+                                var eventArgs = new StateAddedEventArgs(typeDisplayName, new Tuple<EpaBuilder, IState>(epaBuilder, target as IState));
                                 this.StateAdded(this, eventArgs);
                             }
                         }

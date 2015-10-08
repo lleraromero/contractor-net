@@ -197,7 +197,6 @@ namespace Contractor.Core
                                 }
                                 s = new CciState();
                                 s.Id = uint.Parse(reader.GetAttribute("name").Replace("Sinit", "0").Replace("S", ""));
-                                s.IsInitial = s.Id == initialState;
 
                                 epaStructure[s.Id] = new List<Transition>();
                                 break;
@@ -232,6 +231,8 @@ namespace Contractor.Core
                         break;
                 }
             }
+
+            epaBuilder.Initial = epaBuilder.States.First(state => state.Id == initialState);
 
             foreach (var kvp in epaStructure)
             {

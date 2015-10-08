@@ -56,7 +56,6 @@ namespace Contractor.Core
         {
             var statesCount = this.EPA.States.Count;
             var transitionsCount = this.EPA.Transitions.Count;
-            var initialStatesCount = (from s in this.EPA.States where s.IsInitial select s).Count();
             var unprovenQueriesCount = Convert.ToInt32(this.Statistics["UnprovenQueriesCount"]);
             var totalGeneratedQueriesCount = Convert.ToInt32(this.Statistics["TotalGeneratedQueriesCount"]);
             var precision = 100 - Math.Ceiling((double)unprovenQueriesCount * 100 / totalGeneratedQueriesCount);
@@ -69,7 +68,7 @@ namespace Contractor.Core
             sb.AppendFormat(@"Analysis precision:         {0}%"                , precision).AppendLine();
             sb.AppendFormat(@"Executions:                 {0}"                 , this.Statistics["ExecutionsCount"]).AppendLine();
             sb.AppendFormat(@"Generated queries:          {0} ({1} unproven)"  , totalGeneratedQueriesCount, unprovenQueriesCount).AppendLine();
-            sb.AppendFormat(@"States:                     {0} ({1} initial)"   , statesCount, initialStatesCount).AppendLine();
+            sb.AppendFormat(@"States:                     {0} (1 initial)"   , statesCount).AppendLine();
             sb.AppendFormat(@"Transitions:                {0} ({1} unproven)"  , transitionsCount, unprovenTransitionsCount).AppendLine();
                                  
             return sb.ToString();

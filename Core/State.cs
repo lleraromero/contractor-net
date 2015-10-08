@@ -65,7 +65,6 @@ namespace Contractor.Core
     public abstract class IState
     {
         public abstract uint Id { get; set; }
-        public abstract bool IsInitial { get; set; }
         public abstract string Name { get; }
         public SortedSet<Action> EnabledActions { get; set; }
         public SortedSet<Action> DisabledActions { get; set; }
@@ -85,8 +84,6 @@ namespace Contractor.Core
 
         protected uint id;
         public override uint Id { get { return id; } set { id = value; } }
-        protected bool isInitial;
-        public override bool IsInitial { get { return isInitial; } set { isInitial = value; } }
         public string UniqueName
         {
             get
@@ -104,7 +101,6 @@ namespace Contractor.Core
         public CciState()
         {
             this.id = uint.MaxValue;
-            this.isInitial = false;
             this.EnabledActions = new SortedSet<Action>(new NamedEntityComparer());
             this.DisabledActions = new SortedSet<Action>(new NamedEntityComparer());
         }

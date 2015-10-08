@@ -13,6 +13,7 @@ namespace Contractor.Core
 {
     public class EpaBinarySerializer
     {
+        Epa epa;
         public EpaBinarySerializer()
         {
         }
@@ -21,6 +22,8 @@ namespace Contractor.Core
         {
             Contract.Requires(stream != null && stream.CanWrite);
             Contract.Requires(epa != null);
+
+            this.epa = epa;
 
             Graph graph = new Graph();
             graph.Attr.OptimizeLabelPositions = true;
@@ -37,6 +40,8 @@ namespace Contractor.Core
             }
 
             RenderGraph(stream, graph);
+
+            this.epa = null;
         }
 
         //TODO: Buscar el isomorfismo
@@ -145,7 +150,7 @@ namespace Contractor.Core
             using (var pen = new Pen(System.Drawing.Color.Black, penWidth))
                 g.DrawEllipse(pen, (float)x, (float)y, (float)w, (float)h);
 
-            if ((node.UserData as IState).IsInitial)
+            if ((node.UserData as IState).Equals(this.epa.Initial))
             {
                 const double offset = 3.1;
                 x += offset / 2.0;

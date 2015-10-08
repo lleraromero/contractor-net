@@ -218,9 +218,9 @@ namespace Contractor.Gui
                 return;
             }
 
-            var n = _Graph.AddNode(e.State.Id.ToString());
+            var n = _Graph.AddNode(e.EpaAndState.Item2.Id.ToString());
 
-            n.UserData = e.State;
+            n.UserData = e.EpaAndState;
             n.DrawNodeDelegate += this.OnDrawNode;
             n.Attr.Shape = Shape.Circle;
             n.Attr.LabelMargin = 7;
@@ -229,7 +229,7 @@ namespace Contractor.Gui
 
             if (_Options.StateDescription)
             {
-                n.LabelText = string.Join(Environment.NewLine, e.State.ToString());
+                n.LabelText = string.Join(Environment.NewLine, e.EpaAndState.Item2.ToString());
             }
             else
             {
@@ -300,7 +300,8 @@ namespace Contractor.Gui
             using (var pen = new Pen(System.Drawing.Color.Black, penWidth))
                 g.DrawEllipse(pen, (float)x, (float)y, (float)w, (float)h);
 
-            if ((node.UserData as IState).IsInitial)
+            var epaAndState = node.UserData as Tuple<EpaBuilder, IState>;
+            if (epaAndState.Item1.Initial.Equals(epaAndState.Item2))
             {
                 const double offset = 3.1;
                 x += offset / 2.0;
@@ -341,8 +342,8 @@ namespace Contractor.Gui
         private void OnNodeMarkedForDragging(object sender, EventArgs e)
         {
             _SelectedGraphNode = sender as IViewerNode;
-            var state = _SelectedGraphNode.Node.UserData as IState;
-            var info = this.GetStateInfo(state);
+            var state = _SelectedGraphNode.Node.UserData as Tuple<EpaBuilder, IState>;
+            var info = this.GetStateInfo(state.Item1, state.Item2);
 
             richtextboxInformation.Rtf = info;
             titlebarProperties.Text = "State Info";
@@ -636,12 +637,12 @@ namespace Contractor.Gui
             return sb.ToString();
         }
 
-        private string GetStateInfo(IState state)
+        private string GetStateInfo(EpaBuilder epaBuilder, IState state)
         {
             var info = new StringBuilder();
             info.Append(@"{\rtf1\ansi\fs8\par\fs18");
 
-            if (state.IsInitial)
+            if (epaBuilder.Initial.Equals(state))
             {
                 info.Append(@" \b Initial State \b0 \fs8\par\par\fs18");
             }
@@ -806,55 +807,57 @@ namespace Contractor.Gui
 
         private void ExportGraphvizGraph(string fileName)
         {
-            using (var sw = File.CreateText(fileName))
-            {
-                var typeFullName = _AnalizedType.GetDisplayName();
-                var nodes = graphViewer.Graph.GeometryGraph.CollectAllNodes();
-                var initialNodes = nodes.Where(n => ((n.UserData as Node).UserData as IState).IsInitial);
-                var otherNodes = nodes.Where(n => !((n.UserData as Node).UserData as IState).IsInitial);
+            // TODO: arreglar
+            throw new NotSupportedException();
+            //using (var sw = File.CreateText(fileName))
+            //{
+            //    var typeFullName = _AnalizedType.GetDisplayName();
+            //    var nodes = graphViewer.Graph.GeometryGraph.CollectAllNodes();
+            //    var initialNodes = nodes.Where(n => ((n.UserData as Node).UserData as IState).IsInitial);
+            //    var otherNodes = nodes.Where(n => !((n.UserData as Node).UserData as IState).IsInitial);
 
-                sw.WriteLine("digraph \"{0}\"", typeFullName);
-                sw.WriteLine("{");
-                sw.WriteLine("\trankdir=LR;");
-                sw.WriteLine("\tnode [style = filled, fillcolor = aliceblue, fontname = \"{0}\"];", "Cambria");
+            //    sw.WriteLine("digraph \"{0}\"", typeFullName);
+            //    sw.WriteLine("{");
+            //    sw.WriteLine("\trankdir=LR;");
+            //    sw.WriteLine("\tnode [style = filled, fillcolor = aliceblue, fontname = \"{0}\"];", "Cambria");
 
-                sw.WriteLine();
-                sw.WriteLine("\tnode [shape = doublecircle];");
+            //    sw.WriteLine();
+            //    sw.WriteLine("\tnode [shape = doublecircle];");
 
-                foreach (var n in initialNodes)
-                {
-                    var node = n.UserData as Node;
-                    var name = node.LabelText.Replace(sw.NewLine, @"\n");
+            //    foreach (var n in initialNodes)
+            //    {
+            //        var node = n.UserData as Node;
+            //        var name = node.LabelText.Replace(sw.NewLine, @"\n");
 
-                    sw.WriteLine("\tnode [label = \"{0}\"]; \"{1}\";", name, node.Id);
-                }
+            //        sw.WriteLine("\tnode [label = \"{0}\"]; \"{1}\";", name, node.Id);
+            //    }
 
-                sw.WriteLine();
-                sw.WriteLine("\tnode [shape = circle];");
+            //    sw.WriteLine();
+            //    sw.WriteLine("\tnode [shape = circle];");
 
-                foreach (var n in otherNodes)
-                {
-                    var node = n.UserData as Node;
-                    var name = node.LabelText.Replace(sw.NewLine, @"\n");
+            //    foreach (var n in otherNodes)
+            //    {
+            //        var node = n.UserData as Node;
+            //        var name = node.LabelText.Replace(sw.NewLine, @"\n");
 
-                    sw.WriteLine("\tnode [label = \"{0}\"]; \"{1}\";", name, node.Id);
-                }
+            //        sw.WriteLine("\tnode [label = \"{0}\"]; \"{1}\";", name, node.Id);
+            //    }
 
-                sw.WriteLine();
-                sw.WriteLine("\tedge [fontname = \"{0}\"];", "Cambria");
-                sw.WriteLine();
+            //    sw.WriteLine();
+            //    sw.WriteLine("\tedge [fontname = \"{0}\"];", "Cambria");
+            //    sw.WriteLine();
 
-                foreach (var edge in graphViewer.Graph.Edges)
-                {
-                    var from = edge.SourceNode.Id;
-                    var to = edge.TargetNode.Id;
-                    var label = edge.LabelText.Replace(sw.NewLine, @"\n");
+            //    foreach (var edge in graphViewer.Graph.Edges)
+            //    {
+            //        var from = edge.SourceNode.Id;
+            //        var to = edge.TargetNode.Id;
+            //        var label = edge.LabelText.Replace(sw.NewLine, @"\n");
 
-                    sw.WriteLine("\tedge [label = \"{0}\"] \"{1}\" -> \"{2}\";", label, from, to);
-                }
+            //        sw.WriteLine("\tedge [label = \"{0}\"] \"{1}\" -> \"{2}\";", label, from, to);
+            //    }
 
-                sw.WriteLine("}");
-            }
+            //    sw.WriteLine("}");
+            //}
         }
 
         private void ExportVectorGraph(string fileName)
