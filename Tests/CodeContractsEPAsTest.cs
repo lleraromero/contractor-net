@@ -33,63 +33,63 @@ namespace Tests
             epaGenerator.Dispose();
         }
 
-        [TestMethod]
-        public void TestFiniteStack()
-        {
-            var cancellationSource = new CancellationTokenSource();
-            var epa = epaGenerator.GenerateEpa("Examples.FiniteStack", cancellationSource.Token).EPA;
+        //[TestMethod]
+        //public void TestFiniteStack()
+        //{
+        //    var cancellationSource = new CancellationTokenSource();
+        //    var epa = epaGenerator.GenerateEpa("Examples.FiniteStack", cancellationSource.Token).EPA;
 
-            var filePath = Path.Combine(Configuration.TempPath, @"..\Tests\EPAs\FiniteStack.xml");
-            using (Stream oStream = new FileStream(filePath, FileMode.Open))
-            {
-                var deserializedEPA = new EpaXmlSerializer().Deserialize(oStream, InputFilePath);
-                IsAnOverapproximation(epa, deserializedEPA);
-            }
-        }
+        //    var filePath = Path.Combine(Configuration.TempPath, @"..\Tests\EPAs\FiniteStack.xml");
+        //    using (Stream oStream = new FileStream(filePath, FileMode.Open))
+        //    {
+        //        var deserializedEPA = new EpaXmlSerializer().Deserialize(oStream, InputFilePath);
+        //        IsAnOverapproximation(epa, deserializedEPA);
+        //    }
+        //}
 
-        [TestMethod]
-        public void TestLinear()
-        {
-            var cancellationSource = new CancellationTokenSource();
-            var epa = epaGenerator.GenerateEpa("Examples.Linear", cancellationSource.Token).EPA;
+        //[TestMethod]
+        //public void TestLinear()
+        //{
+        //    var cancellationSource = new CancellationTokenSource();
+        //    var epa = epaGenerator.GenerateEpa("Examples.Linear", cancellationSource.Token).EPA;
 
-            var filePath = Path.Combine(Configuration.TempPath, @"..\Tests\EPAs\Linear.xml");
-            using (Stream oStream = new FileStream(filePath, FileMode.Open))
-            {
-                var deserializedEPA = new EpaXmlSerializer().Deserialize(oStream, InputFilePath);
-                IsAnOverapproximation(epa, deserializedEPA);
-            }
-        }
+        //    var filePath = Path.Combine(Configuration.TempPath, @"..\Tests\EPAs\Linear.xml");
+        //    using (Stream oStream = new FileStream(filePath, FileMode.Open))
+        //    {
+        //        var deserializedEPA = new EpaXmlSerializer().Deserialize(oStream, InputFilePath);
+        //        IsAnOverapproximation(epa, deserializedEPA);
+        //    }
+        //}
 
-        [TestMethod]
-        public void TestDoor()
-        {
-            var cancellationSource = new CancellationTokenSource();
-            var epa = epaGenerator.GenerateEpa("Examples.Door", cancellationSource.Token).EPA;
+        //[TestMethod]
+        //public void TestDoor()
+        //{
+        //    var cancellationSource = new CancellationTokenSource();
+        //    var epa = epaGenerator.GenerateEpa("Examples.Door", cancellationSource.Token).EPA;
 
-            var filePath = Path.Combine(Configuration.TempPath, @"..\Tests\EPAs\Door.xml");
-            using (Stream oStream = new FileStream(filePath, FileMode.Open))
-            {
-                var deserializedEPA = new EpaXmlSerializer().Deserialize(oStream, InputFilePath);
-                IsAnOverapproximation(epa, deserializedEPA);
-            }
-        }
+        //    var filePath = Path.Combine(Configuration.TempPath, @"..\Tests\EPAs\Door.xml");
+        //    using (Stream oStream = new FileStream(filePath, FileMode.Open))
+        //    {
+        //        var deserializedEPA = new EpaXmlSerializer().Deserialize(oStream, InputFilePath);
+        //        IsAnOverapproximation(epa, deserializedEPA);
+        //    }
+        //}
 
-        [TestMethod]
-        public void TestListItr()
-        {
-            var cancellationSource = new CancellationTokenSource();
-            var epa = epaGenerator.GenerateEpa("Examples.ICSE2011.ListItr",
-                new List<string>() { "ListItr", "add", "next", "previous", "remove", "set" },
-                cancellationSource.Token).EPA;
+        //[TestMethod]
+        //public void TestListItr()
+        //{
+        //    var cancellationSource = new CancellationTokenSource();
+        //    var epa = epaGenerator.GenerateEpa("Examples.ICSE2011.ListItr",
+        //        new List<string>() { "ListItr", "add", "next", "previous", "remove", "set" },
+        //        cancellationSource.Token).EPA;
 
-            var filePath = Path.Combine(Configuration.TempPath, @"..\Tests\EPAs\ListItr.xml");
-            using (Stream oStream = new FileStream(filePath, FileMode.Open))
-            {
-                var deserializedEPA = new EpaXmlSerializer().Deserialize(oStream, InputFilePath);
-                IsAnOverapproximation(epa, deserializedEPA);
-            }
-        }
+        //    var filePath = Path.Combine(Configuration.TempPath, @"..\Tests\EPAs\ListItr.xml");
+        //    using (Stream oStream = new FileStream(filePath, FileMode.Open))
+        //    {
+        //        var deserializedEPA = new EpaXmlSerializer().Deserialize(oStream, InputFilePath);
+        //        IsAnOverapproximation(epa, deserializedEPA);
+        //    }
+        //}
 
         private void IsAnOverapproximation(Epa epaUnderTest, Epa epaOracle)
         {

@@ -17,17 +17,14 @@ namespace Contractor.Core
 
         private const string methodNameDelimiter = "$";
 
-        protected uint id;
         protected SortedSet<Action> enabledActions;
         protected SortedSet<Action> disabledActions;
 
-        public uint Id { get { return id; } set { id = value; } }
         public SortedSet<Action> EnabledActions { get { return enabledActions; } set { enabledActions = value; } }
         public SortedSet<Action> DisabledActions { get { return disabledActions; } set { disabledActions = value; } }
 
         public State()
         {
-            this.id = uint.MaxValue;
             this.EnabledActions = new SortedSet<Action>(new NamedEntityComparer());
             this.DisabledActions = new SortedSet<Action>(new NamedEntityComparer());
         }
@@ -53,23 +50,20 @@ namespace Contractor.Core
             return this.Name.Equals(other.Name);
         }
 
-        public override bool Equals(object obj)
-        {
-            // Again just optimization
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-
-            // Actually check the type, should not throw exception from Equals override
-            if (obj.GetType() != this.GetType()) return false;
-
-            // Call the implementation from IEquatable
-            return Equals((State)obj);
-        }
-
         public override int GetHashCode()
         {
             return this.Name.GetHashCode();
         }
         #endregion
+
+        //public static bool operator !=(State s1, State s2)
+        //{
+        //    return !s1.Equals(s2);
+        //}
+
+        //public static bool operator ==(State s1, State s2)
+        //{
+        //    return s1.Equals(s2);
+        //}
     }
 }

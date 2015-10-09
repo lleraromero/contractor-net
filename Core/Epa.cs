@@ -11,6 +11,9 @@ namespace Contractor.Core
         protected Dictionary<State, HashSet<Transition>> graph;
         protected State initial;
 
+        //TODO: sacar esto que no va aca
+        protected Dictionary<State, int> ids;
+
         [ContractInvariantMethod]
         private void Invariant()
         {
@@ -23,6 +26,14 @@ namespace Contractor.Core
             this.type = type;
             this.graph = graph;
             this.initial = initial;
+
+            ids = new Dictionary<State, int>();
+            int id = 0;
+            foreach (var s in this.graph.Keys)
+            {
+                ids[s] = id;
+                ++id;
+            }
         }
 
         public string Type { get { return this.type; } }
@@ -51,6 +62,13 @@ namespace Contractor.Core
         public HashSet<Transition> this[State s]
         {
             get { return new HashSet<Transition>(graph[s]); }
+        }
+
+        public int Id(State s)
+        {
+            Contract.Requires(States.Contains(s));
+
+            return ids[s];
         }
 
         #region IEquatable

@@ -218,7 +218,7 @@ namespace Contractor.Gui
                 return;
             }
 
-            var n = _Graph.AddNode(e.EpaAndState.Item2.Id.ToString());
+            var n = _Graph.AddNode(e.EpaAndState.Item1.Id(e.EpaAndState.Item2).ToString());
 
             n.UserData = e.EpaAndState;
             n.DrawNodeDelegate += this.OnDrawNode;
@@ -253,7 +253,7 @@ namespace Contractor.Gui
 
             if (_Options.CollapseTransitions)
             {
-                var n = _Graph.FindNode(e.SourceState.Id.ToString());
+                var n = _Graph.FindNode(e.epaBuilder.Id(e.SourceState).ToString());
 
                 if (_Options.UnprovenTransitions && e.Transition.IsUnproven)
                     label = string.Format("{0}?", label);
@@ -264,7 +264,7 @@ namespace Contractor.Gui
 
                     foreach (var ed in edges)
                     {
-                        if (ed.Target == e.Transition.TargetState.Id.ToString() && ed.Attr.Styles.Contains(lineStyle))
+                        if (ed.Target == e.epaBuilder.Id(e.Transition.TargetState).ToString() && ed.Attr.Styles.Contains(lineStyle))
                         {
                             ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
                             createEdge = false;
@@ -276,7 +276,7 @@ namespace Contractor.Gui
 
             if (createEdge)
             {
-                var edge = _Graph.AddEdge(e.SourceState.Id.ToString(), label, e.Transition.TargetState.Id.ToString());
+                var edge = _Graph.AddEdge(e.epaBuilder.Id(e.SourceState).ToString(), label, e.epaBuilder.Id(e.Transition.TargetState).ToString());
 
                 edge.Label.FontName = "Cambria";
                 edge.Label.FontSize = 6;

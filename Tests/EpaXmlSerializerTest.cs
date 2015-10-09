@@ -31,29 +31,29 @@ namespace Tests
             epaGenerator.Dispose();
         }
 
-        [TestMethod]
-        public void SerializeAndDeserializeLinear()
-        {
-            var cancellationSource = new CancellationTokenSource();
-            var epa = epaGenerator.GenerateEpa("Examples.Linear", cancellationSource.Token).EPA;
+        //[TestMethod]
+        //public void SerializeAndDeserializeLinear()
+        //{
+        //    var cancellationSource = new CancellationTokenSource();
+        //    var epa = epaGenerator.GenerateEpa("Examples.Linear", cancellationSource.Token).EPA;
 
-            SerializeAndDeserialize(epa);
-        }
+        //    SerializeAndDeserialize(epa);
+        //}
 
-        public void SerializeAndDeserialize(Epa epa)
-        {
-            var filePath = Path.Combine(Configuration.TempPath, "epa.xml");
-            // Export the EPA as an XML
-            var serializer = new EpaXmlSerializer();
-            using (Stream oStream = new FileStream(filePath, FileMode.Create))
-            {
-                serializer.Serialize(oStream, epa);
-            }
-            using (Stream oStream = new FileStream(filePath, FileMode.Open))
-            {
-                var deserializedEPA = serializer.Deserialize(oStream, InputFilePath);
-                Contract.Assert(epa.Equals(deserializedEPA));
-            }
-        }
+        //public void SerializeAndDeserialize(Epa epa)
+        //{
+        //    var filePath = Path.Combine(Configuration.TempPath, "epa.xml");
+        //    // Export the EPA as an XML
+        //    var serializer = new EpaXmlSerializer();
+        //    using (Stream oStream = new FileStream(filePath, FileMode.Create))
+        //    {
+        //        serializer.Serialize(oStream, epa);
+        //    }
+        //    using (Stream oStream = new FileStream(filePath, FileMode.Open))
+        //    {
+        //        var deserializedEPA = serializer.Deserialize(oStream, InputFilePath);
+        //        Contract.Assert(epa.Equals(deserializedEPA));
+        //    }
+        //}
     }
 }

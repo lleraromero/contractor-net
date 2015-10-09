@@ -61,11 +61,14 @@ namespace Contractor.Core
 
         public State SourceState { get; private set; }
 
-        public TransitionAddedEventArgs(string typeFullName, Transition transition, State sourceState)
+        public EpaBuilder epaBuilder { get; private set; }
+
+        public TransitionAddedEventArgs(string typeFullName, Transition transition, State sourceState, EpaBuilder epaBuilder)
             : base(typeFullName)
         {
             this.Transition = transition;
             this.SourceState = sourceState;
+            this.epaBuilder = epaBuilder;
         }
     }
 
@@ -235,7 +238,6 @@ namespace Contractor.Core
 
             var dummy = new State();
             dummy.EnabledActions.UnionWith(constructors);
-            dummy.Id = 0;
 
             states.Add(dummy.Name, dummy);
             epaBuilder.Add(dummy);
@@ -274,7 +276,6 @@ namespace Contractor.Core
                         // Do I have to add a new state to the EPA?
                         if (!states.ContainsKey(target.Name))
                         {
-                            target.Id = (uint)states.Keys.Count;
                             newStates.Enqueue(target);
 
                             states.Add(target.Name, target);
@@ -291,7 +292,7 @@ namespace Contractor.Core
 
                         if (this.TransitionAdded != null)
                         {
-                            var eventArgs = new TransitionAddedEventArgs(typeDisplayName, transition as Transition, source as State);
+                            var eventArgs = new TransitionAddedEventArgs(typeDisplayName, transition as Transition, source as State, epaBuilder);
                             this.TransitionAdded(this, eventArgs);
                         }
                     }
