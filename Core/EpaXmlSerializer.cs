@@ -210,7 +210,7 @@ namespace Contractor.Core
                                 var sourceState = s;
                                 var targetState = new State() { Id = uint.Parse(reader.GetAttribute("destination").Replace("S", "")) };
                                 var isUnproven = bool.Parse(reader.GetAttribute("uncertain"));
-                                var t = new Transition(method, sourceState, targetState, isUnproven);
+                                var t = new Transition(new CciAction(method), sourceState, targetState, isUnproven);
                                 epaStructure[s.Id].Add(t);
                                 break;
                             default:

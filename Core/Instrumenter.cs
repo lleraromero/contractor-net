@@ -41,7 +41,7 @@ namespace Contractor.Core
                 var mc = cp.GetMethodContractFor(action) as MethodContract;
                 if (mc == null) continue;
 
-                var actionUniqueName = action.GetUniqueName();
+                var actionUniqueName = action.Name;
                 preconditions.Add(actionUniqueName, mc.Preconditions.ToList());
             }
 
@@ -87,7 +87,7 @@ namespace Contractor.Core
 
             foreach (var action in actions)
             {
-                var actionUniqueName = action.GetUniqueName();
+                var actionUniqueName = action.Name;
                 // voy a agrupar las transiciones que usan esta accion por sourceState.Id
                 // transitions = Dicc<uint, List<uint>> o sea: "Dicc<from, List<to>>"
                 var transUsingAction = from t in epa.Transitions where ((Transition)t).Action.Equals(action) select t as Transition;
@@ -109,24 +109,24 @@ namespace Contractor.Core
 
                 BlockStatement actionBodyBlock = null;
 
-                if (action.Body is Microsoft.Cci.ILToCodeModel.SourceMethodBody)
+                if (action.Method.Body is Microsoft.Cci.ILToCodeModel.SourceMethodBody)
                 {
-                    var actionBody = action.Body as Microsoft.Cci.ILToCodeModel.SourceMethodBody;
+                    var actionBody = action.Method.Body as Microsoft.Cci.ILToCodeModel.SourceMethodBody;
                     actionBodyBlock = actionBody.Block as BlockStatement;
                 }
-                else if (action.Body is SourceMethodBody)
+                else if (action.Method.Body is SourceMethodBody)
                 {
-                    var actionBody = action.Body as SourceMethodBody;
+                    var actionBody = action.Method.Body as SourceMethodBody;
                     actionBodyBlock = actionBody.Block as BlockStatement;
                 }
 
                 //Por tratarse de un constructor insertamos
                 //en 1 porque en 0 esta base..ctor();
-                var insertAtIndex = (action.IsConstructor ? 1 : 0);
+                var insertAtIndex = (action.Method.IsConstructor ? 1 : 0);
 
                 // CodeContracts no permite utilizar this
                 // en los requires de los constructores
-                if (!action.IsConstructor)
+                if (!action.Method.IsConstructor)
                 {
                     var pre = generatePrecondition(field, transitions.Keys);
                     mc.Preconditions.Add(pre);

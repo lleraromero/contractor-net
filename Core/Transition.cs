@@ -15,12 +15,12 @@ namespace Contractor.Core
 
     public class Transition : ITransition, IEquatable<Transition>
     {
-        public IMethodDefinition Action { get; private set; }
+        public Action Action { get; private set; }
         public State SourceState { get; private set; }
         public State TargetState { get; private set; }
         public bool IsUnproven { get; private set; }
 
-        public Transition(IMethodDefinition action, State source, State target, bool isUnproven)
+        public Transition(Action action, State source, State target, bool isUnproven)
         {
             this.Action = action;
             this.SourceState = source;
@@ -30,13 +30,13 @@ namespace Contractor.Core
 
         public override string ToString()
         {
-            return string.Format("{0} -- {1} --> {2}", this.SourceState, Utils.Extensions.GetDisplayName(this.Action), this.TargetState);
+            return string.Format("{0} -- {1} --> {2}", this.SourceState, this.Action.ToString(), this.TargetState);
         }
 
         #region ITransition members
         string ITransition.Action
         {
-            get { return Utils.Extensions.GetDisplayName(this.Action); }
+            get { return this.Action.ToString(); }
         }
 
         State ITransition.SourceState
@@ -58,7 +58,7 @@ namespace Contractor.Core
         #region IEquatable members
         public bool Equals(Transition other)
         {
-            return this.Action.GetUniqueName().Equals(other.Action.GetUniqueName()) && this.SourceState.Equals(other.SourceState) && this.TargetState.Equals(other.TargetState);
+            return this.Action.Name.Equals(other.Action.Name) && this.SourceState.Equals(other.SourceState) && this.TargetState.Equals(other.TargetState);
         }
 
         public override bool Equals(object obj)
