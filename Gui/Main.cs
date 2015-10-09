@@ -247,7 +247,7 @@ namespace Contractor.Gui
                 return;
             }
 
-            var label = e.Transition.Action;
+            var label = e.Transition.Action.ToString();
             var createEdge = true;
             Style lineStyle = e.Transition.IsUnproven ? Style.Dashed : Style.Solid;
 

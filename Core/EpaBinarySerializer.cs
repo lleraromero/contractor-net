@@ -188,9 +188,9 @@ namespace Contractor.Core
             return true;
         }
 
-        private void AddTransition(ITransition t, Graph graph)
+        private void AddTransition(Transition t, Graph graph)
         {
-            var label = t.Action;
+            var label = t.Action.ToString();
             var createEdge = true;
             Style lineStyle = t.IsUnproven ? Style.Dashed : Style.Solid;
 
@@ -228,9 +228,9 @@ namespace Contractor.Core
             }
         }
 
-        private void AddTransitionOverlapped(ITransition t, Graph graph, bool overlapped)
+        private void AddTransitionOverlapped(Transition t, Graph graph, bool overlapped)
         {
-            var label = t.Action;
+            var label = t.Action.ToString();
             var createEdge = true;
             Style lineStyle = t.IsUnproven ? Style.Dashed : Style.Solid;
             Microsoft.Msagl.Drawing.Color lineColour = overlapped ? Microsoft.Msagl.Drawing.Color.Red : Microsoft.Msagl.Drawing.Color.Black;

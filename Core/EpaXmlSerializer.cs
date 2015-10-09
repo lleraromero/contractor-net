@@ -46,7 +46,7 @@ namespace Contractor.Core
             Contract.Requires(epa != null);
             Contract.Requires(writer != null);
 
-            SortedSet<string> actions = new SortedSet<string>(from t in epa.Transitions select t.Action);
+            SortedSet<string> actions = new SortedSet<string>(from t in epa.Transitions select t.Action.ToString());
             foreach (var a in actions)
             {
                 writer.WriteStartElement("label");
@@ -85,12 +85,12 @@ namespace Contractor.Core
             Contract.Requires(writer != null);
             Contract.Requires(s != null);
 
-            SortedDictionary<uint, List<ITransition>> transitions = new SortedDictionary<uint, List<ITransition>>();
+            SortedDictionary<uint, List<Transition>> transitions = new SortedDictionary<uint, List<Transition>>();
             foreach (var t in epa[s])
             {
                 if (!transitions.ContainsKey(t.TargetState.Id))
                 {
-                    transitions.Add(t.TargetState.Id, new List<ITransition>());
+                    transitions.Add(t.TargetState.Id, new List<Transition>());
                 }
                 transitions[t.TargetState.Id].Add(t);
             }
@@ -101,7 +101,7 @@ namespace Contractor.Core
                 {
                     writer.WriteStartElement("transition");
                     writer.WriteAttributeString("destination", kvp.Key.ToString());
-                    writer.WriteAttributeString("label", t.Action);
+                    writer.WriteAttributeString("label", t.Action.ToString());
                     writer.WriteAttributeString("uncertain", t.IsUnproven.ToString().ToLower());
                     writer.WriteAttributeString("violates_invariant", "false"); //Contractor.NET does not support this attribute
                     writer.WriteEndElement();

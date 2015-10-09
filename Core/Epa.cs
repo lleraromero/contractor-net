@@ -8,7 +8,7 @@ namespace Contractor.Core
     public class Epa : IEquatable<Epa>
     {
         protected string type;
-        protected Dictionary<State, HashSet<ITransition>> graph;
+        protected Dictionary<State, HashSet<Transition>> graph;
         protected State initial;
 
         [ContractInvariantMethod]
@@ -18,7 +18,7 @@ namespace Contractor.Core
             Contract.Invariant(Transitions.All(t => States.Contains(t.SourceState)));
         }
 
-        public Epa(string type, Dictionary<State, HashSet<ITransition>> graph, State initial)
+        public Epa(string type, Dictionary<State, HashSet<Transition>> graph, State initial)
         {
             this.type = type;
             this.graph = graph;
@@ -33,24 +33,24 @@ namespace Contractor.Core
             get { return new HashSet<State>(graph.Keys); }
         }
 
-        public HashSet<ITransition> Transitions
+        public HashSet<Transition> Transitions
         {
             get
             {
                 if (graph.Values.Count == 0)
                 {
-                    return new HashSet<ITransition>();
+                    return new HashSet<Transition>();
                 }
                 else
                 {
-                    return new HashSet<ITransition>(((IEnumerable<IEnumerable<ITransition>>)graph.Values).Aggregate((acum, l) => acum.Union(l)));
+                    return new HashSet<Transition>(((IEnumerable<IEnumerable<Transition>>)graph.Values).Aggregate((acum, l) => acum.Union(l)));
                 }
             }
         }
 
-        public HashSet<ITransition> this[State s]
+        public HashSet<Transition> this[State s]
         {
-            get { return new HashSet<ITransition>(graph[s]); }
+            get { return new HashSet<Transition>(graph[s]); }
         }
 
         #region IEquatable

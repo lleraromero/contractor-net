@@ -57,11 +57,11 @@ namespace Contractor.Core
 
     public class TransitionAddedEventArgs : TypeEventArgs
     {
-        public ITransition Transition { get; private set; }
+        public Transition Transition { get; private set; }
 
         public State SourceState { get; private set; }
 
-        public TransitionAddedEventArgs(string typeFullName, ITransition transition, State sourceState)
+        public TransitionAddedEventArgs(string typeFullName, Transition transition, State sourceState)
             : base(typeFullName)
         {
             this.Transition = transition;
@@ -291,7 +291,7 @@ namespace Contractor.Core
 
                         if (this.TransitionAdded != null)
                         {
-                            var eventArgs = new TransitionAddedEventArgs(typeDisplayName, transition as ITransition, source as State);
+                            var eventArgs = new TransitionAddedEventArgs(typeDisplayName, transition as Transition, source as State);
                             this.TransitionAdded(this, eventArgs);
                         }
                     }

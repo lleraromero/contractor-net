@@ -6,14 +6,14 @@ namespace Contractor.Core
 {
     public class EpaBuilder
     {
-        protected Dictionary<State, HashSet<ITransition>> graph;
+        protected Dictionary<State, HashSet<Transition>> graph;
         protected string type;
         protected State initial;
 
         public EpaBuilder(string Type)
         {
             this.type = Type;
-            this.graph = new Dictionary<State, HashSet<ITransition>>();
+            this.graph = new Dictionary<State, HashSet<Transition>>();
         }
 
         public string Type { get { return this.type; } }
@@ -23,17 +23,17 @@ namespace Contractor.Core
             get { return new HashSet<State>(graph.Keys); }
         }
 
-        public HashSet<ITransition> Transitions
+        public HashSet<Transition> Transitions
         {
             get
             {
                 if (graph.Values.Count == 0)
                 {
-                    return new HashSet<ITransition>();
+                    return new HashSet<Transition>();
                 }
                 else
                 {
-                    return new HashSet<ITransition>(((IEnumerable<IEnumerable<ITransition>>)graph.Values).Aggregate((acum, l) => acum.Union(l)));
+                    return new HashSet<Transition>(((IEnumerable<IEnumerable<Transition>>)graph.Values).Aggregate((acum, l) => acum.Union(l)));
                 }
             }
         }
@@ -43,7 +43,7 @@ namespace Contractor.Core
             Contract.Requires(!States.Contains(s));
             Contract.Ensures(States.Contains(s));
 
-            graph[s] = new HashSet<ITransition>();
+            graph[s] = new HashSet<Transition>();
         }
 
         public void Remove(State s)
@@ -64,7 +64,7 @@ namespace Contractor.Core
             }
         }
 
-        public void Add(ITransition t)
+        public void Add(Transition t)
         {
             Contract.Requires(States.Contains(t.SourceState));
             Contract.Requires(States.Contains(t.TargetState));
@@ -73,7 +73,7 @@ namespace Contractor.Core
             graph[t.SourceState].Add(t);
         }
 
-        public void Remove(ITransition t)
+        public void Remove(Transition t)
         {
             Contract.Requires(Transitions.Contains(t));
 
