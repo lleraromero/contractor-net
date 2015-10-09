@@ -30,7 +30,7 @@ namespace Contractor.Core
 
         public override string ToString()
         {
-            return method.Name.Value;
+            return method.GetDisplayName();
         }
     }
 
