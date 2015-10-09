@@ -15,7 +15,7 @@ namespace Contractor.Core
         protected IMethodDefinition method;
         public override string Name
         {
-            get { return method.Name.Value; }
+            get { return method.GetUniqueName(); }
         }
 
         public override IMethodDefinition Method
@@ -30,14 +30,14 @@ namespace Contractor.Core
 
         public override string ToString()
         {
-            return method.GetUniqueName();
+            return method.Name.Value;
         }
     }
 
     public class StringAction : Action
     {
         protected string name;
-        protected IMethodDefinition method;
+
         public override string Name
         {
             get { return name; }
