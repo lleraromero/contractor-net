@@ -26,15 +26,15 @@ namespace Contractor.Core
             this.queryContractProvider.AssociateTypeWithContract(this.typeToAnalyze, typeContract);
         }
 
-        public override ActionAnalysisResults AnalyzeActions(State source, IMethodDefinition action, List<IMethodDefinition> actions)
+        public override ActionAnalysisResults AnalyzeActions(State source, Action action, List<Action> actions)
         {
-            var result = Analyze<IMethodDefinition>(source, action, actions);
+            var result = Analyze<Action>(source, action, actions);
             var analysisResult = EvaluateQueries(actions, result);
 
             return analysisResult;
         }
 
-        public override TransitionAnalysisResult AnalyzeTransitions(State source, IMethodDefinition action, List<State> targets)
+        public override TransitionAnalysisResult AnalyzeTransitions(State source, Action action, List<State> targets)
         {
             var result = Analyze<State>(source, action, targets);
             var resultAnalysis = EvaluateQueries(source, action, targets, result);
@@ -42,7 +42,7 @@ namespace Contractor.Core
             return resultAnalysis;
         }
 
-        private Dictionary<MethodDefinition, ResultKind> Analyze<T>(State source, IMethodDefinition action, List<T> target)
+        private Dictionary<MethodDefinition, ResultKind> Analyze<T>(State source, Action action, List<T> target)
         {
             List<MethodDefinition> queries = GenerateQueries<T>(source, action, target);
 
@@ -66,11 +66,11 @@ namespace Contractor.Core
             return result;
         }
 
-        private ActionAnalysisResults EvaluateQueries(List<IMethodDefinition> actions, Dictionary<MethodDefinition, ResultKind> result)
+        private ActionAnalysisResults EvaluateQueries(List<Action> actions, Dictionary<MethodDefinition, ResultKind> result)
         {
             var analysisResult = new ActionAnalysisResults();
-            analysisResult.EnabledActions.AddRange(actions);
-            analysisResult.DisabledActions.AddRange(actions);
+            analysisResult.EnabledActions.AddRange(from a in actions select a.Method);
+            analysisResult.DisabledActions.AddRange(from a in actions select a.Method);
 
             foreach (var entry in result)
             {
@@ -200,7 +200,7 @@ namespace Contractor.Core
             }
         }
 
-        private TransitionAnalysisResult EvaluateQueries(State source, IMethodDefinition action, List<State> targets, Dictionary<MethodDefinition, ResultKind> result)
+        private TransitionAnalysisResult EvaluateQueries(State source, Action action, List<State> targets, Dictionary<MethodDefinition, ResultKind> result)
         {
             var analysisResult = new TransitionAnalysisResult();
 
@@ -225,7 +225,7 @@ namespace Contractor.Core
 
                         if (target != null)
                         {
-                            var transition = new Transition(new CciAction(action), source, target, isUnproven);
+                            var transition = new Transition(action, source, target, isUnproven);
                             analysisResult.Transitions.Add(transition);
                         }
 

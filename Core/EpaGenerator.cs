@@ -209,15 +209,13 @@ namespace Contractor.Core
             if (this.TypeAnalysisStarted != null)
                 this.TypeAnalysisStarted(this, new TypeAnalysisStartedEventArgs(typeDisplayName));
 
-            var constructors = (from m in methods
+            var constructors = new HashSet<Action>(from m in methods
                                 where m.IsConstructor
-                                select new CciAction(m))
-                                .ToList();
+                                select new CciAction(m));
 
-            var actions = (from m in methods
+            var actions = new HashSet<Action>(from m in methods
                            where !m.IsConstructor
-                           select m)
-                           .ToList();
+                           select new CciAction(m));
 
             var epaBuilder = new EpaBuilder(typeUniqueName);
 
@@ -236,8 +234,7 @@ namespace Contractor.Core
 
             var states = new Dictionary<string, State>();
 
-            var dummy = new State();
-            dummy.EnabledActions.UnionWith(constructors);
+            var dummy = new State(constructors, new HashSet<Action>());
 
             states.Add(dummy.Name, dummy);
             epaBuilder.Add(dummy);
@@ -256,7 +253,7 @@ namespace Contractor.Core
                 {
                     var actionUniqueName = action.Method.GetUniqueName();
                     // Which actions are enabled or disabled if 'action' is called from 'source'?
-                    var actionsResult = checker.AnalyzeActions(source, action.Method, actions);
+                    var actionsResult = checker.AnalyzeActions(source, action, actions.ToList<Action>());
 
                     // Remove any inconsistency
                     var inconsistentActions = actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).ToList();
@@ -268,7 +265,7 @@ namespace Contractor.Core
 
                     var possibleTargets = generatePossibleStates(actions, actionsResult, epaBuilder.States);
                     // Which states are reachable from the current state (aka source) using 'action'?
-                    var transitionsResults = checker.AnalyzeTransitions(source, action.Method, possibleTargets);
+                    var transitionsResults = checker.AnalyzeTransitions(source, action, possibleTargets);
 
                     foreach (var transition in transitionsResults.Transitions)
                     {
@@ -318,49 +315,50 @@ namespace Contractor.Core
             return analysisResult;
         }
 
-        private List<State> generatePossibleStates(List<IMethodDefinition> actions, ActionAnalysisResults actionsResult, HashSet<State> knownStates)
+        private List<State> generatePossibleStates(ISet<Action> actions, ActionAnalysisResults actionsResult, HashSet<State> knownStates)
         {
             Contract.Requires(actions != null);
             Contract.Requires(actionsResult != null);
             Contract.Requires(knownStates != null);
 
-            var unknownActions = new HashSet<IMethodDefinition>(actions);
-
-            unknownActions.ExceptWith(actionsResult.EnabledActions);
-            unknownActions.ExceptWith(actionsResult.DisabledActions);
+            var unknownActions = new HashSet<Action>(actions);
+            unknownActions.ExceptWith(from a in actionsResult.EnabledActions select new CciAction(a));
+            unknownActions.ExceptWith(from a in actionsResult.DisabledActions select new CciAction(a));
 
             var states = new List<State>();
 
-            var v = new State();
-            //TODO: sacar los linq cuando se cambie el modelo completamente
-            v.EnabledActions.UnionWith(from a in actionsResult.EnabledActions select new CciAction(a));
-            v.DisabledActions.UnionWith(from a in actionsResult.DisabledActions select new CciAction(a));
-            v.DisabledActions.UnionWith(from a in unknownActions select new CciAction(a));
+            var enabledActions = new HashSet<Action>(from a in actionsResult.EnabledActions select new CciAction(a));
+            var disabledActions = new HashSet<Action>(from a in actionsResult.DisabledActions select new CciAction(a));
+            disabledActions.UnionWith(unknownActions);
+            var v = new State(enabledActions, disabledActions);
+            
             if (knownStates.Contains(v))
             {
-                v = knownStates.Single(s => s.Equals(v)) as State;
+                v = knownStates.Single(s => s.Equals(v));
             }
             states.Add(v);
 
             while (unknownActions.Count > 0)
             {
-                var m = unknownActions.First();
-                unknownActions.Remove(m);
+                var action = unknownActions.First();
+                unknownActions.Remove(action);
 
                 var count = states.Count;
 
                 for (int i = 0; i < count; ++i)
                 {
-                    var w = new State();
+                    enabledActions = new HashSet<Action>();
+                    enabledActions.Add(action);
+                    enabledActions.UnionWith(states[i].EnabledActions);
+                    disabledActions = new HashSet<Action>();
+                    disabledActions.UnionWith(states[i].DisabledActions);
+                    disabledActions.Remove(action);
 
-                    w.EnabledActions.Add(new CciAction(m));
-                    w.EnabledActions.UnionWith(states[i].EnabledActions);
-                    w.DisabledActions.UnionWith(states[i].DisabledActions);
-                    w.DisabledActions.Remove(new CciAction(m));
+                    var w = new State(enabledActions, disabledActions);
 
                     if (knownStates.Contains(w))
                     {
-                        w = knownStates.Single(s => s.Equals(w)) as State;
+                        w = knownStates.Single(s => s.Equals(w));
                     }
 
                     states.Add(w);

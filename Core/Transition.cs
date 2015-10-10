@@ -22,12 +22,18 @@ namespace Contractor.Core
             this.isUnproven = isUnproven;
         }
 
-        public override string ToString()
+        #region IEquatable
+        public override bool Equals(object obj)
         {
-            return string.Format("{0} -- {1} --> {2}", this.sourceState, this.action, this.targetState);
-        }
+            // Again just optimization
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
 
-        #region IEquatable members
+            // Actually check the type, should not throw exception from Equals override
+            if (obj.GetType() != this.GetType()) return false;
+
+            return Equals((Transition)obj);
+        }
         public bool Equals(Transition other)
         {
             return this.action.Equals(other.action) && this.sourceState.Equals(other.sourceState) && this.targetState.Equals(other.targetState);
@@ -38,5 +44,10 @@ namespace Contractor.Core
             return this.action.GetHashCode() ^ this.sourceState.GetHashCode() ^ this.targetState.GetHashCode();
         }
         #endregion
+
+        public override string ToString()
+        {
+            return string.Format("{0} -- {1} --> {2}", this.sourceState, this.action, this.targetState);
+        }
     }
 }

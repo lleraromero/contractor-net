@@ -67,12 +67,12 @@ namespace Contractor.Core
             }
         }
 
-        public override ActionAnalysisResults AnalyzeActions(State source, IMethodDefinition action, List<IMethodDefinition> actions)
+        public override ActionAnalysisResults AnalyzeActions(State source, Action action, List<Action> actions)
         {
             Contract.Requires(source != null && action != null && actions != null);
             Contract.Requires(actions.Count > 0);
 
-            var queries = base.GenerateQueries<IMethodDefinition>(source, action, actions);
+            var queries = base.GenerateQueries<Action>(source, action, actions);
             this.typeToAnalyze.Methods.AddRange(queries);
             queryAssembly.InjectContracts(this.queryContractProvider);
 
@@ -86,11 +86,11 @@ namespace Contractor.Core
             return evalResult;
         }
 
-        private ActionAnalysisResults evaluateQueries(List<IMethodDefinition> actions, Dictionary<string, List<ResultKind>> result)
+        private ActionAnalysisResults evaluateQueries(List<Action> actions, Dictionary<string, List<ResultKind>> result)
         {
             var analysisResult = new ActionAnalysisResults();
-            analysisResult.EnabledActions.AddRange(actions);
-            analysisResult.DisabledActions.AddRange(actions);
+            analysisResult.EnabledActions.AddRange(from a in actions select a.Method);
+            analysisResult.DisabledActions.AddRange(from a in actions select a.Method);
 
             foreach (var entry in result)
             {
@@ -227,7 +227,7 @@ namespace Contractor.Core
             else return ResultKind.None;
         }
 
-        public override TransitionAnalysisResult AnalyzeTransitions(State source, IMethodDefinition action, List<State> targets)
+        public override TransitionAnalysisResult AnalyzeTransitions(State source, Action action, List<State> targets)
         {
             var queries = base.GenerateQueries<State>(source, action, targets);
             this.typeToAnalyze.Methods.AddRange(queries);
@@ -238,7 +238,7 @@ namespace Contractor.Core
             this.typeToAnalyze.Methods.RemoveAll(m => queries.Contains(m));
 
             var result = executeChecker(queryAssemblyName);
-            var evalResult = evaluateQueries(source, action, targets, result);
+            var evalResult = evaluateQueries(source, action.Method, targets, result);
 
             return evalResult;
         }

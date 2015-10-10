@@ -24,9 +24,9 @@ namespace Contractor.Core
         // Token that allows the user to stop the analysis
         protected CancellationToken token;
 
-        public abstract ActionAnalysisResults AnalyzeActions(State source, IMethodDefinition action, List<IMethodDefinition> actions);
+        public abstract ActionAnalysisResults AnalyzeActions(State source, Action action, List<Action> actions);
 
-        public abstract TransitionAnalysisResult AnalyzeTransitions(State source, IMethodDefinition action, List<State> targets);
+        public abstract TransitionAnalysisResult AnalyzeTransitions(State source, Action action, List<State> targets);
 
         #endregion IAnalyzer interface
 
@@ -137,24 +137,24 @@ namespace Contractor.Core
             return pdbReader;
         }
 
-        protected virtual List<MethodDefinition> GenerateQueries<T>(State state, IMethodDefinition action, List<T> actions /*states*/)
+        protected virtual List<MethodDefinition> GenerateQueries<T>(State state, Action action, List<T> actions /*states*/)
         {
-            Contract.Requires(typeof(T) == typeof(IMethodDefinition) || typeof(T) == typeof(State));
+            Contract.Requires(typeof(T) == typeof(Action) || typeof(T) == typeof(State));
 
             var queries = new List<MethodDefinition>();
 
             foreach (var target in actions)
             {
-                if (typeof(T) == typeof(IMethodDefinition))
+                if (typeof(T) == typeof(Action))
                 {
                     // Add positive query
-                    queries.Add(GenerateQuery(state, action, (IMethodDefinition)target));
+                    queries.Add(GenerateQuery(state, action.Method, (target as Action).Method));
                     // Add negative query
-                    queries.Add(GenerateQuery(state, action, (IMethodDefinition)target, true));
+                    queries.Add(GenerateQuery(state, action.Method, (target as Action).Method, true));
                 }
                 else if (typeof(T) == typeof(State))
                 {
-                    queries.Add(GenerateQuery(state, action, (State)(object)target));
+                    queries.Add(GenerateQuery(state, action.Method, (State)(object)target));
                 }
             }
 
