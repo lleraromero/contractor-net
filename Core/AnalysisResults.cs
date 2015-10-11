@@ -11,8 +11,8 @@ namespace Contractor.Core
 {
     class ActionAnalysisResults
     {
-        private HashSet<Action> enabledActions;
-        private HashSet<Action> disabledActions;
+        protected HashSet<Action> enabledActions;
+        protected HashSet<Action> disabledActions;
         public IImmutableSet<Action> EnabledActions { get { return enabledActions.ToImmutableHashSet(); } }
         public IImmutableSet<Action> DisabledActions { get { return disabledActions.ToImmutableHashSet(); } }
 
@@ -28,11 +28,14 @@ namespace Contractor.Core
 
     class TransitionAnalysisResult
     {
-        public List<Transition> Transitions { get; private set; }
+        protected HashSet<Transition> transitions;
+        public IImmutableSet<Transition> Transitions { get { return transitions.ToImmutableHashSet(); } }
 
-        public TransitionAnalysisResult()
+        public TransitionAnalysisResult(ISet<Transition> transitions)
         {
-            this.Transitions = new List<Transition>();
+            Contract.Requires(transitions != null && !transitions.Contains(null));
+
+            this.transitions = new HashSet<Transition>(transitions);
         }
     }
 

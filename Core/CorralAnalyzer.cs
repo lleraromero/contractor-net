@@ -209,7 +209,7 @@ namespace Contractor.Core
 
         private TransitionAnalysisResult EvaluateQueries(State source, Action action, List<State> targets, Dictionary<MethodDefinition, ResultKind> result)
         {
-            var analysisResult = new TransitionAnalysisResult();
+            var transitions = new HashSet<Transition>();
 
             foreach (var entry in result)
             {
@@ -233,7 +233,7 @@ namespace Contractor.Core
                         if (target != null)
                         {
                             var transition = new Transition(action, source, target, isUnproven);
-                            analysisResult.Transitions.Add(transition);
+                            transitions.Add(transition);
                         }
 
                         if (isUnproven)
@@ -244,7 +244,7 @@ namespace Contractor.Core
                 }
             }
 
-            return analysisResult;
+            return new TransitionAnalysisResult(transitions);
         }
 
         #region BCT-TranslationHelper.cs

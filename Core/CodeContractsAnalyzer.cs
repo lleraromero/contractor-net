@@ -252,7 +252,7 @@ namespace Contractor.Core
 
         private TransitionAnalysisResult evaluateQueries(State source, IMethodDefinition action, List<State> targets, Dictionary<string, List<ResultKind>> result)
         {
-            var analysisResult = new TransitionAnalysisResult();
+            var transitions = new HashSet<Transition>();
 
             foreach (var entry in result)
             {
@@ -274,7 +274,7 @@ namespace Contractor.Core
                     if (target != null)
                     {
                         var transition = new Transition(new CciAction(action), source, target, isUnproven);
-                        analysisResult.Transitions.Add(transition);
+                        transitions.Add(transition);
                     }
 
                     if (isUnproven)
@@ -282,7 +282,7 @@ namespace Contractor.Core
                 }
             }
 
-            return analysisResult;
+            return new TransitionAnalysisResult(transitions);
         }
     }
 }
