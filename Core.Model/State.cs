@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.Contracts;
 using System.Linq;
 
 namespace Contractor.Core.Model
@@ -15,6 +16,9 @@ namespace Contractor.Core.Model
 
         public State(ISet<Action> enabledActions, ISet<Action> disabledActions)
         {
+            Contract.Requires(enabledActions != null && !enabledActions.Contains(null));
+            Contract.Requires(disabledActions != null && !disabledActions.Contains(null));
+
             this.enabledActions =  new HashSet<Action>(enabledActions);
             this.disabledActions = new HashSet<Action>(disabledActions);
         }

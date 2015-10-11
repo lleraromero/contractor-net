@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 
 namespace Contractor.Core.Model
 {
@@ -16,6 +17,10 @@ namespace Contractor.Core.Model
 
         public Transition(Action action, State source, State target, bool isUnproven)
         {
+            Contract.Requires(action != null);
+            Contract.Requires(source != null);
+            Contract.Requires(target != null);
+
             this.action = action;
             this.sourceState = source;
             this.targetState = target;
