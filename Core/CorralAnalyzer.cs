@@ -70,9 +70,8 @@ namespace Contractor.Core
 
         private ActionAnalysisResults EvaluateQueries(List<Action> actions, Dictionary<MethodDefinition, ResultKind> result)
         {
-            var analysisResult = new ActionAnalysisResults();
-            analysisResult.EnabledActions.AddRange(actions);
-            analysisResult.DisabledActions.AddRange(actions);
+            var enabledActions = new HashSet<Action>(actions);
+            var disabledActions = new HashSet<Action>(actions);
 
             foreach (var entry in result)
             {
@@ -92,11 +91,17 @@ namespace Contractor.Core
                         if (isNegative)
                         {
                             actionName = actionName.Remove(0, notPrefix.Length);
-                            analysisResult.DisabledActions.RemoveAll(m => m.Method.GetUniqueName() == actionName);
+                            if (disabledActions.Any(a => a.Name.Equals(actionName)))
+                            {
+                                disabledActions.Remove(disabledActions.First(a => a.Name.Equals(actionName)));
+                            }
                         }
                         else
                         {
-                            analysisResult.EnabledActions.RemoveAll(m => m.Method.GetUniqueName() == actionName);
+                            if (enabledActions.Any(a => a.Name.Equals(actionName)))
+                            {
+                                enabledActions.Remove(enabledActions.First(a => a.Name.Equals(actionName)));
+                            }
                         }
 
                         if (entry.Value == ResultKind.RecursionBoundReached)
@@ -108,7 +113,7 @@ namespace Contractor.Core
                 }
             }
 
-            return analysisResult;
+            return new ActionAnalysisResults(enabledActions, disabledActions);
         }
 
         private Dictionary<MethodDefinition, ResultKind> ExecuteChecker(List<MethodDefinition> queries)

@@ -89,9 +89,8 @@ namespace Contractor.Core
 
         private ActionAnalysisResults evaluateQueries(List<Action> actions, Dictionary<string, List<ResultKind>> result)
         {
-            var analysisResult = new ActionAnalysisResults();
-            analysisResult.EnabledActions.AddRange(actions);
-            analysisResult.DisabledActions.AddRange(actions);
+            var enabledActions = new HashSet<Action>(actions);
+            var disabledActions = new HashSet<Action>(actions);
 
             foreach (var entry in result)
             {
@@ -114,11 +113,18 @@ namespace Contractor.Core
                     if (isNegative)
                     {
                         actionName = actionName.Remove(0, notPrefix.Length);
-                        analysisResult.DisabledActions.RemoveAll(m => m.Method.GetUniqueName() == actionName);
+
+                        if (disabledActions.Any(a => a.Name.Equals(actionName)))
+                        {
+                            disabledActions.Remove(disabledActions.First(a => a.Name.Equals(actionName)));
+                        }
                     }
                     else
                     {
-                        analysisResult.EnabledActions.RemoveAll(m => m.Method.GetUniqueName() == actionName);
+                        if (enabledActions.Any(a => a.Name.Equals(actionName)))
+                        {
+                            enabledActions.Remove(enabledActions.First(a => a.Name.Equals(actionName)));
+                        }
                     }
 
                     if (entry.Value.Contains(ResultKind.UnprovenEnsures))
@@ -126,7 +132,7 @@ namespace Contractor.Core
                 }
             }
 
-            return analysisResult;
+            return new ActionAnalysisResults(enabledActions, disabledActions);
         }
 
         private Dictionary<string, List<ResultKind>> executeChecker(string queryAssemblyName)

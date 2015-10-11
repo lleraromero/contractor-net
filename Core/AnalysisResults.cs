@@ -1,6 +1,7 @@
 ﻿using Contractor.Core.Model;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
@@ -10,22 +11,19 @@ namespace Contractor.Core
 {
     class ActionAnalysisResults
     {
-        public List<Action> EnabledActions { get; private set; }
-        public List<Action> DisabledActions { get; private set; }
+        private HashSet<Action> enabledActions;
+        private HashSet<Action> disabledActions;
+        public IImmutableSet<Action> EnabledActions { get { return enabledActions.ToImmutableHashSet(); } }
+        public IImmutableSet<Action> DisabledActions { get { return disabledActions.ToImmutableHashSet(); } }
 
-        public ActionAnalysisResults()
+        public ActionAnalysisResults(ISet<Action> enabledActions, ISet<Action> disabledActions)
         {
-            this.EnabledActions = new List<Action>();
-            this.DisabledActions = new List<Action>();
-        }
+            Contract.Requires(enabledActions != null && !enabledActions.Contains(null));
+            Contract.Requires(disabledActions != null && !disabledActions.Contains(null));
 
-        [ContractInvariantMethod]
-        private void ObjectInvariant()
-        {
-            Contract.Invariant(!this.EnabledActions.Contains(null));
-            Contract.Invariant(!this.DisabledActions.Contains(null));
+            this.enabledActions = new HashSet<Action>(enabledActions);
+            this.disabledActions = new HashSet<Action>(disabledActions);
         }
-
     }
 
     class TransitionAnalysisResult
