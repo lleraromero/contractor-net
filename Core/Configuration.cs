@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Contractor.Core.Properties;
+using System;
 using System.IO;
-
-using Contractor.Core.Properties;
-using NLog.Config;
-using NLog.Targets;
+using System.Text;
 
 namespace Contractor.Core
 {
@@ -52,7 +47,7 @@ namespace Contractor.Core
                 throw new DirectoryNotFoundException(msg.ToString());
             }
 
-            SetUpLogger();
+            Logger.SetUpLogger(Path.Combine(TempPath, "contractor.out"));
         }
 
         public static string ExpandVariables(string text)
@@ -67,25 +62,6 @@ namespace Contractor.Core
             return text;
         }
 
-        private static void SetUpLogger()
-        {
-            // Step 1. Create configuration object 
-            var config = new LoggingConfiguration();
-
-            // Step 2. Create targets and add them to the configuration 
-            var fileTarget = new FileTarget();
-            config.AddTarget("file", fileTarget);
-
-            // Step 3. Set target properties 
-            fileTarget.FileName = Path.Combine(TempPath, "contractor.out");
-            fileTarget.Layout = "${longdate} | ${level} | ${newline}${message}";
-
-            // Step 4. Define rules
-            var rule = new LoggingRule("*", NLog.LogLevel.Trace, fileTarget);
-            config.LoggingRules.Add(rule);
-
-            // Step 5. Activate the configuration
-            NLog.LogManager.Configuration = config;
-        }
+        
     }
 }

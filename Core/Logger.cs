@@ -1,5 +1,8 @@
-﻿using System;
+﻿using NLog.Config;
+using NLog.Targets;
+using System;
 using System.Diagnostics.Contracts;
+using System.IO;
 
 namespace Contractor.Core
 {
@@ -7,6 +10,29 @@ namespace Contractor.Core
 
     internal class Logger
     {
+        public static void SetUpLogger(string filename)
+        {
+            Contract.Requires(!string.IsNullOrEmpty(filename));
+
+            // Step 1. Create configuration object 
+            var config = new LoggingConfiguration();
+
+            // Step 2. Create targets and add them to the configuration 
+            var fileTarget = new FileTarget();
+            config.AddTarget("file", fileTarget);
+
+            // Step 3. Set target properties 
+            fileTarget.FileName = filename;
+            fileTarget.Layout = "${longdate} | ${level} | ${newline}${message}";
+
+            // Step 4. Define rules
+            var rule = new LoggingRule("*", NLog.LogLevel.Trace, fileTarget);
+            config.LoggingRules.Add(rule);
+
+            // Step 5. Activate the configuration
+            NLog.LogManager.Configuration = config;
+        }
+
         public static void Log(LogLevel level, Exception ex)
         {
             Contract.Requires(ex != null);

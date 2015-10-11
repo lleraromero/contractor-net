@@ -200,22 +200,22 @@
     </Compile>
     <Compile Include="CCI\AggregatingContractProvider.cs" />
     <Compile Include="AnalysisResults.cs" />
-    <Compile Include="Analyzer.cs" />
+    <Compile Include="CCI\Analyzer.cs" />
     <Compile Include="CCI\AssemblyInfo.cs" />
     <Compile Include="CCI\CciAction.cs" />
-    <Compile Include="CodeContractsAnalyzer.cs" />
+    <Compile Include="CCI\CodeContractsAnalyzer.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="CCI\ContractRewriter.cs" />
-    <Compile Include="CorralAnalyzer.cs" />
+    <Compile Include="CCI\CorralAnalyzer.cs" />
     <Compile Include="EpaBinarySerializer.cs" />
-    <Compile Include="EpaGenerator.cs" />
+    <Compile Include="CCI\EpaGenerator.cs" />
     <Compile Include="EpaXmlSerializer.cs" />
     <Compile Include="IAnalyzer.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="CCI\ReturnRewriter.cs" />
     <Compile Include="StringAction.cs" />
     <None Include="API.cd" />
-    <Compile Include="Instrumenter.cs" />
+    <Compile Include="CCI\Instrumenter.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
