@@ -10,16 +10,10 @@ namespace Contractor.Core
         protected string type;
         protected State initial;
 
-        protected Dictionary<State, int> ids;
-        protected int id;
-
         public EpaBuilder(string Type)
         {
             this.type = Type;
             this.graph = new Dictionary<State, HashSet<Transition>>();
-
-            ids = new Dictionary<State, int>();
-            id = 0;
         }
 
         public string Type { get { return this.type; } }
@@ -50,7 +44,6 @@ namespace Contractor.Core
             Contract.Ensures(States.Contains(s));
 
             graph[s] = new HashSet<Transition>();
-            ids[s] = id++;
         }
 
         public void Remove(State s)
@@ -69,8 +62,6 @@ namespace Contractor.Core
                     Remove(t as Transition);
                 }
             }
-
-            ids.Remove(s);
         }
 
         public void Add(Transition t)
@@ -118,13 +109,6 @@ namespace Contractor.Core
         public Epa Build()
         {
             return new Epa(type, graph, initial);
-        }
-
-        public int Id(State s)
-        {
-            Contract.Requires(States.Contains(s));
-
-            return ids[s];
         }
     }
 }

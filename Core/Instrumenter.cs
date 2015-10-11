@@ -91,8 +91,8 @@ namespace Contractor.Core
                 // voy a agrupar las transiciones que usan esta accion por sourceState.Id
                 // transitions = Dicc<uint, List<uint>> o sea: "Dicc<from, List<to>>"
                 var transUsingAction = from t in epa.Transitions where ((Transition)t).Action.Equals(action) select t as Transition;
-                var transSourceIds = (from t in transUsingAction select this.epa.Id(t.SourceState)).Distinct();
-                var transitions = transUsingAction.GroupBy(t => this.epa.Id(t.SourceState)).ToDictionary(t => t.Key, t => (from tran in t select this.epa.Id(tran.TargetState)).ToList());
+                var transSourceIds = (from t in transUsingAction select t.SourceState.Name).Distinct();
+                var transitions = transUsingAction.GroupBy(t => t.SourceState.Name).ToDictionary(t => t.Key, t => (from tran in t select tran.TargetState.Name).ToList());
 
                 var mc = cp.GetMethodContractFor(action) as MethodContract;
 
@@ -163,7 +163,7 @@ namespace Contractor.Core
             this.epa = null;
         }
 
-        private Precondition generatePrecondition(FieldDefinition field, IEnumerable<int> from)
+        private Precondition generatePrecondition(FieldDefinition field, IEnumerable<string> from)
         {
             var conditions = new List<IExpression>();
 
@@ -195,7 +195,7 @@ namespace Contractor.Core
             };
         }
 
-        private List<Postcondition> generatePostconditions(FieldDefinition field, Dictionary<int, List<int>> transitions)
+        private List<Postcondition> generatePostconditions(FieldDefinition field, Dictionary<string, List<string>> transitions)
         {
             var posts = new List<Postcondition>();
 
@@ -208,11 +208,11 @@ namespace Contractor.Core
             return posts;
         }
 
-        private Postcondition generatePostcondition(FieldDefinition field, int fromId, IEnumerable<int> to)
+        private Postcondition generatePostcondition(FieldDefinition field, string fromId, IEnumerable<string> to)
         {
             IExpression conditional;
 
-            if (fromId == 0)
+            if (this.epa.Initial.Name == fromId)
             {
                 //Initial state
                 conditional = generateConditionPartTo(field, to);
@@ -239,7 +239,7 @@ namespace Contractor.Core
             };
         }
 
-        private IExpression generateConditionPartFrom(FieldDefinition field, int fromId)
+        private IExpression generateConditionPartFrom(FieldDefinition field, string fromId)
         {
             return new Equality()
             {
@@ -262,7 +262,7 @@ namespace Contractor.Core
             };
         }
 
-        private IExpression generateConditionPartTo(FieldDefinition field, IEnumerable<int> to)
+        private IExpression generateConditionPartTo(FieldDefinition field, IEnumerable<string> to)
         {
             var conditions = new List<IExpression>();
 
@@ -290,7 +290,7 @@ namespace Contractor.Core
             return Helper.JoinWithLogicalOr(host, conditions, false);
         }
 
-        private IStatement generateSwitch(FieldDefinition field, Dictionary<int, List<int>> transitions)
+        private IStatement generateSwitch(FieldDefinition field, Dictionary<string, List<string>> transitions)
         {
             var switchStmt = new SwitchStatement()
             {
@@ -313,7 +313,7 @@ namespace Contractor.Core
             return switchStmt;
         }
 
-        private ISwitchCase generateSwitchCase(FieldDefinition field, int fromId, List<int> to)
+        private ISwitchCase generateSwitchCase(FieldDefinition field, string fromId, List<string> to)
         {
             Contract.Requires(field != null && to != null && to.Count > 0);
 
@@ -339,12 +339,12 @@ namespace Contractor.Core
             return caseStmt;
         }
 
-        private IStatement generateIf(FieldDefinition field, List<int> to)
+        private IStatement generateIf(FieldDefinition field, List<string> to)
         {
             Contract.Requires(field != null && to != null && to.Count > 0);
 
             var toStates = from id in to
-                           join state in epa.States on id equals this.epa.Id(state)
+                           join state in epa.States on id equals state.Name
                            select state;
             var conditions = Helper.GenerateStatesConditions(host, preconditions, type, toStates);
 
@@ -361,7 +361,7 @@ namespace Contractor.Core
             return stmt;
         }
 
-        private IStatement generateAssign(FieldDefinition field, int toId)
+        private IStatement generateAssign(FieldDefinition field, string toId)
         {
             var assignStmt = new ExpressionStatement()
             {

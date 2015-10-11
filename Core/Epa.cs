@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
@@ -11,77 +12,58 @@ namespace Contractor.Core
         protected Dictionary<State, HashSet<Transition>> graph;
         protected State initial;
 
-        //TODO: sacar esto que no va aca
-        protected Dictionary<State, int> ids;
-
-        [ContractInvariantMethod]
-        private void Invariant()
-        {
-            Contract.Invariant(Transitions.All(t => States.Contains(t.TargetState)));
-            Contract.Invariant(Transitions.All(t => States.Contains(t.SourceState)));
-        }
-
         public Epa(string type, Dictionary<State, HashSet<Transition>> graph, State initial)
         {
+            Contract.Requires(!string.IsNullOrEmpty(type));
+            Contract.Requires(graph != null);
+            Contract.Requires(graph.Values.All(trans => trans.All(t => graph.Keys.Contains(t.SourceState) && graph.Keys.Contains(t.TargetState))));
+            Contract.Requires(initial != null && graph.Keys.Contains(initial));
+
             this.type = type;
             this.graph = graph;
             this.initial = initial;
-
-            ids = new Dictionary<State, int>();
-            int id = 0;
-            foreach (var s in this.graph.Keys)
-            {
-                ids[s] = id;
-                ++id;
-            }
         }
 
         public string Type { get { return this.type; } }
         public State Initial { get { return this.initial; } }
 
-        public HashSet<State> States
+        public IImmutableSet<State> States
         {
-            get { return new HashSet<State>(graph.Keys); }
+            get { return graph.Keys.ToImmutableHashSet<State>(); }
         }
 
-        public HashSet<Transition> Transitions
+        public IImmutableSet<Transition> Transitions
         {
             get
             {
-                if (graph.Values.Count == 0)
-                {
-                    return new HashSet<Transition>();
-                }
-                else
-                {
-                    return new HashSet<Transition>(((IEnumerable<IEnumerable<Transition>>)graph.Values).Aggregate((acum, l) => acum.Union(l)));
-                }
+                return graph.Values.Aggregate(new HashSet<Transition>(), (acum, l) => new HashSet<Transition>(acum.Union(l)))
+                    .ToImmutableHashSet<Transition>();
             }
         }
 
-        public HashSet<Transition> this[State s]
-        {
-            get { return new HashSet<Transition>(graph[s]); }
-        }
-
-        public int Id(State s)
-        {
-            Contract.Requires(States.Contains(s));
-
-            return ids[s];
-        }
-
         #region IEquatable
+        public override bool Equals(object obj)
+        {
+            // Again just optimization
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+
+            // Actually check the type, should not throw exception from Equals override
+            if (obj.GetType() != this.GetType()) return false;
+
+            return Equals((Epa)obj);
+        }
         public bool Equals(Epa other)
         {
-            return string.Equals(this.Type, other.Type) && AreSetsEqual(this.States, other.States) && AreSetsEqual(this.Transitions, other.Transitions);
+            return type.Equals(other.type) && initial.Equals(other.initial) &&
+                HashSet<State>.CreateSetComparer().Equals(new HashSet<State>(graph.Keys), new HashSet<State>(other.graph.Keys)) && 
+                graph.Keys.All(s => HashSet<Transition>.CreateSetComparer().Equals(graph[s], other.graph[s]));
         }
 
-        private bool AreSetsEqual<T>(HashSet<T> first, HashSet<T> second)
+        public override int GetHashCode()
         {
-            return first.Count == second.Count &&
-                // Both sets have the same amount of each element
-                first.All(e => first.Count(e2 => e.Equals(e2)) == second.Count(e2 => e.Equals(e2)));
+            //TODO: mejorar para que valga la propiedad equals => mismo hash
+            return type.GetHashCode() ^ initial.GetHashCode();
         }
         #endregion
     }
