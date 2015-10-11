@@ -1,5 +1,4 @@
 ﻿using Contractor.Core.Model;
-using Microsoft.Cci;
 using System;
 using System.Collections.Generic;
 using Action = Contractor.Core.Model.Action;

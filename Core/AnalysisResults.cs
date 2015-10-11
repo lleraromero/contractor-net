@@ -1,22 +1,22 @@
 ﻿using Contractor.Core.Model;
-using Microsoft.Cci;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
+using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
     class ActionAnalysisResults
     {
-        public List<IMethodDefinition> EnabledActions { get; private set; }
-        public List<IMethodDefinition> DisabledActions { get; private set; }
+        public List<Action> EnabledActions { get; private set; }
+        public List<Action> DisabledActions { get; private set; }
 
         public ActionAnalysisResults()
         {
-            this.EnabledActions = new List<IMethodDefinition>();
-            this.DisabledActions = new List<IMethodDefinition>();
+            this.EnabledActions = new List<Action>();
+            this.DisabledActions = new List<Action>();
         }
 
         [ContractInvariantMethod]

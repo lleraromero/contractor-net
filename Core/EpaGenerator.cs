@@ -324,13 +324,13 @@ namespace Contractor.Core
             Contract.Requires(knownStates != null);
 
             var unknownActions = new HashSet<Action>(actions);
-            unknownActions.ExceptWith(from a in actionsResult.EnabledActions select new CciAction(a));
-            unknownActions.ExceptWith(from a in actionsResult.DisabledActions select new CciAction(a));
+            unknownActions.ExceptWith(actionsResult.EnabledActions);
+            unknownActions.ExceptWith(actionsResult.DisabledActions);
 
             var states = new List<State>();
 
-            var enabledActions = new HashSet<Action>(from a in actionsResult.EnabledActions select new CciAction(a));
-            var disabledActions = new HashSet<Action>(from a in actionsResult.DisabledActions select new CciAction(a));
+            var enabledActions = new HashSet<Action>(actionsResult.EnabledActions);
+            var disabledActions = new HashSet<Action>(actionsResult.DisabledActions);
             disabledActions.UnionWith(unknownActions);
             var v = new State(enabledActions, disabledActions);
             
