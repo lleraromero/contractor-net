@@ -2,7 +2,7 @@
 using System.Diagnostics.Contracts;
 using System.Linq;
 
-namespace Contractor.Core
+namespace Contractor.Core.Model
 {
     public class EpaBuilder
     {

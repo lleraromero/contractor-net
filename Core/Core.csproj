@@ -198,7 +198,6 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Action.cs" />
     <Compile Include="AggregatingContractProvider.cs" />
     <Compile Include="AnalysisResults.cs" />
     <Compile Include="Analyzer.cs" />
@@ -207,17 +206,12 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="ContractRewriter.cs" />
     <Compile Include="CorralAnalyzer.cs" />
-    <Compile Include="Epa.cs" />
     <Compile Include="EpaBinarySerializer.cs" />
-    <Compile Include="EpaBuilder.cs" />
     <Compile Include="EpaGenerator.cs" />
     <Compile Include="EpaXmlSerializer.cs" />
-    <Compile Include="Extensions.cs" />
-    <Compile Include="Helper.cs" />
     <Compile Include="IAnalyzer.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="ReturnRewriter.cs" />
-    <Compile Include="Transition.cs" />
     <None Include="API.cd" />
     <Compile Include="Instrumenter.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -225,7 +219,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="State.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -238,6 +231,12 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="Properties\libPaths.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core.Model\Core.Model.csproj">
+      <Project>{c172f5cc-8814-46df-b25d-2994e524e1d5}</Project>
+      <Name>Core.Model</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,4 +1,5 @@
-﻿using Contractor.Utils;
+﻿using Contractor.Core.Model;
+using Contractor.Utils;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;
@@ -9,6 +10,7 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
@@ -24,9 +26,9 @@ namespace Contractor.Core
         // Token that allows the user to stop the analysis
         protected CancellationToken token;
 
-        public abstract ActionAnalysisResults AnalyzeActions(State source, Action action, List<Action> actions);
+        public abstract ActionAnalysisResults AnalyzeActions(State source, Contractor.Core.Model.Action action, List<Contractor.Core.Model.Action> actions);
 
-        public abstract TransitionAnalysisResult AnalyzeTransitions(State source, Action action, List<State> targets);
+        public abstract TransitionAnalysisResult AnalyzeTransitions(State source, Contractor.Core.Model.Action action, List<State> targets);
 
         #endregion IAnalyzer interface
 
@@ -137,7 +139,7 @@ namespace Contractor.Core
             return pdbReader;
         }
 
-        protected virtual List<MethodDefinition> GenerateQueries<T>(State state, Action action, List<T> actions /*states*/)
+        protected virtual List<MethodDefinition> GenerateQueries<T>(State state, Contractor.Core.Model.Action action, List<T> actions /*states*/)
         {
             Contract.Requires(typeof(T) == typeof(Action) || typeof(T) == typeof(State));
 

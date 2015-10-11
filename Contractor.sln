@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Console", "Console\Console.csproj", "{53B2EDCB-0DA2-435C-973F-86F6F303623A}"
 	ProjectSection(ProjectDependencies) = postProject
 		{6552CCC8-0ADD-4FDB-A168-5AAC6FE23A74} = {6552CCC8-0ADD-4FDB-A168-5AAC6FE23A74}
@@ -32,6 +34,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Frontends", "Frontends", "{937440F7-801C-4674-A140-098AF035AE8A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EPAOverlapper", "EPAOverlapper\EPAOverlapper.csproj", "{AB023680-8E27-4D6C-9EC7-56102A6D3A8A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Model", "Core.Model\Core.Model.csproj", "{C172F5CC-8814-46DF-B25D-2994E524E1D5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -113,14 +117,24 @@ Global
 		{AB023680-8E27-4D6C-9EC7-56102A6D3A8A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{AB023680-8E27-4D6C-9EC7-56102A6D3A8A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{AB023680-8E27-4D6C-9EC7-56102A6D3A8A}.Release|x86.ActiveCfg = Release|Any CPU
+		{C172F5CC-8814-46DF-B25D-2994E524E1D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C172F5CC-8814-46DF-B25D-2994E524E1D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C172F5CC-8814-46DF-B25D-2994E524E1D5}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C172F5CC-8814-46DF-B25D-2994E524E1D5}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C172F5CC-8814-46DF-B25D-2994E524E1D5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C172F5CC-8814-46DF-B25D-2994E524E1D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C172F5CC-8814-46DF-B25D-2994E524E1D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C172F5CC-8814-46DF-B25D-2994E524E1D5}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C172F5CC-8814-46DF-B25D-2994E524E1D5}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{C172F5CC-8814-46DF-B25D-2994E524E1D5}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{53B2EDCB-0DA2-435C-973F-86F6F303623A} = {937440F7-801C-4674-A140-098AF035AE8A}
-		{84CDCF2E-CF8F-4381-93E6-CD204D50F8C5} = {937440F7-801C-4674-A140-098AF035AE8A}
 		{CD4DD380-2148-4C8C-B646-D0405F22D9DE} = {579D0B2C-9780-4C79-B41A-5A222BFC5E3D}
+		{84CDCF2E-CF8F-4381-93E6-CD204D50F8C5} = {937440F7-801C-4674-A140-098AF035AE8A}
 		{AB023680-8E27-4D6C-9EC7-56102A6D3A8A} = {579D0B2C-9780-4C79-B41A-5A222BFC5E3D}
 	EndGlobalSection
 EndGlobal

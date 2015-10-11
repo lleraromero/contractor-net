@@ -1,8 +1,8 @@
-﻿using Contractor.Utils;
-using Microsoft.Cci;
+﻿using Microsoft.Cci;
 using System;
+using Contractor.Utils;
 
-namespace Contractor.Core
+namespace Contractor.Core.Model
 {
     public abstract class Action : IEquatable<Action>
     {

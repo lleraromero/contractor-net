@@ -1,4 +1,5 @@
 ﻿using Contractor.Core;
+using Contractor.Core.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;

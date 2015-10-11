@@ -1,4 +1,5 @@
-﻿using Contractor.Utils;
+﻿using Contractor.Core.Model;
+using Contractor.Utils;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;
@@ -10,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {

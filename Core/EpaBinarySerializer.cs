@@ -1,4 +1,5 @@
-﻿using Microsoft.Msagl.Drawing;
+﻿using Contractor.Core.Model;
+using Microsoft.Msagl.Drawing;
 using Microsoft.Msagl.GraphViewerGdi;
 using System;
 using System.Diagnostics.Contracts;

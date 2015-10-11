@@ -63,6 +63,10 @@
     <Compile Include="EpaXmlSerializerTest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Core.Model\Core.Model.csproj">
+      <Project>{c172f5cc-8814-46df-b25d-2994e524e1d5}</Project>
+      <Name>Core.Model</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Core\Core.csproj">
       <Project>{ebedd305-0975-416b-a4e5-4c8f5eadb304}</Project>
       <Name>Core</Name>

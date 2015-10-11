@@ -1,4 +1,5 @@
-﻿using Contractor.Core.Properties;
+﻿using Contractor.Core.Model;
+using Contractor.Core.Properties;
 using Contractor.Utils;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;

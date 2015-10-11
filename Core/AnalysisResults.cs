@@ -1,9 +1,10 @@
-﻿using Microsoft.Cci;
+﻿using Contractor.Core.Model;
+using Microsoft.Cci;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Linq;
 using System.Diagnostics.Contracts;
+using System.Linq;
+using System.Text;
 
 namespace Contractor.Core
 {
@@ -59,7 +60,7 @@ namespace Contractor.Core
             var unprovenQueriesCount = Convert.ToInt32(this.Statistics["UnprovenQueriesCount"]);
             var totalGeneratedQueriesCount = Convert.ToInt32(this.Statistics["TotalGeneratedQueriesCount"]);
             var precision = 100 - Math.Ceiling((double)unprovenQueriesCount * 100 / totalGeneratedQueriesCount);
-            var unprovenTransitionsCount = this.EPA.Transitions.Count(t => t.IsUnproven);
+            var unprovenTransitionsCount = this.EPA.Transitions.Count<Transition>(t => t.IsUnproven);
 
             var sb = new StringBuilder();
             sb.AppendFormat(@"Total duration:             {0}"                 , this.TotalDuration).AppendLine();

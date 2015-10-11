@@ -1,4 +1,5 @@
 ﻿using Contractor.Core;
+using Contractor.Core.Model;
 using Contractor.Utils;
 using Microsoft.Cci;
 using Microsoft.Msagl.Drawing;
@@ -18,6 +19,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
+using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Gui
 {
@@ -650,14 +652,14 @@ namespace Contractor.Gui
             if (state.EnabledActions.Any())
             {
                 info.Append(@" \b Enabled Actions \b0 \par ");
-                var text = string.Join<Contractor.Core.Action>(@" \par ", state.EnabledActions);
+                var text = string.Join<Action>(@" \par ", state.EnabledActions);
                 info.Append(text);
             }
 
             if (state.DisabledActions.Any())
             {
                 info.Append(@" \fs8\par\par\fs18 \b Disabled Actions \b0 \par ");
-                var text = string.Join<Contractor.Core.Action>(@" \par ", state.DisabledActions);
+                var text = string.Join<Action>(@" \par ", state.DisabledActions);
                 info.Append(text);
             }
 

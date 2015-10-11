@@ -195,6 +195,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Core.Model\Core.Model.csproj">
+      <Project>{c172f5cc-8814-46df-b25d-2994e524e1d5}</Project>
+      <Name>Core.Model</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Core\Core.csproj">
       <Project>{EBEDD305-0975-416B-A4E5-4C8F5EADB304}</Project>
       <Name>Core</Name>
