@@ -41,17 +41,26 @@ namespace Contractor.Core
 
     public class TypeAnalysisResult
     {
-        public Epa EPA { get; protected set; }
-        public EpaGenerator.Backend Backend { get; protected set; }
-        public TimeSpan TotalDuration { get; protected set; }
-        public Dictionary<string, object> Statistics { get; protected set; }        
+        protected Epa epa;
+        protected EpaGenerator.Backend backend;
+        protected TimeSpan totalDuration;
+        protected Dictionary<string, object> statistics;
+
+        public Epa EPA { get { return epa; } }
+        public EpaGenerator.Backend Backend { get { return backend; } }
+        public TimeSpan TotalDuration { get { return totalDuration; } }
+        public Dictionary<string, object> Statistics { get { return statistics; } }
 
         public TypeAnalysisResult(Epa epa, EpaGenerator.Backend backend, TimeSpan totalTime, Dictionary<string, object> statistics)
         {
-            this.EPA = epa;
-            this.Backend = backend;
-            this.TotalDuration = totalTime;
-            this.Statistics = statistics;
+            Contract.Requires(epa != null);
+            Contract.Requires(totalTime != null);
+            Contract.Requires(statistics != null);
+
+            this.epa = epa;
+            this.backend = backend;
+            this.totalDuration = totalTime;
+            this.statistics = statistics;
         }
 
         public override string ToString()
@@ -64,15 +73,15 @@ namespace Contractor.Core
             var unprovenTransitionsCount = this.EPA.Transitions.Count<Transition>(t => t.IsUnproven);
 
             var sb = new StringBuilder();
-            sb.AppendFormat(@"Total duration:             {0}"                 , this.TotalDuration).AppendLine();
-            sb.AppendFormat(@"Engine:                     {0}"                 , this.Backend).AppendLine();
-            sb.AppendFormat(@"Analysis total duration:    {0}"                 , this.Statistics["TotalAnalyzerDuration"]).AppendLine();
-            sb.AppendFormat(@"Analysis precision:         {0}%"                , precision).AppendLine();
-            sb.AppendFormat(@"Executions:                 {0}"                 , this.Statistics["ExecutionsCount"]).AppendLine();
-            sb.AppendFormat(@"Generated queries:          {0} ({1} unproven)"  , totalGeneratedQueriesCount, unprovenQueriesCount).AppendLine();
-            sb.AppendFormat(@"States:                     {0} (1 initial)"   , statesCount).AppendLine();
-            sb.AppendFormat(@"Transitions:                {0} ({1} unproven)"  , transitionsCount, unprovenTransitionsCount).AppendLine();
-                                 
+            sb.AppendFormat(@"Total duration:             {0}", this.TotalDuration).AppendLine();
+            sb.AppendFormat(@"Engine:                     {0}", this.Backend).AppendLine();
+            sb.AppendFormat(@"Analysis total duration:    {0}", this.Statistics["TotalAnalyzerDuration"]).AppendLine();
+            sb.AppendFormat(@"Analysis precision:         {0}%", precision).AppendLine();
+            sb.AppendFormat(@"Executions:                 {0}", this.Statistics["ExecutionsCount"]).AppendLine();
+            sb.AppendFormat(@"Generated queries:          {0} ({1} unproven)", totalGeneratedQueriesCount, unprovenQueriesCount).AppendLine();
+            sb.AppendFormat(@"States:                     {0} (1 initial)", statesCount).AppendLine();
+            sb.AppendFormat(@"Transitions:                {0} ({1} unproven)", transitionsCount, unprovenTransitionsCount).AppendLine();
+
             return sb.ToString();
         }
     }
