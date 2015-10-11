@@ -1,10 +1,5 @@
-﻿using Microsoft.Cci;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Contractor.Utils;
+﻿using Contractor.Utils;
+using Microsoft.Cci;
 using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core

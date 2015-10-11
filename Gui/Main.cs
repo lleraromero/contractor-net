@@ -18,7 +18,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml;
 using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Gui
@@ -742,6 +741,12 @@ namespace Contractor.Gui
         private void ExportGraph()
         {
             if (graphViewer.Graph == null) return;
+
+            if (_LastResult.EPA == null)
+            {
+                throw new InvalidDataException("Trying to export an unfinished EPA!");
+            }
+
             var result = exportGraphDialog.ShowDialog(this);
 
             if (result == DialogResult.OK)
@@ -749,12 +754,15 @@ namespace Contractor.Gui
                 var fileName = exportGraphDialog.FileName;
                 exportGraphDialog.InitialDirectory = Path.GetDirectoryName(fileName);
 
-                Task.Factory.StartNew(() => this.ExportGraph(fileName));
+                Task.Factory.StartNew(() => this.ExportGraph(fileName, _LastResult.EPA));
             }
         }
 
-        private void ExportGraph(string fileName)
+        private void ExportGraph(string fileName, Epa epa)
         {
+            Contract.Requires(!string.IsNullOrEmpty(fileName));
+            Contract.Requires(epa != null);
+
             this.BeginInvoke((System.Action)delegate
             {
                 var name = Path.GetFileName(fileName);
@@ -768,11 +776,11 @@ namespace Contractor.Gui
                 switch (ext.ToLower())
                 {
                     case ".xml":
-                        this.ExportXmlGraph(fileName);
+                        this.ExportXmlGraph(fileName, epa);
                         break;
 
                     case ".gv":
-                        this.ExportGraphvizGraph(fileName);
+                        this.ExportGraphvizGraph(fileName, epa);
                         break;
 
                     case ".emf":
@@ -781,7 +789,7 @@ namespace Contractor.Gui
                         break;
 
                     default:
-                        this.ExportImageGraph(fileName);
+                        this.ExportImageGraph(fileName, epa);
                         break;
                 }
             }
@@ -796,70 +804,65 @@ namespace Contractor.Gui
             });
         }
 
-        private void ExportXmlGraph(string fileName)
+        private void ExportXmlGraph(string fileName, Epa epa)
         {
-            Contract.Requires(!string.IsNullOrEmpty(fileName));
-            Contract.Requires(_LastResult != null && _LastResult.EPA != null);
-
             using (var stream = File.Create(fileName))
             {
-                new EpaXmlSerializer().Serialize(stream, _LastResult.EPA);
+                new EpaXmlSerializer().Serialize(stream, epa);
             }
         }
 
-        private void ExportGraphvizGraph(string fileName)
+        private void ExportGraphvizGraph(string fileName, Epa epa)
         {
-            // TODO: arreglar
-            throw new NotSupportedException();
-            //using (var sw = File.CreateText(fileName))
-            //{
-            //    var typeFullName = _AnalizedType.GetDisplayName();
-            //    var nodes = graphViewer.Graph.GeometryGraph.CollectAllNodes();
-            //    var initialNodes = nodes.Where(n => ((n.UserData as Node).UserData as State).IsInitial);
-            //    var otherNodes = nodes.Where(n => !((n.UserData as Node).UserData as State).IsInitial);
+            using (var sw = File.CreateText(fileName))
+            {
+                var typeFullName = _AnalizedType.GetDisplayName();
+                var nodes = graphViewer.Graph.GeometryGraph.CollectAllNodes();
+                var initialNodes = nodes.Where(n => epa.Initial.Equals((n.UserData as Node).UserData as State));
+                var otherNodes = nodes.Where(n => !epa.Initial.Equals((n.UserData as Node).UserData as State));
 
-            //    sw.WriteLine("digraph \"{0}\"", typeFullName);
-            //    sw.WriteLine("{");
-            //    sw.WriteLine("\trankdir=LR;");
-            //    sw.WriteLine("\tnode [style = filled, fillcolor = aliceblue, fontname = \"{0}\"];", "Cambria");
+                sw.WriteLine("digraph \"{0}\"", typeFullName);
+                sw.WriteLine("{");
+                sw.WriteLine("\trankdir=LR;");
+                sw.WriteLine("\tnode [style = filled, fillcolor = aliceblue, fontname = \"{0}\"];", "Cambria");
 
-            //    sw.WriteLine();
-            //    sw.WriteLine("\tnode [shape = doublecircle];");
+                sw.WriteLine();
+                sw.WriteLine("\tnode [shape = doublecircle];");
 
-            //    foreach (var n in initialNodes)
-            //    {
-            //        var node = n.UserData as Node;
-            //        var name = node.LabelText.Replace(sw.NewLine, @"\n");
+                foreach (var n in initialNodes)
+                {
+                    var node = n.UserData as Node;
+                    var name = node.LabelText.Replace(sw.NewLine, @"\n");
 
-            //        sw.WriteLine("\tnode [label = \"{0}\"]; \"{1}\";", name, node.Id);
-            //    }
+                    sw.WriteLine("\tnode [label = \"{0}\"]; \"{1}\";", name, node.Id);
+                }
 
-            //    sw.WriteLine();
-            //    sw.WriteLine("\tnode [shape = circle];");
+                sw.WriteLine();
+                sw.WriteLine("\tnode [shape = circle];");
 
-            //    foreach (var n in otherNodes)
-            //    {
-            //        var node = n.UserData as Node;
-            //        var name = node.LabelText.Replace(sw.NewLine, @"\n");
+                foreach (var n in otherNodes)
+                {
+                    var node = n.UserData as Node;
+                    var name = node.LabelText.Replace(sw.NewLine, @"\n");
 
-            //        sw.WriteLine("\tnode [label = \"{0}\"]; \"{1}\";", name, node.Id);
-            //    }
+                    sw.WriteLine("\tnode [label = \"{0}\"]; \"{1}\";", name, node.Id);
+                }
 
-            //    sw.WriteLine();
-            //    sw.WriteLine("\tedge [fontname = \"{0}\"];", "Cambria");
-            //    sw.WriteLine();
+                sw.WriteLine();
+                sw.WriteLine("\tedge [fontname = \"{0}\"];", "Cambria");
+                sw.WriteLine();
 
-            //    foreach (var edge in graphViewer.Graph.Edges)
-            //    {
-            //        var from = edge.SourceNode.Id;
-            //        var to = edge.TargetNode.Id;
-            //        var label = edge.LabelText.Replace(sw.NewLine, @"\n");
+                foreach (var edge in graphViewer.Graph.Edges)
+                {
+                    var from = edge.SourceNode.Id;
+                    var to = edge.TargetNode.Id;
+                    var label = edge.LabelText.Replace(sw.NewLine, @"\n");
 
-            //        sw.WriteLine("\tedge [label = \"{0}\"] \"{1}\" -> \"{2}\";", label, from, to);
-            //    }
+                    sw.WriteLine("\tedge [label = \"{0}\"] \"{1}\" -> \"{2}\";", label, from, to);
+                }
 
-            //    sw.WriteLine("}");
-            //}
+                sw.WriteLine("}");
+            }
         }
 
         private void ExportVectorGraph(string fileName)
@@ -889,22 +892,11 @@ namespace Contractor.Gui
             }
         }
 
-        private void ExportImageGraph(string fileName)
+        private void ExportImageGraph(string fileName, Epa epa)
         {
-            var scale = 6.0f;
-            var w = (int)(graphViewer.Graph.Width * scale);
-            var h = (int)(graphViewer.Graph.Height * scale);
-
-            using (var img = new Bitmap(w, h, PixelFormat.Format32bppPArgb))
-            using (var g = Graphics.FromImage(img))
+            using (var fileStream = File.Create(fileName))
             {
-                g.SmoothingMode = SmoothingMode.HighQuality;
-                g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
-                g.CompositingQuality = CompositingQuality.HighQuality;
-                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-
-                this.DrawGraph(g, w, h, scale);
-                img.Save(fileName);
+                new EpaBinarySerializer().Serialize(fileStream, epa);
             }
         }
 

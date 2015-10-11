@@ -213,6 +213,7 @@
     <Compile Include="IAnalyzer.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="ReturnRewriter.cs" />
+    <Compile Include="StringAction.cs" />
     <None Include="API.cd" />
     <Compile Include="Instrumenter.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
