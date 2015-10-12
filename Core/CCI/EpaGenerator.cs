@@ -187,7 +187,15 @@ namespace Contractor.Core
                               on name equals m.GetDisplayName()
                               select m;
 
-                var analysisResult = GenerateEpa(type, methods, token);
+                var constructors = new HashSet<Action>(from m in methods
+                                                       where m.IsConstructor
+                                                       select new CciAction(m));
+
+                var actions = new HashSet<Action>(from m in methods
+                                                  where !m.IsConstructor
+                                                  select new CciAction(m));
+
+                var analysisResult = GenerateEpa(type, constructors, actions, token);
                 epas.Add(typeUniqueName, analysisResult);
             }
 
@@ -198,10 +206,12 @@ namespace Contractor.Core
         /// Method to create an EPA of a particular type considering only the subset 'methods'
         /// </summary>
         /// <see cref="http://publicaciones.dc.uba.ar/Publications/2011/DBGU11/paper-icse-2011.pdf">Algorithm 1</see>
-        private TypeAnalysisResult GenerateEpa(NamespaceTypeDefinition type, IEnumerable<IMethodDefinition> methods, CancellationToken token)
+        private TypeAnalysisResult GenerateEpa(NamespaceTypeDefinition type, ISet<Action> constructors, 
+            ISet<Action> actions, CancellationToken token)
         {
             Contract.Requires(type != null);
-            Contract.Requires(methods != null && methods.Count() > 0);
+            Contract.Requires(constructors != null && constructors.Count() > 0);
+            Contract.Requires(actions != null && actions.Count() > 0);
             Contract.Requires(token != null);
 
             var typeDisplayName = type.GetDisplayName();
@@ -210,14 +220,6 @@ namespace Contractor.Core
 
             if (this.TypeAnalysisStarted != null)
                 this.TypeAnalysisStarted(this, new TypeAnalysisStartedEventArgs(typeDisplayName));
-
-            var constructors = new HashSet<Action>(from m in methods
-                                where m.IsConstructor
-                                select new CciAction(m));
-
-            var actions = new HashSet<Action>(from m in methods
-                           where !m.IsConstructor
-                           select new CciAction(m));
 
             var epaBuilder = new EpaBuilder(typeUniqueName);
 
