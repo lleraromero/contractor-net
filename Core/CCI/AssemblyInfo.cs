@@ -4,8 +4,10 @@ using Microsoft.Cci.ILToCodeModel;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableContracts;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
+using System.Linq;
 
 namespace Contractor.Utils
 {
@@ -16,8 +18,9 @@ namespace Contractor.Utils
         public IModule Module { get; private set; }
         public PdbReader PdbReader { get; private set; }
         private Module decompiledModule;
-        public Module DecompiledModule {
-            get 
+        public Module DecompiledModule
+        {
+            get
             {
                 if (decompiledModule == null)
                     decompiledModule = Decompiler.GetCodeModelFromMetadataModel(this.Host, this.Module, this.PdbReader);
