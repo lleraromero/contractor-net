@@ -388,7 +388,7 @@ namespace Contractor.Gui
 
             var backend = (EpaGenerator.Backend)parameters["backend"];
 
-            _EpaGenerator = new EpaGenerator(backend);
+            _EpaGenerator = new EpaGenerator(backend, _AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
             _EpaGenerator.TypeAnalysisStarted += this.OnTypeAnalysisStarted;
             _EpaGenerator.TypeAnalysisDone += this.OnTypeAnalysisDone;
             _EpaGenerator.StateAdded += this.OnStateAdded;
@@ -416,14 +416,10 @@ namespace Contractor.Gui
                 var fileName = Path.GetFileName(_AssemblyInfo.FileName);
                 this.BeginInvoke(new System.Action<string, string>(this.SetBackgroundStatus), "Decompiling assembly {0}...", fileName);
 
-                _EpaGenerator.LoadAssembly(_AssemblyInfo.FileName);
-
                 if (_ContractReferenceAssemblyFileName != null)
                 {
                     fileName = Path.GetFileName(_ContractReferenceAssemblyFileName);
                     this.BeginInvoke(new System.Action<string, string>(this.SetBackgroundStatus), "Loading contracts from assembly {0}...", fileName);
-
-                    _EpaGenerator.LoadContractReferenceAssembly(_ContractReferenceAssemblyFileName);
                 }
 
                 var typeFullName = _AnalizedType.ToString();

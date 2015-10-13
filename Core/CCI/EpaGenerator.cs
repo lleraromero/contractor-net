@@ -91,13 +91,25 @@ namespace Contractor.Core
         public event EventHandler<StateAddedEventArgs> StateAdded;
         public event EventHandler<TransitionAddedEventArgs> TransitionAdded;
 
-        public EpaGenerator(Backend backend)
+        public EpaGenerator(Backend backend, string inputFileName, string contractsFileName)
         {
+            Contract.Requires(!string.IsNullOrEmpty(inputFileName));
             Contract.Ensures(host != null);
             Contract.Ensures(inputAssembly != null);
 
             host = new CodeContractAwareHostEnvironment(true);
             inputAssembly = new AssemblyInfo(host);
+            inputAssembly.Load(inputFileName);
+            // Cleaning the EPAs that were generated with another assembly
+            epas.Clear();
+
+            if (!string.IsNullOrEmpty(contractsFileName))
+            {
+                // Loads the contract reference assembly in the host.
+                var contractsAssembly = new AssemblyInfo(host);
+                contractsAssembly.Load(inputFileName);
+            }
+
             this.backend = backend;
 
             instrumentedEpas = new HashSet<string>();
@@ -106,42 +118,6 @@ namespace Contractor.Core
         public void Dispose()
         {
             host.Dispose();
-        }
-
-        public void LoadAssembly(string inputFileName)
-        {
-            Contract.Requires(!string.IsNullOrEmpty(inputFileName));
-
-            inputAssembly.Load(inputFileName);
-            // Cleaning the EPAs that were generated with another assembly
-            epas.Clear();
-        }
-
-        // Loads the contract reference assembly in the host.
-        public void LoadContractReferenceAssembly(string inputFileName)
-        {
-            Contract.Requires(!string.IsNullOrEmpty(inputFileName));
-
-            var contractsAssembly = new AssemblyInfo(host);
-            contractsAssembly.Load(inputFileName);
-        }
-
-        public Dictionary<string, TypeAnalysisResult> GenerateEpas(CancellationToken token)
-        {
-            Contract.Requires(token != null);
-
-            var types = inputAssembly.DecompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
-            var analysisResults = new Dictionary<string, TypeAnalysisResult>();
-
-            foreach (var type in types)
-            {
-                var typeUniqueName = type.GetUniqueName();
-
-                var result = GenerateEpa(type.ToString(), token);
-                analysisResults.Add(typeUniqueName, result);
-            }
-
-            return analysisResults;
         }
 
         public TypeAnalysisResult GenerateEpa(string typeFullName, CancellationToken token)

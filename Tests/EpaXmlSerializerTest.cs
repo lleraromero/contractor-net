@@ -20,9 +20,8 @@ namespace Tests
             Configuration.TempPath = Directory.GetParent(tc.TestDir).ToString();
             Configuration.InlineMethodsBody = true;
 
-            epaGenerator = new EpaGenerator(EpaGenerator.Backend.Corral);
             var ExamplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, InputFilePath));
-            epaGenerator.LoadAssembly(ExamplesPath);
+            epaGenerator = new EpaGenerator(EpaGenerator.Backend.Corral, ExamplesPath, null);
         }
 
         [ClassCleanup()]
