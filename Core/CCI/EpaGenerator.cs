@@ -86,6 +86,8 @@ namespace Contractor.Core
         private CodeContractAwareHostEnvironment host;
         private Backend backend;
 
+        protected AssemblyXXX assembly;
+
         public event EventHandler<TypeAnalysisStartedEventArgs> TypeAnalysisStarted;
         public event EventHandler<TypeAnalysisDoneEventArgs> TypeAnalysisDone;
         public event EventHandler<StateAddedEventArgs> StateAdded;
@@ -113,6 +115,8 @@ namespace Contractor.Core
             this.backend = backend;
 
             instrumentedEpas = new HashSet<string>();
+
+            assembly = new CciAssembly(inputFileName, contractsFileName);
         }
 
         public void Dispose()
@@ -125,11 +129,7 @@ namespace Contractor.Core
             Contract.Requires(!string.IsNullOrEmpty(typeFullName));
             Contract.Requires(token != null);
 
-            //Borramos del nombre los parametros de generics
-            int start = typeFullName.IndexOf('<');
-
-            if (start != -1)
-                typeFullName = typeFullName.Remove(start);
+            typeFullName = RemoveGenericsParametersFromTypeName(typeFullName);
 
             var types = inputAssembly.DecompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
             var type = types.First(t => t.ToString() == typeFullName);
@@ -140,17 +140,23 @@ namespace Contractor.Core
             return GenerateEpa(typeFullName, methods, token);
         }
 
+        private static string RemoveGenericsParametersFromTypeName(string typeFullName)
+        {
+            //Borramos del nombre los parametros de generics
+            int start = typeFullName.IndexOf('<');
+
+            if (start != -1)
+                typeFullName = typeFullName.Remove(start);
+            return typeFullName;
+        }
+
         public TypeAnalysisResult GenerateEpa(string typeFullName, IEnumerable<string> selectedMethods, CancellationToken token)
         {
             Contract.Requires(!string.IsNullOrEmpty(typeFullName));
             Contract.Requires(selectedMethods != null && selectedMethods.Count() > 0);
             Contract.Requires(token != null);
 
-            //Borramos del nombre los parametros de generics
-            int start = typeFullName.IndexOf('<');
-
-            if (start != -1)
-                typeFullName = typeFullName.Remove(start);
+            typeFullName = RemoveGenericsParametersFromTypeName(typeFullName);
 
             var types = inputAssembly.DecompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
             var type = types.First(t => t.ToString() == typeFullName);

@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Contractor.Utils;
+using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
@@ -36,27 +37,30 @@ namespace Contractor.Core
         {
             var types = this.module.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
             return new HashSet<string>(from t in types
-                                       select t.ToString());
+                                       select TypeHelper.GetTypeName(t, NameFormattingOptions.None));
         }
 
         public override ISet<Action> Constructors(string typeName)
         {
-            var types = this.module.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
-            var type = types.First(t => t.ToString() == typeName);
-
-            return (ISet<Action>)new HashSet<CciAction>(from m in type.Methods
+            var type = FindType(typeName);
+            return new HashSet<Action>(from m in type.Methods
                                                         where m.IsConstructor
                                                         select new CciAction(m));
         }
 
         public override ISet<Action> Actions(string typeName)
         {
-            var types = this.module.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
-            var type = types.First(t => t.ToString() == typeName);
-
-            return (ISet<Action>)new HashSet<CciAction>(from m in type.Methods
+            var type = FindType(typeName);
+            return new HashSet<Action>(from m in type.Methods
                                                         where !m.IsConstructor
                                                         select new CciAction(m));
+        }
+
+        private NamespaceTypeDefinition FindType(string typeName)
+        {
+            var types = this.module.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
+            var type = types.First(t => TypeHelper.GetTypeName(t, NameFormattingOptions.None).Equals(typeName));
+            return type;
         }
 
         private Module DecompileModule(string filename)
