@@ -96,21 +96,21 @@ namespace Contractor.Utils
         }
 
         public static List<IExpression> GenerateStatesConditions(IMetadataHost host, Dictionary<string, List<IPrecondition>> preconditions,
-            NamespaceTypeDefinition type, IEnumerable<State> states)
+            IEnumerable<State> states)
         {
             //Optimizacion: calculamos la interseccion de todas las acciones habilitadas
             //y desabilitadas de todos los estados y se la restamos a todos
             var firstState = states.First();
-            var enabledIntersection = states.Aggregate(firstState.EnabledActions, (IEnumerable<Contractor.Core.Model.Action> a, State s) => a.Intersect(s.EnabledActions));
-            var disabledIntersection = states.Aggregate(firstState.DisabledActions, (IEnumerable<Contractor.Core.Model.Action> a, State s) => a.Intersect(s.DisabledActions));
+            var enabledIntersection = states.Aggregate(firstState.EnabledActions, (IEnumerable<Action> a, State s) => a.Intersect(s.EnabledActions));
+            var disabledIntersection = states.Aggregate(firstState.DisabledActions, (IEnumerable<Action> a, State s) => a.Intersect(s.DisabledActions));
             var conditions = new List<IExpression>();
 
             foreach (var state in states)
             {
-                var enabledActionsId = state.EnabledActions.Except(enabledIntersection);
-                var disabledActionsId = state.DisabledActions.Except(disabledIntersection);
+                var enabledActionsId = new HashSet<Action>(state.EnabledActions.Except(enabledIntersection));
+                var disabledActionsId = new HashSet<Action>(state.DisabledActions.Except(disabledIntersection));
 
-                var exprs = generateStateInvariant(host, preconditions, type, enabledActionsId, disabledActionsId);
+                var exprs = GenerateStateInvariant(host, new State(enabledActionsId, disabledActionsId));
                 var condition = Helper.JoinWithLogicalAnd(host, exprs, true);
                 conditions.Add(condition);
             }
@@ -119,76 +119,24 @@ namespace Contractor.Utils
         }
 
         // Do not include the type invariant
-        public static List<IExpression> GenerateStateInvariant(IMetadataHost host, ContractProvider cp, NamespaceTypeDefinition type, State state)
-        {
-            var preconditions = new Dictionary<string, List<IPrecondition>>();
-
-            foreach (var action in state.EnabledActions)
-            {
-                var mc = cp.GetMethodContractFor(action.Method);
-                if (mc == null) continue;
-
-                var actionUniqueName = action.Method.GetUniqueName();
-                preconditions.Add(actionUniqueName, mc.Preconditions.ToList());
-            }
-
-            foreach (var action in state.DisabledActions)
-            {
-                var mc = cp.GetMethodContractFor(action.Method);
-                if (mc == null) continue;
-
-                var actionUniqueName = action.Method.GetUniqueName();
-                preconditions.Add(actionUniqueName, mc.Preconditions.ToList());
-            }
-
-            return generateStateInvariant(host, preconditions, type, state.EnabledActions, state.DisabledActions);
-        }
-
-        // Do not include the type invariant
-        private static List<IExpression> generateStateInvariant(IMetadataHost host, Dictionary<string, List<IPrecondition>> preconditions,
-            NamespaceTypeDefinition type, IEnumerable<Contractor.Core.Model.Action> enabledActionsId, IEnumerable<Contractor.Core.Model.Action> disabledActionsId)
+        public static List<IExpression> GenerateStateInvariant(IMetadataHost host, State s)
         {
             var exprs = new List<IExpression>();
 
-            var enabledActions = from actionUniqueName in enabledActionsId
-                                 join action in type.Methods on actionUniqueName.Method.GetUniqueName() equals action.GetUniqueName()
-                                 select action;
-
-            var disabledActions = from actionUniqueName in disabledActionsId
-                                  join action in type.Methods on actionUniqueName.Method.GetUniqueName() equals action.GetUniqueName()
-                                  select action;
-
-            return generateStateInvariant(host, preconditions, type, enabledActions, disabledActions);
-        }
-
-        // Do not include the type invariant
-        private static List<IExpression> generateStateInvariant(IMetadataHost host, Dictionary<string, List<IPrecondition>> preconditions, NamespaceTypeDefinition type,
-            IEnumerable<IMethodDefinition> enabledActions, IEnumerable<IMethodDefinition> disabledActions)
-        {
-            var exprs = new List<IExpression>();
-
-            foreach (var action in enabledActions)
+            foreach (var action in s.EnabledActions)
             {
-                var actionUniqueName = action.GetUniqueName();
+                if (action.Contract != null)
+                {
+                    var conditions = from pre in action.Contract.Preconditions
+                                     select pre.Condition;
 
-                if (!preconditions.ContainsKey(actionUniqueName)) continue;
-                var actionPreconditions = preconditions[actionUniqueName];
-
-                var conditions = from pre in actionPreconditions
-                                 select pre.Condition;
-
-                exprs.AddRange(conditions);
+                    exprs.AddRange(conditions);
+                }
             }
 
-            foreach (var action in disabledActions)
+            foreach (var action in s.DisabledActions)
             {
-                var actionUniqueName = action.GetUniqueName();
-                List<IPrecondition> actionPreconditions = null;
-
-                if (preconditions.ContainsKey(actionUniqueName))
-                    actionPreconditions = preconditions[actionUniqueName];
-
-                if (actionPreconditions == null || actionPreconditions.Count == 0)
+                if (action.Contract == null || action.Contract.Preconditions.Count() == 0)
                 {
                     var literal = new CompileTimeConstant()
                     {
@@ -200,7 +148,7 @@ namespace Contractor.Utils
                 }
                 else
                 {
-                    var conditions = (from pre in actionPreconditions
+                    var conditions = (from pre in action.Contract.Preconditions
                                       select pre.Condition).ToList();
 
                     var condition = new LogicalNot()

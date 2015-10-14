@@ -306,7 +306,7 @@ namespace Contractor.Core
             var contracts = new MethodContract();
 
             // Source state invariant as a precondition
-            var stateInv = Helper.GenerateStateInvariant(host, inputContractProvider, typeToAnalyze, state);
+            var stateInv = Helper.GenerateStateInvariant(host, state);
 
             var preconditions = from condition in stateInv
                                 select new Precondition()
@@ -318,7 +318,7 @@ namespace Contractor.Core
             contracts.Preconditions.AddRange(preconditions);
 
             // Negated target state invariant as a postcondition
-            var targetInv = Helper.GenerateStateInvariant(host, inputContractProvider, typeToAnalyze, target);
+            var targetInv = Helper.GenerateStateInvariant(host, target);
 
             IExpression joinedTargetInv = new LogicalNot()
             {

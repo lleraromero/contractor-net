@@ -347,7 +347,7 @@ namespace Contractor.Core
             var toStates = from id in to
                            join state in epa.States on id equals state.Name
                            select state;
-            var conditions = Helper.GenerateStatesConditions(host, preconditions, type, toStates);
+            var conditions = Helper.GenerateStatesConditions(host, preconditions, toStates);
 
             IStatement stmt = generateAssign(field, to[0]);
 

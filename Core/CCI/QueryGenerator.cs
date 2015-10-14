@@ -27,9 +27,9 @@
 //            this.host = new CodeContractAwareHostEnvironment();
 //        }
 
-//        public IEnumerable<Tuple<MethodDefinition, MethodContract>> CreateQueries(State state, CciAction action, IEnumerable<CciAction> actions)
+//        public IEnumerable<CciAction> CreateQueries(State state, CciAction action, IEnumerable<CciAction> actions)
 //        {
-//            var queries = new List<Tuple<MethodDefinition, MethodContract>>();
+//            var queries = new List<CciAction>();
 //            foreach (var target in actions)
 //            {
 //                // Add positive query
@@ -41,9 +41,9 @@
 //            return queries;
 //        }
 
-//        public IEnumerable<Tuple<MethodDefinition, MethodContract>> CreateQueries(State state, CciAction action, IEnumerable<State> actions)
+//        public IEnumerable<CciAction> CreateQueries(State state, CciAction action, IEnumerable<State> actions)
 //        {
-//            var queries = new List<Tuple<MethodDefinition, MethodContract>>();
+//            var queries = new List<CciAction>();
 //            foreach (var target in actions)
 //            {
 //                queries.Add(GenerateQuery(state, action.Method, target));
@@ -52,7 +52,7 @@
 //            return queries;
 //        }
 
-//        private Tuple<MethodDefinition, MethodContract> GenerateQuery(State state, IMethodDefinition action, IMethodDefinition target, bool negate = false)
+//        private CciAction GenerateQuery(State state, IMethodDefinition action, IMethodDefinition target, bool negate = false)
 //        {
 //            Contract.Requires(state != null && action != null && target != null);
 
@@ -65,7 +65,7 @@
 //            var method = CreateQueryMethod<IMethodDefinition>(state, methodName, action, target);
 //            var queryContract = CreateQueryContract(state, target, negate);
 
-//            return new Tuple<MethodDefinition, MethodContract>(method, queryContract);
+//            return new CciAction(method, queryContract);
 //        }
 
 //        private MethodContract CreateQueryContract(State state, IMethodDefinition target, bool negate)
@@ -175,7 +175,7 @@
 //            return queryContract;
 //        }
 
-//        private Tuple<MethodDefinition, MethodContract> GenerateQuery(State state, IMethodDefinition action, State target)
+//        private CciAction GenerateQuery(State state, IMethodDefinition action, State target)
 //        {
 //            var actionName = action.GetUniqueName();
 //            var stateName = state.Name;
@@ -185,7 +185,7 @@
 //            var method = CreateQueryMethod<State>(state, methodName, action, target);
 //            var queryContract = CreateQueryContract(state, target);
 
-//            return new Tuple<MethodDefinition, MethodContract>(method, queryContract);
+//            return new CciAction(method, queryContract);
 //        }
 
 //        private MethodContract CreateQueryContract(State state, State target)
@@ -193,7 +193,7 @@
 //            var contracts = new MethodContract();
 
 //            // Source state invariant as a precondition
-//            var stateInv = Helper.GenerateStateInvariant(inputContractProvider, typeToAnalyze, state);
+//            var stateInv = Helper.GenerateStateInvariant(this.host, state);
 
 //            var preconditions = from condition in stateInv
 //                                select new Precondition()
@@ -205,12 +205,12 @@
 //            contracts.Preconditions.AddRange(preconditions);
 
 //            // Negated target state invariant as a postcondition
-//            var targetInv = Helper.GenerateStateInvariant(inputContractProvider, typeToAnalyze, target);
+//            var targetInv = Helper.GenerateStateInvariant(this.host, target);
 
 //            IExpression joinedTargetInv = new LogicalNot()
 //            {
 //                Type = this.host.PlatformType.SystemBoolean,
-//                Operand = Helper.JoinWithLogicalAnd(targetInv, true)
+//                Operand = Helper.JoinWithLogicalAnd(this.host, targetInv, true)
 //            };
 
 //            var postcondition = new Postcondition()
