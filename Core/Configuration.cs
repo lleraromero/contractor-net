@@ -31,10 +31,8 @@ namespace Contractor.Core
             var dependenciesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\Dependencies"));
             CorralArguments = Resources.CorralArguments;
 
-			TempPath = Path.GetTempPath();
-
-            if (!Directory.Exists(TempPath))
-                Directory.CreateDirectory(TempPath);
+            TempPath = Path.Combine(Path.GetTempPath(), "Contractor");
+            Directory.CreateDirectory(TempPath);
 
             codeContracts = Environment.GetEnvironmentVariable("CodeContractsInstallDir");
             if (string.IsNullOrEmpty(codeContracts))
@@ -61,7 +59,5 @@ namespace Contractor.Core
             text = text.Replace("\\\\", "\\");
             return text;
         }
-
-        
     }
 }
