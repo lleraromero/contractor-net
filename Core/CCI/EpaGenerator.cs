@@ -171,11 +171,11 @@ namespace Contractor.Core
 
                 var constructors = new HashSet<Action>(from m in methods
                                                        where m.IsConstructor
-                                                       select new CciAction(m));
+                                                       select new CciAction(m, inputAssembly.ExtractContracts().GetMethodContractFor(m)));
 
                 var actions = new HashSet<Action>(from m in methods
                                                   where !m.IsConstructor
-                                                  select new CciAction(m));
+                                                  select new CciAction(m, inputAssembly.ExtractContracts().GetMethodContractFor(m)));
 
                 var analysisResult = GenerateEpa(type, constructors, actions, token);
                 epas.Add(typeUniqueName, analysisResult);

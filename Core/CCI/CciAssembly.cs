@@ -20,17 +20,26 @@ namespace Contractor.Core
         public abstract ISet<string> Types();
         public abstract ISet<Action> Constructors(string type);
         public abstract ISet<Action> Actions(string type);
+        public abstract IMethodContract GetContractFor(IMethodDefinition method);
     }
 
     public class CciAssembly : AssemblyXXX
     {
+        protected IContractAwareHost host;
         protected Module module;
+        protected IContractProvider contractProvider;
 
         public CciAssembly(string fileName, string contractsFileName)
         {
             Contract.Requires(!string.IsNullOrEmpty(fileName) && File.Exists(fileName));
 
+            this.host = new CodeContractAwareHostEnvironment(true);
             this.module = DecompileModule(fileName);
+
+            // Extracting contracts from this assembly and the contract reference assembly previously loaded with this host
+            // Important: the contracts are NOT removed from the module
+            var contractExtractor = this.host.GetContractExtractor(this.module.UnitIdentity);
+            this.contractProvider = new AggregatingContractProvider(contractExtractor);
         }
 
         public override ISet<string> Types()
@@ -42,18 +51,32 @@ namespace Contractor.Core
 
         public override ISet<Action> Constructors(string typeName)
         {
+            Contract.Requires(!string.IsNullOrEmpty(typeName));
+            Contract.Requires(Types().Contains(typeName));
+
             var type = FindType(typeName);
             return new HashSet<Action>(from m in type.Methods
-                                                        where m.IsConstructor
-                                                        select new CciAction(m));
+                                       where m.IsConstructor
+                                       select new CciAction(m, this.contractProvider.GetMethodContractFor(m)));
         }
 
         public override ISet<Action> Actions(string typeName)
         {
+            Contract.Requires(!string.IsNullOrEmpty(typeName));
+            Contract.Requires(Types().Contains(typeName));
+
             var type = FindType(typeName);
             return new HashSet<Action>(from m in type.Methods
-                                                        where !m.IsConstructor
-                                                        select new CciAction(m));
+                                       where !m.IsConstructor
+                                       select new CciAction(m, this.contractProvider.GetMethodContractFor(m)));
+        }
+
+        public override IMethodContract GetContractFor(IMethodDefinition method)
+        {
+            Contract.Requires(method != null);
+            Contract.Ensures(Contract.Result<IMethodContract>() != null);
+
+            return this.contractProvider.GetMethodContractFor(method);
         }
 
         private NamespaceTypeDefinition FindType(string typeName)
@@ -67,20 +90,18 @@ namespace Contractor.Core
         {
             Contract.Requires(!string.IsNullOrEmpty(filename) && File.Exists(filename));
 
-            var host = new CodeContractAwareHostEnvironment(true);
-            var module = LoadModule(filename, host);
+            var module = LoadModule(filename);
             Module decompiledModule;
-            using (var pdbReader = GetPDBReader(module, host))
+            using (var pdbReader = GetPDBReader(module))
             {
                 decompiledModule = Decompiler.GetCodeModelFromMetadataModel(host, module, pdbReader);
             }
             return decompiledModule;
         }
 
-        private IModule LoadModule(string filename, IContractAwareHost host)
+        private IModule LoadModule(string filename)
         {
             Contract.Requires(!string.IsNullOrEmpty(filename) && File.Exists(filename));
-            Contract.Requires(host != null);
 
             var module = host.LoadUnitFrom(filename) as IModule;
             if (module == null || module is Dummy || module == Dummy.Assembly)
@@ -90,10 +111,9 @@ namespace Contractor.Core
             return module;
         }
 
-        private PdbReader GetPDBReader(IModule module, IContractAwareHost host)
+        private PdbReader GetPDBReader(IModule module)
         {
             Contract.Requires(module != null);
-            Contract.Requires(host != null);
 
             PdbReader pdbReader = null;
             string pdbFile = Path.ChangeExtension(module.Location, "pdb");

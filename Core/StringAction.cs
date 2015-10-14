@@ -1,4 +1,5 @@
 ﻿using Microsoft.Cci;
+using Microsoft.Cci.Contracts;
 using System;
 using Action = Contractor.Core.Model.Action;
 
@@ -17,6 +18,11 @@ namespace Contractor.Core
         }
 
         public override IMethodDefinition Method
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override IMethodContract Contract
         {
             get { throw new NotImplementedException(); }
         }

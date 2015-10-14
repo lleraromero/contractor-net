@@ -1,5 +1,6 @@
 ﻿using Contractor.Utils;
 using Microsoft.Cci;
+using Microsoft.Cci.Contracts;
 using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
@@ -7,6 +8,7 @@ namespace Contractor.Core
     public class CciAction : Action
     {
         protected IMethodDefinition method;
+        protected IMethodContract contract;
         public override string Name
         {
             get { return method.GetUniqueName(); }
@@ -17,9 +19,18 @@ namespace Contractor.Core
             get { return method; }
         }
 
-        public CciAction(IMethodDefinition method)
+        public override IMethodContract Contract
         {
+            get { return contract; }
+        }
+
+        public CciAction(IMethodDefinition method, IMethodContract contract)
+        {
+            System.Diagnostics.Contracts.Contract.Requires(method != null);
+            System.Diagnostics.Contracts.Contract.Requires(contract != null);
+
             this.method = method;
+            this.contract = contract;
         }
 
         #region IEquatable

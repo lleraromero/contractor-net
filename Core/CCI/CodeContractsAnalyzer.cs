@@ -273,7 +273,8 @@ namespace Contractor.Core
 
                     if (target != null)
                     {
-                        var transition = new Transition(new CciAction(action), source, target, isUnproven);
+                        // TODO: arreglar
+                        var transition = new Transition(new CciAction(action, null), source, target, isUnproven);
                         transitions.Add(transition);
                     }
 
