@@ -1,397 +1,414 @@
-﻿//using Contractor.Core.Model;
-//using Contractor.Utils;
-//using Microsoft.Cci;
-//using Microsoft.Cci.Contracts;
-//using Microsoft.Cci.MutableCodeModel;
-//using Microsoft.Cci.MutableContracts;
-//using System;
-//using System.Collections.Generic;
-//using System.Diagnostics.Contracts;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
-//using Action = Contractor.Core.Model.Action;
+﻿using Contractor.Core.Model;
+using Contractor.Utils;
+using Microsoft.Cci;
+using Microsoft.Cci.MutableCodeModel;
+using Microsoft.Cci.MutableContracts;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
+using System.Linq;
+using Action = Contractor.Core.Model.Action;
 
-//namespace Contractor.Core
-//{
-//    internal class CciQueryGenerator
-//    {
-//        protected const string notPrefix = "_Not_";
-//        protected const string methodNameDelimiter = "~";
+namespace Contractor.Core
+{
+    internal class CciQueryGenerator
+    {
+        protected const string notPrefix = "_Not_";
+        protected const string methodNameDelimiter = "~";
 
-//        protected AssemblyXXX inputAssembly;
-//        protected IContractAwareHost host;
+        protected CodeContractAwareHostEnvironment host;
 
-//        public CciQueryGenerator()
-//        {
-//            this.host = new CodeContractAwareHostEnvironment();
-//        }
+        public CciQueryGenerator()
+        {
+            this.host = new CodeContractAwareHostEnvironment();
+        }
 
-//        public IEnumerable<CciAction> CreateQueries(State state, CciAction action, IEnumerable<CciAction> actions)
-//        {
-//            var queries = new List<CciAction>();
-//            foreach (var target in actions)
-//            {
-//                // Add positive query
-//                queries.Add(GenerateQuery(state, action.Method, target.Method));
-//                // Add negative query
-//                queries.Add(GenerateQuery(state, action.Method, target.Method, true));
-//            }
+        ~CciQueryGenerator()
+        {
+            this.host.Dispose();
+        }
 
-//            return queries;
-//        }
+        public IEnumerable<Action> CreateQueries(State state, Action action, IEnumerable<Action> actions)
+        {
+            var queries = new List<Action>();
+            foreach (var target in actions)
+            {
+                // Add positive query
+                queries.Add(GenerateQuery(state, action, target));
+                // Add negative query
+                queries.Add(GenerateQuery(state, action, target, true));
+            }
 
-//        public IEnumerable<CciAction> CreateQueries(State state, CciAction action, IEnumerable<State> actions)
-//        {
-//            var queries = new List<CciAction>();
-//            foreach (var target in actions)
-//            {
-//                queries.Add(GenerateQuery(state, action.Method, target));
-//            }
+            return queries;
+        }
 
-//            return queries;
-//        }
+        public IEnumerable<Action> CreateQueries(State state, Action action, IEnumerable<State> actions)
+        {
+            var queries = new List<Action>();
+            foreach (var target in actions)
+            {
+                queries.Add(GenerateQuery(state, action, target));
+            }
 
-//        private CciAction GenerateQuery(State state, IMethodDefinition action, IMethodDefinition target, bool negate = false)
-//        {
-//            Contract.Requires(state != null && action != null && target != null);
+            return queries;
+        }
 
-//            var prefix = negate ? notPrefix : string.Empty;
-//            var actionName = action.GetUniqueName();
-//            var stateName = state.Name;
-//            var targetName = target.GetUniqueName();
-//            var methodName = string.Format("{1}{0}{2}{0}{3}{4}", methodNameDelimiter, stateName, actionName, prefix, targetName);
+        private CciAction GenerateQuery(State state, Action action, Action target, bool negate = false)
+        {
+            Contract.Requires(state != null && action != null && target != null);
 
-//            var method = CreateQueryMethod<IMethodDefinition>(state, methodName, action, target);
-//            var queryContract = CreateQueryContract(state, target, negate);
+            var prefix = negate ? notPrefix : string.Empty;
+            var actionName = action.Name;
+            var stateName = state.Name;
+            var targetName = target.Name;
+            var methodName = string.Format("{1}{0}{2}{0}{3}{4}", methodNameDelimiter, stateName, actionName, prefix, targetName);
 
-//            return new CciAction(method, queryContract);
-//        }
+            var method = CreateQueryMethod(state, methodName, action, target);
+            var queryContract = CreateQueryContract(state, target, negate);
 
-//        private MethodContract CreateQueryContract(State state, IMethodDefinition target, bool negate)
-//        {
-//            var queryContract = new MethodContract();
-//            var targetContract = inputAssembly.GetContractFor(target);
+            return new CciAction(method, queryContract);
+        }
 
-//            // Add preconditions of enabled actions
-//            foreach (var a in state.EnabledActions)
-//            {
-//                var actionContract = inputAssembly.GetContractFor(a.Method);
-//                if (actionContract == null) continue;
+        private MethodContract CreateQueryContract(State state, Action target, bool negate)
+        {
+            var queryContract = new MethodContract();
+            var targetContract = target.Contract;
 
-//                var preconditions = from p in actionContract.Preconditions
-//                                    select new Precondition()
-//                                    {
-//                                        Condition = p.Condition,
-//                                        Description = new CompileTimeConstant()
-//                                        {
-//                                            Value = string.Format("Enabled action ({0})", a.Name),
-//                                            Type = this.host.PlatformType.SystemString
-//                                        },
-//                                        OriginalSource = Helper.PrintExpression(p.Condition)
-//                                    };
-//                queryContract.Preconditions.AddRange(preconditions);
-//            }
+            // Add preconditions of enabled actions
+            foreach (var a in state.EnabledActions)
+            {
+                var actionContract = a.Contract;
+                if (actionContract == null) continue;
 
-//            // Add negated preconditions of disabled actions
-//            foreach (var a in state.DisabledActions)
-//            {
-//                var actionContract = inputAssembly.GetContractFor(a.Method);
-//                if (actionContract == null || actionContract.Preconditions.Count() == 0) continue;
+                var preconditions = from p in actionContract.Preconditions
+                                    select new Precondition()
+                                    {
+                                        Condition = p.Condition,
+                                        Description = new CompileTimeConstant()
+                                        {
+                                            Value = string.Format("Enabled action ({0})", a.Name),
+                                            Type = this.host.PlatformType.SystemString
+                                        },
+                                        OriginalSource = Helper.PrintExpression(p.Condition)
+                                    };
+                queryContract.Preconditions.AddRange(preconditions);
+            }
 
-//                var preconditions = from p in actionContract.Preconditions
-//                                    select p.Condition;
-//                var joinedPreconditions = new LogicalNot()
-//                {
-//                    Type = this.host.PlatformType.SystemBoolean,
-//                    Operand = Helper.JoinWithLogicalAnd(this.host, preconditions.ToList(), true)
-//                };
-//                var compactPrecondition = new Precondition()
-//                {
-//                    Condition = joinedPreconditions,
-//                    // Add the user message to identify easily each precondition
-//                    Description = new CompileTimeConstant()
-//                    {
-//                        Value = string.Format("Disabled action ({0})", a.Name),
-//                        Type = this.host.PlatformType.SystemString
-//                    },
-//                    // Add the string-ified version of the condition to help debugging
-//                    OriginalSource = Helper.PrintExpression(joinedPreconditions)
-//                };
-//                queryContract.Preconditions.Add(compactPrecondition);
-//            }
+            // Add negated preconditions of disabled actions
+            foreach (var a in state.DisabledActions)
+            {
+                var actionContract = a.Contract;
+                if (actionContract == null || actionContract.Preconditions.Count() == 0) continue;
 
-//            // Now the postconditions
-//            // Having no preconditions is the same as having the 'true' precondition
-//            if (targetContract == null || targetContract.Preconditions.Count() == 0)
-//            {
-//                if (negate)
-//                {
-//                    var post = new Postcondition()
-//                    {
-//                        Condition = new CompileTimeConstant()
-//                        {
-//                            Type = this.host.PlatformType.SystemBoolean,
-//                            Value = false
-//                        },
-//                        OriginalSource = "false",
-//                        Description = new CompileTimeConstant() { Value = "Target negated precondition", Type = this.host.PlatformType.SystemString }
-//                    };
+                var preconditions = from p in actionContract.Preconditions
+                                    select p.Condition;
+                var joinedPreconditions = new LogicalNot()
+                {
+                    Type = this.host.PlatformType.SystemBoolean,
+                    Operand = Helper.JoinWithLogicalAnd(this.host, preconditions.ToList(), true)
+                };
+                var compactPrecondition = new Precondition()
+                {
+                    Condition = joinedPreconditions,
+                    // Add the user message to identify easily each precondition
+                    Description = new CompileTimeConstant()
+                    {
+                        Value = string.Format("Disabled action ({0})", a.Name),
+                        Type = this.host.PlatformType.SystemString
+                    },
+                    // Add the string-ified version of the condition to help debugging
+                    OriginalSource = Helper.PrintExpression(joinedPreconditions)
+                };
+                queryContract.Preconditions.Add(compactPrecondition);
+            }
 
-//                    queryContract.Postconditions.Add(post);
-//                }
-//            }
-//            else
-//            {
-//                if (negate)
-//                {
-//                    var exprs = (from pre in targetContract.Preconditions
-//                                 select pre.Condition).ToList();
+            // Now the postconditions
+            // Having no preconditions is the same as having the 'true' precondition
+            if (targetContract == null || targetContract.Preconditions.Count() == 0)
+            {
+                if (negate)
+                {
+                    var post = new Postcondition()
+                    {
+                        Condition = new CompileTimeConstant()
+                        {
+                            Type = this.host.PlatformType.SystemBoolean,
+                            Value = false
+                        },
+                        OriginalSource = "false",
+                        Description = new CompileTimeConstant() { Value = "Target negated precondition", Type = this.host.PlatformType.SystemString }
+                    };
 
-//                    var post = new Postcondition()
-//                    {
-//                        Condition = new LogicalNot()
-//                        {
-//                            Type = this.host.PlatformType.SystemBoolean,
-//                            Operand = Helper.JoinWithLogicalAnd(this.host, exprs, true)
-//                        },
-//                        OriginalSource = Helper.PrintExpression(Helper.JoinWithLogicalAnd(this.host, exprs, true)),
-//                        Description = new CompileTimeConstant() { Value = "Target negated precondition", Type = this.host.PlatformType.SystemString }
-//                    };
-//                    queryContract.Postconditions.Add(post);
-//                }
-//                else
-//                {
-//                    var targetPreconditions = from pre in targetContract.Preconditions
-//                                              select new Postcondition()
-//                                              {
-//                                                  Condition = pre.Condition,
-//                                                  OriginalSource = Helper.PrintExpression(pre.Condition),
-//                                                  Description = new CompileTimeConstant() { Value = "Target precondition", Type = this.host.PlatformType.SystemString }
-//                                              };
-//                    queryContract.Postconditions.AddRange(targetPreconditions);
-//                }
-//            }
-//            return queryContract;
-//        }
+                    queryContract.Postconditions.Add(post);
+                }
+            }
+            else
+            {
+                if (negate)
+                {
+                    var exprs = (from pre in targetContract.Preconditions
+                                 select pre.Condition).ToList();
 
-//        private CciAction GenerateQuery(State state, IMethodDefinition action, State target)
-//        {
-//            var actionName = action.GetUniqueName();
-//            var stateName = state.Name;
-//            var targetName = target.Name;
-//            var methodName = string.Format("{1}{0}{2}{0}{3}", methodNameDelimiter, stateName, actionName, targetName);
+                    var post = new Postcondition()
+                    {
+                        Condition = new LogicalNot()
+                        {
+                            Type = this.host.PlatformType.SystemBoolean,
+                            Operand = Helper.JoinWithLogicalAnd(this.host, exprs, true)
+                        },
+                        OriginalSource = Helper.PrintExpression(Helper.JoinWithLogicalAnd(this.host, exprs, true)),
+                        Description = new CompileTimeConstant() { Value = "Target negated precondition", Type = this.host.PlatformType.SystemString }
+                    };
+                    queryContract.Postconditions.Add(post);
+                }
+                else
+                {
+                    var targetPreconditions = from pre in targetContract.Preconditions
+                                              select new Postcondition()
+                                              {
+                                                  Condition = pre.Condition,
+                                                  OriginalSource = Helper.PrintExpression(pre.Condition),
+                                                  Description = new CompileTimeConstant() { Value = "Target precondition", Type = this.host.PlatformType.SystemString }
+                                              };
+                    queryContract.Postconditions.AddRange(targetPreconditions);
+                }
+            }
+            return queryContract;
+        }
 
-//            var method = CreateQueryMethod<State>(state, methodName, action, target);
-//            var queryContract = CreateQueryContract(state, target);
+        private Action GenerateQuery(State state, Action action, State target)
+        {
+            var actionName = action.Name;
+            var stateName = state.Name;
+            var targetName = target.Name;
+            var methodName = string.Format("{1}{0}{2}{0}{3}", methodNameDelimiter, stateName, actionName, targetName);
 
-//            return new CciAction(method, queryContract);
-//        }
+            var method = CreateQueryMethod(state, methodName, action, target);
+            var queryContract = CreateQueryContract(state, target);
 
-//        private MethodContract CreateQueryContract(State state, State target)
-//        {
-//            var contracts = new MethodContract();
+            return new CciAction(method, queryContract);
+        }
 
-//            // Source state invariant as a precondition
-//            var stateInv = Helper.GenerateStateInvariant(this.host, state);
+        private MethodContract CreateQueryContract(State state, State target)
+        {
+            var contracts = new MethodContract();
 
-//            var preconditions = from condition in stateInv
-//                                select new Precondition()
-//                                {
-//                                    Condition = condition,
-//                                    OriginalSource = Helper.PrintExpression(condition),
-//                                    Description = new CompileTimeConstant() { Value = "Source state invariant", Type = this.host.PlatformType.SystemString }
-//                                };
-//            contracts.Preconditions.AddRange(preconditions);
+            // Source state invariant as a precondition
+            var stateInv = Helper.GenerateStateInvariant(this.host, state);
 
-//            // Negated target state invariant as a postcondition
-//            var targetInv = Helper.GenerateStateInvariant(this.host, target);
+            var preconditions = from condition in stateInv
+                                select new Precondition()
+                                {
+                                    Condition = condition,
+                                    OriginalSource = Helper.PrintExpression(condition),
+                                    Description = new CompileTimeConstant() { Value = "Source state invariant", Type = this.host.PlatformType.SystemString }
+                                };
+            contracts.Preconditions.AddRange(preconditions);
 
-//            IExpression joinedTargetInv = new LogicalNot()
-//            {
-//                Type = this.host.PlatformType.SystemBoolean,
-//                Operand = Helper.JoinWithLogicalAnd(this.host, targetInv, true)
-//            };
+            // Negated target state invariant as a postcondition
+            var targetInv = Helper.GenerateStateInvariant(this.host, target);
 
-//            var postcondition = new Postcondition()
-//            {
-//                Condition = joinedTargetInv,
-//                OriginalSource = Helper.PrintExpression(joinedTargetInv),
-//                Description = new CompileTimeConstant() { Value = "Negated target state invariant", Type = this.host.PlatformType.SystemString }
-//            };
-//            contracts.Postconditions.Add(postcondition);
+            IExpression joinedTargetInv = new LogicalNot()
+            {
+                Type = this.host.PlatformType.SystemBoolean,
+                Operand = Helper.JoinWithLogicalAnd(this.host, targetInv, true)
+            };
 
-//            return contracts;
-//        }
+            var postcondition = new Postcondition()
+            {
+                Condition = joinedTargetInv,
+                OriginalSource = Helper.PrintExpression(joinedTargetInv),
+                Description = new CompileTimeConstant() { Value = "Negated target state invariant", Type = this.host.PlatformType.SystemString }
+            };
+            contracts.Postconditions.Add(postcondition);
 
-//        protected MethodDefinition CreateQueryMethod<T>(State state, string name, IMethodDefinition action, T target)
-//        {
-//            Contract.Requires(target is IMethodDefinition || target is State);
+            return contracts;
+        }
 
-//            // Get all the parameters that the query might need
-//            var parameters = new HashSet<IParameterDefinition>();
-//            foreach (var a in state.EnabledActions)
-//                parameters.UnionWith(a.Method.Parameters);
-//            foreach (var a in state.DisabledActions)
-//                parameters.UnionWith(a.Method.Parameters);
+        protected MethodDefinition CreateQueryMethod(State state, string name, Action action, Action target)
+        {
+            var parameters = GetStateParameters(state);
 
-//            parameters.UnionWith(action.Parameters);
+            parameters.UnionWith(action.Method.Parameters);
 
-//            if (target is IMethodDefinition)
-//                parameters.UnionWith(((IMethodDefinition)target).Parameters);
-//            else
-//            {
-//                var stateTarget = target as State;
-//                foreach (var a in stateTarget.EnabledActions)
-//                    parameters.UnionWith(a.Method.Parameters);
-//                foreach (var a in stateTarget.DisabledActions)
-//                    parameters.UnionWith(a.Method.Parameters);
-//            }
+            parameters.UnionWith(target.Method.Parameters);
 
-//            var method = new MethodDefinition()
-//            {
-//                CallingConvention = Microsoft.Cci.CallingConvention.HasThis,
-//                ContainingTypeDefinition = this.typeToAnalyze,
-//                InternFactory = host.InternFactory,
-//                IsStatic = false,
-//                Name = host.NameTable.GetNameFor(name),
-//                Type = action.Type,
-//                Visibility = TypeMemberVisibility.Public,
-//                Parameters = parameters.ToList()
-//            };
+            return CreateMethod(name, action, parameters);
+        }
 
-//            BlockStatement block = null;
+        protected MethodDefinition CreateQueryMethod(State state, string name, Action action, State target)
+        {
+            var parameters = GetStateParameters(state);
 
-//            if (Configuration.InlineMethodsBody)
-//            {
-//                block = InlineMethodBody(action);
-//            }
-//            else
-//            {
-//                block = CallMethod(action);
-//            }
+            parameters.UnionWith(action.Method.Parameters);
 
-//            method.Body = new SourceMethodBody(host)
-//            {
-//                MethodDefinition = method,
-//                Block = block,
-//                LocalsAreZeroed = true
-//            };
+            parameters.UnionWith(GetStateParameters(target));
 
-//            return method;
-//        }
+            return CreateMethod(name, action, parameters);
+        }
 
-//        private BlockStatement CallMethod(IMethodDefinition action)
-//        {
-//            var block = new BlockStatement();
-//            var args = new List<IExpression>();
+        private HashSet<IParameterDefinition> GetStateParameters(State state)
+        {
+            // Get all the parameters that the query might need
+            var parameters = new HashSet<IParameterDefinition>();
+            foreach (var a in state.EnabledActions)
+            {
+                parameters.UnionWith(a.Method.Parameters);
+            }
+            foreach (var a in state.DisabledActions)
+            {
+                parameters.UnionWith(a.Method.Parameters);
+            }
+            return parameters;
+        }
 
-//            foreach (var arg in action.Parameters)
-//            {
-//                args.Add(new BoundExpression()
-//                {
-//                    Definition = arg,
-//                    Instance = null,
-//                    Locations = new List<ILocation>(arg.Locations),
-//                    Type = arg.Type
-//                });
-//            }
+        private MethodDefinition CreateMethod(string name, Action action, HashSet<IParameterDefinition> parameters)
+        {
+            var method = new MethodDefinition()
+            {
+                CallingConvention = Microsoft.Cci.CallingConvention.HasThis,
+                //TODO: agregar esto en el query assembly
+                //ContainingTypeDefinition = this.typeToAnalyze,
+                InternFactory = host.InternFactory,
+                IsStatic = false,
+                Name = host.NameTable.GetNameFor(name),
+                Type = action.Method.Type,
+                Visibility = TypeMemberVisibility.Public,
+                Parameters = parameters.ToList()
+            };
 
-//            IMethodReference methodReference = action;
+            BlockStatement block = null;
 
-//            if (typeToAnalyze.IsGeneric)
-//            {
-//                methodReference = specializedInputType.SpecializeMember(action, host.InternFactory) as IMethodReference;
-//            }
+            if (Configuration.InlineMethodsBody)
+            {
+                block = InlineMethodBody(action);
+            }
+            else
+            {
+                block = CallMethod(action);
+            }
 
-//            var callExpr = new MethodCall()
-//            {
-//                Arguments = args,
-//                IsStaticCall = false,
-//                MethodToCall = methodReference,
-//                Type = action.Type,
-//                ThisArgument = new ThisReference(),
-//                Locations = new List<ILocation>(action.Locations)
-//            };
+            method.Body = new SourceMethodBody(host)
+            {
+                MethodDefinition = method,
+                Block = block,
+                LocalsAreZeroed = true
+            };
+            return method;
+        }
 
-//            if (action.Type.TypeCode == PrimitiveTypeCode.Void)
-//            {
-//                var call = new ExpressionStatement()
-//                {
-//                    Expression = callExpr
-//                };
+        private BlockStatement CallMethod(Action action)
+        {
+            throw new NotSupportedException();
+            //var block = new BlockStatement();
+            //var args = new List<IExpression>();
 
-//                block.Statements.Add(call);
-//            }
-//            else
-//            {
-//                var ret = new ReturnStatement()
-//                {
-//                    Expression = callExpr
-//                };
+            //foreach (var arg in action.Parameters)
+            //{
+            //    args.Add(new BoundExpression()
+            //    {
+            //        Definition = arg,
+            //        Instance = null,
+            //        Locations = new List<ILocation>(arg.Locations),
+            //        Type = arg.Type
+            //    });
+            //}
 
-//                block.Statements.Add(ret);
-//            }
+            //IMethodReference methodReference = action;
 
-//            return block;
-//        }
+            //if (typeToAnalyze.IsGeneric)
+            //{
+            //    methodReference = specializedInputType.SpecializeMember(action, host.InternFactory) as IMethodReference;
+            //}
 
-//        private BlockStatement InlineMethodBody(IMethodDefinition action)
-//        {
-//            var block = new BlockStatement();
+            //var callExpr = new MethodCall()
+            //{
+            //    Arguments = args,
+            //    IsStaticCall = false,
+            //    MethodToCall = methodReference,
+            //    Type = action.Type,
+            //    ThisArgument = new ThisReference(),
+            //    Locations = new List<ILocation>(action.Locations)
+            //};
 
-//            var mc = inputContractProvider.GetMethodContractFor(action);
+            //if (action.Type.TypeCode == PrimitiveTypeCode.Void)
+            //{
+            //    var call = new ExpressionStatement()
+            //    {
+            //        Expression = callExpr
+            //    };
 
-//            if (mc != null && mc.Preconditions.Count() > 0)
-//            {
-//                var asserts = from pre in mc.Preconditions
-//                              select new AssertStatement()
-//                              {
-//                                  Condition = pre.Condition,
-//                                  OriginalSource = pre.OriginalSource
-//                              };
+            //    block.Statements.Add(call);
+            //}
+            //else
+            //{
+            //    var ret = new ReturnStatement()
+            //    {
+            //        Expression = callExpr
+            //    };
 
-//                block.Statements.AddRange(asserts);
-//            }
+            //    block.Statements.Add(ret);
+            //}
 
-//            IBlockStatement actionBodyBlock = null;
-//            if (action.Body is Microsoft.Cci.ILToCodeModel.SourceMethodBody)
-//            {
-//                var actionBody = action.Body as Microsoft.Cci.ILToCodeModel.SourceMethodBody;
-//                actionBodyBlock = actionBody.Block;
-//            }
-//            else if (action.Body is SourceMethodBody)
-//            {
-//                var actionBody = action.Body as SourceMethodBody;
-//                actionBodyBlock = actionBody.Block;
-//            }
+            //return block;
+        }
 
-//            //Por tratarse de un constructor skipeamos
-//            //el primer statement porque es base..ctor();
-//            var skipCount = action.IsConstructor ? 1 : 0;
-//            block.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));
+        private BlockStatement InlineMethodBody(Action action)
+        {
+            var block = new BlockStatement();
 
-//            if (mc != null && mc.Postconditions.Count() > 0)
-//            {
-//                var assumes = from post in mc.Postconditions
-//                              select new AssumeStatement()
-//                              {
-//                                  Condition = post.Condition,
-//                                  OriginalSource = post.OriginalSource
-//                              };
-//                //Ponemos los assume antes del return
-//                if (block.Statements.Count > 0 && block.Statements.Last() is IReturnStatement)
-//                {
-//                    block.Statements.InsertRange(block.Statements.Count - 1, assumes);
-//                }
-//                else
-//                {
-//                    block.Statements.AddRange(assumes);
-//                }
-//            }
+            var mc = action.Contract;
 
-//            return block;
-//        }
-//    }
+            if (mc != null && mc.Preconditions.Count() > 0)
+            {
+                var asserts = from pre in mc.Preconditions
+                              select new AssertStatement()
+                              {
+                                  Condition = pre.Condition,
+                                  OriginalSource = pre.OriginalSource
+                              };
 
-//}
+                block.Statements.AddRange(asserts);
+            }
+
+            IBlockStatement actionBodyBlock = null;
+            if (action.Method.Body is Microsoft.Cci.ILToCodeModel.SourceMethodBody)
+            {
+                var actionBody = action.Method.Body as Microsoft.Cci.ILToCodeModel.SourceMethodBody;
+                actionBodyBlock = actionBody.Block;
+            }
+            else if (action.Method.Body is SourceMethodBody)
+            {
+                var actionBody = action.Method.Body as SourceMethodBody;
+                actionBodyBlock = actionBody.Block;
+            }
+
+            //Por tratarse de un constructor skipeamos
+            //el primer statement porque es base..ctor();
+            var skipCount = action.Method.IsConstructor ? 1 : 0;
+            block.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));
+
+            if (mc != null && mc.Postconditions.Count() > 0)
+            {
+                var assumes = from post in mc.Postconditions
+                              select new AssumeStatement()
+                              {
+                                  Condition = post.Condition,
+                                  OriginalSource = post.OriginalSource
+                              };
+                //Ponemos los assume antes del return
+                if (block.Statements.Count > 0 && block.Statements.Last() is IReturnStatement)
+                {
+                    block.Statements.InsertRange(block.Statements.Count - 1, assumes);
+                }
+                else
+                {
+                    block.Statements.AddRange(assumes);
+                }
+            }
+
+            return block;
+        }
+    }
+
+}
