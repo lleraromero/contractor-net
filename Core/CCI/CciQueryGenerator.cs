@@ -12,7 +12,7 @@ using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
-    internal class CciQueryGenerator
+    class CciQueryGenerator
     {
         protected const string notPrefix = "_Not_";
         protected const string methodNameDelimiter = "~";
@@ -223,7 +223,7 @@ namespace Contractor.Core
             return contracts;
         }
 
-        protected MethodDefinition CreateQueryMethod(State state, string name, Action action, Action target)
+        private MethodDefinition CreateQueryMethod(State state, string name, Action action, Action target)
         {
             var parameters = GetStateParameters(state);
 
@@ -234,7 +234,7 @@ namespace Contractor.Core
             return CreateMethod(name, action, parameters);
         }
 
-        protected MethodDefinition CreateQueryMethod(State state, string name, Action action, State target)
+        private MethodDefinition CreateQueryMethod(State state, string name, Action action, State target)
         {
             var parameters = GetStateParameters(state);
 
@@ -408,5 +408,4 @@ namespace Contractor.Core
             return block;
         }
     }
-
 }
