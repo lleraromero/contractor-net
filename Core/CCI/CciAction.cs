@@ -27,7 +27,6 @@ namespace Contractor.Core
         public CciAction(IMethodDefinition method, IMethodContract contract)
         {
             System.Diagnostics.Contracts.Contract.Requires(method != null);
-            System.Diagnostics.Contracts.Contract.Requires(contract != null);
 
             this.method = method;
             this.contract = contract;

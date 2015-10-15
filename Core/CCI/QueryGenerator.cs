@@ -1,6 +1,7 @@
 ﻿using Contractor.Core.Model;
 using Contractor.Utils;
 using Microsoft.Cci;
+using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableContracts;
 using System;
@@ -16,16 +17,13 @@ namespace Contractor.Core
         protected const string notPrefix = "_Not_";
         protected const string methodNameDelimiter = "~";
 
-        protected CodeContractAwareHostEnvironment host;
+        protected IContractAwareHost host;
+        protected NamespaceTypeDefinition typeToAnalyze;
 
-        public CciQueryGenerator()
+        public CciQueryGenerator(IContractAwareHost host, NamespaceTypeDefinition typeToAnalyze)
         {
-            this.host = new CodeContractAwareHostEnvironment();
-        }
-
-        ~CciQueryGenerator()
-        {
-            this.host.Dispose();
+            this.host = host;
+            this.typeToAnalyze = typeToAnalyze;
         }
 
         public IEnumerable<Action> CreateQueries(State state, Action action, IEnumerable<Action> actions)
@@ -268,7 +266,7 @@ namespace Contractor.Core
             {
                 CallingConvention = Microsoft.Cci.CallingConvention.HasThis,
                 //TODO: agregar esto en el query assembly
-                //ContainingTypeDefinition = this.typeToAnalyze,
+                ContainingTypeDefinition = this.typeToAnalyze,
                 InternFactory = host.InternFactory,
                 IsStatic = false,
                 Name = host.NameTable.GetNameFor(name),
