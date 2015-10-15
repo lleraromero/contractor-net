@@ -17,8 +17,6 @@ namespace Contractor.Core
 {
     class CorralAnalyzer : Analyzer
     {
-        private enum ResultKind { TrueBug, NoBugs, RecursionBoundReached }
-
         public CorralAnalyzer(IContractAwareHost host, IModule module, NamespaceTypeDefinition type, CancellationToken token)
             : base(host, module, type, token)
         {
@@ -30,7 +28,8 @@ namespace Contractor.Core
 
         public override ActionAnalysisResults AnalyzeActions(State source, Action action, List<Action> actions)
         {
-            var result = Analyze<Action>(source, action, actions);
+            var queries = GenerateQueries<Action>(source, action, actions);
+            var result = Analyze(queries);
             var analysisResult = EvaluateQueries(actions, result);
 
             return analysisResult;
@@ -38,16 +37,15 @@ namespace Contractor.Core
 
         public override TransitionAnalysisResult AnalyzeTransitions(State source, Action action, List<State> targets)
         {
-            var result = Analyze<State>(source, action, targets);
+            var queries = GenerateQueries<State>(source, action, targets);
+            var result = Analyze(queries);
             var resultAnalysis = EvaluateQueries(source, action, targets, result);
 
             return resultAnalysis;
         }
 
-        private Dictionary<MethodDefinition, ResultKind> Analyze<T>(State source, Action action, List<T> target)
+        private Dictionary<MethodDefinition, ResultKind> Analyze(List<MethodDefinition> queries)
         {
-            List<MethodDefinition> queries = GenerateQueries<T>(source, action, target);
-
             // Add queries to the working assembly
             this.typeToAnalyze.Methods.AddRange(queries);
 
@@ -64,6 +62,34 @@ namespace Contractor.Core
 
             // I don't need the queries anymore
             this.typeToAnalyze.Methods.RemoveAll(m => queries.Contains(m));
+
+            return result;
+        }
+
+        private Dictionary<MethodDefinition, ResultKind> ExecuteChecker(List<MethodDefinition> queries)
+        {
+            var result = new Dictionary<MethodDefinition, ResultKind>();
+
+            var bctRunner = new BctRunner(this.token);
+            var args = new string[] { GetQueryAssemblyPath(), "/lib:" + Path.GetDirectoryName(inputAssembly.Module.ContainingAssembly.Location) };
+
+            base.TotalAnalysisDuration += bctRunner.Run(args);
+
+            foreach (var query in queries)
+            {
+                // Check if the user stopped the analysis
+                if (base.token.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                var queryName = CreateUniqueMethodName(query);
+
+                var corralRunner = new CorralRunner(this.token);
+                var corralArgs = string.Format("{0} /main:{1} {2}", GetQueryAssemblyPath().Replace("dll", "bpl"), queryName, Configuration.CorralArguments);
+                corralRunner.Run(corralArgs);
+                result[query] = corralRunner.Result;
+            }
 
             return result;
         }
@@ -114,97 +140,6 @@ namespace Contractor.Core
             }
 
             return new ActionAnalysisResults(enabledActions, disabledActions);
-        }
-
-        private Dictionary<MethodDefinition, ResultKind> ExecuteChecker(List<MethodDefinition> queries)
-        {
-            var result = new Dictionary<MethodDefinition, ResultKind>();
-
-            RunBCT();
-
-            foreach (var query in queries)
-            {
-                // Check if the user stopped the analysis
-                if (base.token.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                var queryName = CreateUniqueMethodName(query);
-
-                result[query] = RunCorral(queryName);
-            }
-
-            return result;
-        }
-
-        private void RunBCT()
-        {
-            // Check if the user stopped the analysis
-            if (base.token.IsCancellationRequested)
-            {
-                return;
-            }
-
-            var timer = Stopwatch.StartNew();
-
-            // I need to change the current directory so BCT can write the output in the correct folder
-            var tmp = Environment.CurrentDirectory;
-            Environment.CurrentDirectory = Configuration.TempPath;
-            var boogieTranslator = new BytecodeTranslator.BCT();
-            var args = new string[] { GetQueryAssemblyPath(), "/lib:" + Path.GetDirectoryName(inputAssembly.Module.ContainingAssembly.Location) };
-            if (boogieTranslator.Main(args) != 0)
-            {
-                Logger.Log(LogLevel.Fatal, "Error translating the query assembly to boogie");
-                Logger.Log(LogLevel.Info, string.Format("args: {0}, {1}", args));
-                throw new Exception("Error translating the query assembly to boogie");
-            }
-            Environment.CurrentDirectory = tmp;
-
-            timer.Stop();
-            base.TotalAnalysisDuration += new TimeSpan(timer.ElapsedTicks);            
-        }
-
-        private ResultKind RunCorral(string method)
-        {
-            Contract.Requires(!string.IsNullOrEmpty(method));
-
-            var args = string.Format("{0} /main:{1} {2}", GetQueryAssemblyPath().Replace("dll", "bpl"), method, Configuration.CorralArguments);
-
-            var timer = Stopwatch.StartNew();
-
-            var corral = new cba.Driver();
-            try
-            {
-                if (corral.run(args.Split(' ')) != 0)
-                    throw new Exception("Error executing corral");
-            }
-            catch (Exception ex)
-            {
-                Logger.Log(LogLevel.Fatal, ex);
-                Logger.Log(LogLevel.Info, args);
-                throw;
-            }
-
-            timer.Stop();
-
-            base.TotalAnalysisDuration += new TimeSpan(timer.ElapsedTicks);
-            base.ExecutionsCount++;
-
-            switch (corral.Result)
-            {
-                case cba.CorralResult.BugFound:
-                    return ResultKind.TrueBug;
-
-                case cba.CorralResult.NoBugs:
-                    return ResultKind.NoBugs;
-
-                case cba.CorralResult.RecursionBoundReached:
-                    return ResultKind.RecursionBoundReached;
-
-                default:
-                    throw new NotImplementedException("The result was not understood");
-            }
         }
 
         private TransitionAnalysisResult EvaluateQueries(State source, Action action, List<State> targets, Dictionary<MethodDefinition, ResultKind> result)
