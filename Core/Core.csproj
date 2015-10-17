@@ -217,6 +217,7 @@
     <Compile Include="IAnalyzer.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="CCI\ReturnRewriter.cs" />
+    <Compile Include="Query.cs" />
     <Compile Include="StringAction.cs" />
     <None Include="API.cd" />
     <Compile Include="CCI\Instrumenter.cs" />
