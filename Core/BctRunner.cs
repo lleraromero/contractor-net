@@ -40,10 +40,5 @@ namespace Contractor.Core
             timer.Stop();
             return timer.Elapsed;
         }
-
-        private string GetQueryAssemblyPath()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

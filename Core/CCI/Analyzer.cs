@@ -157,10 +157,6 @@ namespace Contractor.Core
             {
                 queries.AddRange(this.queryGenerator.CreateQueries(state, action, actions as List<State>));
             }
-            else
-            {
-                throw new NotSupportedException();
-            }
 
             TotalGeneratedQueriesCount += queries.Count;
 
