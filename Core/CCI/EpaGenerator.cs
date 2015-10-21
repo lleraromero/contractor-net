@@ -237,7 +237,6 @@ namespace Contractor.Core
                 var source = newStates.Dequeue();
                 foreach (var action in source.EnabledActions)
                 {
-                    var actionUniqueName = action.Method.GetUniqueName();
                     // Which actions are enabled or disabled if 'action' is called from 'source'?
                     var actionsResult = checker.AnalyzeActions(source, action, actions.ToList<Action>());
 
