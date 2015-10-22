@@ -56,8 +56,7 @@ namespace Contractor.Core
         /// </summary>
         private void VisitTypeDefinition(ITypeDefinition typeDefinition)
         {
-            var pepe = typeDefinition as NamespaceTypeDefinition;
-            ITypeContract typeContract = base.contractProvider.GetTypeContractFor(pepe);
+            ITypeContract typeContract = base.contractProvider.GetTypeContractFor(typeDefinition as NamespaceTypeDefinition);
             if (typeContract != null)
             {
                 #region Define the method
@@ -177,7 +176,7 @@ namespace Contractor.Core
 
             // add a new local variable to store the value at return
             LocalDeclarationStatement retLocal = null;
-            if (!TypeHelper.TypesAreEquivalent(methodDefinition.Type, this.host.PlatformType.SystemVoid))
+            if (TypeHelper.GetTypeName(methodDefinition.Type) != TypeHelper.GetTypeName(this.host.PlatformType.SystemVoid))
             {
                 retLocal = new LocalDeclarationStatement()
                 {
@@ -196,7 +195,7 @@ namespace Contractor.Core
             {
                 var methodCall = new MethodCall()
                 {
-                    Arguments = new List<IExpression> { this.Rewrite(precondition.Condition), precondition.Description ?? new CompileTimeConstant() { Type = this.host.PlatformType.SystemString, Value = "era null" } },
+                    Arguments = new List<IExpression> { this.Rewrite(precondition.Condition), precondition.Description ?? new CompileTimeConstant() { Type = this.host.PlatformType.SystemString, Value = "Precondition" } },
                     IsStaticCall = true,
                     MethodToCall = this.assumeReference,
                     Type = systemVoid,
@@ -282,7 +281,7 @@ namespace Contractor.Core
             {
                 var methodCall = new MethodCall()
                 {
-                    Arguments = new List<IExpression> { this.Rewrite(postcondition.Condition), postcondition.Description ?? new CompileTimeConstant() { Type = this.host.PlatformType.SystemString, Value = "era null" } },
+                    Arguments = new List<IExpression> { this.Rewrite(postcondition.Condition), postcondition.Description ?? new CompileTimeConstant() { Type = this.host.PlatformType.SystemString, Value = "Postcondition" } },
                     IsStaticCall = true,
                     MethodToCall = this.assertReference,
                     Type = systemVoid,
@@ -318,7 +317,7 @@ namespace Contractor.Core
 
 
             // If the method is not void, we add the return statement
-            if (!TypeHelper.TypesAreEquivalent(methodDefinition.Type, this.host.PlatformType.SystemVoid))
+            if (TypeHelper.GetTypeName(methodDefinition.Type) != TypeHelper.GetTypeName(this.host.PlatformType.SystemVoid))
             {
                 var returnStatement = new ReturnStatement()
                 {
@@ -348,9 +347,9 @@ namespace Contractor.Core
         {
             var methodCall = new MethodCall()
             {
-                Arguments = new List<IExpression> { this.Rewrite(assertStatement.Condition) },
+                Arguments = new List<IExpression> { this.Rewrite(assertStatement.Condition), assertStatement.Description ?? new CompileTimeConstant() { Type = this.host.PlatformType.SystemString, Value = "Assert" } },
                 IsStaticCall = true,
-                MethodToCall = this.contractProvider.ContractMethods.Assert,
+                MethodToCall = this.assertReference,
                 Type = systemVoid,
                 Locations = new List<ILocation>(assertStatement.Locations),
             };
@@ -368,9 +367,9 @@ namespace Contractor.Core
         {
             var methodCall = new MethodCall()
             {
-                Arguments = new List<IExpression> { this.Rewrite(assumeStatement.Condition) },
+                Arguments = new List<IExpression> { this.Rewrite(assumeStatement.Condition), assumeStatement.Description ?? new CompileTimeConstant() { Type = this.host.PlatformType.SystemString, Value = "Assume" } },
                 IsStaticCall = true,
-                MethodToCall = this.contractProvider.ContractMethods.Assume,
+                MethodToCall = this.assumeReference,
                 Type = systemVoid,
                 Locations = new List<ILocation>(assumeStatement.Locations),
             };
