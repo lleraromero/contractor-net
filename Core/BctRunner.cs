@@ -26,7 +26,7 @@ namespace Contractor.Core
 
             // I need to change the current directory so BCT can write the output in the correct folder
             var tmp = Environment.CurrentDirectory;
-            Environment.CurrentDirectory = Configuration.TempPath;
+            Environment.CurrentDirectory = Path.GetDirectoryName(args[0]);
             var boogieTranslator = new BytecodeTranslator.BCT();
             
             if (boogieTranslator.Main(args) != 0)
