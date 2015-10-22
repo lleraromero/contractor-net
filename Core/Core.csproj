@@ -205,6 +205,7 @@
     <Compile Include="CCI\AssemblyInfo.cs" />
     <Compile Include="CCI\CciAction.cs" />
     <Compile Include="CCI\CciAssembly.cs" />
+    <Compile Include="CCI\CciQueryAssembly.cs" />
     <Compile Include="CCI\CodeContractsAnalyzer.cs" />
     <Compile Include="CCI\CciQueryGenerator.cs" />
     <Compile Include="Configuration.cs" />

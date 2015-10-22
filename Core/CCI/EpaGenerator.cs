@@ -116,7 +116,7 @@ namespace Contractor.Core
 
             instrumentedEpas = new HashSet<string>();
 
-            assembly = new CciAssembly(inputFileName, contractsFileName);
+            assembly = new CciAssembly(inputFileName, contractsFileName, host);
         }
 
         public void Dispose()

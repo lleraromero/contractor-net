@@ -1,16 +1,15 @@
-﻿using Microsoft.Cci;
+﻿using Contractor.Utils;
+using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.ILToCodeModel;
 using Microsoft.Cci.MutableCodeModel;
+using Microsoft.Cci.MutableCodeModel.Contracts;
 using Microsoft.Cci.MutableContracts;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Contractor.Utils;
 using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
@@ -29,15 +28,12 @@ namespace Contractor.Core
         protected Module module;
         protected IContractProvider contractProvider;
 
-        public CciAssembly(string fileName, string contractsFileName)
+        public CciAssembly(string fileName, string contractsFileName, IContractAwareHost host)
         {
             Contract.Requires(!string.IsNullOrEmpty(fileName) && File.Exists(fileName));
 
-            this.host = new CodeContractAwareHostEnvironment(true);
-            this.module = DecompileModule(fileName);
-
-            // Extracting contracts from this assembly and the contract reference assembly previously loaded with this host
-            // Important: the contracts are NOT removed from the module
+            this.host = host;
+            this.module = new CodeAndContractDeepCopier(this.host).Copy(DecompileModule(fileName));
             var contractExtractor = this.host.GetContractExtractor(this.module.UnitIdentity);
             this.contractProvider = new AggregatingContractProvider(contractExtractor);
         }
@@ -79,14 +75,14 @@ namespace Contractor.Core
             return this.contractProvider.GetMethodContractFor(method);
         }
 
-        private NamespaceTypeDefinition FindType(string typeName)
+        protected NamespaceTypeDefinition FindType(string typeName)
         {
             var types = this.module.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
             var type = types.First(t => TypeHelper.GetTypeName(t, NameFormattingOptions.None).Equals(typeName));
             return type;
         }
 
-        private Module DecompileModule(string filename)
+        protected Module DecompileModule(string filename)
         {
             Contract.Requires(!string.IsNullOrEmpty(filename) && File.Exists(filename));
 
@@ -99,7 +95,7 @@ namespace Contractor.Core
             return decompiledModule;
         }
 
-        private IModule LoadModule(string filename)
+        protected IModule LoadModule(string filename)
         {
             Contract.Requires(!string.IsNullOrEmpty(filename) && File.Exists(filename));
 
@@ -111,7 +107,7 @@ namespace Contractor.Core
             return module;
         }
 
-        private PdbReader GetPDBReader(IModule module)
+        protected PdbReader GetPDBReader(IModule module)
         {
             Contract.Requires(module != null);
 
