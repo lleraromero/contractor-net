@@ -18,6 +18,7 @@ namespace Contractor.Core.Model
         {
             Contract.Requires(enabledActions != null && !enabledActions.Contains(null));
             Contract.Requires(disabledActions != null && !disabledActions.Contains(null));
+            Contract.Requires(!enabledActions.Intersect(disabledActions).Any(), "Cannot have an action in both sets");
 
             this.enabledActions =  new HashSet<Action>(enabledActions);
             this.disabledActions = new HashSet<Action>(disabledActions);
