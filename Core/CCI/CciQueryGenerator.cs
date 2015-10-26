@@ -40,18 +40,6 @@ namespace Contractor.Core
             return queries;
         }
 
-        public IEnumerable<Query> CreateEnableQueries(State source, Action action, IEnumerable<Action> actions)
-        {
-            var queries = new List<Query>();
-            foreach (var target in actions)
-            {
-                var queryAction = GenerateQuery(source, action, target);
-                queries.Add(new Query(queryAction));
-            }
-
-            return queries;
-        }
-
         public IEnumerable<Action> CreateQueries(State state, Action action, IEnumerable<State> actions)
         {
             var queries = new List<Action>();
