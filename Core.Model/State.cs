@@ -28,8 +28,8 @@ namespace Contractor.Core.Model
             get
             {
                 const string methodNameDelimiter = "$";
-                return (this.EnabledActions.Count > 0) ? string.Join(methodNameDelimiter, from a in this.enabledActions orderby a.Name select a.Name)
-                                                     : "deadlock";
+                return "STATE$" + ((this.EnabledActions.Count > 0) ? string.Join(methodNameDelimiter, from a in this.enabledActions orderby a.Name select a.Name)
+                                                     : "deadlock");
             }
         }
 

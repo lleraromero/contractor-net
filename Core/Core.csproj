@@ -198,6 +198,7 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="AnalyzerMock.cs" />
     <Compile Include="BctRunner.cs" />
     <Compile Include="CCI\AggregatingContractProvider.cs" />
     <Compile Include="AnalysisResults.cs" />
@@ -211,6 +212,7 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="CCI\ContractRewriter.cs" />
     <Compile Include="CCI\CorralAnalyzer.cs" />
+    <Compile Include="CorralMock.cs" />
     <Compile Include="CorralRunner.cs" />
     <Compile Include="EpaBinarySerializer.cs" />
     <Compile Include="CCI\EpaGenerator.cs" />
