@@ -27,25 +27,23 @@ namespace Contractor.Core
         {
             Contract.Requires(!string.IsNullOrEmpty(typeToAnalyze));
             Contract.Requires(Assembly.Types().Contains(typeToAnalyze));
-
-            var epaBuilder = new EpaBuilder(typeToAnalyze);
-
-            var states = new Dictionary<string, State>();
+            Contract.Requires(analyzer != null);
 
             var dummy = new State(this.assembly.Constructors(typeToAnalyze), new HashSet<Action>());
+            
+            var epaBuilder = new EpaBuilder(typeToAnalyze, dummy);
+            
+            var discoveredStates = new HashSet<State>();
+            discoveredStates.Add(dummy);
 
-            states.Add(dummy.Name, dummy);
-            epaBuilder.Add(dummy);
-            epaBuilder.Initial = dummy;
-
-            var newStates = new Queue<State>();
-            newStates.Enqueue(dummy);
+            var statesToVisit = new Queue<State>();
+            statesToVisit.Enqueue(dummy);
 
             try
             {
-                while (newStates.Count > 0)
+                while (statesToVisit.Count > 0)
                 {
-                    var source = newStates.Dequeue();
+                    var source = statesToVisit.Dequeue();
                     foreach (var action in source.EnabledActions)
                     {
                         // Which actions are enabled or disabled if 'action' is called from 'source'?
@@ -67,11 +65,11 @@ namespace Contractor.Core
                         {
                             var target = transition.TargetState;
                             // Do I have to add a new state to the EPA?
-                            if (!states.ContainsKey(target.Name))
+                            if (!discoveredStates.Contains(target))
                             {
-                                newStates.Enqueue(target);
+                                statesToVisit.Enqueue(target);
 
-                                states.Add(target.Name, target);
+                                discoveredStates.Add(target);
                                 epaBuilder.Add(target);
                             }
 

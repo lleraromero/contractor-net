@@ -203,8 +203,6 @@ namespace Contractor.Core
             if (this.TypeAnalysisStarted != null)
                 this.TypeAnalysisStarted(this, new TypeAnalysisStartedEventArgs(typeDisplayName));
 
-            var epaBuilder = new EpaBuilder(typeUniqueName);
-
             IAnalyzer checker;
             switch (this.backend)
             {
@@ -223,8 +221,8 @@ namespace Contractor.Core
             var dummy = new State(constructors, new HashSet<Action>());
 
             states.Add(dummy.Name, dummy);
-            epaBuilder.Add(dummy);
-            epaBuilder.Initial = dummy;
+
+            var epaBuilder = new EpaBuilder(typeUniqueName, dummy);
 
             if (this.StateAdded != null)
                 this.StateAdded(this, new StateAddedEventArgs(typeDisplayName, new Tuple<EpaBuilder, State>(epaBuilder, dummy)));

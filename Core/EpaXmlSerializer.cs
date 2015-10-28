@@ -119,11 +119,11 @@ namespace Contractor.Core
                 reader.Read();
                 reader.Read(); // Epa
 
-                epaBuilder = new EpaBuilder(reader.GetAttribute("name"));
+                string type = reader.GetAttribute("name");
                 string initialState = reader.GetAttribute("initial_state");
 
                 DeserializeActions(reader);
-                DeserializeStates(reader, epaBuilder, initialState);
+                epaBuilder = DeserializeStates(reader, type, initialState);
             }
 
             return epaBuilder.Build();
@@ -137,10 +137,10 @@ namespace Contractor.Core
             }
         }
 
-        private void DeserializeStates(XmlTextReader reader, EpaBuilder epaBuilder, string initialState)
+        private EpaBuilder DeserializeStates(XmlTextReader reader, string type, string initialState)
         {
             Contract.Requires(reader != null);
-            Contract.Requires(epaBuilder != null);
+            Contract.Requires(!string.IsNullOrEmpty(type));
             Contract.Requires(!string.IsNullOrEmpty(initialState));
 
             HashSet<Tuple<string, Action, string, bool>> transitions = new HashSet<Tuple<string, Model.Action, string, bool>>();
@@ -186,14 +186,19 @@ namespace Contractor.Core
             }
 
             Dictionary<string, State> translator = new Dictionary<string, State>();
+            //TODO: arreglar las que estan deshabilitadas
+            State initial = new State(epaActions.First(kvp => kvp.Key.Equals(initialState)).Value, new HashSet<Action>());
+            
+            EpaBuilder epaBuilder = new EpaBuilder(type, initial);
+            
             foreach (var kvp in epaActions)
             {
                 //TODO: arreglar las que estan deshabilitadas
                 var s = new State(kvp.Value, new HashSet<Action>());
-                epaBuilder.Add(s);
-                if (kvp.Key.Equals(initialState))
+
+                if (!kvp.Key.Equals(initialState))
                 {
-                    epaBuilder.Initial = s;
+                    epaBuilder.Add(s);
                 }
 
                 translator[kvp.Key] = s;
@@ -204,6 +209,8 @@ namespace Contractor.Core
                 var transition = new Transition(t.Item2, translator[t.Item1], translator[t.Item3], t.Item4);
                 epaBuilder.Add(transition);
             }
+
+            return epaBuilder;
         }
     }
 }

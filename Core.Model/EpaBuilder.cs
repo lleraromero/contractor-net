@@ -10,13 +10,18 @@ namespace Contractor.Core.Model
         protected string type;
         protected State initial;
 
-        public EpaBuilder(string Type)
+        public EpaBuilder(string Type, State initial)
         {
             this.type = Type;
             this.graph = new Dictionary<State, HashSet<Transition>>();
+
+            Add(initial);
+            this.initial = initial;
         }
 
         public string Type { get { return this.type; } }
+
+        public State Initial { get { return initial; } }
 
         public HashSet<State> States
         {
@@ -89,20 +94,6 @@ namespace Contractor.Core.Model
             if (Transitions.All(x => x.SourceState != targetState && x.TargetState != targetState))
             {
                 Remove(targetState);
-            }
-        }
-
-        public State Initial
-        {
-            get
-            {
-                Contract.Requires(Initial != null);
-                return initial;
-            }
-            set
-            {
-                Contract.Requires(States.Contains(value));
-                initial = value;
             }
         }
 
