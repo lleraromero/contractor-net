@@ -81,7 +81,6 @@ namespace Contractor.Core
         public enum Backend { CodeContracts, Corral };
 
         private AssemblyInfo inputAssembly;
-        private static Dictionary<string, TypeAnalysisResult> epas = new Dictionary<string, TypeAnalysisResult>();
         private HashSet<string> instrumentedEpas;
         private CodeContractAwareHostEnvironment host;
         private Backend backend;
@@ -102,8 +101,6 @@ namespace Contractor.Core
             host = new CodeContractAwareHostEnvironment(true);
             inputAssembly = new AssemblyInfo(host);
             inputAssembly.Load(inputFileName);
-            // Cleaning the EPAs that were generated with another assembly
-            epas.Clear();
 
             if (!string.IsNullOrEmpty(contractsFileName))
             {
@@ -124,20 +121,18 @@ namespace Contractor.Core
             host.Dispose();
         }
 
-        public TypeAnalysisResult GenerateEpa(string typeFullName, CancellationToken token)
+        public TypeAnalysisResult GenerateEpa(string typeToAnalyze, CancellationToken token)
         {
-            Contract.Requires(!string.IsNullOrEmpty(typeFullName));
+            Contract.Requires(!string.IsNullOrEmpty(typeToAnalyze));
             Contract.Requires(token != null);
 
-            typeFullName = RemoveGenericsParametersFromTypeName(typeFullName);
+            typeToAnalyze = RemoveGenericsParametersFromTypeName(typeToAnalyze);
 
-            var types = inputAssembly.DecompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
-            var type = types.First(t => t.ToString() == typeFullName);
+            var constructors = this.assembly.Constructors(typeToAnalyze);
+            var actions = this.assembly.Actions(typeToAnalyze);
+            var methods = constructors.Union(actions).Select(a => a.ToString());
 
-            var methods = from m in type.GetPublicInstanceMethods()
-                          select m.GetDisplayName();
-
-            return GenerateEpa(typeFullName, methods, token);
+            return GenerateEpa(typeToAnalyze, methods, token);
         }
 
         private static string RemoveGenericsParametersFromTypeName(string typeFullName)
@@ -150,38 +145,21 @@ namespace Contractor.Core
             return typeFullName;
         }
 
-        public TypeAnalysisResult GenerateEpa(string typeFullName, IEnumerable<string> selectedMethods, CancellationToken token)
+        public TypeAnalysisResult GenerateEpa(string typeToAnalyze, IEnumerable<string> selectedMethods, CancellationToken token)
         {
-            Contract.Requires(!string.IsNullOrEmpty(typeFullName));
+            Contract.Requires(!string.IsNullOrEmpty(typeToAnalyze));
             Contract.Requires(selectedMethods != null && selectedMethods.Count() > 0);
             Contract.Requires(token != null);
 
-            typeFullName = RemoveGenericsParametersFromTypeName(typeFullName);
+            typeToAnalyze = RemoveGenericsParametersFromTypeName(typeToAnalyze);
 
             var types = inputAssembly.DecompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
-            var type = types.First(t => t.ToString() == typeFullName);
-            var typeUniqueName = type.GetUniqueName();
+            var type = types.First(t => t.ToString() == typeToAnalyze);
 
-            if (!epas.ContainsKey(typeUniqueName))
-            {
-                var methods = from name in selectedMethods
-                              join m in type.Methods
-                              on name equals m.GetDisplayName()
-                              select m;
+            var constructors = new HashSet<Action>(this.assembly.Constructors(typeToAnalyze).Where(a => selectedMethods.Contains(a.ToString())));
+            var actions = new HashSet<Action>(this.assembly.Actions(typeToAnalyze).Where(a => selectedMethods.Contains(a.ToString())));
 
-                var constructors = new HashSet<Action>(from m in methods
-                                                       where m.IsConstructor
-                                                       select new CciAction(m, inputAssembly.ExtractContracts().GetMethodContractFor(m)));
-
-                var actions = new HashSet<Action>(from m in methods
-                                                  where !m.IsConstructor
-                                                  select new CciAction(m, inputAssembly.ExtractContracts().GetMethodContractFor(m)));
-
-                var analysisResult = GenerateEpa(type, constructors, actions, token);
-                epas.Add(typeUniqueName, analysisResult);
-            }
-
-            return epas[typeUniqueName];
+            return GenerateEpa(type, constructors, actions, token);
         }
 
         /// <summary>
@@ -353,29 +331,31 @@ namespace Contractor.Core
 
         public void GenerateOutputAssembly(string outputFileName)
         {
-            Contract.Requires(!string.IsNullOrEmpty(outputFileName));
+            // TODO: arreglar
+            throw new NotSupportedException();
+            //Contract.Requires(!string.IsNullOrEmpty(outputFileName));
 
-            var contractProvider = inputAssembly.ExtractContracts();
-            var instrumenter = new Instrumenter(host, contractProvider);
+            //var contractProvider = inputAssembly.ExtractContracts();
+            //var instrumenter = new Instrumenter(host, contractProvider);
 
-            foreach (var typeUniqueName in epas.Keys)
-            {
-                var typeAnalysis = epas[typeUniqueName];
+            //foreach (var typeUniqueName in epas.Keys)
+            //{
+            //    var typeAnalysis = epas[typeUniqueName];
 
-                if (!instrumentedEpas.Contains(typeUniqueName))
-                {
-                    var type = (from t in inputAssembly.DecompiledModule.AllTypes
-                                where typeUniqueName == t.GetUniqueName()
-                                select t as NamespaceTypeDefinition)
-                                .First();
+            //    if (!instrumentedEpas.Contains(typeUniqueName))
+            //    {
+            //        var type = (from t in inputAssembly.DecompiledModule.AllTypes
+            //                    where typeUniqueName == t.GetUniqueName()
+            //                    select t as NamespaceTypeDefinition)
+            //                    .First();
 
-                    instrumenter.InstrumentType(type, typeAnalysis.EPA);
-                    instrumentedEpas.Add(typeUniqueName);
-                }
-            }
+            //        instrumenter.InstrumentType(type, typeAnalysis.EPA);
+            //        instrumentedEpas.Add(typeUniqueName);
+            //    }
+            //}
 
-            inputAssembly.InjectContracts(contractProvider);
-            inputAssembly.Save(outputFileName);
+            //inputAssembly.InjectContracts(contractProvider);
+            //inputAssembly.Save(outputFileName);
         }
     }
 }

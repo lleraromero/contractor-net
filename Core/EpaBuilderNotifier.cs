@@ -13,7 +13,7 @@ namespace Contractor.Core
 
     public class EpaGenerator
     {
-        private AssemblyXXX assembly;
+        protected AssemblyXXX assembly;
         public AssemblyXXX Assembly { get { return assembly; } }
 
         public EpaGenerator(AssemblyXXX assembly)
