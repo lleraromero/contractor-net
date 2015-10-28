@@ -10,7 +10,7 @@ namespace Tests
     [TestClass]
     public class EpaXmlSerializerTest
     {
-        private static EpaGenerator epaGenerator;
+        private static EpaGeneratorNotifier epaGenerator;
         private const string InputFilePath = @"..\..\..\Examples\obj\Debug\Decl\Examples.dll";
 
         [ClassInitialize()]
@@ -21,7 +21,7 @@ namespace Tests
             Configuration.InlineMethodsBody = true;
 
             var ExamplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, InputFilePath));
-            epaGenerator = new EpaGenerator(EpaGenerator.Backend.Corral, ExamplesPath, null);
+            epaGenerator = new EpaGeneratorNotifier(EpaGeneratorNotifier.Backend.Corral, ExamplesPath, null);
         }
 
         [ClassCleanup()]

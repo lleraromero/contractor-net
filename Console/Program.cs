@@ -60,9 +60,9 @@ namespace Contractor.Console
             {
                 var program = new Program(options);
 
-                EpaGenerator.Backend backend = EpaGenerator.Backend.Corral;
+                EpaGeneratorNotifier.Backend backend = EpaGeneratorNotifier.Backend.Corral;
                 if (program.options.backend.Equals("CodeContracts", StringComparison.InvariantCultureIgnoreCase))
-                    backend = EpaGenerator.Backend.CodeContracts;
+                    backend = EpaGeneratorNotifier.Backend.CodeContracts;
 
                 // epas is a mapping between Typename and the result of the analysis.
                 Dictionary<string, TypeAnalysisResult> epas = program.Execute(backend);
@@ -122,10 +122,10 @@ namespace Contractor.Console
                 Directory.CreateDirectory(Configuration.TempPath);
         }
 
-        public Dictionary<string, TypeAnalysisResult> Execute(EpaGenerator.Backend backend)
+        public Dictionary<string, TypeAnalysisResult> Execute(EpaGeneratorNotifier.Backend backend)
         {
             var epas = new Dictionary<string, TypeAnalysisResult>();
-            using (var generator = new EpaGenerator(backend, options.input, null))
+            using (var generator = new EpaGeneratorNotifier(backend, options.input, null))
             {
                 generator.TypeAnalysisStarted += (sender, e) => { System.Console.WriteLine("Starting analysis for type {0}", e.TypeFullName); };
                 generator.TypeAnalysisDone += (sender, e) => { System.Console.WriteLine(e.AnalysisResult.ToString()); };

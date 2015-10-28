@@ -9,7 +9,7 @@ using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
-    class AnalyzerMock : IAnalyzer
+    public class AnalyzerMock : IAnalyzer
     {
         public TimeSpan TotalAnalysisDuration
         {

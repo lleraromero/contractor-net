@@ -5,7 +5,7 @@ using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
-    interface IAnalyzer
+    public interface IAnalyzer
     {
         TimeSpan TotalAnalysisDuration { get; }
         int ExecutionsCount { get; }

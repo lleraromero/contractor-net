@@ -16,9 +16,13 @@ namespace Contractor.Core
 {
     public abstract class AssemblyXXX
     {
+        [Pure]
         public abstract ISet<string> Types();
+        [Pure]
         public abstract ISet<Action> Constructors(string type);
+        [Pure]
         public abstract ISet<Action> Actions(string type);
+        [Pure]
         public abstract IMethodContract GetContractFor(IMethodDefinition method);
     }
 
@@ -63,7 +67,8 @@ namespace Contractor.Core
 
             var type = FindType(typeName);
             return new HashSet<Action>(from m in type.Methods
-                                       where !m.IsConstructor
+                                       where !m.IsConstructor && m.Visibility == TypeMemberVisibility.Public && 
+                                       !m.IsStatic && !m.IsStaticConstructor
                                        select new CciAction(m, this.contractProvider.GetMethodContractFor(m)));
         }
 

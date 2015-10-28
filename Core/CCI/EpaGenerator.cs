@@ -15,7 +15,7 @@ using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
-    #region EPAGenerator EventArgs
+    #region EPAGeneratorNotifier EventArgs
 
     public abstract class TypeEventArgs : EventArgs
     {
@@ -48,7 +48,7 @@ namespace Contractor.Core
 
     public class StateAddedEventArgs : TypeEventArgs
     {
-        public Tuple<EpaBuilder,State> EpaAndState { get; private set; }
+        public Tuple<EpaBuilder, State> EpaAndState { get; private set; }
 
         public StateAddedEventArgs(string typeFullName, Tuple<EpaBuilder, State> epaAndState)
             : base(typeFullName)
@@ -76,12 +76,12 @@ namespace Contractor.Core
 
     #endregion EPAGenerator EventArgs
 
-    public class EpaGenerator : IDisposable
+    public class EpaGeneratorNotifier : IDisposable
     {
         public enum Backend { CodeContracts, Corral };
 
         private AssemblyInfo inputAssembly;
-        private static Dictionary<string, TypeAnalysisResult> epas = new Dictionary<string,TypeAnalysisResult>();
+        private static Dictionary<string, TypeAnalysisResult> epas = new Dictionary<string, TypeAnalysisResult>();
         private HashSet<string> instrumentedEpas;
         private CodeContractAwareHostEnvironment host;
         private Backend backend;
@@ -93,7 +93,7 @@ namespace Contractor.Core
         public event EventHandler<StateAddedEventArgs> StateAdded;
         public event EventHandler<TransitionAddedEventArgs> TransitionAdded;
 
-        public EpaGenerator(Backend backend, string inputFileName, string contractsFileName)
+        public EpaGeneratorNotifier(Backend backend, string inputFileName, string contractsFileName)
         {
             Contract.Requires(!string.IsNullOrEmpty(inputFileName));
             Contract.Ensures(host != null);
@@ -188,7 +188,7 @@ namespace Contractor.Core
         /// Method to create an EPA of a particular type considering only the subset 'methods'
         /// </summary>
         /// <see cref="http://publicaciones.dc.uba.ar/Publications/2011/DBGU11/paper-icse-2011.pdf">Algorithm 1</see>
-        private TypeAnalysisResult GenerateEpa(NamespaceTypeDefinition type, ISet<Action> constructors, 
+        private TypeAnalysisResult GenerateEpa(NamespaceTypeDefinition type, ISet<Action> constructors,
             ISet<Action> actions, CancellationToken token)
         {
             Contract.Requires(type != null);
@@ -316,7 +316,7 @@ namespace Contractor.Core
             var disabledActions = new HashSet<Action>(actionsResult.DisabledActions);
             disabledActions.UnionWith(unknownActions);
             var v = new State(enabledActions, disabledActions);
-            
+
             if (knownStates.Contains(v))
             {
                 v = knownStates.Single(s => s.Equals(v));

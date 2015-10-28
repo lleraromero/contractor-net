@@ -216,6 +216,7 @@
     <Compile Include="CorralRunner.cs" />
     <Compile Include="EpaBinarySerializer.cs" />
     <Compile Include="CCI\EpaGenerator.cs" />
+    <Compile Include="EpaBuilderNotifier.cs" />
     <Compile Include="EpaXmlSerializer.cs" />
     <Compile Include="IAnalyzer.cs" />
     <Compile Include="Logger.cs" />
