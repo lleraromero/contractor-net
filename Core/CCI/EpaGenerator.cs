@@ -126,23 +126,11 @@ namespace Contractor.Core
             Contract.Requires(!string.IsNullOrEmpty(typeToAnalyze));
             Contract.Requires(token != null);
 
-            typeToAnalyze = RemoveGenericsParametersFromTypeName(typeToAnalyze);
-
             var constructors = this.assembly.Constructors(typeToAnalyze);
             var actions = this.assembly.Actions(typeToAnalyze);
             var methods = constructors.Union(actions).Select(a => a.ToString());
 
             return GenerateEpa(typeToAnalyze, methods, token);
-        }
-
-        private static string RemoveGenericsParametersFromTypeName(string typeFullName)
-        {
-            //Borramos del nombre los parametros de generics
-            int start = typeFullName.IndexOf('<');
-
-            if (start != -1)
-                typeFullName = typeFullName.Remove(start);
-            return typeFullName;
         }
 
         public TypeAnalysisResult GenerateEpa(string typeToAnalyze, IEnumerable<string> selectedMethods, CancellationToken token)
@@ -151,35 +139,17 @@ namespace Contractor.Core
             Contract.Requires(selectedMethods != null && selectedMethods.Count() > 0);
             Contract.Requires(token != null);
 
-            typeToAnalyze = RemoveGenericsParametersFromTypeName(typeToAnalyze);
-
-            var types = inputAssembly.DecompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
-            var type = types.First(t => t.ToString() == typeToAnalyze);
-
             var constructors = new HashSet<Action>(this.assembly.Constructors(typeToAnalyze).Where(a => selectedMethods.Contains(a.ToString())));
             var actions = new HashSet<Action>(this.assembly.Actions(typeToAnalyze).Where(a => selectedMethods.Contains(a.ToString())));
 
-            return GenerateEpa(type, constructors, actions, token);
+            return GenerateEpa(typeToAnalyze, constructors, actions, token);
         }
 
-        /// <summary>
-        /// Method to create an EPA of a particular type considering only the subset 'methods'
-        /// </summary>
-        /// <see cref="http://publicaciones.dc.uba.ar/Publications/2011/DBGU11/paper-icse-2011.pdf">Algorithm 1</see>
-        private TypeAnalysisResult GenerateEpa(NamespaceTypeDefinition type, ISet<Action> constructors,
+        private TypeAnalysisResult GenerateEpa(string typeToAnalyze, ISet<Action> constructors,
             ISet<Action> actions, CancellationToken token)
         {
-            Contract.Requires(type != null);
-            Contract.Requires(constructors != null && constructors.Count() > 0);
-            Contract.Requires(actions != null && actions.Count() > 0);
-            Contract.Requires(token != null);
-
-            var typeDisplayName = type.GetDisplayName();
-            var typeUniqueName = type.GetUniqueName();
-            var analysisTimer = Stopwatch.StartNew();
-
-            if (this.TypeAnalysisStarted != null)
-                this.TypeAnalysisStarted(this, new TypeAnalysisStartedEventArgs(typeDisplayName));
+            var types = inputAssembly.DecompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
+            var type = types.First(t => TypeHelper.GetTypeName(t, NameFormattingOptions.None).Equals(typeToAnalyze));
 
             IAnalyzer checker;
             switch (this.backend)
@@ -194,16 +164,37 @@ namespace Contractor.Core
                     throw new NotImplementedException("Unknown backend");
             }
 
+            return GenerateEpa(typeToAnalyze, checker, constructors, actions, token);
+        }
+
+        /// <summary>
+        /// Method to create an EPA of a particular type considering only the subset 'methods'
+        /// </summary>
+        /// <see cref="http://publicaciones.dc.uba.ar/Publications/2011/DBGU11/paper-icse-2011.pdf">Algorithm 1</see>
+        private TypeAnalysisResult GenerateEpa(string typeToAnalyze, IAnalyzer checker, ISet<Action> constructors,
+            ISet<Action> actions, CancellationToken token)
+        {
+            Contract.Requires(!string.IsNullOrEmpty(typeToAnalyze));
+            Contract.Requires(checker != null);
+            Contract.Requires(constructors != null && constructors.Count() > 0);
+            Contract.Requires(actions != null && actions.Count() > 0);
+            Contract.Requires(token != null);
+
+            var analysisTimer = Stopwatch.StartNew();
+
+            if (this.TypeAnalysisStarted != null)
+                this.TypeAnalysisStarted(this, new TypeAnalysisStartedEventArgs(typeToAnalyze));
+
             var states = new Dictionary<string, State>();
 
             var dummy = new State(constructors, new HashSet<Action>());
 
             states.Add(dummy.Name, dummy);
 
-            var epaBuilder = new EpaBuilder(typeUniqueName, dummy);
+            var epaBuilder = new EpaBuilder(typeToAnalyze, dummy);
 
             if (this.StateAdded != null)
-                this.StateAdded(this, new StateAddedEventArgs(typeDisplayName, new Tuple<EpaBuilder, State>(epaBuilder, dummy)));
+                this.StateAdded(this, new StateAddedEventArgs(typeToAnalyze, new Tuple<EpaBuilder, State>(epaBuilder, dummy)));
 
             var newStates = new Queue<State>();
             newStates.Enqueue(dummy);
@@ -241,7 +232,7 @@ namespace Contractor.Core
 
                             if (this.StateAdded != null)
                             {
-                                var eventArgs = new StateAddedEventArgs(typeDisplayName, new Tuple<EpaBuilder, State>(epaBuilder, target as State));
+                                var eventArgs = new StateAddedEventArgs(typeToAnalyze, new Tuple<EpaBuilder, State>(epaBuilder, target as State));
                                 this.StateAdded(this, eventArgs);
                             }
                         }
@@ -250,7 +241,7 @@ namespace Contractor.Core
 
                         if (this.TransitionAdded != null)
                         {
-                            var eventArgs = new TransitionAddedEventArgs(typeDisplayName, transition as Transition, source as State, epaBuilder);
+                            var eventArgs = new TransitionAddedEventArgs(typeToAnalyze, transition as Transition, source as State, epaBuilder);
                             this.TransitionAdded(this, eventArgs);
                         }
                     }
@@ -269,7 +260,7 @@ namespace Contractor.Core
 
             if (this.TypeAnalysisDone != null)
             {
-                var eventArgs = new TypeAnalysisDoneEventArgs(typeDisplayName, analysisResult);
+                var eventArgs = new TypeAnalysisDoneEventArgs(typeToAnalyze, analysisResult);
                 this.TypeAnalysisDone(this, eventArgs);
             }
 

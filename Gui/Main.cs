@@ -422,7 +422,7 @@ namespace Contractor.Gui
                     this.BeginInvoke(new System.Action<string, string>(this.SetBackgroundStatus), "Loading contracts from assembly {0}...", fileName);
                 }
 
-                var typeFullName = _AnalizedType.ToString();
+                var typeFullName = TypeHelper.GetTypeName(_AnalizedType, NameFormattingOptions.None);
                 var selectedMethods = listboxMethods.CheckedItems.Cast<string>();
 
                 _cancellationSource = new CancellationTokenSource();

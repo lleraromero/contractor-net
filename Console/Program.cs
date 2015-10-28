@@ -114,12 +114,8 @@ namespace Contractor.Console
                 Configuration.CheckerArguments = options.cccheckArgs;
 
             Configuration.InlineMethodsBody = options.inline;
-
-            if (!Directory.Exists(options.graph))
-                Directory.CreateDirectory(options.graph);
-
-            if (!Directory.Exists(Configuration.TempPath))
-                Directory.CreateDirectory(Configuration.TempPath);
+            Directory.CreateDirectory(options.graph);
+            Directory.CreateDirectory(Configuration.TempPath);
         }
 
         public Dictionary<string, TypeAnalysisResult> Execute(EpaGeneratorNotifier.Backend backend)
@@ -134,7 +130,7 @@ namespace Contractor.Console
                 //if (string.IsNullOrEmpty(options.type))
                 //    epas = generator.GenerateEpas(cancellationSource.Token);
                 //else
-                    epas = new Dictionary<string, TypeAnalysisResult>() { { options.type, generator.GenerateEpa(options.type, cancellationSource.Token) } };
+                epas = new Dictionary<string, TypeAnalysisResult>() { { options.type, generator.GenerateEpa(options.type, cancellationSource.Token) } };
 
                 if (options.generateAssembly)
                 {
