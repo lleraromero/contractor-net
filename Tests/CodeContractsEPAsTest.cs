@@ -14,7 +14,7 @@ namespace Tests
     [TestClass]
     public class CodeContractsEPAsTest
     {
-        private static EpaGeneratorNotifier epaGenerator;
+        private static EpaGenerator epaGenerator;
         private const string InputFilePath = @"..\..\..\Examples\obj\Debug\Decl\Examples.dll";
 
         [ClassInitialize()]
@@ -25,7 +25,7 @@ namespace Tests
             Configuration.InlineMethodsBody = true;
 
             var ExamplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, InputFilePath));
-            epaGenerator = new EpaGeneratorNotifier(EpaGeneratorNotifier.Backend.CodeContracts, ExamplesPath, null);
+            epaGenerator = new EpaGenerator(EpaGenerator.Backend.CodeContracts, ExamplesPath, null);
         }
 
         [ClassCleanup()]

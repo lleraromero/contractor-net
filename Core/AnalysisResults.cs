@@ -42,16 +42,16 @@ namespace Contractor.Core
     public class TypeAnalysisResult
     {
         protected Epa epa;
-        protected EpaGeneratorNotifier.Backend backend;
+        protected EpaGenerator.Backend backend;
         protected TimeSpan totalDuration;
         protected Dictionary<string, object> statistics;
 
         public Epa EPA { get { return epa; } }
-        public EpaGeneratorNotifier.Backend Backend { get { return backend; } }
+        public EpaGenerator.Backend Backend { get { return backend; } }
         public TimeSpan TotalDuration { get { return totalDuration; } }
         public Dictionary<string, object> Statistics { get { return statistics; } }
 
-        public TypeAnalysisResult(Epa epa, EpaGeneratorNotifier.Backend backend, TimeSpan totalTime, Dictionary<string, object> statistics)
+        public TypeAnalysisResult(Epa epa, EpaGenerator.Backend backend, TimeSpan totalTime, Dictionary<string, object> statistics)
         {
             Contract.Requires(epa != null);
             Contract.Requires(totalTime != null);

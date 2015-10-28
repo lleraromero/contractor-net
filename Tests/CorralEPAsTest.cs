@@ -40,29 +40,41 @@ namespace Tests
         [TestMethod]
         public void TestVendingMachine()
         {
-            var epaGenerator = new EpaGenerator(inputAssembly);
-            epaGenerator.GenerateEpa("Examples.VendingMachine", new AnalyzerMock());
+            var epaGenerator = new EpaGenerator();
+            var typeToAnalyze = "Examples.VendingMachine";
+            var constructors = inputAssembly.Constructors(typeToAnalyze);
+            var actions = inputAssembly.Actions(typeToAnalyze);
+            epaGenerator.GenerateEpa(typeToAnalyze, new AnalyzerMock(), constructors, actions);
         }
 
         [TestMethod]
         public void TestLinear()
         {
-            var epaGenerator = new EpaGenerator(inputAssembly);
-            epaGenerator.GenerateEpa("Examples.Linear", new AnalyzerMock());
+            var epaGenerator = new EpaGenerator();
+            var typeToAnalyze = "Examples.Linear";
+            var constructors = inputAssembly.Constructors(typeToAnalyze);
+            var actions = inputAssembly.Actions(typeToAnalyze);
+            epaGenerator.GenerateEpa(typeToAnalyze, new AnalyzerMock(), constructors, actions);
         }
 
         [TestMethod]
         public void TestDoor()
         {
-            var epaGenerator = new EpaGenerator(inputAssembly);
-            epaGenerator.GenerateEpa("Examples.Door", new AnalyzerMock());
+            var epaGenerator = new EpaGenerator();
+            var typeToAnalyze = "Examples.Door";
+            var constructors = inputAssembly.Constructors(typeToAnalyze);
+            var actions = inputAssembly.Actions(typeToAnalyze);
+            epaGenerator.GenerateEpa(typeToAnalyze, new AnalyzerMock(), constructors, actions);
         }
 
         [TestMethod]
         public void TestFiniteStack()
         {
-            var epaGenerator = new EpaGenerator(inputAssembly);
-            epaGenerator.GenerateEpa("Examples.FiniteStack", new AnalyzerMock());
+            var epaGenerator = new EpaGenerator();
+            var typeToAnalyze = "Examples.FiniteStack";
+            var constructors = inputAssembly.Constructors(typeToAnalyze);
+            var actions = inputAssembly.Actions(typeToAnalyze);
+            epaGenerator.GenerateEpa(typeToAnalyze, new AnalyzerMock(), constructors, actions);
         }
     }
 }

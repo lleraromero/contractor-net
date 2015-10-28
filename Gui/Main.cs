@@ -26,7 +26,7 @@ namespace Contractor.Gui
     {
         private AssemblyInfo _AssemblyInfo;
         private INamedTypeDefinition _AnalizedType;
-        private EpaGeneratorNotifier _EpaGenerator;
+        private EpaGenerator _EpaGenerator;
         private Thread _AnalisisThread;
         private CancellationTokenSource _cancellationSource;
         private Graph _Graph;
@@ -44,8 +44,8 @@ namespace Contractor.Gui
             splitcontainerOutput.Panel2Collapsed = true;
             treeviewTypes.Sorted = true;
             treeviewTypes.ShowPlusMinus = true;
-            cmbBackend.Items.Add(EpaGeneratorNotifier.Backend.CodeContracts);
-            cmbBackend.Items.Add(EpaGeneratorNotifier.Backend.Corral);
+            cmbBackend.Items.Add(EpaGenerator.Backend.CodeContracts);
+            cmbBackend.Items.Add(EpaGenerator.Backend.Corral);
             cmbBackend.SelectedIndex = 1;
 
             var host = new PeReader.DefaultHost();
@@ -386,9 +386,9 @@ namespace Contractor.Gui
             if (_EpaGenerator != null)
                 _EpaGenerator.Dispose();
 
-            var backend = (EpaGeneratorNotifier.Backend)parameters["backend"];
+            var backend = (EpaGenerator.Backend)parameters["backend"];
 
-            _EpaGenerator = new EpaGeneratorNotifier(backend, _AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
+            _EpaGenerator = new EpaGenerator(backend, _AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
             _EpaGenerator.TypeAnalysisStarted += this.OnTypeAnalysisStarted;
             _EpaGenerator.TypeAnalysisDone += this.OnTypeAnalysisDone;
             _EpaGenerator.StateAdded += this.OnStateAdded;
