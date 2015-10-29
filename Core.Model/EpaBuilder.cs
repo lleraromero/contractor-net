@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Contractor.Core.Model
 {
-    public class EpaBuilder
+    public class EpaBuilder : IEpaBuilder
     {
         protected Dictionary<State, HashSet<Transition>> graph;
         protected string type;

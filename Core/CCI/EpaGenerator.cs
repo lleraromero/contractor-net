@@ -15,18 +15,6 @@ using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
-    #region EPAGeneratorNotifier EventArgs
-
-    public abstract class TypeEventArgs : EventArgs
-    {
-        public string TypeFullName { get; private set; }
-
-        public TypeEventArgs(string typeFullName)
-        {
-            this.TypeFullName = typeFullName;
-        }
-    }
-
     public class TypeAnalysisStartedEventArgs : TypeEventArgs
     {
         public TypeAnalysisStartedEventArgs(string typeFullName)
@@ -45,36 +33,6 @@ namespace Contractor.Core
             this.AnalysisResult = analysisResult;
         }
     }
-
-    public class StateAddedEventArgs : TypeEventArgs
-    {
-        public Tuple<EpaBuilder, State> EpaAndState { get; private set; }
-
-        public StateAddedEventArgs(string typeFullName, Tuple<EpaBuilder, State> epaAndState)
-            : base(typeFullName)
-        {
-            this.EpaAndState = epaAndState;
-        }
-    }
-
-    public class TransitionAddedEventArgs : TypeEventArgs
-    {
-        public Transition Transition { get; private set; }
-
-        public State SourceState { get; private set; }
-
-        public EpaBuilder epaBuilder { get; private set; }
-
-        public TransitionAddedEventArgs(string typeFullName, Transition transition, State sourceState, EpaBuilder epaBuilder)
-            : base(typeFullName)
-        {
-            this.Transition = transition;
-            this.SourceState = sourceState;
-            this.epaBuilder = epaBuilder;
-        }
-    }
-
-    #endregion EPAGenerator EventArgs
 
     public class EpaGenerator : IDisposable
     {
