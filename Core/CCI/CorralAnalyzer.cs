@@ -1,5 +1,6 @@
 ﻿using Contractor.Core.Model;
 using Microsoft.Cci;
+using Microsoft.Cci.Contracts;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +13,6 @@ namespace Contractor.Core
 {
     class CorralAnalyzer : IAnalyzer
     {
-        protected Analyzer analyzer;
         protected CciQueryGenerator queryGenerator;
         protected CciAssembly inputAssembly;
         protected string inputFileName;
@@ -24,13 +24,12 @@ namespace Contractor.Core
         protected int generatedQueriesCount;
         protected int unprovenQueriesCount;
 
-        protected const string notPrefix = "_Not_";
-        protected const string methodNameDelimiter = "~";
+        protected string notPrefix = "_Not_";
+        protected string methodNameDelimiter = "~";
 
-        public CorralAnalyzer(Analyzer analyzer, CciAssembly inputAssembly, string inputFileName,  string typeToAnalyze, CancellationToken token)
+        public CorralAnalyzer(IContractAwareHost host, CciAssembly inputAssembly, string inputFileName,  string typeToAnalyze, CancellationToken token)
         {
-            this.analyzer = analyzer;
-            this.queryGenerator = new CciQueryGenerator(this.analyzer.host);
+            this.queryGenerator = new CciQueryGenerator(host);
             this.inputAssembly = inputAssembly;
             this.typeToAnalyze = typeToAnalyze;
             this.inputFileName = inputFileName;
@@ -60,9 +59,7 @@ namespace Contractor.Core
         {
             var queries = this.queryGenerator.CreateQueries(source, action, targets);
             var result = Analyze(queries);
-            var resultAnalysis = EvaluateQueries(source, action, targets, result);
-
-            return resultAnalysis;
+            return EvaluateQueries(source, action, targets, result);
         }
 
         protected IEnumerable<Query> Analyze(IEnumerable<Action> queriesActions)
@@ -74,9 +71,7 @@ namespace Contractor.Core
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             queryAssembly.Save(path);
 
-            var result = ExecuteChecker(queries, path);
-
-            return result;
+            return ExecuteChecker(queries, path);
         }
 
         protected IEnumerable<Query> ExecuteChecker(IEnumerable<Query> queries, string queryAssemblyPath)
@@ -125,13 +120,13 @@ namespace Contractor.Core
         protected void EnableOrDisable(HashSet<Action> enabledActions, HashSet<Action> disabledActions, Query query)
         {
             var actionName = query.Action.Method.Name.Value;
-            var actionNameStart = actionName.LastIndexOf(this.analyzer.methodNameDelimiter) + 1;
+            var actionNameStart = actionName.LastIndexOf(this.methodNameDelimiter) + 1;
             actionName = actionName.Substring(actionNameStart);
-            var isNegative = actionName.StartsWith(this.analyzer.notPrefix);
+            var isNegative = actionName.StartsWith(this.notPrefix);
 
             if (isNegative)
             {
-                actionName = actionName.Remove(0, this.analyzer.notPrefix.Length);
+                actionName = actionName.Remove(0, this.notPrefix.Length);
                 if (disabledActions.Any(a => a.Name.Equals(actionName)))
                 {
                     disabledActions.Remove(disabledActions.First(a => a.Name.Equals(actionName)));
@@ -155,10 +150,10 @@ namespace Contractor.Core
                 if (evaluatedQuery.GetType() == typeof(ReachableQuery))
                 {
                     var actionName = evaluatedQuery.Action.Method.Name.Value;
-                    var actionNameStart = actionName.LastIndexOf(this.analyzer.methodNameDelimiter) + 1;
+                    var actionNameStart = actionName.LastIndexOf(this.methodNameDelimiter) + 1;
                     actionName = actionName.Substring(actionNameStart);
 
-                    var targetNameStart = actionName.LastIndexOf(this.analyzer.methodNameDelimiter) + 1;
+                    var targetNameStart = actionName.LastIndexOf(this.methodNameDelimiter) + 1;
                     var targetName = actionName.Substring(targetNameStart);
                     var target = targets.Find(s => s.Name == targetName);
                     var isUnproven = false;
@@ -172,10 +167,10 @@ namespace Contractor.Core
                 else if (evaluatedQuery.GetType() == typeof(MayBeReachableQuery))
                 {
                     var actionName = evaluatedQuery.Action.Method.Name.Value;
-                    var actionNameStart = actionName.LastIndexOf(this.analyzer.methodNameDelimiter) + 1;
+                    var actionNameStart = actionName.LastIndexOf(this.methodNameDelimiter) + 1;
                     actionName = actionName.Substring(actionNameStart);
 
-                    var targetNameStart = actionName.LastIndexOf(this.analyzer.methodNameDelimiter) + 1;
+                    var targetNameStart = actionName.LastIndexOf(this.methodNameDelimiter) + 1;
                     var targetName = actionName.Substring(targetNameStart);
                     var target = targets.Find(s => s.Name == targetName);
                     var isUnproven = true;
@@ -199,15 +194,6 @@ namespace Contractor.Core
             var containingTypeName = TypeHelper.GetTypeName(method.ContainingType, NameFormattingOptions.None);
             var s = MemberHelper.GetMethodSignature(method, NameFormattingOptions.DocumentationId);
             s = s.Substring(2);
-            s = s.TrimEnd(')');
-            s = TurnStringIntoValidIdentifier(s);
-            return s;
-        }
-
-        protected static string CreateUniqueMethodName(string method)
-        {
-            var s = method;
-            //s = s.Substring(2);
             s = s.TrimEnd(')');
             s = TurnStringIntoValidIdentifier(s);
             return s;
