@@ -200,6 +200,7 @@
     </Compile>
     <Compile Include="AnalyzerMock.cs" />
     <Compile Include="BctRunner.cs" />
+    <Compile Include="BctTranslator.cs" />
     <Compile Include="CCI\AggregatingContractProvider.cs" />
     <Compile Include="AnalysisResults.cs" />
     <Compile Include="CCI\Analyzer.cs" />
