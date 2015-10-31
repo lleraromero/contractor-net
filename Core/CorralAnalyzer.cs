@@ -47,9 +47,7 @@ namespace Contractor.Core
         {
             var queries = this.queryGenerator.CreateQueries(source, action, actions);
             var result = Analyze(queries);
-            var analysisResult = EvaluateQueries(actions, result);
-
-            return analysisResult;
+            return EvaluateQueries(actions, result);
         }
 
         public TransitionAnalysisResult AnalyzeTransitions(State source, Action action, List<State> targets)
@@ -64,33 +62,40 @@ namespace Contractor.Core
             var queries = from a in queriesActions select new Query(a);
             var queryAssembly = new CciQueryAssembly(this.inputAssembly, this.typeToAnalyze, queries);
 
-            string path = Path.Combine(Configuration.TempPath, Guid.NewGuid().ToString(), Path.GetFileName(this.inputFileName));
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            queryAssembly.Save(path);
+            string queryFilePath = Path.Combine(Configuration.TempPath, Guid.NewGuid().ToString(), Path.GetFileName(this.inputFileName));
+            Directory.CreateDirectory(Path.GetDirectoryName(queryFilePath));
+            queryAssembly.Save(queryFilePath);
 
-            return ExecuteChecker(queries, path);
+            var boogieQueryFilePath = TranslateCSharpToBoogie(queryFilePath);
+
+            return TestQueries(queries, boogieQueryFilePath);
         }
 
-        protected IEnumerable<Query> ExecuteChecker(IEnumerable<Query> queries, string queryAssemblyPath)
+        protected IEnumerable<Query> TestQueries(IEnumerable<Query> queries, string boogieQueryFilePath)
         {
             var result = new List<Query>();
-
-            var bctRunner = new BctRunner(this.token);
-            var args = new string[] { queryAssemblyPath, "/lib:" + Path.GetDirectoryName(this.inputFileName) };
-
-            this.totalAnalysisTime += bctRunner.Run(args);
-
+           
             foreach (var query in queries)
             {
                 var queryName = BctTranslator.CreateUniqueMethodName(query.Action.Method);
 
                 var corralRunner = new CorralRunner(this.token);
-                var corralArgs = string.Format("{0} /main:{1} {2}", queryAssemblyPath.Replace("dll", "bpl"), queryName, Configuration.CorralArguments);
+                var corralArgs = string.Format("{0} /main:{1} {2}", boogieQueryFilePath, queryName, Configuration.CorralArguments);
                 this.totalAnalysisTime += corralRunner.Run(corralArgs, query);
                 result.Add(corralRunner.Result);
             }
 
             return result;
+        }
+
+        protected string TranslateCSharpToBoogie(string queryAssemblyPath)
+        {
+            var bctRunner = new BctRunner(this.token);
+            var args = new string[] { queryAssemblyPath, "/lib:" + Path.GetDirectoryName(this.inputFileName) };
+
+            this.totalAnalysisTime += bctRunner.Run(args);
+
+            return queryAssemblyPath.Replace("dll", "bpl");
         }
 
         protected ActionAnalysisResults EvaluateQueries(IEnumerable<Action> actions, IEnumerable<Query> result)
