@@ -4,7 +4,6 @@ using Microsoft.Cci.Contracts;
 using Microsoft.Cci.ILToCodeModel;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableCodeModel.Contracts;
-using Microsoft.Cci.MutableContracts;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -38,6 +37,14 @@ namespace Contractor.Core
 
             this.host = host;
             this.module = new CodeAndContractDeepCopier(this.host).Copy(DecompileModule(fileName));
+            var contractExtractor = this.host.GetContractExtractor(this.module.UnitIdentity);
+            this.contractProvider = new AggregatingContractProvider(contractExtractor);
+        }
+
+        protected CciAssembly(CciAssembly anotherAssembly)
+        {
+            this.host = anotherAssembly.host;
+            this.module = new CodeAndContractDeepCopier(this.host).Copy(anotherAssembly.module);
             var contractExtractor = this.host.GetContractExtractor(this.module.UnitIdentity);
             this.contractProvider = new AggregatingContractProvider(contractExtractor);
         }

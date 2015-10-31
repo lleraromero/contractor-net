@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Contractor.Core
 {
@@ -13,8 +9,8 @@ namespace Contractor.Core
     class CorralRunner
     {
         protected CancellationToken token;
-        protected ResultKind result;
-        public ResultKind Result { get { return result; } }
+        protected Query result;
+        public Query Result { get { return result; } }
         public CorralRunner(CancellationToken token)
         {
             Contract.Requires(token != null);
@@ -22,10 +18,11 @@ namespace Contractor.Core
             this.token = token;
         }
 
-        public TimeSpan Run(string args)
+        public TimeSpan Run(string args, Query query)
         {
             Contract.Requires(!string.IsNullOrEmpty(args));
 
+            // Check if the user stopped the analysis
             token.ThrowIfCancellationRequested();
 
             var timer = Stopwatch.StartNew();
@@ -50,13 +47,13 @@ namespace Contractor.Core
             switch (corral.Result)
             {
                 case cba.CorralResult.BugFound:
-                    this.result = ResultKind.TrueBug;
+                    this.result = new ReachableQuery(query.Action);
                     break;
                 case cba.CorralResult.NoBugs:
-                    this.result = ResultKind.NoBugs;
+                    this.result = new UnreachableQuery(query.Action);
                     break;
                 case cba.CorralResult.RecursionBoundReached:
-                    this.result = ResultKind.RecursionBoundReached;
+                    this.result = new MayBeReachableQuery(query.Action);
                     break;
                 default:
                     throw new NotImplementedException("The result was not understood");

@@ -1,14 +1,12 @@
 ﻿using Contractor.Core.Model;
 using Contractor.Utils;
 using Microsoft.Cci;
-using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableContracts;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using Action = Contractor.Core.Model.Action;
@@ -24,7 +22,7 @@ namespace Contractor.Core
         private CodeContractAwareHostEnvironment host;
         private Backend backend;
 
-        protected AssemblyXXX assembly;
+        protected CciAssembly assembly;
 
         public event EventHandler<StateAddedEventArgs> StateAdded;
         public event EventHandler<TransitionAddedEventArgs> TransitionAdded;
@@ -101,7 +99,7 @@ namespace Contractor.Core
                     break;
                 case Backend.Corral:
                     var analyzer = new Analyzer(host, inputAssembly.Module, type, token);
-                    checker = new CorralAnalyzer(analyzer, type);
+                    checker = new CorralAnalyzer(analyzer, this.assembly, this.inputAssembly.Module.Location, typeToAnalyze, token);
                     break;
                 default:
                     throw new NotImplementedException("Unknown backend");

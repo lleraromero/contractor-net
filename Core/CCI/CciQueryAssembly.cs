@@ -12,8 +12,8 @@ namespace Contractor.Core
 {
     class CciQueryAssembly : CciAssembly
     {
-        public CciQueryAssembly(string fileName, string contractsFileName, IContractAwareHost host, string typeToAnalyze, IEnumerable<Query> queries)
-            : base(fileName, contractsFileName, host)
+        public CciQueryAssembly(CciAssembly inputAssembly, string typeToAnalyze, IEnumerable<Query> queries)
+            : base(inputAssembly)
         {
             var cciType = FindType(typeToAnalyze);
             cciType.Methods.AddRange(from a in queries select a.Action.Method);
