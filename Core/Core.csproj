@@ -213,13 +213,14 @@
     <Compile Include="CCI\CciQueryGenerator.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="CCI\ContractRewriter.cs" />
-    <Compile Include="CCI\CorralAnalyzer.cs" />
+    <Compile Include="CorralAnalyzer.cs" />
     <Compile Include="CorralMock.cs" />
     <Compile Include="CorralRunner.cs" />
     <Compile Include="EpaBinarySerializer.cs" />
     <Compile Include="CCI\EpaGenerator.cs" />
     <Compile Include="EpaXmlSerializer.cs" />
     <Compile Include="IAnalyzer.cs" />
+    <Compile Include="IAssemblyXXX.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="CCI\ReturnRewriter.cs" />
     <Compile Include="Query.cs" />
