@@ -15,29 +15,35 @@ using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
-    class CorralAnalyzer : Analyzer
+    class CorralAnalyzer : IAnalyzer
     {
-        public CorralAnalyzer(IContractAwareHost host, IModule module, NamespaceTypeDefinition type, CancellationToken token)
-            : base(host, module, type, token)
-        {
-            Contract.Requires(module != null && host != null && type != null);
+        protected Analyzer analyzer;
 
-            ITypeContract typeContract = this.inputContractProvider.GetTypeContractFor(type);
-            this.queryContractProvider.AssociateTypeWithContract(this.typeToAnalyze, typeContract);
+        public CorralAnalyzer(Analyzer analyzer, NamespaceTypeDefinition type)
+        {
+            this.analyzer = analyzer;
+
+            ITypeContract typeContract = this.analyzer.inputContractProvider.GetTypeContractFor(type);
+            this.analyzer.queryContractProvider.AssociateTypeWithContract(this.analyzer.typeToAnalyze, typeContract);
         }
 
-        public override ActionAnalysisResults AnalyzeActions(State source, Action action, List<Action> actions)
+        public TimeSpan TotalAnalysisDuration { get { return this.analyzer.TotalAnalysisDuration; } }
+        public int ExecutionsCount { get { return this.analyzer.ExecutionsCount; } }
+        public int TotalGeneratedQueriesCount { get { return this.analyzer.TotalGeneratedQueriesCount; } }
+        public int UnprovenQueriesCount { get { return this.analyzer.UnprovenQueriesCount; } }
+
+        public ActionAnalysisResults AnalyzeActions(State source, Action action, List<Action> actions)
         {
-            var queries = GenerateQueries<Action>(source, action, actions);
+            var queries = this.analyzer.GenerateQueries<Action>(source, action, actions);
             var result = Analyze(queries);
             var analysisResult = EvaluateQueries(actions, result);
 
             return analysisResult;
         }
 
-        public override TransitionAnalysisResult AnalyzeTransitions(State source, Action action, List<State> targets)
+        public TransitionAnalysisResult AnalyzeTransitions(State source, Action action, List<State> targets)
         {
-            var queries = GenerateQueries<State>(source, action, targets);
+            var queries = this.analyzer.GenerateQueries<State>(source, action, targets);
             var result = Analyze(queries);
             var resultAnalysis = EvaluateQueries(source, action, targets, result);
 
@@ -47,21 +53,21 @@ namespace Contractor.Core
         private Dictionary<MethodDefinition, ResultKind> Analyze(List<MethodDefinition> queries)
         {
             // Add queries to the working assembly
-            this.typeToAnalyze.Methods.AddRange(queries);
+            this.analyzer.typeToAnalyze.Methods.AddRange(queries);
 
             // I need to replace Pre/Post with Assume/Assert
-            ILocalScopeProvider localScopeProvider = new Microsoft.Cci.ILToCodeModel.Decompiler.LocalScopeProvider(GetPDBReader(queryAssembly.Module, host));
-            ISourceLocationProvider sourceLocationProvider = GetPDBReader(queryAssembly.Module, host);
-            var trans = new ContractRewriter(host, queryContractProvider, sourceLocationProvider);
-            trans.Rewrite(queryAssembly.DecompiledModule);
+            ILocalScopeProvider localScopeProvider = new Microsoft.Cci.ILToCodeModel.Decompiler.LocalScopeProvider(this.analyzer.GetPDBReader(this.analyzer.queryAssembly.Module, this.analyzer.host));
+            ISourceLocationProvider sourceLocationProvider = this.analyzer.GetPDBReader(this.analyzer.queryAssembly.Module, this.analyzer.host);
+            var trans = new ContractRewriter(this.analyzer.host, this.analyzer.queryContractProvider, sourceLocationProvider);
+            trans.Rewrite(this.analyzer.queryAssembly.DecompiledModule);
 
             // Save the query assembly to run Corral
-            queryAssembly.Save(GetQueryAssemblyPath());
+            this.analyzer.queryAssembly.Save(this.analyzer.GetQueryAssemblyPath());
 
             var result = ExecuteChecker(queries);
 
             // I don't need the queries anymore
-            this.typeToAnalyze.Methods.RemoveAll(m => queries.Contains(m));
+            this.analyzer.typeToAnalyze.Methods.RemoveAll(m => queries.Contains(m));
 
             return result;
         }
@@ -70,24 +76,30 @@ namespace Contractor.Core
         {
             var result = new Dictionary<MethodDefinition, ResultKind>();
 
-            var bctRunner = new BctRunner(this.token);
-            var args = new string[] { GetQueryAssemblyPath(), "/lib:" + Path.GetDirectoryName(inputAssembly.Module.ContainingAssembly.Location) };
+            var bctRunner = new BctRunner(this.analyzer.token);
+            var args = new string[] { this.analyzer.GetQueryAssemblyPath(), "/lib:" + Path.GetDirectoryName(this.analyzer.inputAssembly.Module.ContainingAssembly.Location) };
 
-            base.TotalAnalysisDuration += bctRunner.Run(args);
+            this.analyzer.TotalAnalysisDuration += bctRunner.Run(args);
 
             foreach (var query in queries)
             {
                 // Check if the user stopped the analysis
-                if (base.token.IsCancellationRequested)
+                if (this.analyzer.token.IsCancellationRequested)
                 {
                     break;
                 }
 
                 var queryName = CreateUniqueMethodName(query);
 
-                var corralRunner = new CorralRunner(this.token);
-                var corralArgs = string.Format("{0} /main:{1} {2}", GetQueryAssemblyPath().Replace("dll", "bpl"), queryName, Configuration.CorralArguments);
+                var corralRunner = new CorralRunner(this.analyzer.token);
+                var corralArgs = string.Format("{0} /main:{1} {2}", this.analyzer.GetQueryAssemblyPath().Replace("dll", "bpl"), queryName, Configuration.CorralArguments);
                 corralRunner.Run(corralArgs);
+
+                //using (var writer = new System.IO.StreamWriter(System.IO.Path.Combine(Configuration.TempPath, "log-vending.txt"), true))
+                //{
+                //    writer.WriteLine(string.Format("{0} {1}", CreateUniqueMethodName(query.Name.Value), corralRunner.Result));
+                //}
+
                 result[query] = corralRunner.Result;
             }
 
@@ -110,13 +122,13 @@ namespace Contractor.Core
                         var query = entry.Key;
 
                         var actionName = query.Name.Value;
-                        var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
+                        var actionNameStart = actionName.LastIndexOf(this.analyzer.methodNameDelimiter) + 1;
                         actionName = actionName.Substring(actionNameStart);
-                        var isNegative = actionName.StartsWith(notPrefix);
+                        var isNegative = actionName.StartsWith(this.analyzer.notPrefix);
 
                         if (isNegative)
                         {
-                            actionName = actionName.Remove(0, notPrefix.Length);
+                            actionName = actionName.Remove(0, this.analyzer.notPrefix.Length);
                             if (disabledActions.Any(a => a.Name.Equals(actionName)))
                             {
                                 disabledActions.Remove(disabledActions.First(a => a.Name.Equals(actionName)));
@@ -131,7 +143,7 @@ namespace Contractor.Core
                         }
 
                         if (entry.Value == ResultKind.RecursionBoundReached)
-                            base.UnprovenQueriesCount++;
+                            this.analyzer.UnprovenQueriesCount++;
 
                         break;
                     default:
@@ -157,10 +169,10 @@ namespace Contractor.Core
                         var query = entry.Key;
 
                         var actionName = query.Name.Value;
-                        var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
+                        var actionNameStart = actionName.LastIndexOf(this.analyzer.methodNameDelimiter) + 1;
                         actionName = actionName.Substring(actionNameStart);
 
-                        var targetNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
+                        var targetNameStart = actionName.LastIndexOf(this.analyzer.methodNameDelimiter) + 1;
                         var targetName = actionName.Substring(targetNameStart);
                         var target = targets.Find(s => s.Name == targetName);
                         var isUnproven = entry.Value == ResultKind.RecursionBoundReached;
@@ -172,7 +184,7 @@ namespace Contractor.Core
                         }
 
                         if (isUnproven)
-                            base.UnprovenQueriesCount++;
+                            this.analyzer.UnprovenQueriesCount++;
                         break;
                     default:
                         throw new NotImplementedException("Unknown result");
@@ -188,6 +200,15 @@ namespace Contractor.Core
             var containingTypeName = TypeHelper.GetTypeName(method.ContainingType, NameFormattingOptions.None);
             var s = MemberHelper.GetMethodSignature(method, NameFormattingOptions.DocumentationId);
             s = s.Substring(2);
+            s = s.TrimEnd(')');
+            s = TurnStringIntoValidIdentifier(s);
+            return s;
+        }
+
+        private static string CreateUniqueMethodName(string method)
+        {
+            var s = method;
+            //s = s.Substring(2);
             s = s.TrimEnd(')');
             s = TurnStringIntoValidIdentifier(s);
             return s;

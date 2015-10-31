@@ -14,39 +14,39 @@ using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
-    abstract class Analyzer : IAnalyzer
+    class Analyzer : IAnalyzer
     {
         #region IAnalyzer interface
 
-        public TimeSpan TotalAnalysisDuration { get; protected set; }
-        public int ExecutionsCount { get; protected set; }
-        public int TotalGeneratedQueriesCount { get; protected set; }
-        public int UnprovenQueriesCount { get; protected set; }
+        public TimeSpan TotalAnalysisDuration { get; set; }
+        public int ExecutionsCount { get; set; }
+        public int TotalGeneratedQueriesCount { get; set; }
+        public int UnprovenQueriesCount { get; set; }
 
         // Token that allows the user to stop the analysis
-        protected CancellationToken token;
+        public CancellationToken token;
 
-        public abstract ActionAnalysisResults AnalyzeActions(State source, Action action, List<Action> actions);
+        public virtual ActionAnalysisResults AnalyzeActions(State source, Action action, List<Action> actions) { throw new NotImplementedException(); }
 
-        public abstract TransitionAnalysisResult AnalyzeTransitions(State source, Action action, List<State> targets);
+        public virtual TransitionAnalysisResult AnalyzeTransitions(State source, Action action, List<State> targets) { throw new NotImplementedException(); }
 
         #endregion IAnalyzer interface
 
-        protected readonly IContractAwareHost host;
-        protected readonly AssemblyInfo inputAssembly;
-        protected readonly ContractProvider inputContractProvider;
-        protected AssemblyInfo queryAssembly;
-        protected ContractProvider queryContractProvider;
-        protected readonly NamespaceTypeDefinition typeToAnalyze;
+        public readonly IContractAwareHost host;
+        public readonly AssemblyInfo inputAssembly;
+        public readonly ContractProvider inputContractProvider;
+        public AssemblyInfo queryAssembly;
+        public ContractProvider queryContractProvider;
+        public readonly NamespaceTypeDefinition typeToAnalyze;
 
-        protected string notPrefix = "_Not_";
-        protected string methodNameDelimiter = "~";
+        public string notPrefix = "_Not_";
+        public string methodNameDelimiter = "~";
 
-        protected Microsoft.Cci.Immutable.GenericTypeInstance specializedInputType;
+        public Microsoft.Cci.Immutable.GenericTypeInstance specializedInputType;
 
-        protected CciQueryGenerator queryGenerator;
+        public CciQueryGenerator queryGenerator;
 
-        protected Analyzer(IContractAwareHost host, IModule module, NamespaceTypeDefinition type, CancellationToken token)
+        public Analyzer(IContractAwareHost host, IModule module, NamespaceTypeDefinition type, CancellationToken token)
         {
             Contract.Requires(host != null && module != null && type != null && token != null);
 
@@ -84,7 +84,7 @@ namespace Contractor.Core
             { }
         }
 
-        protected virtual void CreateQueryAssembly(NamespaceTypeDefinition type)
+        public virtual void CreateQueryAssembly(NamespaceTypeDefinition type)
         {
             // TODO: fix the query assembly to include the class being analysed and all its dependencies
             this.queryAssembly = new AssemblyInfo(host, new MetadataDeepCopier(this.host).Copy(inputAssembly.DecompiledModule));
@@ -124,14 +124,14 @@ namespace Contractor.Core
             this.queryAssembly = new AssemblyInfo(host, assembly);
         }
 
-        protected string GetQueryAssemblyPath()
+        public string GetQueryAssemblyPath()
         {
             Contract.Requires(this.inputAssembly != null);
 
             return Path.Combine(Configuration.TempPath, this.queryAssembly.Module.ModuleName.Value);
         }
 
-        protected PdbReader GetPDBReader(IModule module, IContractAwareHost host)
+        public PdbReader GetPDBReader(IModule module, IContractAwareHost host)
         {
             Contract.Requires(module != null && host != null);
 
@@ -143,7 +143,7 @@ namespace Contractor.Core
             return pdbReader;
         }
 
-        protected virtual List<MethodDefinition> GenerateQueries<T>(State state, Action action, List<T> actions /*states*/)
+        public virtual List<MethodDefinition> GenerateQueries<T>(State state, Action action, List<T> actions /*states*/)
         {
             Contract.Requires(typeof(T) == typeof(Action) || typeof(T) == typeof(State));
 
