@@ -363,7 +363,8 @@ namespace Contractor.Core
                               select new AssertStatement()
                               {
                                   Condition = pre.Condition,
-                                  OriginalSource = pre.OriginalSource
+                                  OriginalSource = pre.OriginalSource,
+                                  Description = new CompileTimeConstant() { Value = "Inlined method precondition", Type = this.host.PlatformType.SystemString }
                               };
 
                 block.Statements.AddRange(asserts);
@@ -392,7 +393,8 @@ namespace Contractor.Core
                               select new AssumeStatement()
                               {
                                   Condition = post.Condition,
-                                  OriginalSource = post.OriginalSource
+                                  OriginalSource = post.OriginalSource,
+                                  Description = new CompileTimeConstant() { Value = "Inlined method postcondition", Type = this.host.PlatformType.SystemString }
                               };
                 //Ponemos los assume antes del return
                 if (block.Statements.Count > 0 && block.Statements.Last() is IReturnStatement)
