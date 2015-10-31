@@ -98,7 +98,7 @@ namespace Contractor.Core
                     checker = new CodeContractsAnalyzer(host, inputAssembly, type, token);
                     break;
                 case Backend.Corral:
-                    checker = new CorralAnalyzer(host, this.assembly, this.inputAssembly.Module.Location, typeToAnalyze, token);
+                    checker = new CorralAnalyzer(new CciQueryGenerator(this.host), this.assembly, this.inputAssembly.Module.Location, typeToAnalyze, token);
                     break;
                 default:
                     throw new NotImplementedException("Unknown backend");

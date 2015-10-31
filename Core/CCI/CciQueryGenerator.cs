@@ -12,7 +12,7 @@ using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
-    class CciQueryGenerator
+    public class CciQueryGenerator
     {
         protected const string notPrefix = "_Not_";
         protected const string methodNameDelimiter = "~";

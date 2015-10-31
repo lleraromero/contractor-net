@@ -19,5 +19,10 @@ namespace Contractor.Core
 
             return new CciAssembly(inputFileName, contractsFileName, this.host);
         }
+
+        public CciQueryGenerator CreateQueryGenerator() 
+        {
+            return new CciQueryGenerator(this.host);
+        }
     }
 }

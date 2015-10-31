@@ -1,6 +1,5 @@
 ﻿using Contractor.Core.Model;
 using Microsoft.Cci;
-using Microsoft.Cci.Contracts;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -27,9 +26,9 @@ namespace Contractor.Core
         protected string notPrefix = "_Not_";
         protected string methodNameDelimiter = "~";
 
-        public CorralAnalyzer(IContractAwareHost host, CciAssembly inputAssembly, string inputFileName,  string typeToAnalyze, CancellationToken token)
+        public CorralAnalyzer(CciQueryGenerator queryGenerator, CciAssembly inputAssembly, string inputFileName,  string typeToAnalyze, CancellationToken token)
         {
-            this.queryGenerator = new CciQueryGenerator(host);
+            this.queryGenerator = queryGenerator;
             this.inputAssembly = inputAssembly;
             this.typeToAnalyze = typeToAnalyze;
             this.inputFileName = inputFileName;
