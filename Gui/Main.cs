@@ -201,16 +201,6 @@ namespace Contractor.Gui
             this.GenerateAssembly();
         }
 
-        private void OnTypeAnalysisStarted(object sender, TypeAnalysisStartedEventArgs e)
-        {
-            this.BeginInvoke(new System.Action(this.UpdateAnalysisStart));
-        }
-
-        private void OnTypeAnalysisDone(object sender, TypeAnalysisDoneEventArgs e)
-        {
-            this.BeginInvoke(new System.Action<TypeAnalysisResult>(this.UpdateAnalysisEnd), e.AnalysisResult);
-        }
-
         private void OnStateAdded(object sender, StateAddedEventArgs e)
         {
             if (this.InvokeRequired)
@@ -389,8 +379,6 @@ namespace Contractor.Gui
             var backend = (EpaGenerator.Backend)parameters["backend"];
 
             _EpaGenerator = new EpaGenerator(backend, _AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
-            _EpaGenerator.TypeAnalysisStarted += this.OnTypeAnalysisStarted;
-            _EpaGenerator.TypeAnalysisDone += this.OnTypeAnalysisDone;
             _EpaGenerator.StateAdded += this.OnStateAdded;
             _EpaGenerator.TransitionAdded += this.OnTransitionAdded;
 
@@ -427,7 +415,9 @@ namespace Contractor.Gui
 
                 _cancellationSource = new CancellationTokenSource();
 
-                _EpaGenerator.GenerateEpa(typeFullName, selectedMethods, _cancellationSource.Token);
+                this.BeginInvoke(new System.Action<string, string>(this.SetBackgroundStatus), "Generating contractor graph for {0}...", typeFullName);
+                var typeAnalysisResult = _EpaGenerator.GenerateEpa(typeFullName, selectedMethods, _cancellationSource.Token);
+                this.BeginInvoke(new System.Action<TypeAnalysisResult>(this.UpdateAnalysisEnd), typeAnalysisResult);
             }
             catch (Exception ex)
             {
@@ -466,12 +456,6 @@ namespace Contractor.Gui
 
             buttonStopAnalysis.Enabled = true;
             menuitemStopAnalysis.Enabled = true;
-        }
-
-        private void UpdateAnalysisStart()
-        {
-            var typeFullName = _AnalizedType.GetDisplayName();
-            this.SetBackgroundStatus("Generating contractor graph for {0}...", typeFullName);
         }
 
         private void UpdateAnalysisEnd(TypeAnalysisResult analysisResult)

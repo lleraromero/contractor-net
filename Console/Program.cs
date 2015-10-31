@@ -123,14 +123,20 @@ namespace Contractor.Console
             var epas = new Dictionary<string, TypeAnalysisResult>();
             using (var generator = new EpaGenerator(backend, options.input, null))
             {
-                generator.TypeAnalysisStarted += (sender, e) => { System.Console.WriteLine("Starting analysis for type {0}", e.TypeFullName); };
-                generator.TypeAnalysisDone += (sender, e) => { System.Console.WriteLine(e.AnalysisResult.ToString()); };
+                System.Console.WriteLine("Starting analysis for type {0}", options.type);
 
                 var cancellationSource = new CancellationTokenSource();
                 //if (string.IsNullOrEmpty(options.type))
                 //    epas = generator.GenerateEpas(cancellationSource.Token);
                 //else
-                epas = new Dictionary<string, TypeAnalysisResult>() { { options.type, generator.GenerateEpa(options.type, cancellationSource.Token) } };
+
+                var analysisResult = generator.GenerateEpa(options.type, cancellationSource.Token);
+
+                System.Console.WriteLine(analysisResult.ToString());
+                epas = new Dictionary<string, TypeAnalysisResult>() { { options.type, analysisResult } };
+
+
+
 
                 if (options.generateAssembly)
                 {

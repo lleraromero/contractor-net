@@ -15,25 +15,6 @@ using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
-    public class TypeAnalysisStartedEventArgs : TypeEventArgs
-    {
-        public TypeAnalysisStartedEventArgs(string typeFullName)
-            : base(typeFullName)
-        {
-        }
-    }
-
-    public class TypeAnalysisDoneEventArgs : TypeEventArgs
-    {
-        public TypeAnalysisResult AnalysisResult { get; private set; }
-
-        public TypeAnalysisDoneEventArgs(string typeFullName, TypeAnalysisResult analysisResult)
-            : base(typeFullName)
-        {
-            this.AnalysisResult = analysisResult;
-        }
-    }
-
     public class EpaGenerator : IDisposable
     {
         public enum Backend { CodeContracts, Corral };
@@ -45,8 +26,6 @@ namespace Contractor.Core
 
         protected AssemblyXXX assembly;
 
-        public event EventHandler<TypeAnalysisStartedEventArgs> TypeAnalysisStarted;
-        public event EventHandler<TypeAnalysisDoneEventArgs> TypeAnalysisDone;
         public event EventHandler<StateAddedEventArgs> StateAdded;
         public event EventHandler<TransitionAddedEventArgs> TransitionAdded;
 
@@ -145,9 +124,6 @@ namespace Contractor.Core
 
             var analysisTimer = Stopwatch.StartNew();
 
-            if (this.TypeAnalysisStarted != null)
-                this.TypeAnalysisStarted(this, new TypeAnalysisStartedEventArgs(typeToAnalyze));
-
             var dummy = new State(constructors, new HashSet<Action>());
 
             var epaBuilder = new EpaBuilder(typeToAnalyze, dummy);
@@ -227,12 +203,6 @@ namespace Contractor.Core
             statistics["UnprovenQueriesCount"] = analyzer.UnprovenQueriesCount;
 
             var analysisResult = new TypeAnalysisResult(epaBuilder.Build(), this.backend, analysisTimer.Elapsed, statistics);
-
-            if (this.TypeAnalysisDone != null)
-            {
-                var eventArgs = new TypeAnalysisDoneEventArgs(typeToAnalyze, analysisResult);
-                this.TypeAnalysisDone(this, eventArgs);
-            }
 
             return analysisResult;
         }
