@@ -13,12 +13,11 @@ using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
-    public class EpaGenerator : IDisposable
+    public class EpaGenerator
     {
         public enum Backend { CodeContracts, Corral };
 
         private AssemblyInfo inputAssembly;
-        private HashSet<string> instrumentedEpas;
         private CodeContractAwareHostEnvironment host;
         private Backend backend;
 
@@ -46,19 +45,12 @@ namespace Contractor.Core
 
             this.backend = backend;
 
-            instrumentedEpas = new HashSet<string>();
-
             assembly = new CciAssembly(inputFileName, contractsFileName, host);
         }
 
         public EpaGenerator()
         {
             //TODO: sacar cuando se desacoplen las cosas de esta clase
-        }
-
-        public void Dispose()
-        {
-            host.Dispose();
         }
 
         public TypeAnalysisResult GenerateEpa(string typeToAnalyze, CancellationToken token)
@@ -68,9 +60,7 @@ namespace Contractor.Core
 
             var constructors = this.assembly.Constructors(typeToAnalyze);
             var actions = this.assembly.Actions(typeToAnalyze);
-            var methods = constructors.Union(actions).Select(a => a.ToString());
-
-            return GenerateEpa(typeToAnalyze, methods, token);
+            return GenerateEpa(typeToAnalyze, constructors, actions, token);
         }
 
         public TypeAnalysisResult GenerateEpa(string typeToAnalyze, IEnumerable<string> selectedMethods, CancellationToken token)
@@ -81,12 +71,10 @@ namespace Contractor.Core
 
             var constructors = new HashSet<Action>(this.assembly.Constructors(typeToAnalyze).Where(a => selectedMethods.Contains(a.ToString())));
             var actions = new HashSet<Action>(this.assembly.Actions(typeToAnalyze).Where(a => selectedMethods.Contains(a.ToString())));
-
             return GenerateEpa(typeToAnalyze, constructors, actions, token);
         }
 
-        private TypeAnalysisResult GenerateEpa(string typeToAnalyze, ISet<Action> constructors,
-            ISet<Action> actions, CancellationToken token)
+        private TypeAnalysisResult GenerateEpa(string typeToAnalyze, ISet<Action> constructors, ISet<Action> actions, CancellationToken token)
         {
             var types = inputAssembly.DecompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
             var type = types.First(t => TypeHelper.GetTypeName(t, NameFormattingOptions.None).Equals(typeToAnalyze));
@@ -112,8 +100,7 @@ namespace Contractor.Core
         /// </summary>
         /// <see cref="http://publicaciones.dc.uba.ar/Publications/2011/DBGU11/paper-icse-2011.pdf">Algorithm 1</see>
         //TODO: es necesario que sea public?
-        public TypeAnalysisResult GenerateEpa(string typeToAnalyze, IAnalyzer analyzer, ISet<Action> constructors,
-            ISet<Action> actions)
+        public TypeAnalysisResult GenerateEpa(string typeToAnalyze, IAnalyzer analyzer, ISet<Action> constructors, ISet<Action> actions)
         {
             Contract.Requires(!string.IsNullOrEmpty(typeToAnalyze));
             Contract.Requires(analyzer != null);

@@ -28,12 +28,6 @@ namespace Tests
             epaGenerator = new EpaGenerator(EpaGenerator.Backend.CodeContracts, ExamplesPath, null);
         }
 
-        [ClassCleanup()]
-        public static void Cleanup()
-        {
-            epaGenerator.Dispose();
-        }
-
         //[TestMethod]
         //public void TestFiniteStack()
         //{

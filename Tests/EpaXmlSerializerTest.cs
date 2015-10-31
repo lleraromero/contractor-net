@@ -24,12 +24,6 @@ namespace Tests
             epaGenerator = new EpaGenerator(EpaGenerator.Backend.Corral, ExamplesPath, null);
         }
 
-        [ClassCleanup()]
-        public static void Cleanup()
-        {
-            epaGenerator.Dispose();
-        }
-
         //[TestMethod]
         //public void SerializeAndDeserializeLinear()
         //{

@@ -121,26 +121,26 @@ namespace Contractor.Console
         public Dictionary<string, TypeAnalysisResult> Execute(EpaGenerator.Backend backend)
         {
             var epas = new Dictionary<string, TypeAnalysisResult>();
-            using (var generator = new EpaGenerator(backend, options.input, null))
+            var generator = new EpaGenerator(backend, options.input, null);
+
+            System.Console.WriteLine("Starting analysis for type {0}", options.type);
+
+            var cancellationSource = new CancellationTokenSource();
+            //if (string.IsNullOrEmpty(options.type))
+            //    epas = generator.GenerateEpas(cancellationSource.Token);
+            //else
+
+            var analysisResult = generator.GenerateEpa(options.type, cancellationSource.Token);
+
+            System.Console.WriteLine(analysisResult.ToString());
+            epas = new Dictionary<string, TypeAnalysisResult>() { { options.type, analysisResult } };
+
+            if (options.generateAssembly)
             {
-                System.Console.WriteLine("Starting analysis for type {0}", options.type);
-
-                var cancellationSource = new CancellationTokenSource();
-                //if (string.IsNullOrEmpty(options.type))
-                //    epas = generator.GenerateEpas(cancellationSource.Token);
-                //else
-
-                var analysisResult = generator.GenerateEpa(options.type, cancellationSource.Token);
-
-                System.Console.WriteLine(analysisResult.ToString());
-                epas = new Dictionary<string, TypeAnalysisResult>() { { options.type, analysisResult } };
-
-                if (options.generateAssembly)
-                {
-                    System.Console.WriteLine("Generating strengthened output assembly");
-                    //new Instrumenter().GenerateOutputAssembly(options.output, analysisResult.EPA);
-                }
+                System.Console.WriteLine("Generating strengthened output assembly");
+                //new Instrumenter().GenerateOutputAssembly(options.output, analysisResult.EPA);
             }
+
             return epas;
         }
     }

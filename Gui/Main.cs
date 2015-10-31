@@ -373,9 +373,6 @@ namespace Contractor.Gui
 
             _AnalizedType = treeviewTypes.SelectedNode.Tag as INamedTypeDefinition;
 
-            if (_EpaGenerator != null)
-                _EpaGenerator.Dispose();
-
             var backend = (EpaGenerator.Backend)parameters["backend"];
 
             _EpaGenerator = new EpaGenerator(backend, _AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
