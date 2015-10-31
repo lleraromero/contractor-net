@@ -70,7 +70,7 @@ namespace Contractor.Core
 
             this.token = token;
 
-            this.queryGenerator = new CciQueryGenerator(this.host, this.typeToAnalyze);
+            this.queryGenerator = new CciQueryGenerator(this.host);
         }
 
         ~Analyzer()
@@ -162,6 +162,7 @@ namespace Contractor.Core
 
             foreach (var query in queries)
             {
+                (query.Method as MethodDefinition).ContainingTypeDefinition = this.typeToAnalyze;
                 this.queryContractProvider.AssociateMethodWithContract(query.Method as MethodDefinition, query.Contract);
             }
 

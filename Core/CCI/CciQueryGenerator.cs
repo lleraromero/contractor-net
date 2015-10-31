@@ -18,12 +18,10 @@ namespace Contractor.Core
         protected const string methodNameDelimiter = "~";
 
         protected IContractAwareHost host;
-        protected NamespaceTypeDefinition typeToAnalyze;
 
-        public CciQueryGenerator(IContractAwareHost host, NamespaceTypeDefinition typeToAnalyze)
+        public CciQueryGenerator(IContractAwareHost host)
         {
             this.host = host;
-            this.typeToAnalyze = typeToAnalyze;
         }
 
         public IEnumerable<Action> CreateQueries(State state, Action action, IEnumerable<Action> actions)
@@ -266,7 +264,7 @@ namespace Contractor.Core
             {
                 CallingConvention = Microsoft.Cci.CallingConvention.HasThis,
                 //TODO: agregar esto en el query assembly
-                ContainingTypeDefinition = this.typeToAnalyze,
+                //ContainingTypeDefinition = this.typeToAnalyze,
                 InternFactory = host.InternFactory,
                 IsStatic = false,
                 Name = host.NameTable.GetNameFor(name),
