@@ -13,19 +13,52 @@ using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
-    public abstract class AssemblyXXX
+    [ContractClass(typeof(IAssemblyXXXContracts))]
+    public interface IAssemblyXXX
     {
-        [Pure]
-        public abstract ISet<string> Types();
-        [Pure]
-        public abstract ISet<Action> Constructors(string type);
-        [Pure]
-        public abstract ISet<Action> Actions(string type);
-        [Pure]
-        public abstract IMethodContract GetContractFor(IMethodDefinition method);
+        ISet<string> Types();
+        ISet<Action> Constructors(string type);
+        ISet<Action> Actions(string type);
+        IMethodContract GetContractFor(IMethodDefinition method);
     }
 
-    public class CciAssembly : AssemblyXXX
+    #region IAssemblyXXX Contracts
+    [ContractClassFor(typeof(IAssemblyXXX))]
+    abstract class IAssemblyXXXContracts : IAssemblyXXX
+    {
+        [Pure]
+        public ISet<string> Types()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Pure]
+        public ISet<Action> Constructors(string typeName)
+        {
+            Contract.Requires(!string.IsNullOrEmpty(typeName));
+            Contract.Requires(Types().Contains(typeName));
+            throw new NotImplementedException();
+        }
+
+        [Pure]
+        public ISet<Action> Actions(string typeName)
+        {
+            Contract.Requires(!string.IsNullOrEmpty(typeName));
+            Contract.Requires(Types().Contains(typeName));
+            throw new NotImplementedException();
+        }
+
+        [Pure]
+        public IMethodContract GetContractFor(IMethodDefinition method)
+        {
+            Contract.Requires(method != null);
+            Contract.Ensures(Contract.Result<IMethodContract>() != null);
+            throw new NotImplementedException();
+        }
+    }
+    #endregion
+
+    public class CciAssembly : IAssemblyXXX
     {
         protected IContractAwareHost host;
         protected Module module;
@@ -49,29 +82,23 @@ namespace Contractor.Core
             this.contractProvider = new AggregatingContractProvider(contractExtractor);
         }
 
-        public override ISet<string> Types()
+        public ISet<string> Types()
         {
             var types = this.module.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
             return new HashSet<string>(from t in types
                                        select TypeHelper.GetTypeName(t, NameFormattingOptions.None));
         }
 
-        public override ISet<Action> Constructors(string typeName)
+        public ISet<Action> Constructors(string typeName)
         {
-            Contract.Requires(!string.IsNullOrEmpty(typeName));
-            Contract.Requires(Types().Contains(typeName));
-
             var type = FindType(typeName);
             return new HashSet<Action>(from m in type.Methods
                                        where m.IsConstructor
                                        select new CciAction(m, this.contractProvider.GetMethodContractFor(m)));
         }
 
-        public override ISet<Action> Actions(string typeName)
+        public ISet<Action> Actions(string typeName)
         {
-            Contract.Requires(!string.IsNullOrEmpty(typeName));
-            Contract.Requires(Types().Contains(typeName));
-
             var type = FindType(typeName);
             return new HashSet<Action>(from m in type.Methods
                                        where !m.IsConstructor && m.Visibility == TypeMemberVisibility.Public && 
@@ -79,11 +106,8 @@ namespace Contractor.Core
                                        select new CciAction(m, this.contractProvider.GetMethodContractFor(m)));
         }
 
-        public override IMethodContract GetContractFor(IMethodDefinition method)
+        public IMethodContract GetContractFor(IMethodDefinition method)
         {
-            Contract.Requires(method != null);
-            Contract.Ensures(Contract.Result<IMethodContract>() != null);
-
             return this.contractProvider.GetMethodContractFor(method);
         }
 

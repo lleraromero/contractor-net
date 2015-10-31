@@ -15,7 +15,7 @@ namespace Tests
     public class CorralEPAsTest
     {
         private const string InputFilePath = @"..\..\..\Examples\obj\Debug\Decl\Examples.dll";
-        protected static AssemblyXXX inputAssembly;
+        protected static IAssemblyXXX inputAssembly;
         protected static CodeContractAwareHostEnvironment host;
 
         [ClassInitialize()]

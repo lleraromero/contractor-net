@@ -13,7 +13,7 @@ namespace Contractor.Core
             this.host = new CodeContractAwareHostEnvironment();
         }
 
-        public AssemblyXXX Decompile(string inputFileName, string contractsFileName)
+        public IAssemblyXXX Decompile(string inputFileName, string contractsFileName)
         {
             Contract.Requires(!string.IsNullOrEmpty(inputFileName) && File.Exists(inputFileName));
 
