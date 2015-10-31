@@ -4,13 +4,14 @@ using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableContracts;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
 namespace Contractor.Core
 {
-    class Instrumenter
+    public class Instrumenter
     {
         private IContractAwareHost host;
         private ContractProvider cp;
@@ -26,7 +27,34 @@ namespace Contractor.Core
             this.host = host;
             this.cp = cp;
         }
+        public void GenerateOutputAssembly(string outputFileName, Epa epa)
+        {
+            // TODO: arreglar
+            throw new NotSupportedException();
+            //Contract.Requires(!string.IsNullOrEmpty(outputFileName));
 
+            //var contractProvider = inputAssembly.ExtractContracts();
+            //var instrumenter = new Instrumenter(host, contractProvider);
+
+            //foreach (var typeUniqueName in epas.Keys)
+            //{
+            //    var typeAnalysis = epas[typeUniqueName];
+
+            //    if (!instrumentedEpas.Contains(typeUniqueName))
+            //    {
+            //        var type = (from t in inputAssembly.DecompiledModule.AllTypes
+            //                    where typeUniqueName == t.GetUniqueName()
+            //                    select t as NamespaceTypeDefinition)
+            //                    .First();
+
+            //        instrumenter.InstrumentType(type, typeAnalysis.EPA);
+            //        instrumentedEpas.Add(typeUniqueName);
+            //    }
+            //}
+
+            //inputAssembly.InjectContracts(contractProvider);
+            //inputAssembly.Save(outputFileName);
+        }
         public void InstrumentType(NamespaceTypeDefinition type, Epa epa)
         {
             Contract.Requires(type != null && epa != null);

@@ -555,7 +555,9 @@ namespace Contractor.Gui
 
             try
             {
-                _EpaGenerator.GenerateOutputAssembly(fileName);
+                throw new NotSupportedException();
+                //_EpaGenerator.GenerateOutputAssembly(fileName);
+                //new Instrumenter().GenerateOutputAssembly(fileName, epa);
             }
             catch (Exception ex)
             {

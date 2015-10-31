@@ -257,34 +257,5 @@ namespace Contractor.Core
 
             return states;
         }
-
-        public void GenerateOutputAssembly(string outputFileName)
-        {
-            // TODO: arreglar
-            throw new NotSupportedException();
-            //Contract.Requires(!string.IsNullOrEmpty(outputFileName));
-
-            //var contractProvider = inputAssembly.ExtractContracts();
-            //var instrumenter = new Instrumenter(host, contractProvider);
-
-            //foreach (var typeUniqueName in epas.Keys)
-            //{
-            //    var typeAnalysis = epas[typeUniqueName];
-
-            //    if (!instrumentedEpas.Contains(typeUniqueName))
-            //    {
-            //        var type = (from t in inputAssembly.DecompiledModule.AllTypes
-            //                    where typeUniqueName == t.GetUniqueName()
-            //                    select t as NamespaceTypeDefinition)
-            //                    .First();
-
-            //        instrumenter.InstrumentType(type, typeAnalysis.EPA);
-            //        instrumentedEpas.Add(typeUniqueName);
-            //    }
-            //}
-
-            //inputAssembly.InjectContracts(contractProvider);
-            //inputAssembly.Save(outputFileName);
-        }
     }
 }

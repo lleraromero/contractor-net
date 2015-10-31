@@ -135,13 +135,10 @@ namespace Contractor.Console
                 System.Console.WriteLine(analysisResult.ToString());
                 epas = new Dictionary<string, TypeAnalysisResult>() { { options.type, analysisResult } };
 
-
-
-
                 if (options.generateAssembly)
                 {
                     System.Console.WriteLine("Generating strengthened output assembly");
-                    generator.GenerateOutputAssembly(options.output);
+                    //new Instrumenter().GenerateOutputAssembly(options.output, analysisResult.EPA);
                 }
             }
             return epas;
