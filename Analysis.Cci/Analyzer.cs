@@ -14,7 +14,7 @@ using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
-    class Analyzer : IAnalyzer
+    public class Analyzer : IAnalyzer
     {
         #region IAnalyzer interface
 

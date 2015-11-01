@@ -2,7 +2,7 @@
 
 namespace Contractor.Core
 {
-    class Query
+    public class Query
     {
         protected Action action;
         public Action Action { get { return action; } }
@@ -13,17 +13,17 @@ namespace Contractor.Core
         }
     }
 
-    class ReachableQuery : Query
+    public class ReachableQuery : Query
     {
         public ReachableQuery(Action action) : base(action) { }
     }
 
-    class UnreachableQuery : Query
+    public class UnreachableQuery : Query
     {
         public UnreachableQuery(Action action) : base(action) { }
     }
 
-    class MayBeReachableQuery : Query
+    public class MayBeReachableQuery : Query
     {
         public MayBeReachableQuery(Action action) : base(action) { }
     }

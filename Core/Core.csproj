@@ -198,35 +198,17 @@
     <Compile Include="..\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="AnalyzerMock.cs" />
-    <Compile Include="BctRunner.cs" />
-    <Compile Include="BctTranslator.cs" />
-    <Compile Include="CCI\AggregatingContractProvider.cs" />
     <Compile Include="AnalysisResults.cs" />
-    <Compile Include="CCI\Analyzer.cs" />
-    <Compile Include="CCI\AssemblyInfo.cs" />
-    <Compile Include="CCI\CciAction.cs" />
-    <Compile Include="CCI\CciAssembly.cs" />
-    <Compile Include="CCI\CciDecompiler.cs" />
-    <Compile Include="CCI\CciQueryAssembly.cs" />
-    <Compile Include="CCI\CodeContractsAnalyzer.cs" />
-    <Compile Include="CCI\CciQueryGenerator.cs" />
     <Compile Include="Configuration.cs" />
-    <Compile Include="CCI\ContractRewriter.cs" />
-    <Compile Include="CorralAnalyzer.cs" />
-    <Compile Include="CorralMock.cs" />
-    <Compile Include="CorralRunner.cs" />
     <Compile Include="EpaBinarySerializer.cs" />
     <Compile Include="EpaGenerator.cs" />
     <Compile Include="EpaXmlSerializer.cs" />
     <Compile Include="IAnalyzer.cs" />
     <Compile Include="IAssemblyXXX.cs" />
     <Compile Include="Logger.cs" />
-    <Compile Include="CCI\ReturnRewriter.cs" />
     <Compile Include="Query.cs" />
     <Compile Include="StringAction.cs" />
     <None Include="API.cd" />
-    <Compile Include="CCI\Instrumenter.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -255,6 +237,7 @@
       <Name>Utils</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

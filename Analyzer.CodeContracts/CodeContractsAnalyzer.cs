@@ -1,4 +1,5 @@
-﻿using Contractor.Core.Model;
+﻿using Contractor.Core;
+using Contractor.Core.Model;
 using Contractor.Core.Properties;
 using Contractor.Utils;
 using Microsoft.Cci;
@@ -16,9 +17,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-namespace Contractor.Core
+namespace Analyzer.CodeContracts
 {
-    class CodeContractsAnalyzer : Analyzer
+    class CodeContractsAnalyzer : Contractor.Core.Analyzer
     {
         private enum ResultKind
         {

@@ -71,10 +71,10 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Core\CCI\AggregatingContractProvider.cs">
+    <Compile Include="..\Analysis.Cci\AggregatingContractProvider.cs">
       <Link>AggregatingContractProvider.cs</Link>
     </Compile>
-    <Compile Include="..\Core\CCI\AssemblyInfo.cs">
+    <Compile Include="..\Analysis.Cci\AssemblyInfo.cs">
       <Link>AssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="..\GlobalAssemblyInfo.cs">
