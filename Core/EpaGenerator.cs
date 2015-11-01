@@ -125,6 +125,7 @@ namespace Contractor.Core
             }
             catch (OperationCanceledException)
             {
+                // The user aborted the generation process
             }
 
             analysisTimer.Stop();
