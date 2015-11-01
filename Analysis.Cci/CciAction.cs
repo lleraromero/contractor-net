@@ -3,7 +3,7 @@ using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
 using Action = Contractor.Core.Model.Action;
 
-namespace Contractor.Core
+namespace Analysis.Cci
 {
     public class CciAction : Action
     {

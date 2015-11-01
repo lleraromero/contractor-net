@@ -6,7 +6,7 @@ using Microsoft.Cci.MutableContracts;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci;
 
-namespace Contractor.Utils
+namespace Analysis.Cci
 {
 	class AggregatingContractProvider : ContractProvider
 	{

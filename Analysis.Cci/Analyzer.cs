@@ -1,4 +1,5 @@
-﻿using Contractor.Core.Model;
+﻿using Contractor.Core;
+using Contractor.Core.Model;
 using Contractor.Utils;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
@@ -12,7 +13,7 @@ using System.Linq;
 using System.Threading;
 using Action = Contractor.Core.Model.Action;
 
-namespace Contractor.Core
+namespace Analysis.Cci
 {
     public class Analyzer : IAnalyzer
     {

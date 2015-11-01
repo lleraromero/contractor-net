@@ -1,4 +1,5 @@
-﻿using Contractor.Core.Model;
+﻿using Analysis.Cci;
+using Contractor.Core.Model;
 using System;
 using System.Collections.Generic;
 using System.IO;

@@ -1,8 +1,9 @@
-﻿using Microsoft.Cci.MutableContracts;
+﻿using Contractor.Core;
+using Microsoft.Cci.MutableContracts;
 using System.Diagnostics.Contracts;
 using System.IO;
 
-namespace Contractor.Core
+namespace Analysis.Cci
 {
     public class CciDecompiler
     {

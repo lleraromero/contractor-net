@@ -1,4 +1,5 @@
-﻿using Contractor.Core;
+﻿using Analysis.Cci;
+using Contractor.Core;
 using Contractor.Core.Model;
 using Contractor.Utils;
 using Microsoft.Cci;

@@ -1,4 +1,5 @@
-﻿using Contractor.Utils;
+﻿using Analysis.Cci;
+using Contractor.Utils;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;

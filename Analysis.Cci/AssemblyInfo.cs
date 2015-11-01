@@ -9,7 +9,7 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 
-namespace Contractor.Utils
+namespace Analysis.Cci
 {
     public class AssemblyInfo
     {

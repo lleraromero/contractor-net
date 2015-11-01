@@ -1,4 +1,5 @@
-﻿using Contractor.Utils;
+﻿using Contractor.Core;
+using Contractor.Utils;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.ILToCodeModel;
@@ -11,7 +12,7 @@ using System.IO;
 using System.Linq;
 using Action = Contractor.Core.Model.Action;
 
-namespace Contractor.Core
+namespace Analysis.Cci
 {
     public class CciAssembly : IAssemblyXXX
     {

@@ -1,4 +1,5 @@
-﻿using Contractor.Core;
+﻿using Analysis.Cci;
+using Contractor.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
