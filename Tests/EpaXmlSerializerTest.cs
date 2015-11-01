@@ -10,19 +10,19 @@ namespace Tests
     [TestClass]
     public class EpaXmlSerializerTest
     {
-        private static EpaGenerator epaGenerator;
-        private const string InputFilePath = @"..\..\..\Examples\obj\Debug\Decl\Examples.dll";
+        //private static EpaGenerator epaGenerator;
+        //private const string InputFilePath = @"..\..\..\Examples\obj\Debug\Decl\Examples.dll";
 
-        [ClassInitialize()]
-        public static void GenerateEPAs(TestContext tc)
-        {
-            //Configuration.Initialize();
-            //Configuration.TempPath = Directory.GetParent(tc.TestDir).ToString();
-            //Configuration.InlineMethodsBody = true;
+        //[ClassInitialize()]
+        //public static void GenerateEPAs(TestContext tc)
+        //{
+        //    Configuration.Initialize();
+        //    Configuration.TempPath = Directory.GetParent(tc.TestDir).ToString();
+        //    Configuration.InlineMethodsBody = true;
 
-            //var ExamplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, InputFilePath));
-            //epaGenerator = new EpaGenerator(EpaGenerator.Backend.Corral, ExamplesPath, null);
-        }
+        //    var ExamplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, InputFilePath));
+        //    epaGenerator = new EpaGenerator(EpaGenerator.Backend.Corral, ExamplesPath, null);
+        //}
 
         //[TestMethod]
         //public void SerializeAndDeserializeLinear()

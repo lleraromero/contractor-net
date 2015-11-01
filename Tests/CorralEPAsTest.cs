@@ -1,15 +1,9 @@
 ﻿using Analysis.Cci;
 using Analyzer.Corral;
 using Contractor.Core;
-using Contractor.Core.Model;
-using Microsoft.Cci.MutableContracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.IO;
-using System.Linq;
-using System.Threading;
 
 namespace Tests
 {
