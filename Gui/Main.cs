@@ -44,8 +44,8 @@ namespace Contractor.Gui
             splitcontainerOutput.Panel2Collapsed = true;
             treeviewTypes.Sorted = true;
             treeviewTypes.ShowPlusMinus = true;
-            cmbBackend.Items.Add(EpaGenerator.Backend.CodeContracts);
-            cmbBackend.Items.Add(EpaGenerator.Backend.Corral);
+            cmbBackend.Items.Add("CodeContracts");
+            cmbBackend.Items.Add("Corral");
             cmbBackend.SelectedIndex = 1;
 
             var host = new PeReader.DefaultHost();
@@ -373,7 +373,7 @@ namespace Contractor.Gui
 
             _AnalizedType = treeviewTypes.SelectedNode.Tag as INamedTypeDefinition;
 
-            var backend = (EpaGenerator.Backend)parameters["backend"];
+            string backend = (string)parameters["backend"];
 
             var decompiler = new CciDecompiler(); 
             var inputAssembly = decompiler.Decompile(_AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
@@ -384,13 +384,13 @@ namespace Contractor.Gui
             IAnalyzer analyzer = null;
             switch (backend)
             {
-                case EpaGenerator.Backend.CodeContracts:
+                case "CodeContracts":
                     throw new NotImplementedException();
-                case EpaGenerator.Backend.Corral:
+                case "Corral":
                     analyzer = new CorralAnalyzer(decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly, _AssemblyInfo.FileName, typeToAnalyze, _cancellationSource.Token);
                     break;
                 default:
-                    break;
+                    throw new NotSupportedException();
             }
 
             _EpaGenerator = new EpaGenerator(inputAssembly, analyzer);

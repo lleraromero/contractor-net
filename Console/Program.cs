@@ -60,12 +60,8 @@ namespace Contractor.Console
             {
                 var program = new Program(options);
 
-                EpaGenerator.Backend backend = EpaGenerator.Backend.Corral;
-                if (program.options.backend.Equals("CodeContracts", StringComparison.InvariantCultureIgnoreCase))
-                    backend = EpaGenerator.Backend.CodeContracts;
-
                 // epas is a mapping between Typename and the result of the analysis.
-                Dictionary<string, TypeAnalysisResult> epas = program.Execute(backend);
+                Dictionary<string, TypeAnalysisResult> epas = program.Execute(program.options.backend);
 
                 // Save each EPA as an image in the Graph folder
                 foreach (var result in epas)
@@ -118,7 +114,7 @@ namespace Contractor.Console
             Directory.CreateDirectory(Configuration.TempPath);
         }
 
-        public Dictionary<string, TypeAnalysisResult> Execute(EpaGenerator.Backend backend)
+        public Dictionary<string, TypeAnalysisResult> Execute(string backend)
         {
             Contract.Assert(!string.IsNullOrEmpty(options.type));
             Contract.Assert(!string.IsNullOrEmpty(options.input) && File.Exists(options.input));
@@ -133,13 +129,13 @@ namespace Contractor.Console
             IAnalyzer analyzer = null;
             switch (backend)
             {
-                case EpaGenerator.Backend.CodeContracts:
+                case "CodeContracts":
                     throw new NotImplementedException();
-                case EpaGenerator.Backend.Corral:
+                case "Corral":
                     analyzer = new CorralAnalyzer(decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly, options.input, typeToAnalyze, cancellationSource.Token);
                     break;
                 default:
-                    break;
+                    throw new NotSupportedException();
             }
 
             var generator = new EpaGenerator(inputAssembly, analyzer);

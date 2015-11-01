@@ -42,23 +42,20 @@ namespace Contractor.Core
     public class TypeAnalysisResult
     {
         protected Epa epa;
-        protected EpaGenerator.Backend backend;
         protected TimeSpan totalDuration;
         protected Dictionary<string, object> statistics;
 
         public Epa EPA { get { return epa; } }
-        public EpaGenerator.Backend Backend { get { return backend; } }
         public TimeSpan TotalDuration { get { return totalDuration; } }
         public Dictionary<string, object> Statistics { get { return statistics; } }
 
-        public TypeAnalysisResult(Epa epa, EpaGenerator.Backend backend, TimeSpan totalTime, Dictionary<string, object> statistics)
+        public TypeAnalysisResult(Epa epa, TimeSpan totalTime, Dictionary<string, object> statistics)
         {
             Contract.Requires(epa != null);
             Contract.Requires(totalTime != null);
             Contract.Requires(statistics != null);
 
             this.epa = epa;
-            this.backend = backend;
             this.totalDuration = totalTime;
             this.statistics = statistics;
         }
@@ -74,7 +71,6 @@ namespace Contractor.Core
 
             var sb = new StringBuilder();
             sb.AppendFormat(@"Total duration:             {0}", this.TotalDuration).AppendLine();
-            sb.AppendFormat(@"Engine:                     {0}", this.Backend).AppendLine();
             sb.AppendFormat(@"Analysis total duration:    {0}", this.Statistics["TotalAnalyzerDuration"]).AppendLine();
             sb.AppendFormat(@"Analysis precision:         {0}%", precision).AppendLine();
             sb.AppendFormat(@"Executions:                 {0}", this.Statistics["ExecutionsCount"]).AppendLine();

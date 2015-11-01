@@ -10,8 +10,6 @@ namespace Contractor.Core
 {
     public class EpaGenerator
     {
-        public enum Backend { CodeContracts, Corral };
-
         protected CciAssembly assembly;
         protected IAnalyzer analyzer;
 
@@ -137,7 +135,7 @@ namespace Contractor.Core
             statistics["TotalGeneratedQueriesCount"] = analyzer.TotalGeneratedQueriesCount;
             statistics["UnprovenQueriesCount"] = analyzer.UnprovenQueriesCount;
 
-            var analysisResult = new TypeAnalysisResult(epaBuilder.Build(), Backend.Corral, analysisTimer.Elapsed, statistics);
+            var analysisResult = new TypeAnalysisResult(epaBuilder.Build(), analysisTimer.Elapsed, statistics);
 
             return analysisResult;
         }
