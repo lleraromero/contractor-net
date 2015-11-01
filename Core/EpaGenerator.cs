@@ -1,14 +1,9 @@
 ﻿using Contractor.Core.Model;
-using Contractor.Utils;
-using Microsoft.Cci;
-using Microsoft.Cci.MutableCodeModel;
-using Microsoft.Cci.MutableContracts;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Threading;
 using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
@@ -17,90 +12,45 @@ namespace Contractor.Core
     {
         public enum Backend { CodeContracts, Corral };
 
-        private AssemblyInfo inputAssembly;
-        private CodeContractAwareHostEnvironment host;
-        private Backend backend;
-
         protected CciAssembly assembly;
+        protected IAnalyzer analyzer;
 
         public event EventHandler<StateAddedEventArgs> StateAdded;
         public event EventHandler<TransitionAddedEventArgs> TransitionAdded;
 
-        public EpaGenerator(Backend backend, string inputFileName, string contractsFileName)
+        public EpaGenerator(IAssemblyXXX inputAssembly, IAnalyzer analyzer)
         {
-            Contract.Requires(!string.IsNullOrEmpty(inputFileName));
-            Contract.Ensures(host != null);
-            Contract.Ensures(inputAssembly != null);
+            Contract.Requires(inputAssembly != null);
+            Contract.Requires(analyzer != null);
 
-            host = new CodeContractAwareHostEnvironment(true);
-            inputAssembly = new AssemblyInfo(host);
-            inputAssembly.Load(inputFileName);
-
-            if (!string.IsNullOrEmpty(contractsFileName))
-            {
-                // Loads the contract reference assembly in the host.
-                var contractsAssembly = new AssemblyInfo(host);
-                contractsAssembly.Load(inputFileName);
-            }
-
-            this.backend = backend;
-
-            assembly = new CciAssembly(inputFileName, contractsFileName, host);
+            this.assembly = inputAssembly as CciAssembly;
+            this.analyzer = analyzer;
         }
 
-        public EpaGenerator()
-        {
-            //TODO: sacar cuando se desacoplen las cosas de esta clase
-        }
-
-        public TypeAnalysisResult GenerateEpa(string typeToAnalyze, CancellationToken token)
+        public TypeAnalysisResult GenerateEpa(string typeToAnalyze)
         {
             Contract.Requires(!string.IsNullOrEmpty(typeToAnalyze));
-            Contract.Requires(token != null);
 
             var constructors = this.assembly.Constructors(typeToAnalyze);
             var actions = this.assembly.Actions(typeToAnalyze);
-            return GenerateEpa(typeToAnalyze, constructors, actions, token);
+            return GenerateEpa(typeToAnalyze, constructors, actions);
         }
 
-        public TypeAnalysisResult GenerateEpa(string typeToAnalyze, IEnumerable<string> selectedMethods, CancellationToken token)
+        public TypeAnalysisResult GenerateEpa(string typeToAnalyze, IEnumerable<string> selectedMethods)
         {
             Contract.Requires(!string.IsNullOrEmpty(typeToAnalyze));
             Contract.Requires(selectedMethods != null && selectedMethods.Count() > 0);
-            Contract.Requires(token != null);
 
             var constructors = new HashSet<Action>(this.assembly.Constructors(typeToAnalyze).Where(a => selectedMethods.Contains(a.ToString())));
             var actions = new HashSet<Action>(this.assembly.Actions(typeToAnalyze).Where(a => selectedMethods.Contains(a.ToString())));
-            return GenerateEpa(typeToAnalyze, constructors, actions, token);
-        }
-
-        private TypeAnalysisResult GenerateEpa(string typeToAnalyze, ISet<Action> constructors, ISet<Action> actions, CancellationToken token)
-        {
-            var types = inputAssembly.DecompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
-            var type = types.First(t => TypeHelper.GetTypeName(t, NameFormattingOptions.None).Equals(typeToAnalyze));
-
-            IAnalyzer checker;
-            switch (this.backend)
-            {
-                case Backend.CodeContracts:
-                    checker = new CodeContractsAnalyzer(host, inputAssembly, type, token);
-                    break;
-                case Backend.Corral:
-                    checker = new CorralAnalyzer(new CciQueryGenerator(this.host), this.assembly, this.inputAssembly.Module.Location, typeToAnalyze, token);
-                    break;
-                default:
-                    throw new NotImplementedException("Unknown backend");
-            }
-
-            return GenerateEpa(typeToAnalyze, checker, constructors, actions);
+            return GenerateEpa(typeToAnalyze, constructors, actions);
         }
 
         /// <summary>
         /// Method to create an EPA of a particular type considering only the subset 'methods'
         /// </summary>
         /// <see cref="http://publicaciones.dc.uba.ar/Publications/2011/DBGU11/paper-icse-2011.pdf">Algorithm 1</see>
-        //TODO: es necesario que sea public?
-        public TypeAnalysisResult GenerateEpa(string typeToAnalyze, IAnalyzer analyzer, ISet<Action> constructors, ISet<Action> actions)
+        private TypeAnalysisResult GenerateEpa(string typeToAnalyze, ISet<Action> constructors, ISet<Action> actions)
         {
             Contract.Requires(!string.IsNullOrEmpty(typeToAnalyze));
             Contract.Requires(analyzer != null);
@@ -187,7 +137,7 @@ namespace Contractor.Core
             statistics["TotalGeneratedQueriesCount"] = analyzer.TotalGeneratedQueriesCount;
             statistics["UnprovenQueriesCount"] = analyzer.UnprovenQueriesCount;
 
-            var analysisResult = new TypeAnalysisResult(epaBuilder.Build(), this.backend, analysisTimer.Elapsed, statistics);
+            var analysisResult = new TypeAnalysisResult(epaBuilder.Build(), Backend.Corral, analysisTimer.Elapsed, statistics);
 
             return analysisResult;
         }

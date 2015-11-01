@@ -8,7 +8,7 @@ using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
-    class CorralAnalyzer : IAnalyzer
+    public class CorralAnalyzer : IAnalyzer
     {
         protected CciQueryGenerator queryGenerator;
         protected CciAssembly inputAssembly;
@@ -57,7 +57,7 @@ namespace Contractor.Core
             return EvaluateQueries(source, action, targets, result);
         }
 
-        protected IEnumerable<Query> Analyze(IEnumerable<Action> queriesActions)
+        private IEnumerable<Query> Analyze(IEnumerable<Action> queriesActions)
         {
             var queries = from a in queriesActions select new Query(a);
             var queryAssembly = new CciQueryAssembly(this.inputAssembly, this.typeToAnalyze, queries);
@@ -71,7 +71,7 @@ namespace Contractor.Core
             return TestQueries(queries, boogieQueryFilePath);
         }
 
-        protected IEnumerable<Query> TestQueries(IEnumerable<Query> queries, string boogieQueryFilePath)
+        private IEnumerable<Query> TestQueries(IEnumerable<Query> queries, string boogieQueryFilePath)
         {
             var result = new List<Query>();
            
@@ -98,7 +98,7 @@ namespace Contractor.Core
             return queryAssemblyPath.Replace("dll", "bpl");
         }
 
-        protected ActionAnalysisResults EvaluateQueries(IEnumerable<Action> actions, IEnumerable<Query> result)
+        private ActionAnalysisResults EvaluateQueries(IEnumerable<Action> actions, IEnumerable<Query> result)
         {
             var enabledActions = new HashSet<Action>(actions);
             var disabledActions = new HashSet<Action>(actions);
@@ -119,7 +119,7 @@ namespace Contractor.Core
             return new ActionAnalysisResults(enabledActions, disabledActions);
         }
 
-        protected void EnableOrDisable(HashSet<Action> enabledActions, HashSet<Action> disabledActions, Query query)
+        private void EnableOrDisable(HashSet<Action> enabledActions, HashSet<Action> disabledActions, Query query)
         {
             var actionName = query.Action.Method.Name.Value;
             var actionNameStart = actionName.LastIndexOf(this.methodNameDelimiter) + 1;
@@ -143,7 +143,7 @@ namespace Contractor.Core
             }
         }
 
-        protected TransitionAnalysisResult EvaluateQueries(State source, Action action, List<State> targets, IEnumerable<Query> result)
+        private TransitionAnalysisResult EvaluateQueries(State source, Action action, List<State> targets, IEnumerable<Query> result)
         {
             var transitions = new HashSet<Transition>();
 

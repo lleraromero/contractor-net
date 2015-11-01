@@ -120,20 +120,38 @@ namespace Contractor.Console
 
         public Dictionary<string, TypeAnalysisResult> Execute(EpaGenerator.Backend backend)
         {
-            var epas = new Dictionary<string, TypeAnalysisResult>();
-            var generator = new EpaGenerator(backend, options.input, null);
+            Contract.Assert(!string.IsNullOrEmpty(options.type));
+            Contract.Assert(!string.IsNullOrEmpty(options.input) && File.Exists(options.input));
 
             System.Console.WriteLine("Starting analysis for type {0}", options.type);
 
+            var decompiler = new CciDecompiler();
+            var inputAssembly = decompiler.Decompile(options.input, null);
+            string typeToAnalyze = inputAssembly.Types().First(t => t.Equals(options.type));
             var cancellationSource = new CancellationTokenSource();
+
+            IAnalyzer analyzer = null;
+            switch (backend)
+            {
+                case EpaGenerator.Backend.CodeContracts:
+                    throw new NotImplementedException();
+                case EpaGenerator.Backend.Corral:
+                    analyzer = new CorralAnalyzer(decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly, options.input, typeToAnalyze, cancellationSource.Token);
+                    break;
+                default:
+                    break;
+            }
+
+            var generator = new EpaGenerator(inputAssembly, analyzer);
+
             //if (string.IsNullOrEmpty(options.type))
             //    epas = generator.GenerateEpas(cancellationSource.Token);
             //else
 
-            var analysisResult = generator.GenerateEpa(options.type, cancellationSource.Token);
+            var analysisResult = generator.GenerateEpa(options.type);
 
             System.Console.WriteLine(analysisResult.ToString());
-            epas = new Dictionary<string, TypeAnalysisResult>() { { options.type, analysisResult } };
+            var epas = new Dictionary<string, TypeAnalysisResult>() { { options.type, analysisResult } };
 
             if (options.generateAssembly)
             {

@@ -375,7 +375,26 @@ namespace Contractor.Gui
 
             var backend = (EpaGenerator.Backend)parameters["backend"];
 
-            _EpaGenerator = new EpaGenerator(backend, _AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
+            var decompiler = new CciDecompiler(); 
+            var inputAssembly = decompiler.Decompile(_AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
+            var typeFullName = TypeHelper.GetTypeName(_AnalizedType, NameFormattingOptions.None);
+            string typeToAnalyze = inputAssembly.Types().First(t => t.Equals(typeFullName));
+            _cancellationSource = new CancellationTokenSource();
+
+            IAnalyzer analyzer = null;
+            switch (backend)
+            {
+                case EpaGenerator.Backend.CodeContracts:
+                    throw new NotImplementedException();
+                case EpaGenerator.Backend.Corral:
+                    analyzer = new CorralAnalyzer(decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly, _AssemblyInfo.FileName, typeToAnalyze, _cancellationSource.Token);
+                    break;
+                default:
+                    break;
+            }
+
+            _EpaGenerator = new EpaGenerator(inputAssembly, analyzer);
+            //_EpaGenerator = new EpaGenerator(backend, _AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
             _EpaGenerator.StateAdded += this.OnStateAdded;
             _EpaGenerator.TransitionAdded += this.OnTransitionAdded;
 
@@ -410,10 +429,8 @@ namespace Contractor.Gui
                 var typeFullName = TypeHelper.GetTypeName(_AnalizedType, NameFormattingOptions.None);
                 var selectedMethods = listboxMethods.CheckedItems.Cast<string>();
 
-                _cancellationSource = new CancellationTokenSource();
-
                 this.BeginInvoke(new System.Action<string, string>(this.SetBackgroundStatus), "Generating contractor graph for {0}...", typeFullName);
-                var typeAnalysisResult = _EpaGenerator.GenerateEpa(typeFullName, selectedMethods, _cancellationSource.Token);
+                var typeAnalysisResult = _EpaGenerator.GenerateEpa(typeFullName, selectedMethods);
                 this.BeginInvoke(new System.Action<TypeAnalysisResult>(this.UpdateAnalysisEnd), typeAnalysisResult);
             }
             catch (Exception ex)

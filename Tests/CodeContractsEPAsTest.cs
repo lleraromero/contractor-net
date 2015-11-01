@@ -20,12 +20,12 @@ namespace Tests
         [ClassInitialize()]
         public static void GenerateEPAs(TestContext tc)
         {
-            Configuration.Initialize();
-            Configuration.TempPath = Directory.GetParent(tc.TestDir).ToString();
-            Configuration.InlineMethodsBody = true;
+            //Configuration.Initialize();
+            //Configuration.TempPath = Directory.GetParent(tc.TestDir).ToString();
+            //Configuration.InlineMethodsBody = true;
 
-            var ExamplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, InputFilePath));
-            epaGenerator = new EpaGenerator(EpaGenerator.Backend.CodeContracts, ExamplesPath, null);
+            //var ExamplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, InputFilePath));
+            //epaGenerator = new EpaGenerator(EpaGenerator.Backend.CodeContracts, ExamplesPath, null);
         }
 
         //[TestMethod]
