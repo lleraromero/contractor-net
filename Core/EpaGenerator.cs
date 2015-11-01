@@ -10,7 +10,7 @@ namespace Contractor.Core
 {
     public class EpaGenerator
     {
-        protected CciAssembly assembly;
+        protected IAssemblyXXX assembly;
         protected IAnalyzer analyzer;
 
         public event EventHandler<StateAddedEventArgs> StateAdded;
@@ -21,7 +21,7 @@ namespace Contractor.Core
             Contract.Requires(inputAssembly != null);
             Contract.Requires(analyzer != null);
 
-            this.assembly = inputAssembly as CciAssembly;
+            this.assembly = inputAssembly;
             this.analyzer = analyzer;
         }
 
