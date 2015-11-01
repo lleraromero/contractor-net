@@ -2,7 +2,7 @@
 using Microsoft.Cci.MutableCodeModel;
 using System.Diagnostics.Contracts;
 
-namespace Contractor.Core
+namespace Analyzer.Corral
 {
     class ReturnRewriter : CodeRewriter
     {

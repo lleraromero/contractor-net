@@ -1,4 +1,5 @@
 ﻿using Analysis.Cci;
+using Contractor.Core;
 using Contractor.Utils;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
@@ -9,7 +10,7 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 
-namespace Contractor.Core
+namespace Analyzer.Corral
 {
     class CciQueryAssembly : CciAssembly
     {

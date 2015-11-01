@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Contractor.Core;
+using System;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Threading;
 
-namespace Contractor.Core
+namespace Analyzer.Corral
 {
     public enum ResultKind { TrueBug, NoBugs, RecursionBoundReached }
     class CorralRunner

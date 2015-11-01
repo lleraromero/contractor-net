@@ -1,4 +1,5 @@
 ﻿using Analysis.Cci;
+using Analyzer.Corral;
 using Contractor.Core;
 using System;
 using System.Collections.Generic;

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
-namespace Contractor.Core
+namespace Analyzer.Corral
 {
     public class ContractRewriter : CodeAndContractRewriter
     {

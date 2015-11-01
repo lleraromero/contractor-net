@@ -1,4 +1,5 @@
-﻿using Contractor.Core.Model;
+﻿using Contractor.Core;
+using Contractor.Core.Model;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -7,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Action = Contractor.Core.Model.Action;
 
-namespace Contractor.Core
+namespace Analyzer.Corral
 {
     public class AnalyzerMock : IAnalyzer
     {

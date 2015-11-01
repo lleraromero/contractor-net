@@ -2,7 +2,7 @@
 using Contractor.Core;
 using System.Collections.Generic;
 
-namespace Contractor.Core
+namespace Analyzer.Corral
 {
     class CorralMock
     {

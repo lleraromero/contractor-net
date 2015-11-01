@@ -4,7 +4,7 @@ using System;
 using System.Diagnostics.Contracts;
 using System.IO;
 
-namespace Contractor.Core
+namespace Analyzer.Corral
 {
     internal enum LogLevel { Fatal, Error, Warn, Info, Debug, Trace };
 

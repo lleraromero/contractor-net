@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Contractor.Core
+namespace Analyzer.Corral
 {
     /// <summary>
     /// BCT-TranslationHelper.cs
