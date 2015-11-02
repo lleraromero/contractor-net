@@ -45,6 +45,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analyzer.Corral", "Analyzer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analyzer.CodeContracts", "Analyzer.CodeContracts\Analyzer.CodeContracts.csproj", "{D0AF37F6-01AE-4AA0-AFA7-1FB91D226C8F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analyzer.Corral.Tests", "Analyzer.Corral.Tests\Analyzer.Corral.Tests.csproj", "{62482938-9C18-42DA-AC34-E82849E86193}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -175,6 +177,16 @@ Global
 		{D0AF37F6-01AE-4AA0-AFA7-1FB91D226C8F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{D0AF37F6-01AE-4AA0-AFA7-1FB91D226C8F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{D0AF37F6-01AE-4AA0-AFA7-1FB91D226C8F}.Release|x86.ActiveCfg = Release|Any CPU
+		{62482938-9C18-42DA-AC34-E82849E86193}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62482938-9C18-42DA-AC34-E82849E86193}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62482938-9C18-42DA-AC34-E82849E86193}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{62482938-9C18-42DA-AC34-E82849E86193}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{62482938-9C18-42DA-AC34-E82849E86193}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{62482938-9C18-42DA-AC34-E82849E86193}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62482938-9C18-42DA-AC34-E82849E86193}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62482938-9C18-42DA-AC34-E82849E86193}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{62482938-9C18-42DA-AC34-E82849E86193}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{62482938-9C18-42DA-AC34-E82849E86193}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

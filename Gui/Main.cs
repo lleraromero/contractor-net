@@ -36,7 +36,6 @@ namespace Contractor.Gui
         private TypeAnalysisResult _LastResult;
         private Options _Options;
         private string _ContractReferenceAssemblyFileName;
-        private string _EnvironmentInfo;
 
         public Main()
         {
@@ -359,10 +358,7 @@ namespace Contractor.Gui
         private void OnObjectUnmarkedForDragging(object sender, EventArgs e)
         {
             buttonUndo.Enabled = graphViewer.CanUndo();
-            menuitemUndo.Enabled = graphViewer.CanUndo();
-
             buttonRedo.Enabled = graphViewer.CanRedo();
-            menuitemRedo.Enabled = graphViewer.CanRedo();
         }
 
         #endregion Event Handlers
@@ -396,7 +392,6 @@ namespace Contractor.Gui
             }
 
             _EpaGenerator = new EpaGenerator(inputAssembly, analyzer);
-            //_EpaGenerator = new EpaGenerator(backend, _AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
             _EpaGenerator.StateAdded += this.OnStateAdded;
             _EpaGenerator.TransitionAdded += this.OnTransitionAdded;
 
@@ -456,22 +451,16 @@ namespace Contractor.Gui
             richtextboxInformation.Clear();
 
             buttonStartAnalysis.Enabled = false;
-            menuitemStartAnalysis.Enabled = false;
 
             buttonLoadAssembly.Enabled = false;
-            menuitemLoadAssembly.Enabled = false;
 
             buttonLoadContracts.Enabled = false;
-            menuitemLoadContracts.Enabled = false;
 
             buttonExportGraph.Enabled = false;
-            menuitemExportGraph.Enabled = false;
 
             buttonGenerateAssembly.Enabled = false;
-            menuitemGenerateAssembly.Enabled = false;
 
             buttonStopAnalysis.Enabled = true;
-            menuitemStopAnalysis.Enabled = true;
         }
 
         private void UpdateAnalysisEnd(TypeAnalysisResult analysisResult)
@@ -500,19 +489,14 @@ namespace Contractor.Gui
             _Graph = null;
 
             buttonStopAnalysis.Enabled = false;
-            menuitemStopAnalysis.Enabled = false;
 
             buttonLoadAssembly.Enabled = true;
-            menuitemLoadAssembly.Enabled = true;
 
             buttonLoadContracts.Enabled = true;
-            menuitemLoadContracts.Enabled = true;
 
             buttonExportGraph.Enabled = true;
-            menuitemExportGraph.Enabled = true;
 
             buttonGenerateAssembly.Enabled = true;
-            menuitemGenerateAssembly.Enabled = true;
 
             this.UpdateStartAnalisisCommand();
         }
@@ -589,12 +573,7 @@ namespace Contractor.Gui
 
         public void HandleException(Exception ex)
         {
-            if (string.IsNullOrEmpty(_EnvironmentInfo))
-            {
-                _EnvironmentInfo = this.GetEnvironmentInfo();
-            }
-
-            textboxOutput.AppendText(_EnvironmentInfo);
+            textboxOutput.AppendText(GetEnvironmentInfo());
             textboxOutput.AppendText(ex.ToString());
             textboxOutput.AppendText(Environment.NewLine);
             textboxOutput.AppendText(Environment.NewLine);
@@ -671,7 +650,6 @@ namespace Contractor.Gui
                 _cancellationSource.Cancel();
 
                 buttonStopAnalysis.Enabled = false;
-                menuitemStopAnalysis.Enabled = false;
 
                 var typeFullName = _AnalizedType.GetDisplayName();
                 statusLabel.Text = string.Format("Aborting analysis for {0}...", typeFullName);
@@ -709,7 +687,6 @@ namespace Contractor.Gui
             graphViewer.PanButtonPressed = !graphViewer.PanButtonPressed;
 
             buttonPan.Checked = graphViewer.PanButtonPressed;
-            menuitemPan.Checked = graphViewer.PanButtonPressed;
         }
 
         private void Undo()
@@ -718,10 +695,8 @@ namespace Contractor.Gui
             graphViewer.Undo();
 
             buttonUndo.Enabled = graphViewer.CanUndo();
-            menuitemUndo.Enabled = graphViewer.CanUndo();
 
             buttonRedo.Enabled = true;
-            menuitemRedo.Enabled = true;
         }
 
         private void Redo()
@@ -730,10 +705,8 @@ namespace Contractor.Gui
             graphViewer.Redo();
 
             buttonUndo.Enabled = true;
-            menuitemUndo.Enabled = true;
 
             buttonRedo.Enabled = graphViewer.CanRedo();
-            menuitemRedo.Enabled = graphViewer.CanRedo();
         }
 
         private void ExportGraph()
@@ -921,31 +894,22 @@ namespace Contractor.Gui
             var analisisRunning = _AnalisisThread != null;
 
             buttonExportGraph.Enabled = graphGenerated && !analisisRunning;
-            menuitemExportGraph.Enabled = graphGenerated && !analisisRunning;
 
             buttonGenerateAssembly.Enabled = graphGenerated && !analisisRunning;
-            menuitemGenerateAssembly.Enabled = graphGenerated && !analisisRunning;
 
             buttonPan.Enabled = graphGenerated;
-            menuitemPan.Enabled = graphGenerated;
 
             buttonResetLayout.Enabled = graphGenerated;
-            menuitemResetLayout.Enabled = graphGenerated;
 
             buttonZoomBestFit.Enabled = graphGenerated;
-            menuitemZoomBestFit.Enabled = graphGenerated;
 
             buttonZoomIn.Enabled = graphGenerated;
-            menuitemZoomIn.Enabled = graphGenerated;
 
             buttonZoomOut.Enabled = graphGenerated;
-            menuitemZoomOut.Enabled = graphGenerated;
 
             buttonRedo.Enabled = false;
-            menuitemRedo.Enabled = false;
 
             buttonUndo.Enabled = false;
-            menuitemUndo.Enabled = false;
         }
 
         private void UpdateStartAnalisisCommand()
@@ -955,7 +919,6 @@ namespace Contractor.Gui
             var analisisRunning = _AnalisisThread != null;
 
             buttonStartAnalysis.Enabled = isClassNode && !analisisRunning;
-            menuitemStartAnalysis.Enabled = isClassNode && !analisisRunning;
         }
 
         private void LoadAssembly()
@@ -990,10 +953,8 @@ namespace Contractor.Gui
                 treeviewTypes.EndUpdate();
 
                 buttonLoadContracts.Enabled = true;
-                menuitemLoadContracts.Enabled = true;
 
                 buttonLoadContracts.Checked = false;
-                menuitemLoadContracts.Checked = false;
 
                 this.EndBackgroundTask();
             });
@@ -1011,7 +972,6 @@ namespace Contractor.Gui
                 _ContractReferenceAssemblyFileName = fileName;
 
                 buttonLoadContracts.Checked = true;
-                menuitemLoadContracts.Checked = true;
 
                 var name = Path.GetFileName(fileName);
                 this.SetBackgroundStatus("Using contract reference assembly {0}", name);

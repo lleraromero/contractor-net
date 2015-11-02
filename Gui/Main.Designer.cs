@@ -58,28 +58,8 @@
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.cmbBackend = new System.Windows.Forms.ToolStripComboBox();
             this.menuStrip = new System.Windows.Forms.MenuStrip();
-            this.menuitemFile = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuitemLoadAssembly = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuitemLoadContracts = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuitemExportGraph = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuitemGenerateAssembly = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
-            this.menuitemQuit = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuitemEdit = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuitemUndo = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuitemRedo = new System.Windows.Forms.ToolStripMenuItem();
             this.menuitemView = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuitemResetLayout = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuitemZoomIn = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuitemZoomOut = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuitemZoomBestFit = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuitemPan = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.menuitemOutput = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuitemOptions = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuitemAnalyze = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuitemStartAnalysis = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuitemStopAnalysis = new System.Windows.Forms.ToolStripMenuItem();
             this.menuitemHelp = new System.Windows.Forms.ToolStripMenuItem();
             this.menuitemAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.loadAssemblyDialog = new System.Windows.Forms.OpenFileDialog();
@@ -383,10 +363,7 @@
             // menuStrip
             // 
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuitemFile,
-            this.menuitemEdit,
             this.menuitemView,
-            this.menuitemAnalyze,
             this.menuitemHelp});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
@@ -394,185 +371,13 @@
             this.menuStrip.TabIndex = 0;
             this.menuStrip.Text = "menuStrip1";
             // 
-            // menuitemFile
-            // 
-            this.menuitemFile.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuitemLoadAssembly,
-            this.menuitemLoadContracts,
-            this.menuitemExportGraph,
-            this.menuitemGenerateAssembly,
-            this.toolStripSeparator6,
-            this.menuitemQuit});
-            this.menuitemFile.Name = "menuitemFile";
-            this.menuitemFile.Size = new System.Drawing.Size(37, 20);
-            this.menuitemFile.Text = "&File";
-            // 
-            // menuitemLoadAssembly
-            // 
-            this.menuitemLoadAssembly.Image = ((System.Drawing.Image)(resources.GetObject("menuitemLoadAssembly.Image")));
-            this.menuitemLoadAssembly.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.menuitemLoadAssembly.Name = "menuitemLoadAssembly";
-            this.menuitemLoadAssembly.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.menuitemLoadAssembly.Size = new System.Drawing.Size(256, 22);
-            this.menuitemLoadAssembly.Text = "&Load Assembly...";
-            this.menuitemLoadAssembly.Click += new System.EventHandler(this.OnLoadAssembly);
-            // 
-            // menuitemLoadContracts
-            // 
-            this.menuitemLoadContracts.Enabled = false;
-            this.menuitemLoadContracts.Image = ((System.Drawing.Image)(resources.GetObject("menuitemLoadContracts.Image")));
-            this.menuitemLoadContracts.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.menuitemLoadContracts.Name = "menuitemLoadContracts";
-            this.menuitemLoadContracts.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
-            | System.Windows.Forms.Keys.O)));
-            this.menuitemLoadContracts.Size = new System.Drawing.Size(256, 22);
-            this.menuitemLoadContracts.Text = "Load &Contracts...";
-            this.menuitemLoadContracts.Click += new System.EventHandler(this.OnLoadContracts);
-            // 
-            // menuitemExportGraph
-            // 
-            this.menuitemExportGraph.Enabled = false;
-            this.menuitemExportGraph.Image = ((System.Drawing.Image)(resources.GetObject("menuitemExportGraph.Image")));
-            this.menuitemExportGraph.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.menuitemExportGraph.Name = "menuitemExportGraph";
-            this.menuitemExportGraph.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.menuitemExportGraph.Size = new System.Drawing.Size(256, 22);
-            this.menuitemExportGraph.Text = "&Export Graph...";
-            this.menuitemExportGraph.Click += new System.EventHandler(this.OnExportGraph);
-            // 
-            // menuitemGenerateAssembly
-            // 
-            this.menuitemGenerateAssembly.Enabled = false;
-            this.menuitemGenerateAssembly.Image = ((System.Drawing.Image)(resources.GetObject("menuitemGenerateAssembly.Image")));
-            this.menuitemGenerateAssembly.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.menuitemGenerateAssembly.Name = "menuitemGenerateAssembly";
-            this.menuitemGenerateAssembly.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
-            | System.Windows.Forms.Keys.S)));
-            this.menuitemGenerateAssembly.Size = new System.Drawing.Size(256, 22);
-            this.menuitemGenerateAssembly.Text = "&Generate Assembly...";
-            this.menuitemGenerateAssembly.Click += new System.EventHandler(this.OnGenerateAssembly);
-            // 
-            // toolStripSeparator6
-            // 
-            this.toolStripSeparator6.Name = "toolStripSeparator6";
-            this.toolStripSeparator6.Size = new System.Drawing.Size(253, 6);
-            // 
-            // menuitemQuit
-            // 
-            this.menuitemQuit.Name = "menuitemQuit";
-            this.menuitemQuit.ShortcutKeyDisplayString = "";
-            this.menuitemQuit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.menuitemQuit.Size = new System.Drawing.Size(256, 22);
-            this.menuitemQuit.Text = "&Quit";
-            this.menuitemQuit.Click += new System.EventHandler(this.OnQuit);
-            // 
-            // menuitemEdit
-            // 
-            this.menuitemEdit.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuitemUndo,
-            this.menuitemRedo});
-            this.menuitemEdit.Name = "menuitemEdit";
-            this.menuitemEdit.Size = new System.Drawing.Size(39, 20);
-            this.menuitemEdit.Text = "&Edit";
-            // 
-            // menuitemUndo
-            // 
-            this.menuitemUndo.Enabled = false;
-            this.menuitemUndo.Image = ((System.Drawing.Image)(resources.GetObject("menuitemUndo.Image")));
-            this.menuitemUndo.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.menuitemUndo.Name = "menuitemUndo";
-            this.menuitemUndo.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
-            this.menuitemUndo.Size = new System.Drawing.Size(144, 22);
-            this.menuitemUndo.Text = "&Undo";
-            this.menuitemUndo.Click += new System.EventHandler(this.OnUndo);
-            // 
-            // menuitemRedo
-            // 
-            this.menuitemRedo.Enabled = false;
-            this.menuitemRedo.Image = ((System.Drawing.Image)(resources.GetObject("menuitemRedo.Image")));
-            this.menuitemRedo.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.menuitemRedo.Name = "menuitemRedo";
-            this.menuitemRedo.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Y)));
-            this.menuitemRedo.Size = new System.Drawing.Size(144, 22);
-            this.menuitemRedo.Text = "&Redo";
-            this.menuitemRedo.Click += new System.EventHandler(this.OnRedo);
-            // 
             // menuitemView
             // 
             this.menuitemView.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuitemResetLayout,
-            this.menuitemZoomIn,
-            this.menuitemZoomOut,
-            this.menuitemZoomBestFit,
-            this.menuitemPan,
-            this.toolStripSeparator7,
-            this.menuitemOutput,
-            this.menuitemOptions});
+            this.menuitemOutput});
             this.menuitemView.Name = "menuitemView";
             this.menuitemView.Size = new System.Drawing.Size(44, 20);
             this.menuitemView.Text = "&View";
-            // 
-            // menuitemResetLayout
-            // 
-            this.menuitemResetLayout.Enabled = false;
-            this.menuitemResetLayout.Image = ((System.Drawing.Image)(resources.GetObject("menuitemResetLayout.Image")));
-            this.menuitemResetLayout.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.menuitemResetLayout.Name = "menuitemResetLayout";
-            this.menuitemResetLayout.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.R)));
-            this.menuitemResetLayout.Size = new System.Drawing.Size(210, 22);
-            this.menuitemResetLayout.Text = "&Reset Layout";
-            this.menuitemResetLayout.Click += new System.EventHandler(this.OnResetLayout);
-            // 
-            // menuitemZoomIn
-            // 
-            this.menuitemZoomIn.Enabled = false;
-            this.menuitemZoomIn.Image = ((System.Drawing.Image)(resources.GetObject("menuitemZoomIn.Image")));
-            this.menuitemZoomIn.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.menuitemZoomIn.Name = "menuitemZoomIn";
-            this.menuitemZoomIn.ShortcutKeyDisplayString = "Ctrl++";
-            this.menuitemZoomIn.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Oemplus)));
-            this.menuitemZoomIn.Size = new System.Drawing.Size(210, 22);
-            this.menuitemZoomIn.Text = "Zoom &In";
-            this.menuitemZoomIn.Click += new System.EventHandler(this.OnZoomIn);
-            // 
-            // menuitemZoomOut
-            // 
-            this.menuitemZoomOut.Enabled = false;
-            this.menuitemZoomOut.Image = ((System.Drawing.Image)(resources.GetObject("menuitemZoomOut.Image")));
-            this.menuitemZoomOut.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.menuitemZoomOut.Name = "menuitemZoomOut";
-            this.menuitemZoomOut.ShortcutKeyDisplayString = "Ctrl+-";
-            this.menuitemZoomOut.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.OemMinus)));
-            this.menuitemZoomOut.Size = new System.Drawing.Size(210, 22);
-            this.menuitemZoomOut.Text = "Zoom &Out";
-            this.menuitemZoomOut.Click += new System.EventHandler(this.OnZoomOut);
-            // 
-            // menuitemZoomBestFit
-            // 
-            this.menuitemZoomBestFit.Enabled = false;
-            this.menuitemZoomBestFit.Image = ((System.Drawing.Image)(resources.GetObject("menuitemZoomBestFit.Image")));
-            this.menuitemZoomBestFit.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.menuitemZoomBestFit.Name = "menuitemZoomBestFit";
-            this.menuitemZoomBestFit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F)));
-            this.menuitemZoomBestFit.Size = new System.Drawing.Size(210, 22);
-            this.menuitemZoomBestFit.Text = "Zoom Best &Fit";
-            this.menuitemZoomBestFit.Click += new System.EventHandler(this.OnZoomBestFit);
-            // 
-            // menuitemPan
-            // 
-            this.menuitemPan.Enabled = false;
-            this.menuitemPan.Image = ((System.Drawing.Image)(resources.GetObject("menuitemPan.Image")));
-            this.menuitemPan.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.menuitemPan.Name = "menuitemPan";
-            this.menuitemPan.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.P)));
-            this.menuitemPan.Size = new System.Drawing.Size(210, 22);
-            this.menuitemPan.Text = "&Pan";
-            this.menuitemPan.Click += new System.EventHandler(this.OnPan);
-            // 
-            // toolStripSeparator7
-            // 
-            this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(207, 6);
             // 
             // menuitemOutput
             // 
@@ -583,46 +388,6 @@
             this.menuitemOutput.Size = new System.Drawing.Size(210, 22);
             this.menuitemOutput.Text = "O&utput Panel";
             this.menuitemOutput.Click += new System.EventHandler(this.OnOutput);
-            // 
-            // menuitemOptions
-            // 
-            this.menuitemOptions.Image = ((System.Drawing.Image)(resources.GetObject("menuitemOptions.Image")));
-            this.menuitemOptions.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.menuitemOptions.Name = "menuitemOptions";
-            this.menuitemOptions.Size = new System.Drawing.Size(210, 22);
-            this.menuitemOptions.Text = "&Op&tions...";
-            this.menuitemOptions.Click += new System.EventHandler(this.OnOptions);
-            // 
-            // menuitemAnalyze
-            // 
-            this.menuitemAnalyze.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.menuitemStartAnalysis,
-            this.menuitemStopAnalysis});
-            this.menuitemAnalyze.Name = "menuitemAnalyze";
-            this.menuitemAnalyze.Size = new System.Drawing.Size(60, 20);
-            this.menuitemAnalyze.Text = "&Analyze";
-            // 
-            // menuitemStartAnalysis
-            // 
-            this.menuitemStartAnalysis.Enabled = false;
-            this.menuitemStartAnalysis.Image = ((System.Drawing.Image)(resources.GetObject("menuitemStartAnalysis.Image")));
-            this.menuitemStartAnalysis.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.menuitemStartAnalysis.Name = "menuitemStartAnalysis";
-            this.menuitemStartAnalysis.ShortcutKeys = System.Windows.Forms.Keys.F5;
-            this.menuitemStartAnalysis.Size = new System.Drawing.Size(163, 22);
-            this.menuitemStartAnalysis.Text = "&Start Analysis";
-            this.menuitemStartAnalysis.Click += new System.EventHandler(this.OnStartAnalysis);
-            // 
-            // menuitemStopAnalysis
-            // 
-            this.menuitemStopAnalysis.Enabled = false;
-            this.menuitemStopAnalysis.Image = ((System.Drawing.Image)(resources.GetObject("menuitemStopAnalysis.Image")));
-            this.menuitemStopAnalysis.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.menuitemStopAnalysis.Name = "menuitemStopAnalysis";
-            this.menuitemStopAnalysis.ShortcutKeys = System.Windows.Forms.Keys.F6;
-            this.menuitemStopAnalysis.Size = new System.Drawing.Size(163, 22);
-            this.menuitemStopAnalysis.Text = "S&top Analysis";
-            this.menuitemStopAnalysis.Click += new System.EventHandler(this.OnStopAnalysis);
             // 
             // menuitemHelp
             // 
@@ -937,12 +702,9 @@
 		private System.Windows.Forms.SaveFileDialog generateOutputDialog;
 		private System.Windows.Forms.StatusStrip statusStrip;
 		private System.Windows.Forms.ToolStrip toolStrip;
-		private System.Windows.Forms.MenuStrip menuStrip;
-		private System.Windows.Forms.ToolStripMenuItem menuitemFile;
-		private System.Windows.Forms.ToolStripMenuItem menuitemEdit;
+        private System.Windows.Forms.MenuStrip menuStrip;
 		private System.Windows.Forms.ToolStripMenuItem menuitemHelp;
-		private System.Windows.Forms.ToolStripMenuItem menuitemAbout;
-		private System.Windows.Forms.ToolStripMenuItem menuitemQuit;
+        private System.Windows.Forms.ToolStripMenuItem menuitemAbout;
 		private System.Windows.Forms.ToolStripStatusLabel statusLabel;
 		private System.Windows.Forms.ToolStripProgressBar progressBar;
 		private System.Windows.Forms.ToolStripButton buttonStopAnalysis;
@@ -965,23 +727,7 @@
 		private System.Windows.Forms.ToolStripButton buttonLoadAssembly;
 		private System.Windows.Forms.OpenFileDialog loadAssemblyDialog;
 		private System.Windows.Forms.ToolStripMenuItem menuitemView;
-		private System.Windows.Forms.ToolStripMenuItem menuitemOutput;
-		private System.Windows.Forms.ToolStripMenuItem menuitemOptions;
-		private System.Windows.Forms.ToolStripMenuItem menuitemLoadAssembly;
-		private System.Windows.Forms.ToolStripMenuItem menuitemExportGraph;
-		private System.Windows.Forms.ToolStripMenuItem menuitemGenerateAssembly;
-		private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
-		private System.Windows.Forms.ToolStripMenuItem menuitemAnalyze;
-		private System.Windows.Forms.ToolStripMenuItem menuitemStartAnalysis;
-		private System.Windows.Forms.ToolStripMenuItem menuitemStopAnalysis;
-		private System.Windows.Forms.ToolStripMenuItem menuitemUndo;
-		private System.Windows.Forms.ToolStripMenuItem menuitemRedo;
-		private System.Windows.Forms.ToolStripMenuItem menuitemZoomIn;
-		private System.Windows.Forms.ToolStripMenuItem menuitemZoomOut;
-		private System.Windows.Forms.ToolStripMenuItem menuitemZoomBestFit;
-		private System.Windows.Forms.ToolStripMenuItem menuitemPan;
-		private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
-		private System.Windows.Forms.ToolStripMenuItem menuitemResetLayout;
+        private System.Windows.Forms.ToolStripMenuItem menuitemOutput;
 		private TitleBar titlebarOutput;
 		private System.Windows.Forms.TextBox textboxOutput;
 		private System.Windows.Forms.SplitContainer splitcontainerV;
@@ -992,8 +738,7 @@
 		private System.Windows.Forms.SplitContainer splitcontainerOutput;
 		private Microsoft.Msagl.GraphViewerGdi.GViewer graphViewer;
 		private System.Windows.Forms.CheckedListBox listboxMethods;
-		private System.Windows.Forms.OpenFileDialog loadContractsDialog;
-		private System.Windows.Forms.ToolStripMenuItem menuitemLoadContracts;
+        private System.Windows.Forms.OpenFileDialog loadContractsDialog;
 		private System.Windows.Forms.ToolStripButton buttonLoadContracts;
 		private System.Windows.Forms.ToolStrip toolstripMethods;
 		private System.Windows.Forms.ToolStripButton buttonCheckAllMethods;
