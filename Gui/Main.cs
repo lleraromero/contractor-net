@@ -68,11 +68,6 @@ namespace Contractor.Gui
             }
         }
 
-        private void OnQuit(object sender, EventArgs e)
-        {
-            this.Close();
-        }
-
         private void OnAbout(object sender, EventArgs e)
         {
             var aboutDialog = new AboutDialog();
@@ -373,7 +368,7 @@ namespace Contractor.Gui
 
             string backend = (string)parameters["backend"];
 
-            var decompiler = new CciDecompiler(); 
+            var decompiler = new CciDecompiler();
             var inputAssembly = decompiler.Decompile(_AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
             var typeFullName = TypeHelper.GetTypeName(_AnalizedType, NameFormattingOptions.None);
             string typeToAnalyze = inputAssembly.Types().First(t => t.Equals(typeFullName));
@@ -894,21 +889,13 @@ namespace Contractor.Gui
             var analisisRunning = _AnalisisThread != null;
 
             buttonExportGraph.Enabled = graphGenerated && !analisisRunning;
-
             buttonGenerateAssembly.Enabled = graphGenerated && !analisisRunning;
-
             buttonPan.Enabled = graphGenerated;
-
             buttonResetLayout.Enabled = graphGenerated;
-
             buttonZoomBestFit.Enabled = graphGenerated;
-
             buttonZoomIn.Enabled = graphGenerated;
-
             buttonZoomOut.Enabled = graphGenerated;
-
             buttonRedo.Enabled = false;
-
             buttonUndo.Enabled = false;
         }
 
