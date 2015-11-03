@@ -1,13 +1,13 @@
 ﻿using System;
-using Contractor.Core;
 using System.Collections.Generic;
 
-namespace Analyzer.Corral
+namespace Analyzer.Corral.Tests
 {
-    class CorralMock
+    internal class CorralMock
     {
         #region VendingMachine Queries
-        const string VendingQueries = @"STATE$ctorSystemVoid~ctorSystemVoid~BuySystemUInt32SystemUInt32SystemVoid NoBugs
+
+        private const string VendingQueries = @"STATE$ctorSystemVoid~ctorSystemVoid~BuySystemUInt32SystemUInt32SystemVoid NoBugs
 STATE$ctorSystemVoid~ctorSystemVoid~_Not_BuySystemUInt32SystemUInt32SystemVoid TrueBug
 STATE$ctorSystemVoid~ctorSystemVoid~DisplayPriceSystemUInt32SystemVoid NoBugs
 STATE$ctorSystemVoid~ctorSystemVoid~_Not_DisplayPriceSystemUInt32SystemVoid TrueBug
@@ -55,10 +55,12 @@ STATE$ReturnChangeSystemVoid~ReturnChangeSystemVoid~_Not_ReturnChangeSystemVoid 
 STATE$ReturnChangeSystemVoid~ReturnChangeSystemVoid~ReturnItemSystemVoid NoBugs
 STATE$ReturnChangeSystemVoid~ReturnChangeSystemVoid~_Not_ReturnItemSystemVoid TrueBug
 STATE$ReturnChangeSystemVoid~ReturnChangeSystemVoid~STATE$ReturnItemSystemVoid TrueBug";
-#endregion
+
+        #endregion
 
         #region Linear Queries
-        const string LinearQueries = @"STATE$ctorSystemVoid~ctorSystemVoid~a0SystemVoid NoBugs
+
+        private const string LinearQueries = @"STATE$ctorSystemVoid~ctorSystemVoid~a0SystemVoid NoBugs
 STATE$ctorSystemVoid~ctorSystemVoid~_Not_a0SystemVoid TrueBug
 STATE$ctorSystemVoid~ctorSystemVoid~a1SystemVoid TrueBug
 STATE$ctorSystemVoid~ctorSystemVoid~_Not_a1SystemVoid NoBugs
@@ -130,10 +132,12 @@ STATE$get_NSystemInt32~get_NSystemInt32~_Not_a2SystemVoid NoBugs
 STATE$get_NSystemInt32~get_NSystemInt32~get_NSystemInt32 NoBugs
 STATE$get_NSystemInt32~get_NSystemInt32~_Not_get_NSystemInt32 TrueBug
 STATE$get_NSystemInt32~get_NSystemInt32~STATE$get_NSystemInt32 TrueBug";
+
         #endregion
 
         #region Door Queries
-        const string DoorQueries = @"STATE$ctorSystemVoid~ctorSystemVoid~AlarmSystemVoid NoBugs
+
+        private const string DoorQueries = @"STATE$ctorSystemVoid~ctorSystemVoid~AlarmSystemVoid NoBugs
 STATE$ctorSystemVoid~ctorSystemVoid~_Not_AlarmSystemVoid TrueBug
 STATE$ctorSystemVoid~ctorSystemVoid~CloseSystemVoid TrueBug
 STATE$ctorSystemVoid~ctorSystemVoid~_Not_CloseSystemVoid NoBugs
@@ -341,10 +345,12 @@ STATE$AlarmSystemVoid$CloseSystemVoid$StopSystemVoid~AlarmSystemVoid~_Not_StartS
 STATE$AlarmSystemVoid$CloseSystemVoid$StopSystemVoid~AlarmSystemVoid~StopSystemVoid NoBugs
 STATE$AlarmSystemVoid$CloseSystemVoid$StopSystemVoid~AlarmSystemVoid~_Not_StopSystemVoid TrueBug
 STATE$AlarmSystemVoid$CloseSystemVoid$StopSystemVoid~AlarmSystemVoid~STATE$SafeSystemVoid$StopSystemVoid TrueBug";
+
         #endregion
 
         #region FiniteStack Queries
-        const string FiniteStackQueries = @"STATE$ctorSystemInt32SystemVoid$ctorSystemVoid~ctorSystemVoid~get_MaxSystemInt32 NoBugs
+
+        private const string FiniteStackQueries = @"STATE$ctorSystemInt32SystemVoid$ctorSystemVoid~ctorSystemVoid~get_MaxSystemInt32 NoBugs
 STATE$ctorSystemInt32SystemVoid$ctorSystemVoid~ctorSystemVoid~_Not_get_MaxSystemInt32 TrueBug
 STATE$ctorSystemInt32SystemVoid$ctorSystemVoid~ctorSystemVoid~get_NextSystemInt32 NoBugs
 STATE$ctorSystemInt32SystemVoid$ctorSystemVoid~ctorSystemVoid~_Not_get_NextSystemInt32 TrueBug
@@ -454,25 +460,25 @@ STATE$get_MaxSystemInt32$get_NextSystemInt32$PopSystemVoid~get_NextSystemInt32~_
 STATE$get_MaxSystemInt32$get_NextSystemInt32$PopSystemVoid~get_NextSystemInt32~PushSystemInt32SystemVoid TrueBug
 STATE$get_MaxSystemInt32$get_NextSystemInt32$PopSystemVoid~get_NextSystemInt32~_Not_PushSystemInt32SystemVoid NoBugs
 STATE$get_MaxSystemInt32$get_NextSystemInt32$PopSystemVoid~get_NextSystemInt32~STATE$get_MaxSystemInt32$get_NextSystemInt32$PopSystemVoid TrueBug";
+
         #endregion
 
-        Dictionary<string, ResultKind> queries;
+        private readonly Dictionary<string, ResultKind> queries;
 
         protected ResultKind result;
-        public ResultKind Result { get { return result; } }
 
         public CorralMock()
         {
-            this.queries = new Dictionary<string, ResultKind>();
-            var allTheQueries = VendingQueries + Environment.NewLine + 
-                                LinearQueries + Environment.NewLine + 
-                                DoorQueries + Environment.NewLine + 
+            queries = new Dictionary<string, ResultKind>();
+            var allTheQueries = VendingQueries + Environment.NewLine +
+                                LinearQueries + Environment.NewLine +
+                                DoorQueries + Environment.NewLine +
                                 FiniteStackQueries;
             var output = allTheQueries.Replace(Environment.NewLine, "\n").Split('\n');
             foreach (var line in output)
             {
                 var result = line.Split(' ');
-                    
+
                 switch (result[1])
                 {
                     case "NoBugs":
@@ -490,6 +496,11 @@ STATE$get_MaxSystemInt32$get_NextSystemInt32$PopSystemVoid~get_NextSystemInt32~S
             }
         }
 
+        public ResultKind Result
+        {
+            get { return result; }
+        }
+
         public TimeSpan Run(string args)
         {
             var queryName = args.Split(' ')[1].Replace("/main:", "");
@@ -497,8 +508,8 @@ STATE$get_MaxSystemInt32$get_NextSystemInt32$PopSystemVoid~get_NextSystemInt32~S
             {
                 throw new Exception("Query not recognized");
             }
-            
-            this.result = queries[queryName];
+
+            result = queries[queryName];
 
             return new TimeSpan();
         }

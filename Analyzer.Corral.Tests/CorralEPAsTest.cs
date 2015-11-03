@@ -1,11 +1,10 @@
-﻿using Analysis.Cci;
-using Analyzer.Corral;
+﻿using System;
+using System.IO;
+using Analysis.Cci;
 using Contractor.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.IO;
 
-namespace Tests
+namespace Analyzer.Corral.Tests
 {
     [TestClass]
     public class CorralEPAsTest
@@ -13,7 +12,7 @@ namespace Tests
         private const string InputFilePath = @"..\..\..\Examples\obj\Debug\Decl\Examples.dll";
         protected static IAssemblyXXX inputAssembly;
 
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void GenerateEPAs(TestContext tc)
         {
             Configuration.Initialize();

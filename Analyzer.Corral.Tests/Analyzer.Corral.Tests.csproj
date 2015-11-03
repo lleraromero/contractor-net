@@ -50,7 +50,9 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="AnalyzerMock.cs" />
     <Compile Include="CorralEPAsTest.cs" />
+    <Compile Include="CorralMock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -61,6 +63,10 @@
     <ProjectReference Include="..\Analyzer.Corral\Analyzer.Corral.csproj">
       <Project>{62808611-4211-4c87-9628-c237900a581a}</Project>
       <Name>Analyzer.Corral</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Core.Model\Core.Model.csproj">
+      <Project>{c172f5cc-8814-46df-b25d-2994e524e1d5}</Project>
+      <Name>Core.Model</Name>
     </ProjectReference>
     <ProjectReference Include="..\Core\Core.csproj">
       <Project>{ebedd305-0975-416b-a4e5-4c8f5eadb304}</Project>

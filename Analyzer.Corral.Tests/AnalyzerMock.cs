@@ -1,14 +1,12 @@
-﻿using Contractor.Core;
-using Contractor.Core.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Contractor.Core;
+using Contractor.Core.Model;
 using Action = Contractor.Core.Model.Action;
 
-namespace Analyzer.Corral
+namespace Analyzer.Corral.Tests
 {
     public class AnalyzerMock : IAnalyzer
     {

@@ -153,13 +153,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnalyzerMock.cs" />
     <Compile Include="BctRunner.cs" />
     <Compile Include="BctTranslator.cs" />
     <Compile Include="CciQueryAssembly.cs" />
     <Compile Include="ContractRewriter.cs" />
     <Compile Include="CorralAnalyzer.cs" />
-    <Compile Include="CorralMock.cs" />
     <Compile Include="CorralRunner.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
