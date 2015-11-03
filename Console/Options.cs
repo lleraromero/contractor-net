@@ -1,50 +1,67 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Cci;
+using CommandLine;
+using CommandLine.Text;
 
 namespace Contractor.Console
 {
-	class Options : OptionParsing
-	{
-		[OptionDescription("Name of the input assembly to analyze ", ShortForm = "i")]
-		public string input = null;
+    internal class Options
+    {
+        [Option('i', "input", Required = true, HelpText = "Input assembly to analyze.")]
+        public string InputAssembly { get; set; }
 
-		[OptionDescription("Full name of the type to analyze ", ShortForm = "t")]
-		public string type = null;
+        [Option('t', "type", Required = true, HelpText = "Full name of the type to analyze.")]
+        public string TypeToAnalyze { get; set; }
 
-		[OptionDescription("Generate the strengthened output assembly ", ShortForm = "ga")]
-		public bool generateAssembly = false;
+        [Option("ga", HelpText = "Generate the strengthened output assembly.", DefaultValue = false)]
+        public bool GenerateStrengthenedAssembly { get; set; }
 
-		[OptionDescription("Name of the strengthened output assembly ", ShortForm = "o")]
-		public string output = null;
+        [Option('o', "output", HelpText = "Name of the strengthened output assembly.")]
+        public string OutputAssembly { get; set; }
 
-		[OptionDescription("Directory used to store the output graphs ", ShortForm = "g")]
-		public string graph = null;
+        [Option('g', "graph", HelpText = "Directory used to store the output graphs.", DefaultValue = "C:\\")]
+        public string GraphDirectory { get; set; }
 
-		[OptionDescription("Directory used to store temporary files ", ShortForm = "tmp")]
-		public string temp = null;
+        [Option("tmp", HelpText = "Directory used to store temporary files.", DefaultValue = "C:\\")]
+        public string TempDirectory { get; set; }
 
-		[OptionDescription("Full path and file name were find cccheck.exe ", ShortForm = "c")]
-		public string cccheck = null;
+        [Option('c', "cccheck", HelpText = "Full path and file name were find cccheck.exe.")]
+        public string CccheckPath { get; set; }
 
-		[OptionDescription("Command line arguments passed to cccheck.exe ", ShortForm = "ca")]
-		public string cccheckArgs = null;
+        [Option("ca", HelpText = "Command line arguments passed to cccheck.exe.")]
+        public string CccheckArgs { get; set; }
 
-		[OptionDescription("Collapse transitions between states ", ShortForm = "ct")]
-		public bool collapseTransitions = true;
+        [Option("ct", HelpText = "Collapse transitions between states.", DefaultValue = true)]
+        public bool CollapseTransitions { get; set; }
 
-		[OptionDescription("Distinguish unproven transitions with '?' ", ShortForm = "ut")]
-		public bool unprovenTransitions = true;
+        [Option("du", HelpText = "Distinguish unproven transitions with '?'.", DefaultValue = true)]
+        public bool DistinguishUnproven { get; set; }
 
-		[OptionDescription("Inline methods body instead of method calls ", ShortForm = "il")]
-		public bool inline = true;
+        [Option("il", HelpText = "Inline methods body instead of method calls.", DefaultValue = true)]
+        public bool InlineMethods { get; set; }
 
-		[OptionDescription("Show states descriptions ", ShortForm = "sd")]
-		public bool stateDescription = true;
+        [Option("sd", HelpText = "Show states descriptions.", DefaultValue = true)]
+        public bool ShowStateDescription { get; set; }
 
-        [OptionDescription("Backend used to analyze the assembly (CodeContracts / Corral) ", ShortForm = "b")]
-        public string backend = "CodeContracts";
-	}
+        [Option('b', "backend", HelpText = "Backend used to analyze the assembly (CodeContracts / Corral).",
+            DefaultValue = "Corral")]
+        public string Backend { get; set; }
+
+        [HelpOption]
+        public string GetUsage()
+        {
+            var help = new HelpText
+            {
+                Heading = new HeadingInfo("Contractor.NET", "0.7.1"),
+                Copyright = "Copyright (C) LaFHIS - UBA. All rights reserved.",
+                AdditionalNewLineAfterOption = false,
+                AddDashesToOption = true
+            };
+
+            help.AddPreOptionsLine(Environment.NewLine);
+            help.AddPreOptionsLine("Usage: <general-option>*");
+            help.AddPreOptionsLine("where <general-option> is one of");
+            help.AddOptions(this);
+            return help;
+        }
+    }
 }
