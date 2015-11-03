@@ -1,12 +1,4 @@
-﻿using Analysis.Cci;
-using Analyzer.Corral;
-using Contractor.Core;
-using Contractor.Core.Model;
-using Contractor.Utils;
-using Microsoft.Cci;
-using Microsoft.Msagl.Drawing;
-using Microsoft.Msagl.GraphViewerGdi;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
@@ -16,26 +8,36 @@ using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Action = Contractor.Core.Model.Action;
+using Analysis.Cci;
+using Analyzer.Corral;
+using Contractor.Core;
+using Contractor.Core.Model;
+using Contractor.Utils;
+using Microsoft.Cci;
+using Microsoft.Msagl.Drawing;
+using Microsoft.Msagl.GraphViewerGdi;
+using Action = System.Action;
+using Color = System.Drawing.Color;
 
 namespace Contractor.Gui
 {
-    partial class Main : Form
+    internal partial class Main : Form
     {
-        private AssemblyInfo _AssemblyInfo;
-        private INamedTypeDefinition _AnalizedType;
-        private EpaGenerator _EpaGenerator;
         private Thread _AnalisisThread;
+        private INamedTypeDefinition _AnalizedType;
+        private readonly AssemblyInfo _AssemblyInfo;
         private CancellationTokenSource _cancellationSource;
+        private string _ContractReferenceAssemblyFileName;
+        private EpaGenerator _EpaGenerator;
         private Graph _Graph;
-        private IViewerNode _SelectedGraphNode;
         private TypeAnalysisResult _LastResult;
         private Options _Options;
-        private string _ContractReferenceAssemblyFileName;
+        private IViewerNode _SelectedGraphNode;
 
         public Main()
         {
@@ -64,7 +66,7 @@ namespace Contractor.Gui
             }
             catch (Exception ex)
             {
-                this.HandleException(ex);
+                HandleException(ex);
             }
         }
 
@@ -97,12 +99,12 @@ namespace Contractor.Gui
         private void OnTreeNodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             if (!buttonStartAnalysis.Enabled) return;
-            this.StartAnalisis();
+            StartAnalisis();
         }
 
         private void OnAfterSelectTreeNode(object sender, TreeViewEventArgs e)
         {
-            this.UpdateStartAnalisisCommand();
+            UpdateStartAnalisisCommand();
             listboxMethods.Items.Clear();
             toolstripMethods.Enabled = false;
 
@@ -111,7 +113,7 @@ namespace Contractor.Gui
                 toolstripMethods.Enabled = true;
 
                 var selectedType = e.Node.Tag as INamedTypeDefinition;
-                this.LoadTypeMethods(selectedType);
+                LoadTypeMethods(selectedType);
             }
         }
 
@@ -129,86 +131,158 @@ namespace Contractor.Gui
 
         private void OnGraphChanged(object sender, EventArgs e)
         {
-            this.UpdateCommands();
+            UpdateCommands();
         }
 
         private void OnLoadAssembly(object sender, EventArgs e)
         {
-            this.LoadAssembly();
+            var result = loadAssemblyDialog.ShowDialog(this);
+
+            if (result == DialogResult.OK)
+            {
+                var fileName = loadAssemblyDialog.FileName;
+                loadAssemblyDialog.InitialDirectory = Path.GetDirectoryName(fileName);
+
+                UnloadAssembly();
+                Task.Factory.StartNew(() => LoadAssembly(fileName));
+            }
         }
 
         private void OnLoadContracts(object sender, EventArgs e)
         {
-            this.LoadContracts();
+            var result = loadContractsDialog.ShowDialog(this);
+
+            if (result == DialogResult.OK)
+            {
+                var fileName = loadContractsDialog.FileName;
+                loadContractsDialog.InitialDirectory = Path.GetDirectoryName(fileName);
+
+                _ContractReferenceAssemblyFileName = fileName;
+
+                buttonLoadContracts.Checked = true;
+
+                var name = Path.GetFileName(fileName);
+                SetBackgroundStatus("Using contract reference assembly {0}", name);
+            }
         }
 
         private void OnStartAnalysis(object sender, EventArgs e)
         {
-            this.StartAnalisis();
+            StartAnalisis();
         }
 
         private void OnStopAnalysis(object sender, EventArgs e)
         {
-            this.StopAnalisis();
+            if (_AnalisisThread != null && _AnalisisThread.IsAlive)
+            {
+                _cancellationSource.Cancel();
+
+                buttonStopAnalysis.Enabled = false;
+
+                var typeFullName = _AnalizedType.GetDisplayName();
+                statusLabel.Text = string.Format("Aborting analysis for {0}...", typeFullName);
+            }
         }
 
         private void OnZoomIn(object sender, EventArgs e)
         {
-            this.ZoomIn();
+            if (graphViewer.Graph == null) return;
+            graphViewer.ZoomInPressed();
         }
 
         private void OnZoomOut(object sender, EventArgs e)
         {
-            this.ZoomOut();
+            if (graphViewer.Graph == null) return;
+            graphViewer.ZoomOutPressed();
         }
 
         private void OnZoomBestFit(object sender, EventArgs e)
         {
-            this.ZoomBestFit();
+            if (graphViewer.Graph == null) return;
+            graphViewer.FitGraphBoundingBox();
+            graphViewer.ZoomF = 1.0;
         }
 
         private void OnResetLayout(object sender, EventArgs e)
         {
-            this.ResetLayout();
+            if (graphViewer.Graph == null) return;
+            graphViewer.Graph = graphViewer.Graph;
         }
 
         private void OnPan(object sender, EventArgs e)
         {
-            this.Pan();
+            if (graphViewer.Graph == null) return;
+            graphViewer.PanButtonPressed = !graphViewer.PanButtonPressed;
+
+            buttonPan.Checked = graphViewer.PanButtonPressed;
         }
 
         private void OnUndo(object sender, EventArgs e)
         {
-            this.Undo();
+            if (graphViewer.Graph == null) return;
+            graphViewer.Undo();
+
+            buttonUndo.Enabled = graphViewer.CanUndo();
+
+            buttonRedo.Enabled = true;
         }
 
         private void OnRedo(object sender, EventArgs e)
         {
-            this.Redo();
+            if (graphViewer.Graph == null) return;
+            graphViewer.Redo();
+
+            buttonUndo.Enabled = true;
+
+            buttonRedo.Enabled = graphViewer.CanRedo();
         }
 
         private void OnExportGraph(object sender, EventArgs e)
         {
-            this.ExportGraph();
+            if (graphViewer.Graph == null) return;
+
+            if (_LastResult.EPA == null)
+            {
+                throw new InvalidDataException("Trying to export an unfinished EPA!");
+            }
+
+            var result = exportGraphDialog.ShowDialog(this);
+
+            if (result == DialogResult.OK)
+            {
+                var fileName = exportGraphDialog.FileName;
+                exportGraphDialog.InitialDirectory = Path.GetDirectoryName(fileName);
+
+                Task.Factory.StartNew(() => ExportGraph(fileName, _LastResult.EPA));
+            }
         }
 
         private void OnGenerateAssembly(object sender, EventArgs e)
         {
-            this.GenerateAssembly();
+            if (graphViewer.Graph == null) return;
+            var result = generateOutputDialog.ShowDialog(this);
+
+            if (result == DialogResult.OK)
+            {
+                var fileName = generateOutputDialog.FileName;
+                generateOutputDialog.InitialDirectory = Path.GetDirectoryName(fileName);
+
+                Task.Factory.StartNew(() => GenerateAssembly(fileName));
+            }
         }
 
         private void OnStateAdded(object sender, StateAddedEventArgs e)
         {
-            if (this.InvokeRequired)
+            if (InvokeRequired)
             {
-                this.BeginInvoke(new EventHandler<StateAddedEventArgs>(this.OnStateAdded), sender, e);
+                BeginInvoke(new EventHandler<StateAddedEventArgs>(OnStateAdded), sender, e);
                 return;
             }
 
             var n = _Graph.AddNode(e.EpaAndState.Item2.Name);
 
             n.UserData = e.EpaAndState;
-            n.DrawNodeDelegate += this.OnDrawNode;
+            n.DrawNodeDelegate += OnDrawNode;
             n.Attr.Shape = Shape.Circle;
             n.Attr.LabelMargin = 7;
             n.Label.FontName = "Cambria";
@@ -223,20 +297,20 @@ namespace Contractor.Gui
                 n.LabelText = string.Format("S{0}", _Graph.NodeCount);
             }
 
-            this.UpdateAnalysisProgress();
+            UpdateAnalysisProgress();
         }
 
         private void OnTransitionAdded(object sender, TransitionAddedEventArgs e)
         {
-            if (this.InvokeRequired)
+            if (InvokeRequired)
             {
-                this.BeginInvoke(new EventHandler<TransitionAddedEventArgs>(this.OnTransitionAdded), sender, e);
+                BeginInvoke(new EventHandler<TransitionAddedEventArgs>(OnTransitionAdded), sender, e);
                 return;
             }
 
             var label = e.Transition.Action.ToString();
             var createEdge = true;
-            Style lineStyle = e.Transition.IsUnproven ? Style.Dashed : Style.Solid;
+            var lineStyle = e.Transition.IsUnproven ? Style.Dashed : Style.Solid;
 
             if (_Options.CollapseTransitions)
             {
@@ -270,7 +344,7 @@ namespace Contractor.Gui
                 edge.Attr.AddStyle(lineStyle);
             }
 
-            this.UpdateAnalysisProgress();
+            UpdateAnalysisProgress();
         }
 
         private bool OnDrawNode(Node node, object graphics)
@@ -278,31 +352,31 @@ namespace Contractor.Gui
             var g = graphics as Graphics;
             var w = node.Attr.Width;
             var h = node.Attr.Height;
-            var x = node.Attr.Pos.X - (w / 2.0);
-            var y = node.Attr.Pos.Y - (h / 2.0);
+            var x = node.Attr.Pos.X - w/2.0;
+            var y = node.Attr.Pos.Y - h/2.0;
 
-            g.FillEllipse(Brushes.AliceBlue, (float)x, (float)y, (float)w, (float)h);
+            g.FillEllipse(Brushes.AliceBlue, (float) x, (float) y, (float) w, (float) h);
 
-            var penWidth = (_SelectedGraphNode != null && _SelectedGraphNode.Node == node ? 2f : 1f);
-            using (var pen = new Pen(System.Drawing.Color.Black, penWidth))
-                g.DrawEllipse(pen, (float)x, (float)y, (float)w, (float)h);
+            var penWidth = _SelectedGraphNode != null && _SelectedGraphNode.Node == node ? 2f : 1f;
+            using (var pen = new Pen(Color.Black, penWidth))
+                g.DrawEllipse(pen, (float) x, (float) y, (float) w, (float) h);
 
             var epaAndState = node.UserData as Tuple<EpaBuilder, State>;
             if (epaAndState.Item1.Initial.Equals(epaAndState.Item2))
             {
                 const double offset = 3.1;
-                x += offset / 2.0;
-                y += offset / 2.0;
+                x += offset/2.0;
+                y += offset/2.0;
                 w -= offset;
                 h -= offset;
 
-                g.DrawEllipse(Pens.Black, (float)x, (float)y, (float)w, (float)h);
+                g.DrawEllipse(Pens.Black, (float) x, (float) y, (float) w, (float) h);
             }
 
             using (var m = g.Transform)
             using (var saveM = m.Clone())
             {
-                var c = (float)(2.0 * node.Label.Center.Y);
+                var c = (float) (2.0*node.Label.Center.Y);
                 x = node.Label.Center.X;
                 y = node.Label.Center.Y;
 
@@ -317,7 +391,7 @@ namespace Contractor.Gui
                     format.Alignment = StringAlignment.Center;
                     format.LineAlignment = StringAlignment.Center;
 
-                    g.DrawString(node.LabelText, font, Brushes.Black, (float)x, (float)y, format);
+                    g.DrawString(node.LabelText, font, Brushes.Black, (float) x, (float) y, format);
                 }
 
                 g.Transform = saveM;
@@ -330,7 +404,7 @@ namespace Contractor.Gui
         {
             _SelectedGraphNode = sender as IViewerNode;
             var state = _SelectedGraphNode.Node.UserData as Tuple<EpaBuilder, State>;
-            var info = this.GetStateInfo(state.Item1, state.Item2);
+            var info = GetStateInfo(state.Item1, state.Item2);
 
             richtextboxInformation.Rtf = info;
             titlebarProperties.Text = "State Info";
@@ -347,7 +421,7 @@ namespace Contractor.Gui
             listboxMethods.Visible = true;
             richtextboxInformation.Clear();
 
-            this.OnObjectUnmarkedForDragging(sender, e);
+            OnObjectUnmarkedForDragging(sender, e);
         }
 
         private void OnObjectUnmarkedForDragging(object sender, EventArgs e)
@@ -366,12 +440,12 @@ namespace Contractor.Gui
 
             _AnalizedType = treeviewTypes.SelectedNode.Tag as INamedTypeDefinition;
 
-            string backend = (string)parameters["backend"];
+            var backend = (string) parameters["backend"];
 
             var decompiler = new CciDecompiler();
             var inputAssembly = decompiler.Decompile(_AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
             var typeFullName = TypeHelper.GetTypeName(_AnalizedType, NameFormattingOptions.None);
-            string typeToAnalyze = inputAssembly.Types().First(t => t.Equals(typeFullName));
+            var typeToAnalyze = inputAssembly.Types().First(t => t.Equals(typeFullName));
             _cancellationSource = new CancellationTokenSource();
 
             IAnalyzer analyzer = null;
@@ -380,17 +454,18 @@ namespace Contractor.Gui
                 case "CodeContracts":
                     throw new NotImplementedException();
                 case "Corral":
-                    analyzer = new CorralAnalyzer(decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly, _AssemblyInfo.FileName, typeToAnalyze, _cancellationSource.Token);
+                    analyzer = new CorralAnalyzer(decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly, _AssemblyInfo.FileName,
+                        typeToAnalyze, _cancellationSource.Token);
                     break;
                 default:
                     throw new NotSupportedException();
             }
 
             _EpaGenerator = new EpaGenerator(inputAssembly, analyzer);
-            _EpaGenerator.StateAdded += this.OnStateAdded;
-            _EpaGenerator.TransitionAdded += this.OnTransitionAdded;
+            _EpaGenerator.StateAdded += OnStateAdded;
+            _EpaGenerator.TransitionAdded += OnTransitionAdded;
 
-            _AnalisisThread = new Thread(this.GenerateGraph);
+            _AnalisisThread = new Thread(GenerateGraph);
             _AnalisisThread.Name = "GenerateGraph";
             _AnalisisThread.IsBackground = true;
             _AnalisisThread.Start();
@@ -406,36 +481,36 @@ namespace Contractor.Gui
 
         private void GenerateGraph()
         {
-            this.BeginInvoke(new System.Action(this.UpdateAnalysisInitialize));
+            BeginInvoke(new Action(UpdateAnalysisInitialize));
             try
             {
                 var fileName = Path.GetFileName(_AssemblyInfo.FileName);
-                this.BeginInvoke(new System.Action<string, string>(this.SetBackgroundStatus), "Decompiling assembly {0}...", fileName);
+                BeginInvoke(new System.Action<string, string>(SetBackgroundStatus), "Decompiling assembly {0}...", fileName);
 
                 if (_ContractReferenceAssemblyFileName != null)
                 {
                     fileName = Path.GetFileName(_ContractReferenceAssemblyFileName);
-                    this.BeginInvoke(new System.Action<string, string>(this.SetBackgroundStatus), "Loading contracts from assembly {0}...", fileName);
+                    BeginInvoke(new System.Action<string, string>(SetBackgroundStatus), "Loading contracts from assembly {0}...", fileName);
                 }
 
                 var typeFullName = TypeHelper.GetTypeName(_AnalizedType, NameFormattingOptions.None);
                 var selectedMethods = listboxMethods.CheckedItems.Cast<string>();
 
-                this.BeginInvoke(new System.Action<string, string>(this.SetBackgroundStatus), "Generating contractor graph for {0}...", typeFullName);
+                BeginInvoke(new System.Action<string, string>(SetBackgroundStatus), "Generating contractor graph for {0}...", typeFullName);
                 var typeAnalysisResult = _EpaGenerator.GenerateEpa(typeFullName, selectedMethods);
-                this.BeginInvoke(new System.Action<TypeAnalysisResult>(this.UpdateAnalysisEnd), typeAnalysisResult);
+                BeginInvoke(new Action<TypeAnalysisResult>(UpdateAnalysisEnd), typeAnalysisResult);
             }
             catch (Exception ex)
             {
-                this.BeginInvoke(new System.Action<Exception>(this.HandleException), ex);
-                this.BeginInvoke(new System.Action<TypeAnalysisResult>(this.UpdateAnalysisEnd), (object)null);
+                BeginInvoke(new Action<Exception>(HandleException), ex);
+                BeginInvoke(new Action<TypeAnalysisResult>(UpdateAnalysisEnd), (object) null);
             }
         }
 
         private void UpdateAnalysisInitialize()
         {
             var typeFullName = _AnalizedType.GetDisplayName();
-            this.StartBackgroundTask("Initializing analysis for {0}...", typeFullName);
+            StartBackgroundTask("Initializing analysis for {0}...", typeFullName);
 
             _Graph = new Graph();
             _Graph.Attr.OptimizeLabelPositions = true;
@@ -446,15 +521,10 @@ namespace Contractor.Gui
             richtextboxInformation.Clear();
 
             buttonStartAnalysis.Enabled = false;
-
             buttonLoadAssembly.Enabled = false;
-
             buttonLoadContracts.Enabled = false;
-
             buttonExportGraph.Enabled = false;
-
             buttonGenerateAssembly.Enabled = false;
-
             buttonStopAnalysis.Enabled = true;
         }
 
@@ -466,7 +536,7 @@ namespace Contractor.Gui
 
             if (_cancellationSource.IsCancellationRequested)
             {
-                this.EndBackgroundTask("Analysis for {0} aborted", typeFullName);
+                EndBackgroundTask("Analysis for {0} aborted", typeFullName);
             }
             else
             {
@@ -474,8 +544,9 @@ namespace Contractor.Gui
                 var statesCount = analysisResult.EPA.States.Count();
                 var transitionsCount = analysisResult.EPA.Transitions.Count();
 
-                this.EndBackgroundTask("Analysis for {0} done in {1} seconds: {2} states, {3} transitions", typeFullName, seconds, statesCount, transitionsCount);
-                this.OutputTypeAnalysisResult(analysisResult);
+                EndBackgroundTask("Analysis for {0} done in {1} seconds: {2} states, {3} transitions", typeFullName, seconds, statesCount,
+                    transitionsCount);
+                OutputTypeAnalysisResult(analysisResult);
 
                 _LastResult = analysisResult;
             }
@@ -484,16 +555,12 @@ namespace Contractor.Gui
             _Graph = null;
 
             buttonStopAnalysis.Enabled = false;
-
             buttonLoadAssembly.Enabled = true;
-
             buttonLoadContracts.Enabled = true;
-
             buttonExportGraph.Enabled = true;
-
             buttonGenerateAssembly.Enabled = true;
 
-            this.UpdateStartAnalisisCommand();
+            UpdateStartAnalisisCommand();
         }
 
         private void OutputTypeAnalysisResult(TypeAnalysisResult analysisResult)
@@ -516,36 +583,22 @@ namespace Contractor.Gui
             {
                 if (obj is IViewerNode)
                 {
-                    obj.MarkedForDraggingEvent += this.OnNodeMarkedForDragging;
-                    obj.UnmarkedForDraggingEvent += this.OnNodeUnmarkedForDragging;
+                    obj.MarkedForDraggingEvent += OnNodeMarkedForDragging;
+                    obj.UnmarkedForDraggingEvent += OnNodeUnmarkedForDragging;
                 }
                 else
                 {
-                    obj.UnmarkedForDraggingEvent += this.OnObjectUnmarkedForDragging;
+                    obj.UnmarkedForDraggingEvent += OnObjectUnmarkedForDragging;
                 }
-            }
-        }
-
-        private void GenerateAssembly()
-        {
-            if (graphViewer.Graph == null) return;
-            var result = generateOutputDialog.ShowDialog(this);
-
-            if (result == DialogResult.OK)
-            {
-                var fileName = generateOutputDialog.FileName;
-                generateOutputDialog.InitialDirectory = Path.GetDirectoryName(fileName);
-
-                Task.Factory.StartNew(() => this.GenerateAssembly(fileName));
             }
         }
 
         private void GenerateAssembly(string fileName)
         {
-            this.BeginInvoke((System.Action)delegate
+            BeginInvoke((Action) delegate
             {
                 var name = Path.GetFileName(fileName);
-                this.StartBackgroundTask("Generating assembly {0}...", name);
+                StartBackgroundTask("Generating assembly {0}...", name);
             });
 
             try
@@ -556,14 +609,10 @@ namespace Contractor.Gui
             }
             catch (Exception ex)
             {
-                this.BeginInvoke(new System.Action<Exception>(this.HandleException), ex);
+                BeginInvoke(new Action<Exception>(HandleException), ex);
             }
 
-            this.BeginInvoke((System.Action)delegate
-            {
-                this.EndBackgroundTask();
-            });
-
+            BeginInvoke((Action) delegate { EndBackgroundTask(); });
         }
 
         public void HandleException(Exception ex)
@@ -574,7 +623,7 @@ namespace Contractor.Gui
             textboxOutput.AppendText(Environment.NewLine);
 
             var msg = string.Format("{0}\n\nFor more information check the output window.", ex.Message);
-            MessageBox.Show(msg, this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(msg, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private string GetEnvironmentInfo()
@@ -583,14 +632,14 @@ namespace Contractor.Gui
             sb.AppendLine("========================================");
 
             sb.Append("Operating System: ");
-            sb.Append(Environment.OSVersion.ToString());
+            sb.Append(Environment.OSVersion);
             sb.AppendLine(Environment.Is64BitOperatingSystem ? " (64 bits)" : " (32 bits)");
 
             sb.Append("CLR Version: ");
             sb.AppendLine(Environment.Version.ToString());
 
             var codeContractsVersion = "Code Contracts is not installed.";
-            var checkerFileName = Contractor.Core.Configuration.CheckerFileName;
+            var checkerFileName = Configuration.CheckerFileName;
 
             if (!string.IsNullOrEmpty(checkerFileName) && File.Exists(checkerFileName))
             {
@@ -601,7 +650,7 @@ namespace Contractor.Gui
             sb.Append("Code Contracts Version: ");
             sb.AppendLine(codeContractsVersion);
 
-            var assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName();
+            var assemblyName = Assembly.GetExecutingAssembly().GetName();
 
             sb.Append("Contractor.NET Version: ");
             sb.AppendLine(assemblyName.Version.ToString());
@@ -623,14 +672,14 @@ namespace Contractor.Gui
             if (state.EnabledActions.Any())
             {
                 info.Append(@" \b Enabled Actions \b0 \par ");
-                var text = string.Join<Action>(@" \par ", state.EnabledActions);
+                var text = string.Join(@" \par ", state.EnabledActions);
                 info.Append(text);
             }
 
             if (state.DisabledActions.Any())
             {
                 info.Append(@" \fs8\par\par\fs18 \b Disabled Actions \b0 \par ");
-                var text = string.Join<Action>(@" \par ", state.DisabledActions);
+                var text = string.Join(@" \par ", state.DisabledActions);
                 info.Append(text);
             }
 
@@ -638,101 +687,15 @@ namespace Contractor.Gui
             return info.ToString();
         }
 
-        private void StopAnalisis()
-        {
-            if (_AnalisisThread != null && _AnalisisThread.IsAlive)
-            {
-                _cancellationSource.Cancel();
-
-                buttonStopAnalysis.Enabled = false;
-
-                var typeFullName = _AnalizedType.GetDisplayName();
-                statusLabel.Text = string.Format("Aborting analysis for {0}...", typeFullName);
-            }
-        }
-
-        private void ZoomIn()
-        {
-            if (graphViewer.Graph == null) return;
-            graphViewer.ZoomInPressed();
-        }
-
-        private void ZoomOut()
-        {
-            if (graphViewer.Graph == null) return;
-            graphViewer.ZoomOutPressed();
-        }
-
-        private void ZoomBestFit()
-        {
-            if (graphViewer.Graph == null) return;
-            graphViewer.FitGraphBoundingBox();
-            graphViewer.ZoomF = 1.0;
-        }
-
-        private void ResetLayout()
-        {
-            if (graphViewer.Graph == null) return;
-            graphViewer.Graph = graphViewer.Graph;
-        }
-
-        private void Pan()
-        {
-            if (graphViewer.Graph == null) return;
-            graphViewer.PanButtonPressed = !graphViewer.PanButtonPressed;
-
-            buttonPan.Checked = graphViewer.PanButtonPressed;
-        }
-
-        private void Undo()
-        {
-            if (graphViewer.Graph == null) return;
-            graphViewer.Undo();
-
-            buttonUndo.Enabled = graphViewer.CanUndo();
-
-            buttonRedo.Enabled = true;
-        }
-
-        private void Redo()
-        {
-            if (graphViewer.Graph == null) return;
-            graphViewer.Redo();
-
-            buttonUndo.Enabled = true;
-
-            buttonRedo.Enabled = graphViewer.CanRedo();
-        }
-
-        private void ExportGraph()
-        {
-            if (graphViewer.Graph == null) return;
-
-            if (_LastResult.EPA == null)
-            {
-                throw new InvalidDataException("Trying to export an unfinished EPA!");
-            }
-
-            var result = exportGraphDialog.ShowDialog(this);
-
-            if (result == DialogResult.OK)
-            {
-                var fileName = exportGraphDialog.FileName;
-                exportGraphDialog.InitialDirectory = Path.GetDirectoryName(fileName);
-
-                Task.Factory.StartNew(() => this.ExportGraph(fileName, _LastResult.EPA));
-            }
-        }
-
         private void ExportGraph(string fileName, Epa epa)
         {
             Contract.Requires(!string.IsNullOrEmpty(fileName));
             Contract.Requires(epa != null);
 
-            this.BeginInvoke((System.Action)delegate
+            BeginInvoke((Action) delegate
             {
                 var name = Path.GetFileName(fileName);
-                this.StartBackgroundTask("Exporting graph to {0}...", name);
+                StartBackgroundTask("Exporting graph to {0}...", name);
             });
 
             try
@@ -742,40 +705,32 @@ namespace Contractor.Gui
                 switch (ext.ToLower())
                 {
                     case ".xml":
-                        this.ExportXmlGraph(fileName, epa);
+                        using (var stream = File.Create(fileName))
+                        {
+                            new EpaXmlSerializer().Serialize(stream, epa);
+                        }
                         break;
 
                     case ".gv":
-                        this.ExportGraphvizGraph(fileName, epa);
+                        ExportGraphvizGraph(fileName, epa);
                         break;
 
                     case ".emf":
                     case ".wmf":
-                        this.ExportVectorGraph(fileName);
+                        ExportVectorGraph(fileName);
                         break;
 
                     default:
-                        this.ExportImageGraph(fileName, epa);
+                        ExportImageGraph(fileName, epa);
                         break;
                 }
             }
             catch (Exception ex)
             {
-                this.BeginInvoke(new System.Action<Exception>(this.HandleException), ex);
+                BeginInvoke(new Action<Exception>(HandleException), ex);
             }
 
-            this.BeginInvoke((System.Action)delegate
-            {
-                this.EndBackgroundTask();
-            });
-        }
-
-        private void ExportXmlGraph(string fileName, Epa epa)
-        {
-            using (var stream = File.Create(fileName))
-            {
-                new EpaXmlSerializer().Serialize(stream, epa);
-            }
+            BeginInvoke((Action) delegate { EndBackgroundTask(); });
         }
 
         private void ExportGraphvizGraph(string fileName, Epa epa)
@@ -834,10 +789,10 @@ namespace Contractor.Gui
         private void ExportVectorGraph(string fileName)
         {
             var scale = 6.0f;
-            var w = (int)(graphViewer.Graph.Width * scale);
-            var h = (int)(graphViewer.Graph.Height * scale);
+            var w = (int) (graphViewer.Graph.Width*scale);
+            var h = (int) (graphViewer.Graph.Height*scale);
 
-            using (var temp = base.CreateGraphics())
+            using (var temp = CreateGraphics())
             {
                 var hdc = temp.GetHdc();
 
@@ -852,7 +807,7 @@ namespace Contractor.Gui
                         g.CompositingQuality = CompositingQuality.HighQuality;
                         g.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
-                        this.DrawGraph(g, w, h, scale);
+                        DrawGraph(g, w, h, scale);
                     }
                 }
             }
@@ -870,8 +825,8 @@ namespace Contractor.Gui
         {
             var graph = graphViewer.Graph;
 
-            var num1 = (float)((0.5 * w) - (scale * (graph.Left + (0.5 * graph.Width))));
-            var num2 = (float)((0.5 * h) + (scale * (graph.Bottom + (0.5 * graph.Height))));
+            var num1 = (float) (0.5*w - scale*(graph.Left + 0.5*graph.Width));
+            var num2 = (float) (0.5*h + scale*(graph.Bottom + 0.5*graph.Height));
 
             using (var brush = new SolidBrush(Draw.MsaglColorToDrawingColor(graph.Attr.BackgroundColor)))
                 g.FillRectangle(brush, 0, 0, w, h);
@@ -908,32 +863,18 @@ namespace Contractor.Gui
             buttonStartAnalysis.Enabled = isClassNode && !analisisRunning;
         }
 
-        private void LoadAssembly()
-        {
-            var result = loadAssemblyDialog.ShowDialog(this);
-
-            if (result == DialogResult.OK)
-            {
-                var fileName = loadAssemblyDialog.FileName;
-                loadAssemblyDialog.InitialDirectory = Path.GetDirectoryName(fileName);
-
-                this.UnloadAssembly();
-                Task.Factory.StartNew(() => this.LoadAssembly(fileName));
-            }
-        }
-
         private void LoadAssembly(string fileName)
         {
-            this.BeginInvoke((System.Action)delegate
+            BeginInvoke((Action) delegate
             {
                 var name = Path.GetFileName(fileName);
-                this.StartBackgroundTask("Loading assembly {0}...", name);
+                StartBackgroundTask("Loading assembly {0}...", name);
             });
 
             _AssemblyInfo.Load(fileName);
-            var root = this.LoadAssemblyTypes();
+            var root = LoadAssemblyTypes();
 
-            this.BeginInvoke((System.Action)delegate
+            BeginInvoke((Action) delegate
             {
                 treeviewTypes.BeginUpdate();
                 treeviewTypes.Nodes.Add(root);
@@ -943,26 +884,8 @@ namespace Contractor.Gui
 
                 buttonLoadContracts.Checked = false;
 
-                this.EndBackgroundTask();
+                EndBackgroundTask();
             });
-        }
-
-        private void LoadContracts()
-        {
-            var result = loadContractsDialog.ShowDialog(this);
-
-            if (result == DialogResult.OK)
-            {
-                var fileName = loadContractsDialog.FileName;
-                loadContractsDialog.InitialDirectory = Path.GetDirectoryName(fileName);
-
-                _ContractReferenceAssemblyFileName = fileName;
-
-                buttonLoadContracts.Checked = true;
-
-                var name = Path.GetFileName(fileName);
-                this.SetBackgroundStatus("Using contract reference assembly {0}", name);
-            }
         }
 
         private void UnloadAssembly()
@@ -977,7 +900,7 @@ namespace Contractor.Gui
         private void StartBackgroundTask(string message, params object[] args)
         {
             progressBar.Visible = true;
-            this.SetBackgroundStatus(message, args);
+            SetBackgroundStatus(message, args);
         }
 
         private void EndBackgroundTask(string message = null, params object[] args)
@@ -990,13 +913,13 @@ namespace Contractor.Gui
             }
             else
             {
-                this.SetBackgroundStatus(message, args);
+                SetBackgroundStatus(message, args);
             }
         }
 
         private void SetBackgroundStatus(string message, string arg)
         {
-            this.SetBackgroundStatus(message, arg as object);
+            SetBackgroundStatus(message, arg as object);
         }
 
         private void SetBackgroundStatus(string message, params object[] args)
@@ -1012,7 +935,7 @@ namespace Contractor.Gui
         {
             var namespaces = new Dictionary<INamespaceDefinition, TreeNode>();
             var types = _AssemblyInfo.Module.GetAnalyzableTypes();
-            var assemblyNode = new TreeNode()
+            var assemblyNode = new TreeNode
             {
                 Text = _AssemblyInfo.Module.Name.Value,
                 ImageKey = "assembly",
@@ -1031,17 +954,17 @@ namespace Contractor.Gui
                 else
                 {
                     var namespaceName = containingNamespace.ToString();
-                    namespaceNode = this.CreateTreeNode(assemblyNode, namespaceName, "namespace");
+                    namespaceNode = CreateTreeNode(assemblyNode, namespaceName, "namespace");
                     namespaces.Add(containingNamespace, namespaceNode);
                 }
 
                 var typeName = type.GetDisplayName();
-                var typeNode = this.CreateTreeNode(namespaceNode, typeName, "class");
+                var typeNode = CreateTreeNode(namespaceNode, typeName, "class");
                 typeNode.Tag = type;
 
                 if (!type.IsPublic)
                 {
-                    typeNode.ForeColor = System.Drawing.Color.Gray;
+                    typeNode.ForeColor = Color.Gray;
                 }
             }
 
