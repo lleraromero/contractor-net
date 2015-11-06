@@ -121,6 +121,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -135,6 +136,15 @@
     <Compile Include="AboutDialog.Designer.cs">
       <DependentUpon>AboutDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="EpaViewer.cs" />
+    <Compile Include="EpaViewerScreen.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="EpaViewerScreen.Designer.cs">
+      <DependentUpon>EpaViewerScreen.cs</DependentUpon>
+    </Compile>
+    <Compile Include="EpaViewerPresenter.cs" />
+    <Compile Include="IEpaViewer.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -158,6 +168,9 @@
     </Compile>
     <EmbeddedResource Include="AboutDialog.resx">
       <DependentUpon>AboutDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EpaViewerScreen.resx">
+      <DependentUpon>EpaViewerScreen.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Main.resx">
       <DependentUpon>Main.cs</DependentUpon>

@@ -28,22 +28,23 @@ namespace Contractor.Gui
 {
     internal partial class Main : Form
     {
+        private readonly AssemblyInfo _AssemblyInfo;
         private Thread _AnalisisThread;
         private INamedTypeDefinition _AnalizedType;
-        private readonly AssemblyInfo _AssemblyInfo;
         private CancellationTokenSource _cancellationSource;
         private string _ContractReferenceAssemblyFileName;
         private EpaGenerator _EpaGenerator;
-        private Graph _Graph;
+        
         private TypeAnalysisResult _LastResult;
         private Options _Options;
         private IViewerNode _SelectedGraphNode;
+
+        protected EpaViewerPresenter epaViewerPresenter;
 
         public Main()
         {
             InitializeComponent();
 
-            graphViewer.OutsideAreaBrush = Brushes.White;
             splitcontainerOutput.Panel2Collapsed = true;
             treeviewTypes.Sorted = true;
             treeviewTypes.ShowPlusMinus = true;
@@ -54,6 +55,8 @@ namespace Contractor.Gui
             var host = new PeReader.DefaultHost();
             _AssemblyInfo = new AssemblyInfo(host);
             _Options = new Options();
+
+            epaViewerPresenter = new EpaViewerPresenter(epaViewer, new EpaViewer());
         }
 
         #region Event Handlers
@@ -129,11 +132,6 @@ namespace Contractor.Gui
                 listboxMethods.SetItemChecked(i, false);
         }
 
-        private void OnGraphChanged(object sender, EventArgs e)
-        {
-            UpdateCommands();
-        }
-
         private void OnLoadAssembly(object sender, EventArgs e)
         {
             var result = loadAssemblyDialog.ShowDialog(this);
@@ -186,61 +184,66 @@ namespace Contractor.Gui
 
         private void OnZoomIn(object sender, EventArgs e)
         {
-            if (graphViewer.Graph == null) return;
-            graphViewer.ZoomInPressed();
+            throw new NotImplementedException();
+            //if (graphViewer.Graph == null) return;
+            //graphViewer.ZoomInPressed();
         }
 
         private void OnZoomOut(object sender, EventArgs e)
         {
-            if (graphViewer.Graph == null) return;
-            graphViewer.ZoomOutPressed();
+            throw new NotImplementedException();
+            //if (graphViewer.Graph == null) return;
+            //graphViewer.ZoomOutPressed();
         }
 
         private void OnZoomBestFit(object sender, EventArgs e)
         {
-            if (graphViewer.Graph == null) return;
-            graphViewer.FitGraphBoundingBox();
-            graphViewer.ZoomF = 1.0;
+            throw new NotImplementedException();
+            //if (graphViewer.Graph == null) return;
+            //graphViewer.FitGraphBoundingBox();
+            //graphViewer.ZoomF = 1.0;
         }
 
         private void OnResetLayout(object sender, EventArgs e)
         {
-            if (graphViewer.Graph == null) return;
-            graphViewer.Graph = graphViewer.Graph;
+            throw new NotImplementedException();
+            //if (graphViewer.Graph == null) return;
+            //graphViewer.Graph = graphViewer.Graph;
         }
 
         private void OnPan(object sender, EventArgs e)
         {
-            if (graphViewer.Graph == null) return;
-            graphViewer.PanButtonPressed = !graphViewer.PanButtonPressed;
+            throw new NotImplementedException();
+            //if (graphViewer.Graph == null) return;
+            //graphViewer.PanButtonPressed = !graphViewer.PanButtonPressed;
 
-            buttonPan.Checked = graphViewer.PanButtonPressed;
+            //buttonPan.Checked = graphViewer.PanButtonPressed;
         }
 
         private void OnUndo(object sender, EventArgs e)
         {
-            if (graphViewer.Graph == null) return;
-            graphViewer.Undo();
+            throw new NotImplementedException();
+            //if (graphViewer.Graph == null) return;
+            //graphViewer.Undo();
 
-            buttonUndo.Enabled = graphViewer.CanUndo();
+            //buttonUndo.Enabled = graphViewer.CanUndo();
 
-            buttonRedo.Enabled = true;
+            //buttonRedo.Enabled = true;
         }
 
         private void OnRedo(object sender, EventArgs e)
         {
-            if (graphViewer.Graph == null) return;
-            graphViewer.Redo();
+            throw new NotImplementedException();
+            //if (graphViewer.Graph == null) return;
+            //graphViewer.Redo();
 
-            buttonUndo.Enabled = true;
+            //buttonUndo.Enabled = true;
 
-            buttonRedo.Enabled = graphViewer.CanRedo();
+            //buttonRedo.Enabled = graphViewer.CanRedo();
         }
 
         private void OnExportGraph(object sender, EventArgs e)
         {
-            if (graphViewer.Graph == null) return;
-
             if (_LastResult.EPA == null)
             {
                 throw new InvalidDataException("Trying to export an unfinished EPA!");
@@ -259,7 +262,6 @@ namespace Contractor.Gui
 
         private void OnGenerateAssembly(object sender, EventArgs e)
         {
-            if (graphViewer.Graph == null) return;
             var result = generateOutputDialog.ShowDialog(this);
 
             if (result == DialogResult.OK)
@@ -279,23 +281,7 @@ namespace Contractor.Gui
                 return;
             }
 
-            var n = _Graph.AddNode(e.EpaAndState.Item2.Name);
-
-            n.UserData = e.EpaAndState;
-            n.DrawNodeDelegate += OnDrawNode;
-            n.Attr.Shape = Shape.Circle;
-            n.Attr.LabelMargin = 7;
-            n.Label.FontName = "Cambria";
-            n.Label.FontSize = 6;
-
-            if (_Options.StateDescription)
-            {
-                n.LabelText = string.Join(Environment.NewLine, e.EpaAndState.Item2.ToString());
-            }
-            else
-            {
-                n.LabelText = string.Format("S{0}", _Graph.NodeCount);
-            }
+            epaViewerPresenter.AddState(e.EpaAndState.Item2);
 
             UpdateAnalysisProgress();
         }
@@ -308,96 +294,9 @@ namespace Contractor.Gui
                 return;
             }
 
-            var label = e.Transition.Action.ToString();
-            var createEdge = true;
-            var lineStyle = e.Transition.IsUnproven ? Style.Dashed : Style.Solid;
-
-            if (_Options.CollapseTransitions)
-            {
-                var n = _Graph.FindNode(e.SourceState.Name);
-
-                if (_Options.UnprovenTransitions && e.Transition.IsUnproven)
-                    label = string.Format("{0}?", label);
-
-                if (n != null)
-                {
-                    var edges = n.OutEdges.Union(n.SelfEdges);
-
-                    foreach (var ed in edges)
-                    {
-                        if (ed.Target == e.Transition.TargetState.Name && ed.Attr.Styles.Contains(lineStyle))
-                        {
-                            ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
-                            createEdge = false;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (createEdge)
-            {
-                var edge = _Graph.AddEdge(e.SourceState.Name, label, e.Transition.TargetState.Name);
-
-                edge.Label.FontName = "Cambria";
-                edge.Label.FontSize = 6;
-                edge.Attr.AddStyle(lineStyle);
-            }
+            epaViewerPresenter.AddTransition(e.Transition);
 
             UpdateAnalysisProgress();
-        }
-
-        private bool OnDrawNode(Node node, object graphics)
-        {
-            var g = graphics as Graphics;
-            var w = node.Attr.Width;
-            var h = node.Attr.Height;
-            var x = node.Attr.Pos.X - w/2.0;
-            var y = node.Attr.Pos.Y - h/2.0;
-
-            g.FillEllipse(Brushes.AliceBlue, (float) x, (float) y, (float) w, (float) h);
-
-            var penWidth = _SelectedGraphNode != null && _SelectedGraphNode.Node == node ? 2f : 1f;
-            using (var pen = new Pen(Color.Black, penWidth))
-                g.DrawEllipse(pen, (float) x, (float) y, (float) w, (float) h);
-
-            var epaAndState = node.UserData as Tuple<EpaBuilder, State>;
-            if (epaAndState.Item1.Initial.Equals(epaAndState.Item2))
-            {
-                const double offset = 3.1;
-                x += offset/2.0;
-                y += offset/2.0;
-                w -= offset;
-                h -= offset;
-
-                g.DrawEllipse(Pens.Black, (float) x, (float) y, (float) w, (float) h);
-            }
-
-            using (var m = g.Transform)
-            using (var saveM = m.Clone())
-            {
-                var c = (float) (2.0*node.Label.Center.Y);
-                x = node.Label.Center.X;
-                y = node.Label.Center.Y;
-
-                using (var m2 = new Matrix(1f, 0f, 0f, -1f, 0f, c))
-                    m.Multiply(m2);
-
-                g.Transform = m;
-
-                using (var font = new Font(node.Label.FontName, node.Label.FontSize))
-                using (var format = new StringFormat(StringFormat.GenericTypographic))
-                {
-                    format.Alignment = StringAlignment.Center;
-                    format.LineAlignment = StringAlignment.Center;
-
-                    g.DrawString(node.LabelText, font, Brushes.Black, (float) x, (float) y, format);
-                }
-
-                g.Transform = saveM;
-            }
-
-            return true;
         }
 
         private void OnNodeMarkedForDragging(object sender, EventArgs e)
@@ -426,8 +325,9 @@ namespace Contractor.Gui
 
         private void OnObjectUnmarkedForDragging(object sender, EventArgs e)
         {
-            buttonUndo.Enabled = graphViewer.CanUndo();
-            buttonRedo.Enabled = graphViewer.CanRedo();
+            throw new NotImplementedException();
+            //buttonUndo.Enabled = graphViewer.CanUndo();
+            //buttonRedo.Enabled = graphViewer.CanRedo();
         }
 
         #endregion Event Handlers
@@ -512,10 +412,11 @@ namespace Contractor.Gui
             var typeFullName = _AnalizedType.GetDisplayName();
             StartBackgroundTask("Initializing analysis for {0}...", typeFullName);
 
-            _Graph = new Graph();
-            _Graph.Attr.OptimizeLabelPositions = true;
-            _Graph.Attr.LayerDirection = LayerDirection.LR;
-            graphViewer.Graph = _Graph;
+            epaViewerPresenter.Reset();
+
+            //_Graph = new Graph();
+            //_Graph.Attr.OptimizeLabelPositions = true;
+            //_Graph.Attr.LayerDirection = LayerDirection.LR;
 
             _SelectedGraphNode = null;
             richtextboxInformation.Clear();
@@ -552,7 +453,7 @@ namespace Contractor.Gui
             }
 
             _AnalisisThread = null;
-            _Graph = null;
+            //_Graph = null;
 
             buttonStopAnalysis.Enabled = false;
             buttonLoadAssembly.Enabled = true;
@@ -573,24 +474,24 @@ namespace Contractor.Gui
         {
             var typeFullName = _AnalizedType.GetDisplayName();
             var msg = "Performing analysis for {0}: {1} states, {2} transitions";
-            statusLabel.Text = string.Format(msg, typeFullName, _Graph.NodeCount, _Graph.EdgeCount);
+            //statusLabel.Text = string.Format(msg, typeFullName, _Graph.NodeCount, _Graph.EdgeCount);
 
-            //_Graph.Attr.AspectRatio = (double)graphViewer.ClientSize.Width / graphViewer.ClientSize.Height;
-            graphViewer.Graph = _Graph;
-            graphViewer.Enabled = true;
+            ////_Graph.Attr.AspectRatio = (double)graphViewer.ClientSize.Width / graphViewer.ClientSize.Height;
+            //graphViewer.Graph = _Graph;
+            //graphViewer.Enabled = true;
 
-            foreach (var obj in graphViewer.Entities)
-            {
-                if (obj is IViewerNode)
-                {
-                    obj.MarkedForDraggingEvent += OnNodeMarkedForDragging;
-                    obj.UnmarkedForDraggingEvent += OnNodeUnmarkedForDragging;
-                }
-                else
-                {
-                    obj.UnmarkedForDraggingEvent += OnObjectUnmarkedForDragging;
-                }
-            }
+            //foreach (var obj in graphViewer.Entities)
+            //{
+            //    if (obj is IViewerNode)
+            //    {
+            //        obj.MarkedForDraggingEvent += OnNodeMarkedForDragging;
+            //        obj.UnmarkedForDraggingEvent += OnNodeUnmarkedForDragging;
+            //    }
+            //    else
+            //    {
+            //        obj.UnmarkedForDraggingEvent += OnObjectUnmarkedForDragging;
+            //    }
+            //}
         }
 
         private void GenerateAssembly(string fileName)
@@ -735,82 +636,84 @@ namespace Contractor.Gui
 
         private void ExportGraphvizGraph(string fileName, Epa epa)
         {
-            using (var sw = File.CreateText(fileName))
-            {
-                var typeFullName = _AnalizedType.GetDisplayName();
-                var nodes = graphViewer.Graph.GeometryGraph.CollectAllNodes();
-                var initialNodes = nodes.Where(n => epa.Initial.Equals((n.UserData as Node).UserData as State));
-                var otherNodes = nodes.Where(n => !epa.Initial.Equals((n.UserData as Node).UserData as State));
+            throw new NotImplementedException();
+            //using (var sw = File.CreateText(fileName))
+            //{
+            //    var typeFullName = _AnalizedType.GetDisplayName();
+            //    var nodes = graphViewer.Graph.GeometryGraph.CollectAllNodes();
+            //    var initialNodes = nodes.Where(n => epa.Initial.Equals((n.UserData as Node).UserData as State));
+            //    var otherNodes = nodes.Where(n => !epa.Initial.Equals((n.UserData as Node).UserData as State));
 
-                sw.WriteLine("digraph \"{0}\"", typeFullName);
-                sw.WriteLine("{");
-                sw.WriteLine("\trankdir=LR;");
-                sw.WriteLine("\tnode [style = filled, fillcolor = aliceblue, fontname = \"{0}\"];", "Cambria");
+            //    sw.WriteLine("digraph \"{0}\"", typeFullName);
+            //    sw.WriteLine("{");
+            //    sw.WriteLine("\trankdir=LR;");
+            //    sw.WriteLine("\tnode [style = filled, fillcolor = aliceblue, fontname = \"{0}\"];", "Cambria");
 
-                sw.WriteLine();
-                sw.WriteLine("\tnode [shape = doublecircle];");
+            //    sw.WriteLine();
+            //    sw.WriteLine("\tnode [shape = doublecircle];");
 
-                foreach (var n in initialNodes)
-                {
-                    var node = n.UserData as Node;
-                    var name = node.LabelText.Replace(sw.NewLine, @"\n");
+            //    foreach (var n in initialNodes)
+            //    {
+            //        var node = n.UserData as Node;
+            //        var name = node.LabelText.Replace(sw.NewLine, @"\n");
 
-                    sw.WriteLine("\tnode [label = \"{0}\"]; \"{1}\";", name, node.Id);
-                }
+            //        sw.WriteLine("\tnode [label = \"{0}\"]; \"{1}\";", name, node.Id);
+            //    }
 
-                sw.WriteLine();
-                sw.WriteLine("\tnode [shape = circle];");
+            //    sw.WriteLine();
+            //    sw.WriteLine("\tnode [shape = circle];");
 
-                foreach (var n in otherNodes)
-                {
-                    var node = n.UserData as Node;
-                    var name = node.LabelText.Replace(sw.NewLine, @"\n");
+            //    foreach (var n in otherNodes)
+            //    {
+            //        var node = n.UserData as Node;
+            //        var name = node.LabelText.Replace(sw.NewLine, @"\n");
 
-                    sw.WriteLine("\tnode [label = \"{0}\"]; \"{1}\";", name, node.Id);
-                }
+            //        sw.WriteLine("\tnode [label = \"{0}\"]; \"{1}\";", name, node.Id);
+            //    }
 
-                sw.WriteLine();
-                sw.WriteLine("\tedge [fontname = \"{0}\"];", "Cambria");
-                sw.WriteLine();
+            //    sw.WriteLine();
+            //    sw.WriteLine("\tedge [fontname = \"{0}\"];", "Cambria");
+            //    sw.WriteLine();
 
-                foreach (var edge in graphViewer.Graph.Edges)
-                {
-                    var from = edge.SourceNode.Id;
-                    var to = edge.TargetNode.Id;
-                    var label = edge.LabelText.Replace(sw.NewLine, @"\n");
+            //    foreach (var edge in graphViewer.Graph.Edges)
+            //    {
+            //        var from = edge.SourceNode.Id;
+            //        var to = edge.TargetNode.Id;
+            //        var label = edge.LabelText.Replace(sw.NewLine, @"\n");
 
-                    sw.WriteLine("\tedge [label = \"{0}\"] \"{1}\" -> \"{2}\";", label, from, to);
-                }
+            //        sw.WriteLine("\tedge [label = \"{0}\"] \"{1}\" -> \"{2}\";", label, from, to);
+            //    }
 
-                sw.WriteLine("}");
-            }
+            //    sw.WriteLine("}");
+            //}
         }
 
         private void ExportVectorGraph(string fileName)
         {
-            var scale = 6.0f;
-            var w = (int) (graphViewer.Graph.Width*scale);
-            var h = (int) (graphViewer.Graph.Height*scale);
+            throw new NotImplementedException();
+            //var scale = 6.0f;
+            //var w = (int) (graphViewer.Graph.Width*scale);
+            //var h = (int) (graphViewer.Graph.Height*scale);
 
-            using (var temp = CreateGraphics())
-            {
-                var hdc = temp.GetHdc();
+            //using (var temp = CreateGraphics())
+            //{
+            //    var hdc = temp.GetHdc();
 
-                using (var img = new Metafile(fileName, hdc, EmfType.EmfOnly))
-                {
-                    temp.ReleaseHdc(hdc);
+            //    using (var img = new Metafile(fileName, hdc, EmfType.EmfOnly))
+            //    {
+            //        temp.ReleaseHdc(hdc);
 
-                    using (var g = Graphics.FromImage(img))
-                    {
-                        g.SmoothingMode = SmoothingMode.HighQuality;
-                        g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
-                        g.CompositingQuality = CompositingQuality.HighQuality;
-                        g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            //        using (var g = Graphics.FromImage(img))
+            //        {
+            //            g.SmoothingMode = SmoothingMode.HighQuality;
+            //            g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+            //            g.CompositingQuality = CompositingQuality.HighQuality;
+            //            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
-                        DrawGraph(g, w, h, scale);
-                    }
-                }
-            }
+            //            DrawGraph(g, w, h, scale);
+            //        }
+            //    }
+            //}
         }
 
         private void ExportImageGraph(string fileName, Epa epa)
@@ -823,35 +726,36 @@ namespace Contractor.Gui
 
         private void DrawGraph(Graphics g, int w, int h, float scale)
         {
-            var graph = graphViewer.Graph;
+            throw new NotImplementedException();
+            //var graph = graphViewer.Graph;
 
-            var num1 = (float) (0.5*w - scale*(graph.Left + 0.5*graph.Width));
-            var num2 = (float) (0.5*h + scale*(graph.Bottom + 0.5*graph.Height));
+            //var num1 = (float) (0.5*w - scale*(graph.Left + 0.5*graph.Width));
+            //var num2 = (float) (0.5*h + scale*(graph.Bottom + 0.5*graph.Height));
 
-            using (var brush = new SolidBrush(Draw.MsaglColorToDrawingColor(graph.Attr.BackgroundColor)))
-                g.FillRectangle(brush, 0, 0, w, h);
+            //using (var brush = new SolidBrush(Draw.MsaglColorToDrawingColor(graph.Attr.BackgroundColor)))
+            //    g.FillRectangle(brush, 0, 0, w, h);
 
-            using (var matrix = new Matrix(scale, 0f, 0f, -scale, num1, num2))
-            {
-                g.Transform = matrix;
-                Draw.DrawPrecalculatedLayoutObject(g, graphViewer.ViewerGraph);
-            }
+            //using (var matrix = new Matrix(scale, 0f, 0f, -scale, num1, num2))
+            //{
+            //    g.Transform = matrix;
+            //    Draw.DrawPrecalculatedLayoutObject(g, graphViewer.ViewerGraph);
+            //}
         }
 
         private void UpdateCommands()
         {
-            var graphGenerated = graphViewer.Graph != null;
-            var analisisRunning = _AnalisisThread != null;
+            //var graphGenerated = graphViewer.Graph != null;
+            //var analisisRunning = _AnalisisThread != null;
 
-            buttonExportGraph.Enabled = graphGenerated && !analisisRunning;
-            buttonGenerateAssembly.Enabled = graphGenerated && !analisisRunning;
-            buttonPan.Enabled = graphGenerated;
-            buttonResetLayout.Enabled = graphGenerated;
-            buttonZoomBestFit.Enabled = graphGenerated;
-            buttonZoomIn.Enabled = graphGenerated;
-            buttonZoomOut.Enabled = graphGenerated;
-            buttonRedo.Enabled = false;
-            buttonUndo.Enabled = false;
+            //buttonExportGraph.Enabled = graphGenerated && !analisisRunning;
+            //buttonGenerateAssembly.Enabled = graphGenerated && !analisisRunning;
+            //buttonPan.Enabled = graphGenerated;
+            //buttonResetLayout.Enabled = graphGenerated;
+            //buttonZoomBestFit.Enabled = graphGenerated;
+            //buttonZoomIn.Enabled = graphGenerated;
+            //buttonZoomOut.Enabled = graphGenerated;
+            //buttonRedo.Enabled = false;
+            //buttonUndo.Enabled = false;
         }
 
         private void UpdateStartAnalisisCommand()
@@ -892,8 +796,8 @@ namespace Contractor.Gui
         {
             treeviewTypes.Nodes.Clear();
             listboxMethods.Items.Clear();
-            graphViewer.Enabled = false;
-            graphViewer.Graph = null;
+            //graphViewer.Enabled = false;
+            //graphViewer.Graph = null;
             _ContractReferenceAssemblyFileName = null;
         }
 

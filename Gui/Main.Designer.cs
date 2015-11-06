@@ -75,7 +75,7 @@
             this.buttonUncheckAllMethods = new System.Windows.Forms.ToolStripButton();
             this.titlebarProperties = new Contractor.Gui.TitleBar();
             this.splitcontainerOutput = new System.Windows.Forms.SplitContainer();
-            this.graphViewer = new Microsoft.Msagl.GraphViewerGdi.GViewer();
+            this.epaViewer = new Contractor.Gui.EpaViewerScreen();
             this.titlebarOutput = new Contractor.Gui.TitleBar();
             this.loadContractsDialog = new System.Windows.Forms.OpenFileDialog();
             this.statusStrip.SuspendLayout();
@@ -127,17 +127,17 @@
             this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statusLabel,
             this.progressBar});
-            this.statusStrip.Location = new System.Drawing.Point(0, 347);
+            this.statusStrip.Location = new System.Drawing.Point(0, 431);
             this.statusStrip.Name = "statusStrip";
             this.statusStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.ManagerRenderMode;
-            this.statusStrip.Size = new System.Drawing.Size(532, 22);
+            this.statusStrip.Size = new System.Drawing.Size(775, 22);
             this.statusStrip.TabIndex = 4;
             this.statusStrip.Text = "statusStrip1";
             // 
             // statusLabel
             // 
             this.statusLabel.Name = "statusLabel";
-            this.statusLabel.Size = new System.Drawing.Size(517, 17);
+            this.statusLabel.Size = new System.Drawing.Size(760, 17);
             this.statusLabel.Spring = true;
             this.statusLabel.Text = "Ready";
             this.statusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -174,7 +174,7 @@
             this.cmbBackend});
             this.toolStrip.Location = new System.Drawing.Point(0, 24);
             this.toolStrip.Name = "toolStrip";
-            this.toolStrip.Size = new System.Drawing.Size(532, 25);
+            this.toolStrip.Size = new System.Drawing.Size(775, 25);
             this.toolStrip.TabIndex = 1;
             // 
             // buttonOptions
@@ -367,7 +367,7 @@
             this.menuitemHelp});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Size = new System.Drawing.Size(532, 24);
+            this.menuStrip.Size = new System.Drawing.Size(775, 24);
             this.menuStrip.TabIndex = 0;
             this.menuStrip.Text = "menuStrip1";
             // 
@@ -421,7 +421,7 @@
             this.textboxOutput.Name = "textboxOutput";
             this.textboxOutput.ReadOnly = true;
             this.textboxOutput.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textboxOutput.Size = new System.Drawing.Size(329, 124);
+            this.textboxOutput.Size = new System.Drawing.Size(483, 166);
             this.textboxOutput.TabIndex = 1;
             this.textboxOutput.WordWrap = false;
             // 
@@ -441,8 +441,8 @@
             // 
             this.splitcontainerV.Panel2.Controls.Add(this.splitcontainerOutput);
             this.splitcontainerV.Panel2MinSize = 200;
-            this.splitcontainerV.Size = new System.Drawing.Size(532, 298);
-            this.splitcontainerV.SplitterDistance = 197;
+            this.splitcontainerV.Size = new System.Drawing.Size(775, 382);
+            this.splitcontainerV.SplitterDistance = 286;
             this.splitcontainerV.TabIndex = 0;
             this.splitcontainerV.TabStop = false;
             // 
@@ -464,8 +464,8 @@
             this.splitcontainerH.Panel2.Controls.Add(this.richtextboxInformation);
             this.splitcontainerH.Panel2.Controls.Add(this.toolstripMethods);
             this.splitcontainerH.Panel2.Controls.Add(this.titlebarProperties);
-            this.splitcontainerH.Size = new System.Drawing.Size(197, 298);
-            this.splitcontainerH.SplitterDistance = 149;
+            this.splitcontainerH.Size = new System.Drawing.Size(286, 382);
+            this.splitcontainerH.SplitterDistance = 191;
             this.splitcontainerH.TabIndex = 0;
             this.splitcontainerH.TabStop = false;
             // 
@@ -484,7 +484,7 @@
             this.treeviewTypes.ShowLines = false;
             this.treeviewTypes.ShowNodeToolTips = true;
             this.treeviewTypes.ShowPlusMinus = false;
-            this.treeviewTypes.Size = new System.Drawing.Size(195, 147);
+            this.treeviewTypes.Size = new System.Drawing.Size(284, 189);
             this.treeviewTypes.StateImageList = this.imagelist;
             this.treeviewTypes.TabIndex = 0;
             this.treeviewTypes.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.OnAfterSelectTreeNode);
@@ -500,7 +500,7 @@
             this.listboxMethods.IntegralHeight = false;
             this.listboxMethods.Location = new System.Drawing.Point(0, 44);
             this.listboxMethods.Name = "listboxMethods";
-            this.listboxMethods.Size = new System.Drawing.Size(195, 99);
+            this.listboxMethods.Size = new System.Drawing.Size(284, 141);
             this.listboxMethods.Sorted = true;
             this.listboxMethods.TabIndex = 2;
             // 
@@ -515,7 +515,7 @@
             this.richtextboxInformation.Name = "richtextboxInformation";
             this.richtextboxInformation.ReadOnly = true;
             this.richtextboxInformation.ShowSelectionMargin = true;
-            this.richtextboxInformation.Size = new System.Drawing.Size(195, 99);
+            this.richtextboxInformation.Size = new System.Drawing.Size(284, 141);
             this.richtextboxInformation.TabIndex = 1;
             this.richtextboxInformation.TabStop = false;
             this.richtextboxInformation.Text = "";
@@ -531,7 +531,7 @@
             this.toolstripMethods.Location = new System.Drawing.Point(0, 19);
             this.toolstripMethods.Name = "toolstripMethods";
             this.toolstripMethods.ShowItemToolTips = false;
-            this.toolstripMethods.Size = new System.Drawing.Size(195, 25);
+            this.toolstripMethods.Size = new System.Drawing.Size(284, 25);
             this.toolstripMethods.TabIndex = 3;
             this.toolstripMethods.Text = "toolStrip1";
             // 
@@ -574,7 +574,7 @@
             this.titlebarProperties.Name = "titlebarProperties";
             this.titlebarProperties.ShowBottomBorder = true;
             this.titlebarProperties.ShowCloseButton = false;
-            this.titlebarProperties.Size = new System.Drawing.Size(195, 19);
+            this.titlebarProperties.Size = new System.Drawing.Size(284, 19);
             this.titlebarProperties.TabIndex = 0;
             this.titlebarProperties.TabStop = false;
             this.titlebarProperties.Text = "Methods";
@@ -589,48 +589,25 @@
             // 
             // splitcontainerOutput.Panel1
             // 
-            this.splitcontainerOutput.Panel1.Controls.Add(this.graphViewer);
+            this.splitcontainerOutput.Panel1.Controls.Add(this.epaViewer);
             // 
             // splitcontainerOutput.Panel2
             // 
             this.splitcontainerOutput.Panel2.Controls.Add(this.textboxOutput);
             this.splitcontainerOutput.Panel2.Controls.Add(this.titlebarOutput);
-            this.splitcontainerOutput.Size = new System.Drawing.Size(331, 298);
-            this.splitcontainerOutput.SplitterDistance = 149;
+            this.splitcontainerOutput.Size = new System.Drawing.Size(485, 382);
+            this.splitcontainerOutput.SplitterDistance = 191;
             this.splitcontainerOutput.TabIndex = 0;
             this.splitcontainerOutput.TabStop = false;
             // 
-            // graphViewer
+            // epaViewer
             // 
-            this.graphViewer.AsyncLayout = false;
-            this.graphViewer.AutoScroll = true;
-            this.graphViewer.BackwardEnabled = false;
-            this.graphViewer.BuildHitTree = true;
-            this.graphViewer.CurrentLayoutMethod = Microsoft.Msagl.GraphViewerGdi.LayoutMethod.SugiyamaScheme;
-            this.graphViewer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.graphViewer.Enabled = false;
-            this.graphViewer.ForwardEnabled = false;
-            this.graphViewer.Graph = null;
-            this.graphViewer.LayoutAlgorithmSettingsButtonVisible = true;
-            this.graphViewer.LayoutEditingEnabled = true;
-            this.graphViewer.Location = new System.Drawing.Point(0, 0);
-            this.graphViewer.MouseHitDistance = 0.05D;
-            this.graphViewer.Name = "graphViewer";
-            this.graphViewer.NavigationVisible = true;
-            this.graphViewer.NeedToCalculateLayout = true;
-            this.graphViewer.PanButtonPressed = false;
-            this.graphViewer.SaveAsImageEnabled = true;
-            this.graphViewer.SaveAsMsaglEnabled = true;
-            this.graphViewer.SaveButtonVisible = true;
-            this.graphViewer.SaveGraphButtonVisible = true;
-            this.graphViewer.SaveInVectorFormatEnabled = true;
-            this.graphViewer.Size = new System.Drawing.Size(329, 147);
-            this.graphViewer.TabIndex = 0;
-            this.graphViewer.ToolBarIsVisible = false;
-            this.graphViewer.ZoomF = 1D;
-            this.graphViewer.ZoomFraction = 0.5D;
-            this.graphViewer.ZoomWindowThreshold = 0.05D;
-            this.graphViewer.GraphChanged += new System.EventHandler(this.OnGraphChanged);
+            this.epaViewer.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.epaViewer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.epaViewer.Location = new System.Drawing.Point(0, 0);
+            this.epaViewer.Name = "epaViewer";
+            this.epaViewer.Size = new System.Drawing.Size(483, 189);
+            this.epaViewer.TabIndex = 1;
             // 
             // titlebarOutput
             // 
@@ -643,7 +620,7 @@
             this.titlebarOutput.Name = "titlebarOutput";
             this.titlebarOutput.ShowBottomBorder = true;
             this.titlebarOutput.ShowCloseButton = true;
-            this.titlebarOutput.Size = new System.Drawing.Size(329, 19);
+            this.titlebarOutput.Size = new System.Drawing.Size(483, 19);
             this.titlebarOutput.TabIndex = 0;
             this.titlebarOutput.Text = "Output";
             this.titlebarOutput.Close += new System.EventHandler(this.OnOutputClose);
@@ -658,7 +635,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(532, 369);
+            this.ClientSize = new System.Drawing.Size(775, 453);
             this.Controls.Add(this.splitcontainerV);
             this.Controls.Add(this.toolStrip);
             this.Controls.Add(this.menuStrip);
@@ -735,8 +712,7 @@
 		private System.Windows.Forms.TreeView treeviewTypes;
 		private System.Windows.Forms.RichTextBox richtextboxInformation;
 		private TitleBar titlebarProperties;
-		private System.Windows.Forms.SplitContainer splitcontainerOutput;
-		private Microsoft.Msagl.GraphViewerGdi.GViewer graphViewer;
+        private System.Windows.Forms.SplitContainer splitcontainerOutput;
 		private System.Windows.Forms.CheckedListBox listboxMethods;
         private System.Windows.Forms.OpenFileDialog loadContractsDialog;
 		private System.Windows.Forms.ToolStripButton buttonLoadContracts;
@@ -746,6 +722,7 @@
 		private System.Windows.Forms.ToolStripLabel toolStripLabel1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripComboBox cmbBackend;
+        private EpaViewerScreen epaViewer;
 	}
 }
 
