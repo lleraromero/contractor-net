@@ -57,6 +57,7 @@
             this.textboxOutput = new System.Windows.Forms.TextBox();
             this.splitcontainerV = new System.Windows.Forms.SplitContainer();
             this.splitcontainerH = new System.Windows.Forms.SplitContainer();
+            this.typesViewer = new Contractor.Gui.TypesViewerScreen();
             this.treeviewTypes = new System.Windows.Forms.TreeView();
             this.listboxMethods = new System.Windows.Forms.CheckedListBox();
             this.richtextboxInformation = new System.Windows.Forms.RichTextBox();
@@ -352,6 +353,7 @@
             // 
             // splitcontainerH.Panel1
             // 
+            this.splitcontainerH.Panel1.Controls.Add(this.typesViewer);
             this.splitcontainerH.Panel1.Controls.Add(this.treeviewTypes);
             // 
             // splitcontainerH.Panel2
@@ -365,10 +367,16 @@
             this.splitcontainerH.TabIndex = 0;
             this.splitcontainerH.TabStop = false;
             // 
+            // typesViewer
+            // 
+            this.typesViewer.Location = new System.Drawing.Point(156, 3);
+            this.typesViewer.Name = "typesViewer";
+            this.typesViewer.Size = new System.Drawing.Size(288, 223);
+            this.typesViewer.TabIndex = 1;
+            // 
             // treeviewTypes
             // 
             this.treeviewTypes.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.treeviewTypes.Dock = System.Windows.Forms.DockStyle.Fill;
             this.treeviewTypes.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.treeviewTypes.HideSelection = false;
             this.treeviewTypes.ImageIndex = 0;
@@ -380,7 +388,7 @@
             this.treeviewTypes.ShowLines = false;
             this.treeviewTypes.ShowNodeToolTips = true;
             this.treeviewTypes.ShowPlusMinus = false;
-            this.treeviewTypes.Size = new System.Drawing.Size(284, 189);
+            this.treeviewTypes.Size = new System.Drawing.Size(150, 157);
             this.treeviewTypes.StateImageList = this.imagelist;
             this.treeviewTypes.TabIndex = 0;
             this.treeviewTypes.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.OnAfterSelectTreeNode);
@@ -609,6 +617,7 @@
         private System.Windows.Forms.ToolStripLabel toolStripLabel1;
         private System.Windows.Forms.ToolStripComboBox cmbBackend;
         private EpaViewerScreen epaViewer;
+        private TypesViewerScreen typesViewer;
 	}
 }
 

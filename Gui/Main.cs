@@ -40,7 +40,8 @@ namespace Contractor.Gui
         private IViewerNode _SelectedGraphNode;
 
         protected EpaViewerPresenter epaViewerPresenter;
-
+        protected TypesViewerPresenter typesViewerPresenter;
+        protected SynchronizationContext syncContext;
         public Main()
         {
             InitializeComponent();
@@ -57,6 +58,8 @@ namespace Contractor.Gui
             _Options = new Options();
 
             epaViewerPresenter = new EpaViewerPresenter(epaViewer, new EpaViewer());
+            syncContext = SynchronizationContext.Current;
+            typesViewerPresenter = new TypesViewerPresenter(typesViewer, new TypesViewer(), syncContext);
         }
 
         #region Event Handlers
@@ -670,7 +673,7 @@ namespace Contractor.Gui
             buttonStartAnalysis.Enabled = isClassNode && !analisisRunning;
         }
 
-        private void LoadAssembly(string fileName)
+        private async void LoadAssembly(string fileName)
         {
             BeginInvoke((Action) delegate
             {
@@ -679,6 +682,10 @@ namespace Contractor.Gui
             });
 
             _AssemblyInfo.Load(fileName);
+            
+            var assembly = new CciDecompiler().Decompile(fileName, null);
+            await Task.Run(() => typesViewerPresenter.ShowTypes(assembly));
+
             var root = LoadAssemblyTypes();
 
             BeginInvoke((Action) delegate

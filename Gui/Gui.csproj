@@ -166,6 +166,14 @@
     <Compile Include="TitleBar.Designer.cs">
       <DependentUpon>TitleBar.cs</DependentUpon>
     </Compile>
+    <Compile Include="TypesViewer.cs" />
+    <Compile Include="TypesViewerPresenter.cs" />
+    <Compile Include="TypesViewerScreen.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="TypesViewerScreen.Designer.cs">
+      <DependentUpon>TypesViewerScreen.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="AboutDialog.resx">
       <DependentUpon>AboutDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -195,6 +203,9 @@
       <Link>Resources\License.rtf</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <EmbeddedResource Include="TypesViewerScreen.resx">
+      <DependentUpon>TypesViewerScreen.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">

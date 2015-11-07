@@ -41,7 +41,7 @@
             // 
             // graphViewer
             // 
-            this.graphViewer.AsyncLayout = true;
+            this.graphViewer.AsyncLayout = false;
             this.graphViewer.AutoScroll = true;
             this.graphViewer.BackwardEnabled = false;
             this.graphViewer.BuildHitTree = true;
