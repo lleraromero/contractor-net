@@ -47,15 +47,6 @@
             this.buttonStartAnalysis = new System.Windows.Forms.ToolStripButton();
             this.buttonStopAnalysis = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.buttonUndo = new System.Windows.Forms.ToolStripButton();
-            this.buttonRedo = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.buttonResetLayout = new System.Windows.Forms.ToolStripButton();
-            this.buttonZoomIn = new System.Windows.Forms.ToolStripButton();
-            this.buttonZoomOut = new System.Windows.Forms.ToolStripButton();
-            this.buttonZoomBestFit = new System.Windows.Forms.ToolStripButton();
-            this.buttonPan = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.cmbBackend = new System.Windows.Forms.ToolStripComboBox();
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.menuitemView = new System.Windows.Forms.ToolStripMenuItem();
@@ -151,6 +142,7 @@
             // 
             // toolStrip
             // 
+            this.toolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.buttonOptions,
             this.toolStripSeparator4,
@@ -162,15 +154,6 @@
             this.buttonStartAnalysis,
             this.buttonStopAnalysis,
             this.toolStripSeparator2,
-            this.buttonUndo,
-            this.buttonRedo,
-            this.toolStripSeparator3,
-            this.buttonResetLayout,
-            this.buttonZoomIn,
-            this.buttonZoomOut,
-            this.buttonZoomBestFit,
-            this.buttonPan,
-            this.toolStripSeparator5,
             this.cmbBackend});
             this.toolStrip.Location = new System.Drawing.Point(0, 24);
             this.toolStrip.Name = "toolStrip";
@@ -266,93 +249,6 @@
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
             this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
-            // 
-            // buttonUndo
-            // 
-            this.buttonUndo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.buttonUndo.Enabled = false;
-            this.buttonUndo.Image = ((System.Drawing.Image)(resources.GetObject("buttonUndo.Image")));
-            this.buttonUndo.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.buttonUndo.Name = "buttonUndo";
-            this.buttonUndo.Size = new System.Drawing.Size(23, 22);
-            this.buttonUndo.Text = "Undo";
-            this.buttonUndo.Click += new System.EventHandler(this.OnUndo);
-            // 
-            // buttonRedo
-            // 
-            this.buttonRedo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.buttonRedo.Enabled = false;
-            this.buttonRedo.Image = ((System.Drawing.Image)(resources.GetObject("buttonRedo.Image")));
-            this.buttonRedo.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.buttonRedo.Name = "buttonRedo";
-            this.buttonRedo.Size = new System.Drawing.Size(23, 22);
-            this.buttonRedo.Text = "Redo";
-            this.buttonRedo.Click += new System.EventHandler(this.OnRedo);
-            // 
-            // toolStripSeparator3
-            // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
-            // 
-            // buttonResetLayout
-            // 
-            this.buttonResetLayout.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.buttonResetLayout.Enabled = false;
-            this.buttonResetLayout.Image = ((System.Drawing.Image)(resources.GetObject("buttonResetLayout.Image")));
-            this.buttonResetLayout.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.buttonResetLayout.Name = "buttonResetLayout";
-            this.buttonResetLayout.Size = new System.Drawing.Size(23, 22);
-            this.buttonResetLayout.Text = "Reset Layout";
-            this.buttonResetLayout.Click += new System.EventHandler(this.OnResetLayout);
-            // 
-            // buttonZoomIn
-            // 
-            this.buttonZoomIn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.buttonZoomIn.Enabled = false;
-            this.buttonZoomIn.Image = ((System.Drawing.Image)(resources.GetObject("buttonZoomIn.Image")));
-            this.buttonZoomIn.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.buttonZoomIn.Name = "buttonZoomIn";
-            this.buttonZoomIn.Size = new System.Drawing.Size(23, 22);
-            this.buttonZoomIn.Text = "Zoom In";
-            this.buttonZoomIn.Click += new System.EventHandler(this.OnZoomIn);
-            // 
-            // buttonZoomOut
-            // 
-            this.buttonZoomOut.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.buttonZoomOut.Enabled = false;
-            this.buttonZoomOut.Image = ((System.Drawing.Image)(resources.GetObject("buttonZoomOut.Image")));
-            this.buttonZoomOut.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.buttonZoomOut.Name = "buttonZoomOut";
-            this.buttonZoomOut.Size = new System.Drawing.Size(23, 22);
-            this.buttonZoomOut.Text = "Zoom Out";
-            this.buttonZoomOut.Click += new System.EventHandler(this.OnZoomOut);
-            // 
-            // buttonZoomBestFit
-            // 
-            this.buttonZoomBestFit.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.buttonZoomBestFit.Enabled = false;
-            this.buttonZoomBestFit.Image = ((System.Drawing.Image)(resources.GetObject("buttonZoomBestFit.Image")));
-            this.buttonZoomBestFit.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.buttonZoomBestFit.Name = "buttonZoomBestFit";
-            this.buttonZoomBestFit.Size = new System.Drawing.Size(23, 22);
-            this.buttonZoomBestFit.Text = "Zoom Best Fit";
-            this.buttonZoomBestFit.Click += new System.EventHandler(this.OnZoomBestFit);
-            // 
-            // buttonPan
-            // 
-            this.buttonPan.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.buttonPan.Enabled = false;
-            this.buttonPan.Image = ((System.Drawing.Image)(resources.GetObject("buttonPan.Image")));
-            this.buttonPan.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.buttonPan.Name = "buttonPan";
-            this.buttonPan.Size = new System.Drawing.Size(23, 22);
-            this.buttonPan.Text = "Pan";
-            this.buttonPan.Click += new System.EventHandler(this.OnPan);
-            // 
-            // toolStripSeparator5
-            // 
-            this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(6, 25);
             // 
             // cmbBackend
             // 
@@ -602,7 +498,6 @@
             // 
             // epaViewer
             // 
-            this.epaViewer.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.epaViewer.Dock = System.Windows.Forms.DockStyle.Fill;
             this.epaViewer.Location = new System.Drawing.Point(0, 0);
             this.epaViewer.Name = "epaViewer";
@@ -686,19 +581,11 @@
 		private System.Windows.Forms.ToolStripProgressBar progressBar;
 		private System.Windows.Forms.ToolStripButton buttonStopAnalysis;
 		private System.Windows.Forms.ToolStripButton buttonExportGraph;
-		private System.Windows.Forms.ToolStripButton buttonGenerateAssembly;
-		private System.Windows.Forms.ToolStripButton buttonUndo;
+        private System.Windows.Forms.ToolStripButton buttonGenerateAssembly;
 		private System.Windows.Forms.ToolStripButton buttonOptions;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-		private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-		private System.Windows.Forms.ToolStripButton buttonRedo;
-		private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-		private System.Windows.Forms.ToolStripButton buttonResetLayout;
-		private System.Windows.Forms.ToolStripButton buttonZoomIn;
-		private System.Windows.Forms.ToolStripButton buttonZoomOut;
-		private System.Windows.Forms.ToolStripButton buttonZoomBestFit;
-		private System.Windows.Forms.ToolStripButton buttonPan;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
 		private System.Windows.Forms.ImageList imagelist;
 		private System.Windows.Forms.ToolStripButton buttonStartAnalysis;
 		private System.Windows.Forms.ToolStripButton buttonLoadAssembly;
@@ -719,8 +606,7 @@
 		private System.Windows.Forms.ToolStrip toolstripMethods;
 		private System.Windows.Forms.ToolStripButton buttonCheckAllMethods;
 		private System.Windows.Forms.ToolStripButton buttonUncheckAllMethods;
-		private System.Windows.Forms.ToolStripLabel toolStripLabel1;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
+        private System.Windows.Forms.ToolStripLabel toolStripLabel1;
         private System.Windows.Forms.ToolStripComboBox cmbBackend;
         private EpaViewerScreen epaViewer;
 	}

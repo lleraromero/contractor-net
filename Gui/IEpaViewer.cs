@@ -1,4 +1,5 @@
-﻿using Contractor.Core.Model;
+﻿using System;
+using Contractor.Core.Model;
 using Microsoft.Msagl.Drawing;
 
 namespace Contractor.Gui

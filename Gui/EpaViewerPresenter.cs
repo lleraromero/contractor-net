@@ -1,4 +1,5 @@
-﻿using Contractor.Core.Model;
+﻿using System;
+using Contractor.Core.Model;
 
 namespace Contractor.Gui
 {
@@ -13,6 +14,7 @@ namespace Contractor.Gui
             this.epaViewer = epaViewer;
 
             this.screen.Graph = this.epaViewer.Graph;
+            this.screen.Reset += (sender, args) =>  { RefreshScreen(); };
         }
 
         public void Reset()

@@ -182,66 +182,6 @@ namespace Contractor.Gui
             }
         }
 
-        private void OnZoomIn(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-            //if (graphViewer.Graph == null) return;
-            //graphViewer.ZoomInPressed();
-        }
-
-        private void OnZoomOut(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-            //if (graphViewer.Graph == null) return;
-            //graphViewer.ZoomOutPressed();
-        }
-
-        private void OnZoomBestFit(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-            //if (graphViewer.Graph == null) return;
-            //graphViewer.FitGraphBoundingBox();
-            //graphViewer.ZoomF = 1.0;
-        }
-
-        private void OnResetLayout(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-            //if (graphViewer.Graph == null) return;
-            //graphViewer.Graph = graphViewer.Graph;
-        }
-
-        private void OnPan(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-            //if (graphViewer.Graph == null) return;
-            //graphViewer.PanButtonPressed = !graphViewer.PanButtonPressed;
-
-            //buttonPan.Checked = graphViewer.PanButtonPressed;
-        }
-
-        private void OnUndo(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-            //if (graphViewer.Graph == null) return;
-            //graphViewer.Undo();
-
-            //buttonUndo.Enabled = graphViewer.CanUndo();
-
-            //buttonRedo.Enabled = true;
-        }
-
-        private void OnRedo(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-            //if (graphViewer.Graph == null) return;
-            //graphViewer.Redo();
-
-            //buttonUndo.Enabled = true;
-
-            //buttonRedo.Enabled = graphViewer.CanRedo();
-        }
-
         private void OnExportGraph(object sender, EventArgs e)
         {
             if (_LastResult.EPA == null)
@@ -298,38 +238,6 @@ namespace Contractor.Gui
 
             UpdateAnalysisProgress();
         }
-
-        private void OnNodeMarkedForDragging(object sender, EventArgs e)
-        {
-            _SelectedGraphNode = sender as IViewerNode;
-            var state = _SelectedGraphNode.Node.UserData as Tuple<EpaBuilder, State>;
-            var info = GetStateInfo(state.Item1, state.Item2);
-
-            richtextboxInformation.Rtf = info;
-            titlebarProperties.Text = "State Info";
-            listboxMethods.Visible = false;
-            toolstripMethods.Visible = false;
-        }
-
-        private void OnNodeUnmarkedForDragging(object sender, EventArgs e)
-        {
-            _SelectedGraphNode = null;
-
-            titlebarProperties.Text = "Methods";
-            toolstripMethods.Visible = true;
-            listboxMethods.Visible = true;
-            richtextboxInformation.Clear();
-
-            OnObjectUnmarkedForDragging(sender, e);
-        }
-
-        private void OnObjectUnmarkedForDragging(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-            //buttonUndo.Enabled = graphViewer.CanUndo();
-            //buttonRedo.Enabled = graphViewer.CanRedo();
-        }
-
         #endregion Event Handlers
 
         #region Private Methods
@@ -414,10 +322,6 @@ namespace Contractor.Gui
 
             epaViewerPresenter.Reset();
 
-            //_Graph = new Graph();
-            //_Graph.Attr.OptimizeLabelPositions = true;
-            //_Graph.Attr.LayerDirection = LayerDirection.LR;
-
             _SelectedGraphNode = null;
             richtextboxInformation.Clear();
 
@@ -453,7 +357,6 @@ namespace Contractor.Gui
             }
 
             _AnalisisThread = null;
-            //_Graph = null;
 
             buttonStopAnalysis.Enabled = false;
             buttonLoadAssembly.Enabled = true;
@@ -796,8 +699,6 @@ namespace Contractor.Gui
         {
             treeviewTypes.Nodes.Clear();
             listboxMethods.Items.Clear();
-            //graphViewer.Enabled = false;
-            //graphViewer.Graph = null;
             _ContractReferenceAssemblyFileName = null;
         }
 
