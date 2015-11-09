@@ -173,6 +173,7 @@
     <Compile Include="CciAssembly.cs" />
     <Compile Include="CciDecompiler.cs" />
     <Compile Include="CciQueryGenerator.cs" />
+    <Compile Include="CciTypeDefinition.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

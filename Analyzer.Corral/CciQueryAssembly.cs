@@ -1,5 +1,6 @@
 ﻿using Analysis.Cci;
 using Contractor.Core;
+using Contractor.Core.Model;
 using Contractor.Utils;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
@@ -14,10 +15,10 @@ namespace Analyzer.Corral
 {
     class CciQueryAssembly : CciAssembly
     {
-        public CciQueryAssembly(CciAssembly inputAssembly, string typeToAnalyze, IEnumerable<Query> queries)
+        public CciQueryAssembly(CciAssembly inputAssembly, TypeDefinition typeToAnalyze, IEnumerable<Query> queries)
             : base(inputAssembly)
         {
-            var cciType = FindType(typeToAnalyze);
+            var cciType = FindType(typeToAnalyze.Name);
             cciType.Methods.AddRange(from a in queries select a.Action.Method);
 
 

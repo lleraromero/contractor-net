@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using Analysis.Cci;
 using Contractor.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -51,7 +52,8 @@ namespace Analyzer.Corral.Tests
         private void GenerateEpa(string typeToAnalyze)
         {
             var epaGenerator = new EpaGenerator(inputAssembly, new AnalyzerMock());
-            epaGenerator.GenerateEpa(typeToAnalyze);
+            var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(typeToAnalyze));
+            epaGenerator.GenerateEpa(typeDefinition);
         }
     }
 }

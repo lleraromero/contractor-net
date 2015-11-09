@@ -1,46 +1,55 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics.Contracts;
 
 namespace Contractor.Core.Model
 {
     public abstract class TypeEventArgs : EventArgs
     {
-        public string TypeFullName { get; private set; }
-
-        public TypeEventArgs(string typeFullName)
-        {
-            this.TypeFullName = typeFullName;
-        }
+        public abstract TypeDefinition Type { get; }
     }
 
     public class StateAddedEventArgs : TypeEventArgs
     {
+        protected TypeDefinition type;
+
+        public StateAddedEventArgs(TypeDefinition type, Tuple<EpaBuilder, State> epaAndState)
+        {
+            Contract.Requires(type != null);
+            Contract.Requires(epaAndState != null);
+
+            this.type = type;
+            EpaAndState = epaAndState;
+        }
+
         public Tuple<EpaBuilder, State> EpaAndState { get; private set; }
 
-        public StateAddedEventArgs(string typeFullName, Tuple<EpaBuilder, State> epaAndState)
-            : base(typeFullName)
+        public override TypeDefinition Type
         {
-            this.EpaAndState = epaAndState;
+            get { return type; }
         }
     }
 
     public class TransitionAddedEventArgs : TypeEventArgs
     {
+        protected TypeDefinition type;
+
+        public TransitionAddedEventArgs(TypeDefinition type, Transition transition, State sourceState, EpaBuilder epaBuilder)
+        {
+            Transition = transition;
+            SourceState = sourceState;
+            this.epaBuilder = epaBuilder;
+            this.type = type;
+        }
+
         public Transition Transition { get; private set; }
 
         public State SourceState { get; private set; }
 
         public EpaBuilder epaBuilder { get; private set; }
 
-        public TransitionAddedEventArgs(string typeFullName, Transition transition, State sourceState, EpaBuilder epaBuilder)
-            : base(typeFullName)
+        public override TypeDefinition Type
         {
-            this.Transition = transition;
-            this.SourceState = sourceState;
-            this.epaBuilder = epaBuilder;
+            get { return type; }
         }
     }
 }

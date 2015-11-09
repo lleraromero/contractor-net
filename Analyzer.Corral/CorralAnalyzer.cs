@@ -15,7 +15,7 @@ namespace Analyzer.Corral
         protected CciQueryGenerator queryGenerator;
         protected CciAssembly inputAssembly;
         protected string inputFileName;
-        protected string typeToAnalyze;
+        protected TypeDefinition typeToAnalyze;
         protected CancellationToken token;
 
         protected TimeSpan totalAnalysisTime;
@@ -26,7 +26,7 @@ namespace Analyzer.Corral
         protected string notPrefix = "_Not_";
         protected string methodNameDelimiter = "~";
 
-        public CorralAnalyzer(CciQueryGenerator queryGenerator, CciAssembly inputAssembly, string inputFileName,  string typeToAnalyze, CancellationToken token)
+        public CorralAnalyzer(CciQueryGenerator queryGenerator, CciAssembly inputAssembly, string inputFileName,  TypeDefinition typeToAnalyze, CancellationToken token)
         {
             this.queryGenerator = queryGenerator;
             this.inputAssembly = inputAssembly;

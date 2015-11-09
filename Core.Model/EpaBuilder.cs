@@ -1,16 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using Contractor.Core;
 
 namespace Contractor.Core.Model
 {
     public class EpaBuilder : IEpaBuilder
     {
         protected Dictionary<State, HashSet<Transition>> graph;
-        protected string type;
+        protected TypeDefinition type;
         protected State initial;
 
-        public EpaBuilder(string Type, State initial)
+        public EpaBuilder(TypeDefinition Type, State initial)
         {
             this.type = Type;
             this.graph = new Dictionary<State, HashSet<Transition>>();
@@ -19,7 +20,7 @@ namespace Contractor.Core.Model
             this.initial = initial;
         }
 
-        public string Type { get { return this.type; } }
+        public TypeDefinition Type { get { return this.type; } }
 
         public State Initial { get { return initial; } }
 
@@ -56,7 +57,7 @@ namespace Contractor.Core.Model
             Contract.Requires(States.Contains(s));
 
             var existingTransitions = Transitions.Where(t => t.SourceState == s || t.TargetState == s);
-            if (existingTransitions.Count() == 0)
+            if (!existingTransitions.Any())
             {
                 graph.Remove(s);
             }

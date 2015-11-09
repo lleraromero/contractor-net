@@ -79,7 +79,7 @@ namespace Contractor.Console
 
             var decompiler = new CciDecompiler();
             var inputAssembly = decompiler.Decompile(options.InputAssembly, null);
-            var typeToAnalyze = inputAssembly.Types().First(t => t.Equals(options.TypeToAnalyze));
+            var typeToAnalyze = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
             var cancellationSource = new CancellationTokenSource();
 
             IAnalyzer analyzer = null;
@@ -101,7 +101,8 @@ namespace Contractor.Console
             //    epas = generator.GenerateEpas(cancellationSource.Token);
             //else
 
-            var analysisResult = generator.GenerateEpa(options.TypeToAnalyze);
+            var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
+            var analysisResult = generator.GenerateEpa(typeDefinition);
 
             System.Console.WriteLine(analysisResult.ToString());
             var epas = new Dictionary<string, TypeAnalysisResult> {{options.TypeToAnalyze, analysisResult}};

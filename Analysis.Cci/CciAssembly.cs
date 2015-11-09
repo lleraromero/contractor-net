@@ -1,4 +1,5 @@
 ﻿using Contractor.Core;
+using Contractor.Core.Model;
 using Contractor.Utils;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
@@ -7,6 +8,7 @@ using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableCodeModel.Contracts;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
@@ -38,25 +40,30 @@ namespace Analysis.Cci
             this.contractProvider = new AggregatingContractProvider(contractExtractor);
         }
 
-        public ISet<string> Types()
+        public IReadOnlyCollection<NamespaceDefinition> Namespaces()
         {
-            var types = this.module.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
-            return new HashSet<string>(from t in types
-                                       select TypeHelper.GetTypeName(t, NameFormattingOptions.None));
+            //TODO: arreglar
+            throw new NotImplementedException();
         }
 
-        public ISet<Action> Constructors(string typeName)
+        public IReadOnlyCollection<TypeDefinition> Types()
         {
-            var type = FindType(typeName);
-            return new HashSet<Action>(from m in type.Methods
+            var types = module.GetAnalyzableTypes();
+            return new ReadOnlyCollection<TypeDefinition>((from t in types select (TypeDefinition) new CciTypeDefinition(t)).ToList());
+        }
+
+        public ISet<Action> Constructors(TypeDefinition type)
+        {
+            var cciType = FindType(type.Name);
+            return new HashSet<Action>(from m in cciType.Methods
                                        where m.IsConstructor
                                        select new CciAction(m, this.contractProvider.GetMethodContractFor(m)));
         }
 
-        public ISet<Action> Actions(string typeName)
+        public ISet<Action> Actions(TypeDefinition type)
         {
-            var type = FindType(typeName);
-            return new HashSet<Action>(from m in type.Methods
+            var cciType = FindType(type.Name);
+            return new HashSet<Action>(from m in cciType.Methods
                                        where !m.IsConstructor && m.Visibility == TypeMemberVisibility.Public && 
                                        !m.IsStatic && !m.IsStaticConstructor
                                        select new CciAction(m, this.contractProvider.GetMethodContractFor(m)));

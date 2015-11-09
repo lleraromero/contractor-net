@@ -206,6 +206,7 @@
     <Compile Include="IAnalyzer.cs" />
     <Compile Include="IAssemblyXXX.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="NamespaceDefinition.cs" />
     <Compile Include="Query.cs" />
     <Compile Include="StringAction.cs" />
     <None Include="API.cd" />

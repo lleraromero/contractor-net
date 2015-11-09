@@ -3,6 +3,8 @@ using Microsoft.Cci.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Linq;
+using Contractor.Core.Model;
 using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
@@ -10,9 +12,10 @@ namespace Contractor.Core
     [ContractClass(typeof(IAssemblyXXXContracts))]
     public interface IAssemblyXXX
     {
-        ISet<string> Types();
-        ISet<Action> Constructors(string type);
-        ISet<Action> Actions(string type);
+        IReadOnlyCollection<NamespaceDefinition> Namespaces();
+        IReadOnlyCollection<TypeDefinition> Types();
+        ISet<Action> Constructors(TypeDefinition type);
+        ISet<Action> Actions(TypeDefinition type);
         IMethodContract GetContractFor(IMethodDefinition method);
     }
 
@@ -21,24 +24,30 @@ namespace Contractor.Core
     abstract class IAssemblyXXXContracts : IAssemblyXXX
     {
         [Pure]
-        public ISet<string> Types()
+        public IReadOnlyCollection<NamespaceDefinition> Namespaces()
         {
             throw new NotImplementedException();
         }
 
         [Pure]
-        public ISet<Action> Constructors(string typeName)
+        public IReadOnlyCollection<TypeDefinition> Types()
         {
-            Contract.Requires(!string.IsNullOrEmpty(typeName));
-            Contract.Requires(Types().Contains(typeName));
             throw new NotImplementedException();
         }
 
         [Pure]
-        public ISet<Action> Actions(string typeName)
+        public ISet<Action> Constructors(TypeDefinition type)
         {
-            Contract.Requires(!string.IsNullOrEmpty(typeName));
-            Contract.Requires(Types().Contains(typeName));
+            Contract.Requires(type != null);
+            Contract.Requires(Types().Contains(type));
+            throw new NotImplementedException();
+        }
+
+        [Pure]
+        public ISet<Action> Actions(TypeDefinition type)
+        {
+            Contract.Requires(type != null);
+            Contract.Requires(Types().Contains(type));
             throw new NotImplementedException();
         }
 

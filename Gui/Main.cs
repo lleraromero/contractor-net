@@ -42,6 +42,7 @@ namespace Contractor.Gui
         protected EpaViewerPresenter epaViewerPresenter;
         protected TypesViewerPresenter typesViewerPresenter;
         protected SynchronizationContext syncContext;
+        protected CciDecompiler decompiler;
         public Main()
         {
             InitializeComponent();
@@ -60,6 +61,8 @@ namespace Contractor.Gui
             epaViewerPresenter = new EpaViewerPresenter(epaViewer, new EpaViewer());
             syncContext = SynchronizationContext.Current;
             typesViewerPresenter = new TypesViewerPresenter(typesViewer, new TypesViewer(), syncContext);
+            decompiler = new CciDecompiler();
+            ;
         }
 
         #region Event Handlers
@@ -253,10 +256,9 @@ namespace Contractor.Gui
 
             var backend = (string) parameters["backend"];
 
-            var decompiler = new CciDecompiler();
             var inputAssembly = decompiler.Decompile(_AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
             var typeFullName = TypeHelper.GetTypeName(_AnalizedType, NameFormattingOptions.None);
-            var typeToAnalyze = inputAssembly.Types().First(t => t.Equals(typeFullName));
+            var typeToAnalyze = inputAssembly.Types().First(t => t.Name.Equals(typeFullName));
             _cancellationSource = new CancellationTokenSource();
 
             IAnalyzer analyzer = null;
@@ -308,7 +310,11 @@ namespace Contractor.Gui
                 var selectedMethods = listboxMethods.CheckedItems.Cast<string>();
 
                 BeginInvoke(new System.Action<string, string>(SetBackgroundStatus), "Generating contractor graph for {0}...", typeFullName);
-                var typeAnalysisResult = _EpaGenerator.GenerateEpa(typeFullName, selectedMethods);
+                
+                var inputAssembly = decompiler.Decompile(_AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
+                var typeToAnalyze = inputAssembly.Types().First(t => t.Name.Equals(typeFullName));
+            
+                var typeAnalysisResult = _EpaGenerator.GenerateEpa(typeToAnalyze, selectedMethods);
                 BeginInvoke(new Action<TypeAnalysisResult>(UpdateAnalysisEnd), typeAnalysisResult);
             }
             catch (Exception ex)

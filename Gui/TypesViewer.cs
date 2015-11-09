@@ -44,7 +44,7 @@ namespace Contractor.Gui
                 }
 
                 var typeName = type;
-                var typeNode = CreateChildNode(namespaceNode, typeName, "class");
+                var typeNode = CreateChildNode(namespaceNode, typeName.Name, "class");
                 typeNode.Tag = type;
 
                 //if (!type.IsPublic)

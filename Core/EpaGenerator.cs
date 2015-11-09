@@ -25,19 +25,19 @@ namespace Contractor.Core
             this.analyzer = analyzer;
         }
 
-        public TypeAnalysisResult GenerateEpa(string typeToAnalyze)
+        public TypeAnalysisResult GenerateEpa(TypeDefinition typeToAnalyze)
         {
-            Contract.Requires(!string.IsNullOrEmpty(typeToAnalyze));
+            Contract.Requires(typeToAnalyze != null);
 
             var constructors = this.assembly.Constructors(typeToAnalyze);
             var actions = this.assembly.Actions(typeToAnalyze);
             return GenerateEpa(typeToAnalyze, constructors, actions);
         }
 
-        public TypeAnalysisResult GenerateEpa(string typeToAnalyze, IEnumerable<string> selectedMethods)
+        public TypeAnalysisResult GenerateEpa(TypeDefinition typeToAnalyze, IEnumerable<string> selectedMethods)
         {
-            Contract.Requires(!string.IsNullOrEmpty(typeToAnalyze));
-            Contract.Requires(selectedMethods != null && selectedMethods.Count() > 0);
+            Contract.Requires(typeToAnalyze != null);
+            Contract.Requires(selectedMethods != null && selectedMethods.Any());
 
             var constructors = new HashSet<Action>(this.assembly.Constructors(typeToAnalyze).Where(a => selectedMethods.Contains(a.ToString())));
             var actions = new HashSet<Action>(this.assembly.Actions(typeToAnalyze).Where(a => selectedMethods.Contains(a.ToString())));
@@ -48,9 +48,9 @@ namespace Contractor.Core
         /// Method to create an EPA of a particular type considering only the subset 'methods'
         /// </summary>
         /// <see cref="http://publicaciones.dc.uba.ar/Publications/2011/DBGU11/paper-icse-2011.pdf">Algorithm 1</see>
-        private TypeAnalysisResult GenerateEpa(string typeToAnalyze, ISet<Action> constructors, ISet<Action> actions)
+        private TypeAnalysisResult GenerateEpa(TypeDefinition typeToAnalyze, ISet<Action> constructors, ISet<Action> actions)
         {
-            Contract.Requires(!string.IsNullOrEmpty(typeToAnalyze));
+            Contract.Requires(typeToAnalyze != null);
             Contract.Requires(analyzer != null);
             Contract.Requires(constructors != null);
             Contract.Requires(actions != null);

@@ -20,7 +20,7 @@ namespace Contractor.Core
         public void Serialize(Stream stream, Epa epa)
         {
             Contract.Requires(stream != null && stream.CanWrite);
-            Contract.Requires(epa != null && !string.IsNullOrEmpty(epa.Type));
+            Contract.Requires(epa != null && epa.Type != null);
 
             using (var writer = new XmlTextWriter(stream, Encoding.UTF8))
             {
@@ -30,7 +30,7 @@ namespace Contractor.Core
                 writer.WriteStartElement("abstraction");
                 writer.WriteAttributeString("initial_state", epa.Initial.Name);
                 writer.WriteAttributeString("input_format", "code-with-pre");
-                writer.WriteAttributeString("name", epa.Type);
+                writer.WriteAttributeString("name", epa.Type.Name);
 
                 SerializeActions(epa, writer);
                 SerializeStates(epa, writer);
@@ -55,7 +55,7 @@ namespace Contractor.Core
 
         private void SerializeStates(Epa epa, XmlTextWriter writer)
         {
-            Contract.Requires(epa != null && !string.IsNullOrEmpty(epa.Type));
+            Contract.Requires(epa != null && epa.Type != null);
             Contract.Requires(writer != null);
 
             foreach (var s in epa.States)
@@ -79,7 +79,7 @@ namespace Contractor.Core
 
         private void SerializeTransitions(Epa epa, XmlTextWriter writer, State s)
         {
-            Contract.Requires(epa != null && !string.IsNullOrEmpty(epa.Type));
+            Contract.Requires(epa != null && epa.Type != null);
             Contract.Requires(writer != null);
             Contract.Requires(s != null);
 
@@ -112,21 +112,23 @@ namespace Contractor.Core
             Contract.Requires(stream != null && stream.CanRead);
             Contract.Ensures(Contract.Result<Epa>() != null);
 
-            EpaBuilder epaBuilder;
-            using (var reader = new XmlTextReader(stream))
-            {
-                reader.Read(); // Document
-                reader.Read();
-                reader.Read(); // Epa
+            //TODO: arreglar
+            throw new NotImplementedException();
+            //EpaBuilder epaBuilder;
+            //using (var reader = new XmlTextReader(stream))
+            //{
+            //    reader.Read(); // Document
+            //    reader.Read();
+            //    reader.Read(); // Epa
 
-                string type = reader.GetAttribute("name");
-                string initialState = reader.GetAttribute("initial_state");
+            //    string type = reader.GetAttribute("name");
+            //    string initialState = reader.GetAttribute("initial_state");
 
-                DeserializeActions(reader);
-                epaBuilder = DeserializeStates(reader, type, initialState);
-            }
+            //    DeserializeActions(reader);
+            //    epaBuilder = DeserializeStates(reader, type, initialState);
+            //}
 
-            return epaBuilder.Build();
+            //return epaBuilder.Build();
         }
 
         private void DeserializeActions(XmlTextReader reader)
@@ -137,10 +139,10 @@ namespace Contractor.Core
             }
         }
 
-        private EpaBuilder DeserializeStates(XmlTextReader reader, string type, string initialState)
+        private EpaBuilder DeserializeStates(XmlTextReader reader, TypeDefinition type, string initialState)
         {
             Contract.Requires(reader != null);
-            Contract.Requires(!string.IsNullOrEmpty(type));
+            Contract.Requires(type != null);
             Contract.Requires(!string.IsNullOrEmpty(initialState));
 
             HashSet<Tuple<string, Action, string, bool>> transitions = new HashSet<Tuple<string, Model.Action, string, bool>>();

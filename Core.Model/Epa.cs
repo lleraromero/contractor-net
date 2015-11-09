@@ -8,13 +8,13 @@ namespace Contractor.Core.Model
 {
     public class Epa : IEquatable<Epa>
     {
-        protected string type;
         protected Dictionary<State, HashSet<Transition>> graph;
         protected State initial;
+        protected TypeDefinition type;
 
-        public Epa(string type, Dictionary<State, HashSet<Transition>> graph, State initial)
+        public Epa(TypeDefinition type, Dictionary<State, HashSet<Transition>> graph, State initial)
         {
-            Contract.Requires(!string.IsNullOrEmpty(type));
+            Contract.Requires(type != null);
             Contract.Requires(graph != null);
             Contract.Requires(graph.Values.All(trans => trans.All(t => graph.Keys.Contains(t.SourceState) && graph.Keys.Contains(t.TargetState))));
             Contract.Requires(initial != null && graph.Keys.Contains(initial));
@@ -24,12 +24,19 @@ namespace Contractor.Core.Model
             this.initial = initial;
         }
 
-        public string Type { get { return this.type; } }
-        public State Initial { get { return this.initial; } }
+        public TypeDefinition Type
+        {
+            get { return type; }
+        }
+
+        public State Initial
+        {
+            get { return initial; }
+        }
 
         public IImmutableSet<State> States
         {
-            get { return graph.Keys.ToImmutableHashSet<State>(); }
+            get { return graph.Keys.ToImmutableHashSet(); }
         }
 
         public IImmutableSet<Transition> Transitions
@@ -37,11 +44,12 @@ namespace Contractor.Core.Model
             get
             {
                 return graph.Values.Aggregate(new HashSet<Transition>(), (acum, l) => new HashSet<Transition>(acum.Union(l)))
-                    .ToImmutableHashSet<Transition>();
+                    .ToImmutableHashSet();
             }
         }
 
         #region IEquatable
+
         public override bool Equals(object obj)
         {
             // Again just optimization
@@ -49,15 +57,16 @@ namespace Contractor.Core.Model
             if (ReferenceEquals(this, obj)) return true;
 
             // Actually check the type, should not throw exception from Equals override
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
 
-            return Equals((Epa)obj);
+            return Equals((Epa) obj);
         }
+
         public bool Equals(Epa other)
         {
             return type.Equals(other.type) && initial.Equals(other.initial) &&
-                HashSet<State>.CreateSetComparer().Equals(new HashSet<State>(graph.Keys), new HashSet<State>(other.graph.Keys)) && 
-                graph.Keys.All(s => HashSet<Transition>.CreateSetComparer().Equals(graph[s], other.graph[s]));
+                   HashSet<State>.CreateSetComparer().Equals(new HashSet<State>(graph.Keys), new HashSet<State>(other.graph.Keys)) &&
+                   graph.Keys.All(s => HashSet<Transition>.CreateSetComparer().Equals(graph[s], other.graph[s]));
         }
 
         public override int GetHashCode()
@@ -65,6 +74,7 @@ namespace Contractor.Core.Model
             //TODO: mejorar para que valga la propiedad equals => mismo hash
             return type.GetHashCode() ^ initial.GetHashCode();
         }
+
         #endregion
     }
 }
