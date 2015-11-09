@@ -27,30 +27,14 @@ namespace Contractor.Gui
                 SelectedImageKey = "assembly"
             };
 
-            foreach (var type in types)
+            foreach (var namespaceDefinition in assembly.Namespaces())
             {
-                TreeNode namespaceNode;
-                var containingNamespace = "type.ContainingUnitNamespace";
-
-                if (namespaces.ContainsKey(containingNamespace))
+                TreeNode namespaceNode = CreateChildNode(assemblyNode, namespaceDefinition.Name(), "namespace");
+                foreach (var typeDefinition in namespaceDefinition.Types())
                 {
-                    namespaceNode = namespaces[containingNamespace];
+                    var typeNode = CreateChildNode(namespaceNode, typeDefinition.Name, "class");
+                    typeNode.Tag = typeDefinition;
                 }
-                else
-                {
-                    var namespaceName = containingNamespace.ToString();
-                    namespaceNode = CreateChildNode(assemblyNode, namespaceName, "namespace");
-                    namespaces.Add(containingNamespace, namespaceNode);
-                }
-
-                var typeName = type;
-                var typeNode = CreateChildNode(namespaceNode, typeName.Name, "class");
-                typeNode.Tag = type;
-
-                //if (!type.IsPublic)
-                //{
-                //    typeNode.ForeColor = Color.Gray;
-                //}
             }
 
             return assemblyNode;

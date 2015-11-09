@@ -17,31 +17,31 @@ namespace Analysis.Cci
     public class CciAssembly : IAssemblyXXX
     {
         protected IContractProvider contractProvider;
+        protected Module decompiledModule;
         protected IContractAwareHost host;
-        protected Module module;
 
         public CciAssembly(string fileName, string contractsFileName, IContractAwareHost host)
         {
             Contract.Requires(!string.IsNullOrEmpty(fileName) && File.Exists(fileName));
 
             this.host = host;
-            module = new CodeAndContractDeepCopier(this.host).Copy(DecompileModule(fileName));
-            var contractExtractor = this.host.GetContractExtractor(module.UnitIdentity);
+            decompiledModule = new CodeAndContractDeepCopier(this.host).Copy(DecompileModule(fileName));
+            var contractExtractor = this.host.GetContractExtractor(decompiledModule.UnitIdentity);
             contractProvider = new AggregatingContractProvider(contractExtractor);
         }
 
         protected CciAssembly(CciAssembly anotherAssembly)
         {
             host = anotherAssembly.host;
-            module = new CodeAndContractDeepCopier(host).Copy(anotherAssembly.module);
-            var contractExtractor = host.GetContractExtractor(module.UnitIdentity);
+            decompiledModule = new CodeAndContractDeepCopier(host).Copy(anotherAssembly.decompiledModule);
+            var contractExtractor = host.GetContractExtractor(decompiledModule.UnitIdentity);
             contractProvider = new AggregatingContractProvider(contractExtractor);
         }
 
         public IReadOnlyCollection<NamespaceDefinition> Namespaces()
         {
             var namespaces = new Dictionary<string, List<TypeDefinition>>();
-            foreach (var type in module.AllTypes)
+            foreach (var type in decompiledModule.AllTypes)
             {
                 var typeNamespace = FindNamespace(type);
 
@@ -71,7 +71,7 @@ namespace Analysis.Cci
         /// <remarks>
         ///     There are only two kind of INamedTypeDefinitions: Namespace and Nested
         /// </remarks>
-        private string FindNamespace(INamedTypeDefinition typeDefinition)
+        protected string FindNamespace(INamedTypeDefinition typeDefinition)
         {
             ITypeDefinition currentType = typeDefinition;
             while (currentType is INestedTypeDefinition)
@@ -87,12 +87,11 @@ namespace Analysis.Cci
             Contract.Requires(!string.IsNullOrEmpty(filename) && File.Exists(filename));
 
             var module = LoadModule(filename);
-            Module decompiledModule;
-            using (var pdbReader = GetPDBReader(module))
+
+            using (var pdbReader = GetPdbReader(module))
             {
-                decompiledModule = Decompiler.GetCodeModelFromMetadataModel(host, module, pdbReader);
+                return Decompiler.GetCodeModelFromMetadataModel(host, module, pdbReader);
             }
-            return decompiledModule;
         }
 
         protected IModule LoadModule(string filename)
@@ -107,7 +106,7 @@ namespace Analysis.Cci
             return module;
         }
 
-        protected PdbReader GetPDBReader(IModule module)
+        protected PdbReader GetPdbReader(IModule module)
         {
             Contract.Requires(module != null);
 

@@ -22,7 +22,7 @@ namespace Analyzer.Corral
             cciType.Methods.AddRange(from a in queries select a.Action.Method);
 
 
-            var newContractProvider = new ContractProvider(new ContractMethods(this.host), this.host.FindUnit(this.module.UnitIdentity));
+            var newContractProvider = new ContractProvider(new ContractMethods(this.host), this.host.FindUnit(this.decompiledModule.UnitIdentity));
             newContractProvider.AssociateTypeWithContract(cciType, this.contractProvider.GetTypeContractFor(cciType));
             this.contractProvider = newContractProvider;
 
@@ -38,27 +38,27 @@ namespace Analyzer.Corral
         {
             Contract.Requires(!string.IsNullOrEmpty(path) && !File.Exists(path));
 
-            var pdbReader = GetPDBReader(this.module);
+            var pdbReader = GetPdbReader(this.decompiledModule);
             // I need to replace Pre/Post with Assume/Assert
             ILocalScopeProvider localScopeProvider = new Microsoft.Cci.ILToCodeModel.Decompiler.LocalScopeProvider(pdbReader);
             ISourceLocationProvider sourceLocationProvider = pdbReader;
             var trans = new ContractRewriter(this.host, (ContractProvider)this.contractProvider, sourceLocationProvider);
-            this.module = trans.Rewrite(this.module) as Module;
+            this.decompiledModule = trans.Rewrite(this.decompiledModule) as Module;
 
-            pdbReader = GetPDBReader(this.module);
+            pdbReader = GetPdbReader(this.decompiledModule);
             // Save the query assembly to run Corral
             using (var peStream = File.Create(path))
             {
-                if (GetPDBReader(this.module) == null)
+                if (GetPdbReader(this.decompiledModule) == null)
                 {
-                    PeWriter.WritePeToStream(this.module, this.host, peStream);
+                    PeWriter.WritePeToStream(this.decompiledModule, this.host, peStream);
                 }
                 else
                 {
                     var pdbName = Path.ChangeExtension(path, "pdb");
                     using (var pdbWriter = new PdbWriter(pdbName, pdbReader))
                     {
-                        PeWriter.WritePeToStream(this.module, this.host, peStream, pdbReader, pdbReader, pdbWriter);
+                        PeWriter.WritePeToStream(this.decompiledModule, this.host, peStream, pdbReader, pdbReader, pdbWriter);
                     }
                 }
             }
@@ -66,7 +66,7 @@ namespace Analyzer.Corral
 
         protected NamespaceTypeDefinition FindType(string typeName)
         {
-            var types = this.module.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
+            var types = this.decompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
             var type = types.First(t => TypeHelper.GetTypeName(t, NameFormattingOptions.None).Equals(typeName));
             return type;
         }

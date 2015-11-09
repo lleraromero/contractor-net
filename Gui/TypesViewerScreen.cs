@@ -20,6 +20,8 @@ namespace Contractor.Gui
         public TypesViewerScreen()
         {
             InitializeComponent();
+            trvTypes.ShowPlusMinus = true;
+            trvTypes.Sorted = true;
         }
 
         public TreeNode Root 
