@@ -29,8 +29,8 @@ namespace Contractor.Core
         {
             Contract.Requires(typeToAnalyze != null);
 
-            var constructors = this.assembly.Constructors(typeToAnalyze);
-            var actions = this.assembly.Actions(typeToAnalyze);
+            var constructors = typeToAnalyze.Constructors();
+            var actions = typeToAnalyze.Actions();
             return GenerateEpa(typeToAnalyze, constructors, actions);
         }
 
@@ -39,8 +39,8 @@ namespace Contractor.Core
             Contract.Requires(typeToAnalyze != null);
             Contract.Requires(selectedMethods != null && selectedMethods.Any());
 
-            var constructors = new HashSet<Action>(this.assembly.Constructors(typeToAnalyze).Where(a => selectedMethods.Contains(a.ToString())));
-            var actions = new HashSet<Action>(this.assembly.Actions(typeToAnalyze).Where(a => selectedMethods.Contains(a.ToString())));
+            var constructors = new HashSet<Action>(typeToAnalyze.Constructors().Where(a => selectedMethods.Contains(a.ToString())));
+            var actions = new HashSet<Action>(typeToAnalyze.Actions().Where(a => selectedMethods.Contains(a.ToString())));
             return GenerateEpa(typeToAnalyze, constructors, actions);
         }
 

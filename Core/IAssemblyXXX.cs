@@ -14,8 +14,6 @@ namespace Contractor.Core
     {
         IReadOnlyCollection<NamespaceDefinition> Namespaces();
         IReadOnlyCollection<TypeDefinition> Types();
-        ISet<Action> Constructors(TypeDefinition type);
-        ISet<Action> Actions(TypeDefinition type);
         IMethodContract GetContractFor(IMethodDefinition method);
     }
 
@@ -32,22 +30,6 @@ namespace Contractor.Core
         [Pure]
         public IReadOnlyCollection<TypeDefinition> Types()
         {
-            throw new NotImplementedException();
-        }
-
-        [Pure]
-        public ISet<Action> Constructors(TypeDefinition type)
-        {
-            Contract.Requires(type != null);
-            Contract.Requires(Types().Contains(type));
-            throw new NotImplementedException();
-        }
-
-        [Pure]
-        public ISet<Action> Actions(TypeDefinition type)
-        {
-            Contract.Requires(type != null);
-            Contract.Requires(Types().Contains(type));
             throw new NotImplementedException();
         }
 

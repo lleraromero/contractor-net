@@ -8,16 +8,23 @@ namespace Contractor.Core
 {
     public class NamespaceDefinition
     {
-        private readonly IReadOnlyCollection<TypeDefinition> types;
+        protected readonly string name;
+        protected readonly IReadOnlyCollection<TypeDefinition> types;
 
-        public NamespaceDefinition(IEnumerable<TypeDefinition> types)
+        public NamespaceDefinition(string name, IEnumerable<TypeDefinition> types)
         {
             Contract.Requires(types != null && types.Any());
 
+            this.name = name;
             this.types = new ReadOnlyCollection<TypeDefinition>(types.ToList());
         }
 
-        private IReadOnlyCollection<TypeDefinition> Types()
+        public string Name()
+        {
+            return name;
+        }
+
+        public IReadOnlyCollection<TypeDefinition> Types()
         {
             return types;
         }
