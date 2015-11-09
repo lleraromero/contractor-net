@@ -63,5 +63,12 @@ namespace Analyzer.Corral
                 }
             }
         }
+
+        protected NamespaceTypeDefinition FindType(string typeName)
+        {
+            var types = this.module.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
+            var type = types.First(t => TypeHelper.GetTypeName(t, NameFormattingOptions.None).Equals(typeName));
+            return type;
+        }
     }
 }

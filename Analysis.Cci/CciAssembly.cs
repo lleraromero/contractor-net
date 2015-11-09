@@ -54,31 +54,17 @@ namespace Analysis.Cci
 
         public ISet<Action> Constructors(TypeDefinition type)
         {
-            var cciType = FindType(type.Name);
-            return new HashSet<Action>(from m in cciType.Methods
-                                       where m.IsConstructor
-                                       select new CciAction(m, this.contractProvider.GetMethodContractFor(m)));
+            return type.Constructors();
         }
 
         public ISet<Action> Actions(TypeDefinition type)
         {
-            var cciType = FindType(type.Name);
-            return new HashSet<Action>(from m in cciType.Methods
-                                       where !m.IsConstructor && m.Visibility == TypeMemberVisibility.Public && 
-                                       !m.IsStatic && !m.IsStaticConstructor
-                                       select new CciAction(m, this.contractProvider.GetMethodContractFor(m)));
+            return type.Actions();
         }
 
         public IMethodContract GetContractFor(IMethodDefinition method)
         {
             return this.contractProvider.GetMethodContractFor(method);
-        }
-
-        protected NamespaceTypeDefinition FindType(string typeName)
-        {
-            var types = this.module.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
-            var type = types.First(t => TypeHelper.GetTypeName(t, NameFormattingOptions.None).Equals(typeName));
-            return type;
         }
 
         protected Module DecompileModule(string filename)
