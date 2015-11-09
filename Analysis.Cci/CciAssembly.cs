@@ -49,7 +49,7 @@ namespace Analysis.Cci
         public IReadOnlyCollection<TypeDefinition> Types()
         {
             var types = module.GetAnalyzableTypes();
-            return new ReadOnlyCollection<TypeDefinition>((from t in types select (TypeDefinition) new CciTypeDefinition(t)).ToList());
+            return new ReadOnlyCollection<TypeDefinition>((from t in types select (TypeDefinition) new CciTypeDefinition(t, contractProvider)).ToList());
         }
 
         public ISet<Action> Constructors(TypeDefinition type)
