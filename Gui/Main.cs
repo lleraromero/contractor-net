@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.Drawing.Text;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Remoting.Channels;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,12 +13,8 @@ using Analysis.Cci;
 using Analyzer.Corral;
 using Contractor.Core;
 using Contractor.Core.Model;
-using Contractor.Utils;
 using Microsoft.Cci;
-using Microsoft.Msagl.Drawing;
-using Microsoft.Msagl.GraphViewerGdi;
 using Action = System.Action;
-using Color = System.Drawing.Color;
 
 namespace Contractor.Gui
 {
@@ -31,19 +22,19 @@ namespace Contractor.Gui
     {
         private readonly AssemblyInfo _AssemblyInfo;
         private Thread _AnalisisThread;
-        private INamedTypeDefinition _AnalizedType;
         private CancellationTokenSource _cancellationSource;
         private string _ContractReferenceAssemblyFileName;
         private EpaGenerator _EpaGenerator;
 
         private TypeAnalysisResult _LastResult;
         private Options _Options;
-        private IViewerNode _SelectedGraphNode;
+        protected CciDecompiler decompiler;
 
         protected EpaViewerPresenter epaViewerPresenter;
-        protected TypesViewerPresenter typesViewerPresenter;
+        protected TypeDefinition selectedType;
         protected SynchronizationContext syncContext;
-        protected CciDecompiler decompiler;
+        protected TypesViewerPresenter typesViewerPresenter;
+
         public Main()
         {
             InitializeComponent();
@@ -62,16 +53,16 @@ namespace Contractor.Gui
             syncContext = SynchronizationContext.Current;
             typesViewerPresenter = new TypesViewerPresenter(typesViewer, new TypesViewer(), syncContext);
             typesViewerPresenter.TypeSelected += TypesViewerPresenterOnTypeSelected;
-            typesViewerPresenter.StartAnalysis += (sender, definition) => { StartAnalisis(definition); };
+            typesViewerPresenter.StartAnalysis += (sender, typeDefinition) => { StartAnalisisAsync(typeDefinition); };
 
             decompiler = new CciDecompiler();
         }
 
-        protected void TypesViewerPresenterOnTypeSelected(object sender, EventArgs eventArgs)
+        protected void TypesViewerPresenterOnTypeSelected(object sender, TypeDefinition typeDefinition)
         {
             UpdateStartAnalisisCommand();
             listboxMethods.Items.Clear();
-            LoadTypeMethods(typesViewerPresenter.GetSelectedType());
+            LoadTypeMethods(typeDefinition);
         }
 
         #region Event Handlers
@@ -159,7 +150,7 @@ namespace Contractor.Gui
 
         protected void OnStartAnalysis(object sender, EventArgs e)
         {
-            StartAnalisis(typesViewerPresenter.GetSelectedType());
+            StartAnalisisAsync(selectedType);
         }
 
         protected void OnStopAnalysis(object sender, EventArgs e)
@@ -168,7 +159,7 @@ namespace Contractor.Gui
 
             buttonStopAnalysis.Enabled = false;
 
-            var typeFullName = typesViewerPresenter.GetSelectedType().ToString();
+            var typeFullName = selectedType.ToString();
             statusLabel.Text = string.Format("Aborting analysis for {0}...", typeFullName);
         }
 
@@ -228,15 +219,17 @@ namespace Contractor.Gui
 
             UpdateAnalysisProgress();
         }
+
         #endregion Event Handlers
 
         #region Private Methods
 
-        protected void StartAnalisis(TypeDefinition typeToAnalyze)
+        protected async void StartAnalisisAsync(TypeDefinition typeToAnalyze)
         {
-            var backend = (string)cmbBackend.SelectedItem;
+            var backend = (string) cmbBackend.SelectedItem;
 
             var inputAssembly = decompiler.Decompile(_AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
+            selectedType = inputAssembly.Types().First(t => t.Name.Equals(typeToAnalyze.Name));
 
             _cancellationSource = new CancellationTokenSource();
 
@@ -247,7 +240,7 @@ namespace Contractor.Gui
                     throw new NotImplementedException();
                 case "Corral":
                     analyzer = new CorralAnalyzer(decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly, _AssemblyInfo.FileName,
-                        typeToAnalyze, _cancellationSource.Token);
+                        selectedType, _cancellationSource.Token);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -257,13 +250,15 @@ namespace Contractor.Gui
             _EpaGenerator.StateAdded += OnStateAdded;
             _EpaGenerator.TransitionAdded += OnTransitionAdded;
 
-            _AnalisisThread = new Thread(GenerateGraph);
-            _AnalisisThread.Name = "GenerateGraph";
-            _AnalisisThread.IsBackground = true;
-            _AnalisisThread.Start();
+            //_AnalisisThread = new Thread(GenerateGraph(typeToAnalyze));
+            //_AnalisisThread.Name = "GenerateGraph";
+            //_AnalisisThread.IsBackground = true;
+            //_AnalisisThread.Start();
+
+            await Task.Run(() => GenerateGraph(selectedType));
         }
 
-        private void GenerateGraph()
+        protected void GenerateGraph(TypeDefinition typeToAnalyze)
         {
             BeginInvoke(new Action(UpdateAnalysisInitialize));
             try
@@ -277,13 +272,12 @@ namespace Contractor.Gui
                     BeginInvoke(new System.Action<string, string>(SetBackgroundStatus), "Loading contracts from assembly {0}...", fileName);
                 }
 
-                var typeFullName = TypeHelper.GetTypeName(_AnalizedType, NameFormattingOptions.None);
+                var typeFullName = selectedType.Name;
                 var selectedMethods = listboxMethods.CheckedItems.Cast<string>();
 
                 BeginInvoke(new System.Action<string, string>(SetBackgroundStatus), "Generating contractor graph for {0}...", typeFullName);
 
                 var inputAssembly = decompiler.Decompile(_AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
-                var typeToAnalyze = inputAssembly.Types().First(t => t.Name.Equals(typeFullName));
 
                 var typeAnalysisResult = _EpaGenerator.GenerateEpa(typeToAnalyze, selectedMethods);
                 BeginInvoke(new Action<TypeAnalysisResult>(UpdateAnalysisEnd), typeAnalysisResult);
@@ -291,18 +285,17 @@ namespace Contractor.Gui
             catch (Exception ex)
             {
                 BeginInvoke(new Action<Exception>(HandleException), ex);
-                BeginInvoke(new Action<TypeAnalysisResult>(UpdateAnalysisEnd), (object)null);
+                BeginInvoke(new Action<TypeAnalysisResult>(UpdateAnalysisEnd), (object) null);
             }
         }
 
         private void UpdateAnalysisInitialize()
         {
-            var typeFullName = _AnalizedType.GetDisplayName();
+            var typeFullName = selectedType.ToString();
             StartBackgroundTask("Initializing analysis for {0}...", typeFullName);
 
             epaViewerPresenter.Reset();
 
-            _SelectedGraphNode = null;
             richtextboxInformation.Clear();
 
             buttonStartAnalysis.Enabled = false;
@@ -317,7 +310,7 @@ namespace Contractor.Gui
         {
             Contract.Requires(analysisResult != null);
 
-            var typeFullName = _AnalizedType.GetDisplayName();
+            var typeFullName = selectedType.ToString();
 
             if (_cancellationSource.IsCancellationRequested)
             {
@@ -355,7 +348,7 @@ namespace Contractor.Gui
 
         private void UpdateAnalysisProgress()
         {
-            var typeFullName = _AnalizedType.GetDisplayName();
+            var typeFullName = selectedType.ToString();
             var msg = "Performing analysis for {0}: {1} states, {2} transitions";
             //statusLabel.Text = string.Format(msg, typeFullName, _Graph.NodeCount, _Graph.EdgeCount);
 
@@ -379,7 +372,7 @@ namespace Contractor.Gui
 
         private void GenerateAssembly(string fileName)
         {
-            BeginInvoke((Action)delegate
+            BeginInvoke((Action) delegate
             {
                 var name = Path.GetFileName(fileName);
                 StartBackgroundTask("Generating assembly {0}...", name);
@@ -396,7 +389,7 @@ namespace Contractor.Gui
                 BeginInvoke(new Action<Exception>(HandleException), ex);
             }
 
-            BeginInvoke((Action)delegate { EndBackgroundTask(); });
+            BeginInvoke((Action) delegate { EndBackgroundTask(); });
         }
 
         public void HandleException(Exception ex)
@@ -476,7 +469,7 @@ namespace Contractor.Gui
             Contract.Requires(!string.IsNullOrEmpty(fileName));
             Contract.Requires(epa != null);
 
-            BeginInvoke((Action)delegate
+            BeginInvoke((Action) delegate
             {
                 var name = Path.GetFileName(fileName);
                 StartBackgroundTask("Exporting graph to {0}...", name);
@@ -514,7 +507,7 @@ namespace Contractor.Gui
                 BeginInvoke(new Action<Exception>(HandleException), ex);
             }
 
-            BeginInvoke((Action)delegate { EndBackgroundTask(); });
+            BeginInvoke((Action) delegate { EndBackgroundTask(); });
         }
 
         private void ExportGraphvizGraph(string fileName, Epa epa)
@@ -645,12 +638,12 @@ namespace Contractor.Gui
         {
             var analisisRunning = _AnalisisThread != null;
 
-            buttonStartAnalysis.Enabled = typesViewerPresenter.GetSelectedType() != null && !analisisRunning;
+            buttonStartAnalysis.Enabled = selectedType != null && !analisisRunning;
         }
 
         private async void LoadAssembly(string fileName)
         {
-            BeginInvoke((Action)delegate
+            BeginInvoke((Action) delegate
             {
                 var name = Path.GetFileName(fileName);
                 StartBackgroundTask("Loading assembly {0}...", name);
@@ -661,7 +654,7 @@ namespace Contractor.Gui
             var assembly = new CciDecompiler().Decompile(fileName, null);
             await Task.Run(() => typesViewerPresenter.ShowTypes(assembly));
 
-            BeginInvoke((Action)delegate
+            BeginInvoke((Action) delegate
             {
                 buttonLoadContracts.Enabled = true;
 
@@ -719,7 +712,7 @@ namespace Contractor.Gui
             listboxMethods.BeginUpdate();
             foreach (var method in methods)
             {
-                listboxMethods.Items.Add(method, true);
+                listboxMethods.Items.Add(method.ToString(), true);
             }
             listboxMethods.EndUpdate();
         }

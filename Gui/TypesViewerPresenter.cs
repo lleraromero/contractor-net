@@ -8,9 +8,6 @@ namespace Contractor.Gui
 {
     internal class TypesViewerPresenter
     {
-        public event EventHandler<TypeDefinition> StartAnalysis;
-        public event EventHandler TypeSelected;
-
         protected ITypesViewerScreen screen;
         protected SynchronizationContext syncContext;
         protected ITypesViewer typesViewer;
@@ -21,32 +18,30 @@ namespace Contractor.Gui
             this.typesViewer = typesViewer;
             this.syncContext = syncContext;
 
-            this.screen.StartAnalysis += (sender, definition) =>
+            this.screen.StartAnalysis += (sender, typeDefinition) =>
             {
                 if (StartAnalysis != null)
                 {
-                    StartAnalysis(sender, definition);
+                    StartAnalysis(sender, typeDefinition);
                 }
             };
 
-            this.screen.TypeSelected += (sender, args) =>
+            this.screen.TypeSelected += (sender, typeDefinition) =>
             {
                 if (TypeSelected != null)
                 {
-                    TypeSelected(sender, args);
+                    TypeSelected(sender, typeDefinition);
                 }
             };
         }
+
+        public event EventHandler<TypeDefinition> StartAnalysis;
+        public event EventHandler<TypeDefinition> TypeSelected;
 
         public void ShowTypes(IAssemblyXXX assembly)
         {
             var rootNode = typesViewer.GetTypesTreeRoot(assembly);
             syncContext.Post(param => { screen.Root = param as TreeNode; }, rootNode);
-        }
-
-        public TypeDefinition GetSelectedType()
-        {
-            return screen.SelectedType;
         }
 
         public void Reset()

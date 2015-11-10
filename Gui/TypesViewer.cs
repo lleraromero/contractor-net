@@ -1,20 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Windows.Forms;
 using Contractor.Core;
-using Microsoft.Cci;
 
 namespace Contractor.Gui
 {
-    interface ITypesViewer
+    internal interface ITypesViewer
     {
         TreeNode GetTypesTreeRoot(IAssemblyXXX assembly);
     }
 
-    class TypesViewer : ITypesViewer
+    internal class TypesViewer : ITypesViewer
     {
         public TreeNode GetTypesTreeRoot(IAssemblyXXX assembly)
         {
@@ -29,10 +24,10 @@ namespace Contractor.Gui
 
             foreach (var namespaceDefinition in assembly.Namespaces())
             {
-                TreeNode namespaceNode = CreateChildNode(assemblyNode, namespaceDefinition.Name(), "namespace");
+                var namespaceNode = CreateChildNode(assemblyNode, namespaceDefinition.Name(), "namespace");
                 foreach (var typeDefinition in namespaceDefinition.Types())
                 {
-                    var typeNode = CreateChildNode(namespaceNode, typeDefinition.Name, "class");
+                    var typeNode = CreateChildNode(namespaceNode, typeDefinition.ToString(), "class");
                     typeNode.Tag = typeDefinition;
                 }
             }

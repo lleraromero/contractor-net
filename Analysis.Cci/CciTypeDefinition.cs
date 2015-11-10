@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Text;
 using Contractor.Core.Model;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
@@ -48,7 +49,18 @@ namespace Analysis.Cci
 
         public override string ToString()
         {
-            return Name;
+            var name =
+                new StringBuilder(TypeHelper.GetTypeName(typeDefinition, NameFormattingOptions.OmitContainingNamespace | NameFormattingOptions.None));
+
+            if (typeDefinition.IsGeneric)
+            {
+                var genericParameters = string.Join(",", typeDefinition.GenericParameters);
+                name.Append('<');
+                name.Append(genericParameters);
+                name.Append('>');
+            }
+
+            return name.ToString();
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Windows.Forms;
 using Contractor.Core.Model;
 
@@ -8,9 +7,8 @@ namespace Contractor.Gui
     internal interface ITypesViewerScreen
     {
         TreeNode Root { set; }
-        TypeDefinition SelectedType { get; }
         void Reset();
-        event EventHandler TypeSelected;
+        event EventHandler<TypeDefinition> TypeSelected;
         event EventHandler<TypeDefinition> StartAnalysis;
     }
 
@@ -23,7 +21,7 @@ namespace Contractor.Gui
             trvTypes.Sorted = true;
         }
 
-        public event EventHandler TypeSelected;
+        public event EventHandler<TypeDefinition> TypeSelected;
         public event EventHandler<TypeDefinition> StartAnalysis;
 
         public TreeNode Root
@@ -33,15 +31,6 @@ namespace Contractor.Gui
                 trvTypes.BeginUpdate();
                 trvTypes.Nodes.Add(value);
                 trvTypes.EndUpdate();
-            }
-        }
-
-        public TypeDefinition SelectedType
-        {
-            get
-            {
-                Contract.Ensures(Contract.Result<TypeDefinition>() != null);
-                return trvTypes.SelectedNode.Tag as TypeDefinition;
             }
         }
 
@@ -57,7 +46,7 @@ namespace Contractor.Gui
             var typeDefinition = e.Node.Tag as TypeDefinition;
             if (typeDefinition != null && TypeSelected != null)
             {
-                TypeSelected(sender, e);
+                TypeSelected(sender, typeDefinition);
             }
         }
 
