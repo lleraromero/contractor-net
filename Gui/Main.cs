@@ -9,6 +9,7 @@ using System.Drawing.Text;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Channels;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,7 +35,7 @@ namespace Contractor.Gui
         private CancellationTokenSource _cancellationSource;
         private string _ContractReferenceAssemblyFileName;
         private EpaGenerator _EpaGenerator;
-        
+
         private TypeAnalysisResult _LastResult;
         private Options _Options;
         private IViewerNode _SelectedGraphNode;
@@ -48,8 +49,6 @@ namespace Contractor.Gui
             InitializeComponent();
 
             splitcontainerOutput.Panel2Collapsed = true;
-            treeviewTypes.Sorted = true;
-            treeviewTypes.ShowPlusMinus = true;
             cmbBackend.Items.Add("CodeContracts");
             cmbBackend.Items.Add("Corral");
             cmbBackend.SelectedIndex = 1;
@@ -59,10 +58,20 @@ namespace Contractor.Gui
             _Options = new Options();
 
             epaViewerPresenter = new EpaViewerPresenter(epaViewer, new EpaViewer());
+
             syncContext = SynchronizationContext.Current;
             typesViewerPresenter = new TypesViewerPresenter(typesViewer, new TypesViewer(), syncContext);
+            typesViewerPresenter.TypeSelected += TypesViewerPresenterOnTypeSelected;
+            typesViewerPresenter.StartAnalysis += (sender, definition) => { StartAnalisis(definition); };
+
             decompiler = new CciDecompiler();
-            ;
+        }
+
+        protected void TypesViewerPresenterOnTypeSelected(object sender, EventArgs eventArgs)
+        {
+            UpdateStartAnalisisCommand();
+            listboxMethods.Items.Clear();
+            LoadTypeMethods(typesViewerPresenter.GetSelectedType());
         }
 
         #region Event Handlers
@@ -79,10 +88,9 @@ namespace Contractor.Gui
             }
         }
 
-        private void OnAbout(object sender, EventArgs e)
+        protected void OnAbout(object sender, EventArgs e)
         {
-            var aboutDialog = new AboutDialog();
-            aboutDialog.ShowDialog(this);
+            new AboutDialog().ShowDialog(this);
         }
 
         private void OnOptions(object sender, EventArgs e)
@@ -103,27 +111,6 @@ namespace Contractor.Gui
         {
             splitcontainerOutput.Panel2Collapsed = true;
             menuitemOutput.Checked = false;
-        }
-
-        private void OnTreeNodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
-        {
-            if (!buttonStartAnalysis.Enabled) return;
-            StartAnalisis();
-        }
-
-        private void OnAfterSelectTreeNode(object sender, TreeViewEventArgs e)
-        {
-            UpdateStartAnalisisCommand();
-            listboxMethods.Items.Clear();
-            toolstripMethods.Enabled = false;
-
-            if (e.Node.Tag is INamedTypeDefinition)
-            {
-                toolstripMethods.Enabled = true;
-
-                var selectedType = e.Node.Tag as INamedTypeDefinition;
-                LoadTypeMethods(selectedType);
-            }
         }
 
         private void OnCheckAllMethods(object sender, EventArgs e)
@@ -170,22 +157,19 @@ namespace Contractor.Gui
             }
         }
 
-        private void OnStartAnalysis(object sender, EventArgs e)
+        protected void OnStartAnalysis(object sender, EventArgs e)
         {
-            StartAnalisis();
+            StartAnalisis(typesViewerPresenter.GetSelectedType());
         }
 
-        private void OnStopAnalysis(object sender, EventArgs e)
+        protected void OnStopAnalysis(object sender, EventArgs e)
         {
-            if (_AnalisisThread != null && _AnalisisThread.IsAlive)
-            {
-                _cancellationSource.Cancel();
+            _cancellationSource.Cancel();
 
-                buttonStopAnalysis.Enabled = false;
+            buttonStopAnalysis.Enabled = false;
 
-                var typeFullName = _AnalizedType.GetDisplayName();
-                statusLabel.Text = string.Format("Aborting analysis for {0}...", typeFullName);
-            }
+            var typeFullName = typesViewerPresenter.GetSelectedType().ToString();
+            statusLabel.Text = string.Format("Aborting analysis for {0}...", typeFullName);
         }
 
         private void OnExportGraph(object sender, EventArgs e)
@@ -248,17 +232,12 @@ namespace Contractor.Gui
 
         #region Private Methods
 
-        private void StartAnalisis()
+        protected void StartAnalisis(TypeDefinition typeToAnalyze)
         {
-            var parameters = GetParameters();
-
-            _AnalizedType = treeviewTypes.SelectedNode.Tag as INamedTypeDefinition;
-
-            var backend = (string) parameters["backend"];
+            var backend = (string)cmbBackend.SelectedItem;
 
             var inputAssembly = decompiler.Decompile(_AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
-            var typeFullName = TypeHelper.GetTypeName(_AnalizedType, NameFormattingOptions.None);
-            var typeToAnalyze = inputAssembly.Types().First(t => t.Name.Equals(typeFullName));
+
             _cancellationSource = new CancellationTokenSource();
 
             IAnalyzer analyzer = null;
@@ -284,14 +263,6 @@ namespace Contractor.Gui
             _AnalisisThread.Start();
         }
 
-        private Dictionary<string, object> GetParameters()
-        {
-            var parameters = new Dictionary<string, object>();
-            parameters.Add("backend", cmbBackend.SelectedItem);
-
-            return parameters;
-        }
-
         private void GenerateGraph()
         {
             BeginInvoke(new Action(UpdateAnalysisInitialize));
@@ -310,17 +281,17 @@ namespace Contractor.Gui
                 var selectedMethods = listboxMethods.CheckedItems.Cast<string>();
 
                 BeginInvoke(new System.Action<string, string>(SetBackgroundStatus), "Generating contractor graph for {0}...", typeFullName);
-                
+
                 var inputAssembly = decompiler.Decompile(_AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
                 var typeToAnalyze = inputAssembly.Types().First(t => t.Name.Equals(typeFullName));
-            
+
                 var typeAnalysisResult = _EpaGenerator.GenerateEpa(typeToAnalyze, selectedMethods);
                 BeginInvoke(new Action<TypeAnalysisResult>(UpdateAnalysisEnd), typeAnalysisResult);
             }
             catch (Exception ex)
             {
                 BeginInvoke(new Action<Exception>(HandleException), ex);
-                BeginInvoke(new Action<TypeAnalysisResult>(UpdateAnalysisEnd), (object) null);
+                BeginInvoke(new Action<TypeAnalysisResult>(UpdateAnalysisEnd), (object)null);
             }
         }
 
@@ -408,7 +379,7 @@ namespace Contractor.Gui
 
         private void GenerateAssembly(string fileName)
         {
-            BeginInvoke((Action) delegate
+            BeginInvoke((Action)delegate
             {
                 var name = Path.GetFileName(fileName);
                 StartBackgroundTask("Generating assembly {0}...", name);
@@ -425,7 +396,7 @@ namespace Contractor.Gui
                 BeginInvoke(new Action<Exception>(HandleException), ex);
             }
 
-            BeginInvoke((Action) delegate { EndBackgroundTask(); });
+            BeginInvoke((Action)delegate { EndBackgroundTask(); });
         }
 
         public void HandleException(Exception ex)
@@ -505,7 +476,7 @@ namespace Contractor.Gui
             Contract.Requires(!string.IsNullOrEmpty(fileName));
             Contract.Requires(epa != null);
 
-            BeginInvoke((Action) delegate
+            BeginInvoke((Action)delegate
             {
                 var name = Path.GetFileName(fileName);
                 StartBackgroundTask("Exporting graph to {0}...", name);
@@ -543,7 +514,7 @@ namespace Contractor.Gui
                 BeginInvoke(new Action<Exception>(HandleException), ex);
             }
 
-            BeginInvoke((Action) delegate { EndBackgroundTask(); });
+            BeginInvoke((Action)delegate { EndBackgroundTask(); });
         }
 
         private void ExportGraphvizGraph(string fileName, Epa epa)
@@ -672,34 +643,26 @@ namespace Contractor.Gui
 
         private void UpdateStartAnalisisCommand()
         {
-            var selectedNode = treeviewTypes.SelectedNode;
-            var isClassNode = selectedNode != null && selectedNode.Tag is INamedTypeDefinition;
             var analisisRunning = _AnalisisThread != null;
 
-            buttonStartAnalysis.Enabled = isClassNode && !analisisRunning;
+            buttonStartAnalysis.Enabled = typesViewerPresenter.GetSelectedType() != null && !analisisRunning;
         }
 
         private async void LoadAssembly(string fileName)
         {
-            BeginInvoke((Action) delegate
+            BeginInvoke((Action)delegate
             {
                 var name = Path.GetFileName(fileName);
                 StartBackgroundTask("Loading assembly {0}...", name);
             });
 
             _AssemblyInfo.Load(fileName);
-            
+
             var assembly = new CciDecompiler().Decompile(fileName, null);
             await Task.Run(() => typesViewerPresenter.ShowTypes(assembly));
 
-            var root = LoadAssemblyTypes();
-
-            BeginInvoke((Action) delegate
+            BeginInvoke((Action)delegate
             {
-                treeviewTypes.BeginUpdate();
-                treeviewTypes.Nodes.Add(root);
-                treeviewTypes.EndUpdate();
-
                 buttonLoadContracts.Enabled = true;
 
                 buttonLoadContracts.Checked = false;
@@ -710,7 +673,7 @@ namespace Contractor.Gui
 
         private void UnloadAssembly()
         {
-            treeviewTypes.Nodes.Clear();
+            typesViewerPresenter.Reset();
             listboxMethods.Items.Clear();
             _ContractReferenceAssemblyFileName = null;
         }
@@ -749,66 +712,16 @@ namespace Contractor.Gui
             textboxOutput.AppendText(Environment.NewLine);
         }
 
-        private TreeNode LoadAssemblyTypes()
+        protected void LoadTypeMethods(TypeDefinition typeDefinition)
         {
-            var namespaces = new Dictionary<INamespaceDefinition, TreeNode>();
-            var types = _AssemblyInfo.Module.GetAnalyzableTypes();
-            var assemblyNode = new TreeNode
-            {
-                Text = _AssemblyInfo.Module.Name.Value,
-                ImageKey = "assembly",
-                SelectedImageKey = "assembly"
-            };
+            var methods = typeDefinition.Constructors().Union(typeDefinition.Actions());
 
-            foreach (var type in types)
-            {
-                TreeNode namespaceNode;
-                var containingNamespace = type.ContainingUnitNamespace;
-
-                if (namespaces.ContainsKey(containingNamespace))
-                {
-                    namespaceNode = namespaces[containingNamespace];
-                }
-                else
-                {
-                    var namespaceName = containingNamespace.ToString();
-                    namespaceNode = CreateTreeNode(assemblyNode, namespaceName, "namespace");
-                    namespaces.Add(containingNamespace, namespaceNode);
-                }
-
-                var typeName = type.GetDisplayName();
-                var typeNode = CreateTreeNode(namespaceNode, typeName, "class");
-                typeNode.Tag = type;
-
-                if (!type.IsPublic)
-                {
-                    typeNode.ForeColor = Color.Gray;
-                }
-            }
-
-            return assemblyNode;
-        }
-
-        private void LoadTypeMethods(INamedTypeDefinition type)
-        {
-            var methods = type.GetPublicInstanceMethods();
             listboxMethods.BeginUpdate();
-
             foreach (var method in methods)
             {
-                var name = method.GetDisplayName();
-                listboxMethods.Items.Add(name, true);
+                listboxMethods.Items.Add(method, true);
             }
-
             listboxMethods.EndUpdate();
-        }
-
-        private TreeNode CreateTreeNode(TreeNode rootNode, string name, string image)
-        {
-            var node = rootNode.Nodes.Add(name);
-            node.ImageKey = image;
-            node.SelectedImageKey = image;
-            return node;
         }
 
         #endregion Private Methods

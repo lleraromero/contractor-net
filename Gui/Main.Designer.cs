@@ -57,19 +57,18 @@
             this.textboxOutput = new System.Windows.Forms.TextBox();
             this.splitcontainerV = new System.Windows.Forms.SplitContainer();
             this.splitcontainerH = new System.Windows.Forms.SplitContainer();
-            this.typesViewer = new Contractor.Gui.TypesViewerScreen();
-            this.treeviewTypes = new System.Windows.Forms.TreeView();
             this.listboxMethods = new System.Windows.Forms.CheckedListBox();
             this.richtextboxInformation = new System.Windows.Forms.RichTextBox();
             this.toolstripMethods = new System.Windows.Forms.ToolStrip();
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
             this.buttonCheckAllMethods = new System.Windows.Forms.ToolStripButton();
             this.buttonUncheckAllMethods = new System.Windows.Forms.ToolStripButton();
-            this.titlebarProperties = new Contractor.Gui.TitleBar();
             this.splitcontainerOutput = new System.Windows.Forms.SplitContainer();
+            this.loadContractsDialog = new System.Windows.Forms.OpenFileDialog();
+            this.typesViewer = new Contractor.Gui.TypesViewerScreen();
+            this.titlebarProperties = new Contractor.Gui.TitleBar();
             this.epaViewer = new Contractor.Gui.EpaViewerScreen();
             this.titlebarOutput = new Contractor.Gui.TitleBar();
-            this.loadContractsDialog = new System.Windows.Forms.OpenFileDialog();
             this.statusStrip.SuspendLayout();
             this.toolStrip.SuspendLayout();
             this.menuStrip.SuspendLayout();
@@ -354,7 +353,6 @@
             // splitcontainerH.Panel1
             // 
             this.splitcontainerH.Panel1.Controls.Add(this.typesViewer);
-            this.splitcontainerH.Panel1.Controls.Add(this.treeviewTypes);
             // 
             // splitcontainerH.Panel2
             // 
@@ -366,33 +364,6 @@
             this.splitcontainerH.SplitterDistance = 191;
             this.splitcontainerH.TabIndex = 0;
             this.splitcontainerH.TabStop = false;
-            // 
-            // typesViewer
-            // 
-            this.typesViewer.Location = new System.Drawing.Point(156, 3);
-            this.typesViewer.Name = "typesViewer";
-            this.typesViewer.Size = new System.Drawing.Size(288, 223);
-            this.typesViewer.TabIndex = 1;
-            // 
-            // treeviewTypes
-            // 
-            this.treeviewTypes.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.treeviewTypes.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.treeviewTypes.HideSelection = false;
-            this.treeviewTypes.ImageIndex = 0;
-            this.treeviewTypes.ImageList = this.imagelist;
-            this.treeviewTypes.Indent = 18;
-            this.treeviewTypes.Location = new System.Drawing.Point(0, 0);
-            this.treeviewTypes.Name = "treeviewTypes";
-            this.treeviewTypes.SelectedImageIndex = 0;
-            this.treeviewTypes.ShowLines = false;
-            this.treeviewTypes.ShowNodeToolTips = true;
-            this.treeviewTypes.ShowPlusMinus = false;
-            this.treeviewTypes.Size = new System.Drawing.Size(150, 157);
-            this.treeviewTypes.StateImageList = this.imagelist;
-            this.treeviewTypes.TabIndex = 0;
-            this.treeviewTypes.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.OnAfterSelectTreeNode);
-            this.treeviewTypes.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.OnTreeNodeMouseDoubleClick);
             // 
             // listboxMethods
             // 
@@ -467,22 +438,6 @@
             this.buttonUncheckAllMethods.Text = "None";
             this.buttonUncheckAllMethods.Click += new System.EventHandler(this.OnUncheckAllMethods);
             // 
-            // titlebarProperties
-            // 
-            this.titlebarProperties.BackColor = System.Drawing.SystemColors.ActiveBorder;
-            this.titlebarProperties.BackColorStyle = Contractor.Gui.BackColorStyle.Gradient;
-            this.titlebarProperties.DarkBackColor = System.Drawing.SystemColors.ActiveCaption;
-            this.titlebarProperties.Dock = System.Windows.Forms.DockStyle.Top;
-            this.titlebarProperties.LightBackColor = System.Drawing.SystemColors.GradientInactiveCaption;
-            this.titlebarProperties.Location = new System.Drawing.Point(0, 0);
-            this.titlebarProperties.Name = "titlebarProperties";
-            this.titlebarProperties.ShowBottomBorder = true;
-            this.titlebarProperties.ShowCloseButton = false;
-            this.titlebarProperties.Size = new System.Drawing.Size(284, 19);
-            this.titlebarProperties.TabIndex = 0;
-            this.titlebarProperties.TabStop = false;
-            this.titlebarProperties.Text = "Methods";
-            // 
             // splitcontainerOutput
             // 
             this.splitcontainerOutput.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -503,6 +458,36 @@
             this.splitcontainerOutput.SplitterDistance = 191;
             this.splitcontainerOutput.TabIndex = 0;
             this.splitcontainerOutput.TabStop = false;
+            // 
+            // loadContractsDialog
+            // 
+            this.loadContractsDialog.DefaultExt = "dll";
+            this.loadContractsDialog.Filter = "Dynamic Link Libraries (*.dll)|*.dll|Executable Files (*.exe)|*.exe";
+            this.loadContractsDialog.Title = "Load Contract Reference Assembly...";
+            // 
+            // typesViewer
+            // 
+            this.typesViewer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.typesViewer.Location = new System.Drawing.Point(0, 0);
+            this.typesViewer.Name = "typesViewer";
+            this.typesViewer.Size = new System.Drawing.Size(284, 189);
+            this.typesViewer.TabIndex = 1;
+            // 
+            // titlebarProperties
+            // 
+            this.titlebarProperties.BackColor = System.Drawing.SystemColors.ActiveBorder;
+            this.titlebarProperties.BackColorStyle = Contractor.Gui.BackColorStyle.Gradient;
+            this.titlebarProperties.DarkBackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.titlebarProperties.Dock = System.Windows.Forms.DockStyle.Top;
+            this.titlebarProperties.LightBackColor = System.Drawing.SystemColors.GradientInactiveCaption;
+            this.titlebarProperties.Location = new System.Drawing.Point(0, 0);
+            this.titlebarProperties.Name = "titlebarProperties";
+            this.titlebarProperties.ShowBottomBorder = true;
+            this.titlebarProperties.ShowCloseButton = false;
+            this.titlebarProperties.Size = new System.Drawing.Size(284, 19);
+            this.titlebarProperties.TabIndex = 0;
+            this.titlebarProperties.TabStop = false;
+            this.titlebarProperties.Text = "Methods";
             // 
             // epaViewer
             // 
@@ -527,12 +512,6 @@
             this.titlebarOutput.TabIndex = 0;
             this.titlebarOutput.Text = "Output";
             this.titlebarOutput.Close += new System.EventHandler(this.OnOutputClose);
-            // 
-            // loadContractsDialog
-            // 
-            this.loadContractsDialog.DefaultExt = "dll";
-            this.loadContractsDialog.Filter = "Dynamic Link Libraries (*.dll)|*.dll|Executable Files (*.exe)|*.exe";
-            this.loadContractsDialog.Title = "Load Contract Reference Assembly...";
             // 
             // Main
             // 
@@ -603,8 +582,7 @@
 		private TitleBar titlebarOutput;
 		private System.Windows.Forms.TextBox textboxOutput;
 		private System.Windows.Forms.SplitContainer splitcontainerV;
-		private System.Windows.Forms.SplitContainer splitcontainerH;
-		private System.Windows.Forms.TreeView treeviewTypes;
+        private System.Windows.Forms.SplitContainer splitcontainerH;
 		private System.Windows.Forms.RichTextBox richtextboxInformation;
 		private TitleBar titlebarProperties;
         private System.Windows.Forms.SplitContainer splitcontainerOutput;
