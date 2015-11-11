@@ -639,7 +639,7 @@ namespace Contractor.Gui
 
             _AssemblyInfo.Load(fileName);
 
-            var assembly = new CciDecompiler().Decompile(fileName, null);
+            var assembly = decompiler.Decompile(fileName, null);
             await Task.Run(() => typesViewerPresenter.ShowTypes(assembly));
 
             BeginInvoke((Action) delegate
