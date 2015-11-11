@@ -21,10 +21,8 @@ namespace Contractor.Gui
     internal partial class Main : Form
     {
         private readonly AssemblyInfo _AssemblyInfo;
-        private Thread _AnalisisThread;
         private CancellationTokenSource _cancellationSource;
         private string _ContractReferenceAssemblyFileName;
-        private EpaGenerator _EpaGenerator;
 
         private TypeAnalysisResult _LastResult;
         private Options _Options;
@@ -60,9 +58,12 @@ namespace Contractor.Gui
 
         protected void TypesViewerPresenterOnTypeSelected(object sender, TypeDefinition typeDefinition)
         {
-            UpdateStartAnalisisCommand();
+            selectedType = typeDefinition;
+
             listboxMethods.Items.Clear();
             LoadTypeMethods(typeDefinition);
+
+            buttonStartAnalysis.Enabled = true;
         }
 
         #region Event Handlers
@@ -119,15 +120,16 @@ namespace Contractor.Gui
         private void OnLoadAssembly(object sender, EventArgs e)
         {
             var result = loadAssemblyDialog.ShowDialog(this);
-
-            if (result == DialogResult.OK)
+            if (result != DialogResult.OK)
             {
-                var fileName = loadAssemblyDialog.FileName;
-                loadAssemblyDialog.InitialDirectory = Path.GetDirectoryName(fileName);
-
-                UnloadAssembly();
-                Task.Factory.StartNew(() => LoadAssembly(fileName));
+                return;
             }
+
+            var fileName = loadAssemblyDialog.FileName;
+            loadAssemblyDialog.InitialDirectory = Path.GetDirectoryName(fileName);
+
+            UnloadAssembly();
+            Task.Run(() => LoadAssembly(fileName));
         }
 
         private void OnLoadContracts(object sender, EventArgs e)
@@ -246,19 +248,14 @@ namespace Contractor.Gui
                     throw new NotSupportedException();
             }
 
-            _EpaGenerator = new EpaGenerator(inputAssembly, analyzer);
-            _EpaGenerator.StateAdded += OnStateAdded;
-            _EpaGenerator.TransitionAdded += OnTransitionAdded;
+            var epaGenerator = new EpaGenerator(inputAssembly, analyzer);
+            epaGenerator.StateAdded += OnStateAdded;
+            epaGenerator.TransitionAdded += OnTransitionAdded;
 
-            //_AnalisisThread = new Thread(GenerateGraph(typeToAnalyze));
-            //_AnalisisThread.Name = "GenerateGraph";
-            //_AnalisisThread.IsBackground = true;
-            //_AnalisisThread.Start();
-
-            await Task.Run(() => GenerateGraph(selectedType));
+            await Task.Run(() => GenerateGraph(epaGenerator, selectedType));
         }
 
-        protected void GenerateGraph(TypeDefinition typeToAnalyze)
+        protected void GenerateGraph(EpaGenerator epaGenerator, TypeDefinition typeToAnalyze)
         {
             BeginInvoke(new Action(UpdateAnalysisInitialize));
             try
@@ -279,7 +276,7 @@ namespace Contractor.Gui
 
                 var inputAssembly = decompiler.Decompile(_AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
 
-                var typeAnalysisResult = _EpaGenerator.GenerateEpa(typeToAnalyze, selectedMethods);
+                var typeAnalysisResult = epaGenerator.GenerateEpa(typeToAnalyze, selectedMethods);
                 BeginInvoke(new Action<TypeAnalysisResult>(UpdateAnalysisEnd), typeAnalysisResult);
             }
             catch (Exception ex)
@@ -329,15 +326,13 @@ namespace Contractor.Gui
                 _LastResult = analysisResult;
             }
 
-            _AnalisisThread = null;
-
             buttonStopAnalysis.Enabled = false;
             buttonLoadAssembly.Enabled = true;
             buttonLoadContracts.Enabled = true;
             buttonExportGraph.Enabled = true;
             buttonGenerateAssembly.Enabled = true;
 
-            UpdateStartAnalisisCommand();
+            buttonStartAnalysis.Enabled = false;
         }
 
         private void OutputTypeAnalysisResult(TypeAnalysisResult analysisResult)
@@ -632,13 +627,6 @@ namespace Contractor.Gui
             //buttonZoomOut.Enabled = graphGenerated;
             //buttonRedo.Enabled = false;
             //buttonUndo.Enabled = false;
-        }
-
-        private void UpdateStartAnalisisCommand()
-        {
-            var analisisRunning = _AnalisisThread != null;
-
-            buttonStartAnalysis.Enabled = selectedType != null && !analisisRunning;
         }
 
         private async void LoadAssembly(string fileName)
