@@ -20,9 +20,7 @@ namespace Contractor.Gui
 {
     internal partial class Main : Form
     {
-        private readonly AssemblyInfo _AssemblyInfo;
         private CancellationTokenSource _cancellationSource;
-        private string _ContractReferenceAssemblyFileName;
 
         private TypeAnalysisResult _LastResult;
         private Options _Options;
@@ -33,6 +31,9 @@ namespace Contractor.Gui
         protected SynchronizationContext syncContext;
         protected TypesViewerPresenter typesViewerPresenter;
 
+        protected string inputFile;
+        protected string contractFile;
+
         public Main()
         {
             InitializeComponent();
@@ -42,8 +43,6 @@ namespace Contractor.Gui
             cmbBackend.Items.Add("Corral");
             cmbBackend.SelectedIndex = 1;
 
-            var host = new PeReader.DefaultHost();
-            _AssemblyInfo = new AssemblyInfo(host);
             _Options = new Options();
 
             epaViewerPresenter = new EpaViewerPresenter(epaViewer, new EpaViewer());
@@ -128,6 +127,8 @@ namespace Contractor.Gui
             var fileName = loadAssemblyDialog.FileName;
             loadAssemblyDialog.InitialDirectory = Path.GetDirectoryName(fileName);
 
+            inputFile = fileName;
+
             UnloadAssembly();
             Task.Run(() => LoadAssembly(fileName));
         }
@@ -141,7 +142,7 @@ namespace Contractor.Gui
                 var fileName = loadContractsDialog.FileName;
                 loadContractsDialog.InitialDirectory = Path.GetDirectoryName(fileName);
 
-                _ContractReferenceAssemblyFileName = fileName;
+                contractFile = fileName;
 
                 buttonLoadContracts.Checked = true;
 
@@ -230,7 +231,7 @@ namespace Contractor.Gui
         {
             var backend = (string) cmbBackend.SelectedItem;
 
-            var inputAssembly = decompiler.Decompile(_AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
+            var inputAssembly = decompiler.Decompile(inputFile, contractFile);
             selectedType = inputAssembly.Types().First(t => t.Name.Equals(typeToAnalyze.Name));
 
             _cancellationSource = new CancellationTokenSource();
@@ -241,7 +242,7 @@ namespace Contractor.Gui
                 case "CodeContracts":
                     throw new NotImplementedException();
                 case "Corral":
-                    analyzer = new CorralAnalyzer(decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly, _AssemblyInfo.FileName,
+                    analyzer = new CorralAnalyzer(decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly, inputFile,
                         selectedType, _cancellationSource.Token);
                     break;
                 default:
@@ -260,12 +261,12 @@ namespace Contractor.Gui
             BeginInvoke(new Action(UpdateAnalysisInitialize));
             try
             {
-                var fileName = Path.GetFileName(_AssemblyInfo.FileName);
+                var fileName = Path.GetFileName(inputFile);
                 BeginInvoke(new System.Action<string, string>(SetBackgroundStatus), "Decompiling assembly {0}...", fileName);
 
-                if (_ContractReferenceAssemblyFileName != null)
+                if (contractFile != null)
                 {
-                    fileName = Path.GetFileName(_ContractReferenceAssemblyFileName);
+                    fileName = Path.GetFileName(contractFile);
                     BeginInvoke(new System.Action<string, string>(SetBackgroundStatus), "Loading contracts from assembly {0}...", fileName);
                 }
 
@@ -274,7 +275,7 @@ namespace Contractor.Gui
 
                 BeginInvoke(new System.Action<string, string>(SetBackgroundStatus), "Generating contractor graph for {0}...", typeFullName);
 
-                var inputAssembly = decompiler.Decompile(_AssemblyInfo.FileName, _ContractReferenceAssemblyFileName);
+                var inputAssembly = decompiler.Decompile(inputFile, contractFile);
 
                 var typeAnalysisResult = epaGenerator.GenerateEpa(typeToAnalyze, selectedMethods);
                 BeginInvoke(new Action<TypeAnalysisResult>(UpdateAnalysisEnd), typeAnalysisResult);
@@ -637,8 +638,6 @@ namespace Contractor.Gui
                 StartBackgroundTask("Loading assembly {0}...", name);
             });
 
-            _AssemblyInfo.Load(fileName);
-
             var assembly = decompiler.Decompile(fileName, null);
             await Task.Run(() => typesViewerPresenter.ShowTypes(assembly));
 
@@ -656,7 +655,7 @@ namespace Contractor.Gui
         {
             typesViewerPresenter.Reset();
             listboxMethods.Items.Clear();
-            _ContractReferenceAssemblyFileName = null;
+            contractFile = null;
         }
 
         private void StartBackgroundTask(string message, params object[] args)
