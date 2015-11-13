@@ -9,6 +9,13 @@ using Color = System.Drawing.Color;
 
 namespace Contractor.Gui
 {
+    internal interface IEpaViewer
+    {
+        Graph Graph { get; }
+        void AddState(State state);
+        void AddTransition(Transition transition);
+    }
+
     internal class EpaViewer : IEpaViewer
     {
         protected Graph graph;

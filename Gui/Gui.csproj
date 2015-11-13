@@ -124,7 +124,6 @@
     </Compile>
     <Compile Include="Models\MainModel.cs" />
     <Compile Include="Presenters\EpaViewerPresenter.cs" />
-    <Compile Include="Models\IEpaViewer.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
     </Compile>
