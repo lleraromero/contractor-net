@@ -1,5 +1,4 @@
-﻿using System;
-using Contractor.Core.Model;
+﻿using Contractor.Core.Model;
 using Microsoft.Msagl.Drawing;
 
 namespace Contractor.Gui
@@ -8,7 +7,6 @@ namespace Contractor.Gui
     {
         Graph Graph { get; }
         void AddState(State state);
-
         void AddTransition(Transition transition);
     }
 }

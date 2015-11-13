@@ -136,22 +136,22 @@
     <Compile Include="AboutDialog.Designer.cs">
       <DependentUpon>AboutDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="EpaViewer.cs" />
+    <Compile Include="Models\EpaViewer.cs" />
     <Compile Include="EpaViewerScreen.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="EpaViewerScreen.Designer.cs">
       <DependentUpon>EpaViewerScreen.cs</DependentUpon>
     </Compile>
-    <Compile Include="EpaViewerPresenter.cs" />
-    <Compile Include="IEpaViewer.cs" />
+    <Compile Include="Presenters\EpaViewerPresenter.cs" />
+    <Compile Include="Models\IEpaViewer.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Main.Designer.cs">
       <DependentUpon>Main.cs</DependentUpon>
     </Compile>
-    <Compile Include="MethodFilterPresenter.cs" />
+    <Compile Include="Presenters\MethodFilterPresenter.cs" />
     <Compile Include="MethodFilterScreen.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -173,8 +173,8 @@
     <Compile Include="TitleBar.Designer.cs">
       <DependentUpon>TitleBar.cs</DependentUpon>
     </Compile>
-    <Compile Include="TypesViewer.cs" />
-    <Compile Include="TypesViewerPresenter.cs" />
+    <Compile Include="Models\TypesViewer.cs" />
+    <Compile Include="Presenters\TypesViewerPresenter.cs" />
     <Compile Include="TypesViewerScreen.cs">
       <SubType>UserControl</SubType>
     </Compile>

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Threading;
 using Contractor.Core.Model;
 
 namespace Contractor.Gui
