@@ -57,18 +57,14 @@
             this.textboxOutput = new System.Windows.Forms.TextBox();
             this.splitcontainerV = new System.Windows.Forms.SplitContainer();
             this.splitcontainerH = new System.Windows.Forms.SplitContainer();
-            this.listboxMethods = new System.Windows.Forms.CheckedListBox();
-            this.richtextboxInformation = new System.Windows.Forms.RichTextBox();
-            this.toolstripMethods = new System.Windows.Forms.ToolStrip();
-            this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
-            this.buttonCheckAllMethods = new System.Windows.Forms.ToolStripButton();
-            this.buttonUncheckAllMethods = new System.Windows.Forms.ToolStripButton();
-            this.splitcontainerOutput = new System.Windows.Forms.SplitContainer();
-            this.loadContractsDialog = new System.Windows.Forms.OpenFileDialog();
             this.typesViewer = new Contractor.Gui.TypesViewerScreen();
+            this.methodFilter = new Contractor.Gui.MethodFilterScreen();
+            this.richtextboxInformation = new System.Windows.Forms.RichTextBox();
             this.titlebarProperties = new Contractor.Gui.TitleBar();
+            this.splitcontainerOutput = new System.Windows.Forms.SplitContainer();
             this.epaViewer = new Contractor.Gui.EpaViewerScreen();
             this.titlebarOutput = new Contractor.Gui.TitleBar();
+            this.loadContractsDialog = new System.Windows.Forms.OpenFileDialog();
             this.statusStrip.SuspendLayout();
             this.toolStrip.SuspendLayout();
             this.menuStrip.SuspendLayout();
@@ -80,7 +76,6 @@
             this.splitcontainerH.Panel1.SuspendLayout();
             this.splitcontainerH.Panel2.SuspendLayout();
             this.splitcontainerH.SuspendLayout();
-            this.toolstripMethods.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitcontainerOutput)).BeginInit();
             this.splitcontainerOutput.Panel1.SuspendLayout();
             this.splitcontainerOutput.Panel2.SuspendLayout();
@@ -356,28 +351,29 @@
             // 
             // splitcontainerH.Panel2
             // 
-            this.splitcontainerH.Panel2.Controls.Add(this.listboxMethods);
+            this.splitcontainerH.Panel2.Controls.Add(this.methodFilter);
             this.splitcontainerH.Panel2.Controls.Add(this.richtextboxInformation);
-            this.splitcontainerH.Panel2.Controls.Add(this.toolstripMethods);
             this.splitcontainerH.Panel2.Controls.Add(this.titlebarProperties);
             this.splitcontainerH.Size = new System.Drawing.Size(286, 382);
             this.splitcontainerH.SplitterDistance = 191;
             this.splitcontainerH.TabIndex = 0;
             this.splitcontainerH.TabStop = false;
             // 
-            // listboxMethods
+            // typesViewer
             // 
-            this.listboxMethods.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.listboxMethods.CheckOnClick = true;
-            this.listboxMethods.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listboxMethods.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.listboxMethods.FormattingEnabled = true;
-            this.listboxMethods.IntegralHeight = false;
-            this.listboxMethods.Location = new System.Drawing.Point(0, 44);
-            this.listboxMethods.Name = "listboxMethods";
-            this.listboxMethods.Size = new System.Drawing.Size(284, 141);
-            this.listboxMethods.Sorted = true;
-            this.listboxMethods.TabIndex = 2;
+            this.typesViewer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.typesViewer.Location = new System.Drawing.Point(0, 0);
+            this.typesViewer.Name = "typesViewer";
+            this.typesViewer.Size = new System.Drawing.Size(284, 189);
+            this.typesViewer.TabIndex = 1;
+            // 
+            // methodFilter
+            // 
+            this.methodFilter.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.methodFilter.Location = new System.Drawing.Point(0, 19);
+            this.methodFilter.Name = "methodFilter";
+            this.methodFilter.Size = new System.Drawing.Size(284, 166);
+            this.methodFilter.TabIndex = 4;
             // 
             // richtextboxInformation
             // 
@@ -386,57 +382,30 @@
             this.richtextboxInformation.DetectUrls = false;
             this.richtextboxInformation.Dock = System.Windows.Forms.DockStyle.Fill;
             this.richtextboxInformation.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.richtextboxInformation.Location = new System.Drawing.Point(0, 44);
+            this.richtextboxInformation.Location = new System.Drawing.Point(0, 19);
             this.richtextboxInformation.Name = "richtextboxInformation";
             this.richtextboxInformation.ReadOnly = true;
             this.richtextboxInformation.ShowSelectionMargin = true;
-            this.richtextboxInformation.Size = new System.Drawing.Size(284, 141);
+            this.richtextboxInformation.Size = new System.Drawing.Size(284, 166);
             this.richtextboxInformation.TabIndex = 1;
             this.richtextboxInformation.TabStop = false;
             this.richtextboxInformation.Text = "";
             // 
-            // toolstripMethods
+            // titlebarProperties
             // 
-            this.toolstripMethods.Enabled = false;
-            this.toolstripMethods.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            this.toolstripMethods.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripLabel1,
-            this.buttonCheckAllMethods,
-            this.buttonUncheckAllMethods});
-            this.toolstripMethods.Location = new System.Drawing.Point(0, 19);
-            this.toolstripMethods.Name = "toolstripMethods";
-            this.toolstripMethods.ShowItemToolTips = false;
-            this.toolstripMethods.Size = new System.Drawing.Size(284, 25);
-            this.toolstripMethods.TabIndex = 3;
-            this.toolstripMethods.Text = "toolStrip1";
-            // 
-            // toolStripLabel1
-            // 
-            this.toolStripLabel1.Name = "toolStripLabel1";
-            this.toolStripLabel1.Size = new System.Drawing.Size(43, 22);
-            this.toolStripLabel1.Text = "Check:";
-            // 
-            // buttonCheckAllMethods
-            // 
-            this.buttonCheckAllMethods.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.buttonCheckAllMethods.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonCheckAllMethods.Image = ((System.Drawing.Image)(resources.GetObject("buttonCheckAllMethods.Image")));
-            this.buttonCheckAllMethods.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.buttonCheckAllMethods.Name = "buttonCheckAllMethods";
-            this.buttonCheckAllMethods.Size = new System.Drawing.Size(25, 22);
-            this.buttonCheckAllMethods.Text = "All";
-            this.buttonCheckAllMethods.Click += new System.EventHandler(this.OnCheckAllMethods);
-            // 
-            // buttonUncheckAllMethods
-            // 
-            this.buttonUncheckAllMethods.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.buttonUncheckAllMethods.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonUncheckAllMethods.Image = ((System.Drawing.Image)(resources.GetObject("buttonUncheckAllMethods.Image")));
-            this.buttonUncheckAllMethods.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.buttonUncheckAllMethods.Name = "buttonUncheckAllMethods";
-            this.buttonUncheckAllMethods.Size = new System.Drawing.Size(41, 22);
-            this.buttonUncheckAllMethods.Text = "None";
-            this.buttonUncheckAllMethods.Click += new System.EventHandler(this.OnUncheckAllMethods);
+            this.titlebarProperties.BackColor = System.Drawing.SystemColors.ActiveBorder;
+            this.titlebarProperties.BackColorStyle = Contractor.Gui.BackColorStyle.Gradient;
+            this.titlebarProperties.DarkBackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.titlebarProperties.Dock = System.Windows.Forms.DockStyle.Top;
+            this.titlebarProperties.LightBackColor = System.Drawing.SystemColors.GradientInactiveCaption;
+            this.titlebarProperties.Location = new System.Drawing.Point(0, 0);
+            this.titlebarProperties.Name = "titlebarProperties";
+            this.titlebarProperties.ShowBottomBorder = true;
+            this.titlebarProperties.ShowCloseButton = false;
+            this.titlebarProperties.Size = new System.Drawing.Size(284, 19);
+            this.titlebarProperties.TabIndex = 0;
+            this.titlebarProperties.TabStop = false;
+            this.titlebarProperties.Text = "Methods";
             // 
             // splitcontainerOutput
             // 
@@ -458,36 +427,6 @@
             this.splitcontainerOutput.SplitterDistance = 191;
             this.splitcontainerOutput.TabIndex = 0;
             this.splitcontainerOutput.TabStop = false;
-            // 
-            // loadContractsDialog
-            // 
-            this.loadContractsDialog.DefaultExt = "dll";
-            this.loadContractsDialog.Filter = "Dynamic Link Libraries (*.dll)|*.dll|Executable Files (*.exe)|*.exe";
-            this.loadContractsDialog.Title = "Load Contract Reference Assembly...";
-            // 
-            // typesViewer
-            // 
-            this.typesViewer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.typesViewer.Location = new System.Drawing.Point(0, 0);
-            this.typesViewer.Name = "typesViewer";
-            this.typesViewer.Size = new System.Drawing.Size(284, 189);
-            this.typesViewer.TabIndex = 1;
-            // 
-            // titlebarProperties
-            // 
-            this.titlebarProperties.BackColor = System.Drawing.SystemColors.ActiveBorder;
-            this.titlebarProperties.BackColorStyle = Contractor.Gui.BackColorStyle.Gradient;
-            this.titlebarProperties.DarkBackColor = System.Drawing.SystemColors.ActiveCaption;
-            this.titlebarProperties.Dock = System.Windows.Forms.DockStyle.Top;
-            this.titlebarProperties.LightBackColor = System.Drawing.SystemColors.GradientInactiveCaption;
-            this.titlebarProperties.Location = new System.Drawing.Point(0, 0);
-            this.titlebarProperties.Name = "titlebarProperties";
-            this.titlebarProperties.ShowBottomBorder = true;
-            this.titlebarProperties.ShowCloseButton = false;
-            this.titlebarProperties.Size = new System.Drawing.Size(284, 19);
-            this.titlebarProperties.TabIndex = 0;
-            this.titlebarProperties.TabStop = false;
-            this.titlebarProperties.Text = "Methods";
             // 
             // epaViewer
             // 
@@ -512,6 +451,12 @@
             this.titlebarOutput.TabIndex = 0;
             this.titlebarOutput.Text = "Output";
             this.titlebarOutput.Close += new System.EventHandler(this.OnOutputClose);
+            // 
+            // loadContractsDialog
+            // 
+            this.loadContractsDialog.DefaultExt = "dll";
+            this.loadContractsDialog.Filter = "Dynamic Link Libraries (*.dll)|*.dll|Executable Files (*.exe)|*.exe";
+            this.loadContractsDialog.Title = "Load Contract Reference Assembly...";
             // 
             // Main
             // 
@@ -540,11 +485,8 @@
             this.splitcontainerV.ResumeLayout(false);
             this.splitcontainerH.Panel1.ResumeLayout(false);
             this.splitcontainerH.Panel2.ResumeLayout(false);
-            this.splitcontainerH.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitcontainerH)).EndInit();
             this.splitcontainerH.ResumeLayout(false);
-            this.toolstripMethods.ResumeLayout(false);
-            this.toolstripMethods.PerformLayout();
             this.splitcontainerOutput.Panel1.ResumeLayout(false);
             this.splitcontainerOutput.Panel2.ResumeLayout(false);
             this.splitcontainerOutput.Panel2.PerformLayout();
@@ -586,16 +528,12 @@
 		private System.Windows.Forms.RichTextBox richtextboxInformation;
 		private TitleBar titlebarProperties;
         private System.Windows.Forms.SplitContainer splitcontainerOutput;
-		private System.Windows.Forms.CheckedListBox listboxMethods;
         private System.Windows.Forms.OpenFileDialog loadContractsDialog;
-		private System.Windows.Forms.ToolStripButton buttonLoadContracts;
-		private System.Windows.Forms.ToolStrip toolstripMethods;
-		private System.Windows.Forms.ToolStripButton buttonCheckAllMethods;
-		private System.Windows.Forms.ToolStripButton buttonUncheckAllMethods;
-        private System.Windows.Forms.ToolStripLabel toolStripLabel1;
+        private System.Windows.Forms.ToolStripButton buttonLoadContracts;
         private System.Windows.Forms.ToolStripComboBox cmbBackend;
         private EpaViewerScreen epaViewer;
         private TypesViewerScreen typesViewer;
+        private MethodFilterScreen methodFilter;
 	}
 }
 

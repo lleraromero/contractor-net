@@ -13,7 +13,6 @@ using Analysis.Cci;
 using Analyzer.Corral;
 using Contractor.Core;
 using Contractor.Core.Model;
-using Microsoft.Cci;
 using Action = System.Action;
 
 namespace Contractor.Gui
@@ -24,13 +23,14 @@ namespace Contractor.Gui
 
         private TypeAnalysisResult _LastResult;
         private Options _Options;
-        protected CciDecompiler decompiler;
 
         protected EpaViewerPresenter epaViewerPresenter;
+        protected MethodFilterPresenter methodFilterPresenter;
         protected TypeDefinition selectedType;
         protected SynchronizationContext syncContext;
         protected TypesViewerPresenter typesViewerPresenter;
 
+        protected CciDecompiler decompiler;
         protected string inputFile;
         protected string contractFile;
 
@@ -52,6 +52,8 @@ namespace Contractor.Gui
             typesViewerPresenter.TypeSelected += TypesViewerPresenterOnTypeSelected;
             typesViewerPresenter.StartAnalysis += (sender, typeDefinition) => { StartAnalisisAsync(typeDefinition); };
 
+            methodFilterPresenter = new MethodFilterPresenter(methodFilter);
+
             decompiler = new CciDecompiler();
         }
 
@@ -59,8 +61,7 @@ namespace Contractor.Gui
         {
             selectedType = typeDefinition;
 
-            listboxMethods.Items.Clear();
-            LoadTypeMethods(typeDefinition);
+            methodFilterPresenter.LoadMethods(typeDefinition);
 
             buttonStartAnalysis.Enabled = true;
         }
@@ -104,18 +105,6 @@ namespace Contractor.Gui
             menuitemOutput.Checked = false;
         }
 
-        private void OnCheckAllMethods(object sender, EventArgs e)
-        {
-            for (var i = 0; i < listboxMethods.Items.Count; ++i)
-                listboxMethods.SetItemChecked(i, true);
-        }
-
-        private void OnUncheckAllMethods(object sender, EventArgs e)
-        {
-            for (var i = 0; i < listboxMethods.Items.Count; ++i)
-                listboxMethods.SetItemChecked(i, false);
-        }
-
         private void OnLoadAssembly(object sender, EventArgs e)
         {
             var result = loadAssemblyDialog.ShowDialog(this);
@@ -129,7 +118,6 @@ namespace Contractor.Gui
 
             inputFile = fileName;
 
-            UnloadAssembly();
             Task.Run(() => LoadAssembly(fileName));
         }
 
@@ -262,18 +250,18 @@ namespace Contractor.Gui
             try
             {
                 var fileName = Path.GetFileName(inputFile);
-                BeginInvoke(new System.Action<string, string>(SetBackgroundStatus), "Decompiling assembly {0}...", fileName);
+                BeginInvoke(new Action<string, string>(SetBackgroundStatus), "Decompiling assembly {0}...", fileName);
 
                 if (contractFile != null)
                 {
                     fileName = Path.GetFileName(contractFile);
-                    BeginInvoke(new System.Action<string, string>(SetBackgroundStatus), "Loading contracts from assembly {0}...", fileName);
+                    BeginInvoke(new Action<string, string>(SetBackgroundStatus), "Loading contracts from assembly {0}...", fileName);
                 }
 
                 var typeFullName = selectedType.Name;
-                var selectedMethods = listboxMethods.CheckedItems.Cast<string>();
+                var selectedMethods = from m in methodFilterPresenter.SelectedMethods() select m.ToString();
 
-                BeginInvoke(new System.Action<string, string>(SetBackgroundStatus), "Generating contractor graph for {0}...", typeFullName);
+                BeginInvoke(new Action<string, string>(SetBackgroundStatus), "Generating contractor graph for {0}...", typeFullName);
 
                 var inputAssembly = decompiler.Decompile(inputFile, contractFile);
 
@@ -651,13 +639,6 @@ namespace Contractor.Gui
             });
         }
 
-        private void UnloadAssembly()
-        {
-            typesViewerPresenter.Reset();
-            listboxMethods.Items.Clear();
-            contractFile = null;
-        }
-
         private void StartBackgroundTask(string message, params object[] args)
         {
             progressBar.Visible = true;
@@ -690,18 +671,6 @@ namespace Contractor.Gui
 
             textboxOutput.AppendText(message);
             textboxOutput.AppendText(Environment.NewLine);
-        }
-
-        protected void LoadTypeMethods(TypeDefinition typeDefinition)
-        {
-            var methods = typeDefinition.Constructors().Union(typeDefinition.Actions());
-
-            listboxMethods.BeginUpdate();
-            foreach (var method in methods)
-            {
-                listboxMethods.Items.Add(method.ToString(), true);
-            }
-            listboxMethods.EndUpdate();
         }
 
         #endregion Private Methods

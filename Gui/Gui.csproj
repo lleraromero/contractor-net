@@ -151,6 +151,13 @@
     <Compile Include="Main.Designer.cs">
       <DependentUpon>Main.cs</DependentUpon>
     </Compile>
+    <Compile Include="MethodFilterPresenter.cs" />
+    <Compile Include="MethodFilterScreen.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MethodFilterScreen.Designer.cs">
+      <DependentUpon>MethodFilterScreen.cs</DependentUpon>
+    </Compile>
     <Compile Include="Options.cs" />
     <Compile Include="OptionsDialog.cs">
       <SubType>Form</SubType>
@@ -182,6 +189,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Main.resx">
       <DependentUpon>Main.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MethodFilterScreen.resx">
+      <DependentUpon>MethodFilterScreen.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="OptionsDialog.resx">
       <DependentUpon>OptionsDialog.cs</DependentUpon>
