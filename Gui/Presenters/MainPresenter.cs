@@ -66,15 +66,19 @@ namespace Contractor.Gui.Presenters
         protected void EpaGeneratorOnStateAdded(object sender, StateAddedEventArgs e)
         {
             epaViewerPresenter.AddState(e.State);
-
-            var epaBuilder = e.EpaBuilder;
-            UpdateStatus("Performing analysis for {0}: {1} states, {2} transitions", epaBuilder.Type.Name, epaBuilder.States.Count, epaBuilder.Transitions.Count);
+            UpdateProgress(e);
         }
 
         protected void EpaGeneratorOnTransitionAdded(object sender, TransitionAddedEventArgs e)
         {
             epaViewerPresenter.AddTransition(e.Transition);
-            //var msg = "Performing analysis for {0}: {1} states, {2} transitions";
+            UpdateProgress(e);
+        }
+
+        protected void UpdateProgress(TypeEventArgs e)
+        {
+            UpdateStatus("Performing analysis for {0}: {1} states, {2} transitions", e.EpaBuilder.Type.Name, e.EpaBuilder.States.Count,
+                e.EpaBuilder.Transitions.Count);
         }
 
         protected IAnalyzer GetAnalyzer(TypeDefinition typeToAnalyze, CancellationToken cancellationToken)
