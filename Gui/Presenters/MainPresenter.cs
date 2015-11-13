@@ -65,11 +65,10 @@ namespace Contractor.Gui.Presenters
 
         protected void EpaGeneratorOnStateAdded(object sender, StateAddedEventArgs e)
         {
-            var stateAdded = e.EpaAndState.Item2;
-            epaViewerPresenter.AddState(stateAdded);
+            epaViewerPresenter.AddState(e.State);
 
-            var epa = e.EpaAndState.Item1;
-            UpdateStatus("Performing analysis for {0}: {1} states, {2} transitions", epa.Type.Name, epa.States.Count, epa.Transitions.Count);
+            var epaBuilder = e.EpaBuilder;
+            UpdateStatus("Performing analysis for {0}: {1} states, {2} transitions", epaBuilder.Type.Name, epaBuilder.States.Count, epaBuilder.Transitions.Count);
         }
 
         protected void EpaGeneratorOnTransitionAdded(object sender, TransitionAddedEventArgs e)

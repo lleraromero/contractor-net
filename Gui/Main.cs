@@ -217,7 +217,7 @@ namespace Contractor.Gui
                 return;
             }
 
-            epaViewerPresenter.AddState(e.EpaAndState.Item2);
+            epaViewerPresenter.AddState(e.State);
 
             UpdateAnalysisProgress();
         }

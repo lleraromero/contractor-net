@@ -66,7 +66,7 @@ namespace Contractor.Core
 
             if (this.StateAdded != null)
             {
-                this.StateAdded(this, new StateAddedEventArgs(typeToAnalyze, new Tuple<EpaBuilder, State>(epaBuilder, dummy)));
+                this.StateAdded(this, new StateAddedEventArgs(typeToAnalyze, epaBuilder, dummy));
             }
 
             var statesToVisit = new Queue<State>();
@@ -107,7 +107,7 @@ namespace Contractor.Core
 
                                 if (this.StateAdded != null)
                                 {
-                                    var eventArgs = new StateAddedEventArgs(typeToAnalyze, new Tuple<EpaBuilder, State>(epaBuilder, target as State));
+                                    var eventArgs = new StateAddedEventArgs(typeToAnalyze, epaBuilder, target);
                                     this.StateAdded(this, eventArgs);
                                 }
                             }
@@ -116,7 +116,7 @@ namespace Contractor.Core
 
                             if (this.TransitionAdded != null)
                             {
-                                var eventArgs = new TransitionAddedEventArgs(typeToAnalyze, transition as Transition, source as State, epaBuilder);
+                                var eventArgs = new TransitionAddedEventArgs(typeToAnalyze, epaBuilder, transition);
                                 this.TransitionAdded(this, eventArgs);
                             }
                         }
