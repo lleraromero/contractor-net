@@ -19,6 +19,11 @@ namespace Contractor.Gui
     interface IMainScreen
     {
         void StartApplication();
+        IEpaViewerScreen EpaViewer { get; }
+        ITypesViewerScreen TypesViewer { get; }
+        IMethodFilterScreen MethodFilter { get; }
+        string Engine { get; }
+        void UpdateStatus(string msg);
     }
     internal partial class Main : Form, IMainScreen
     {
@@ -40,6 +45,19 @@ namespace Contractor.Gui
         public void StartApplication()
         {
             Application.Run(this);
+        }
+
+        public IEpaViewerScreen EpaViewer { get { return epaViewer; } }
+        public ITypesViewerScreen TypesViewer { get { return typesViewer; } }
+        public IMethodFilterScreen MethodFilter { get { return methodFilter; } }
+        public string Engine { get { return (string)cmbBackend.SelectedItem; } }
+
+        public void UpdateStatus(string msg)
+        {
+            statusLabel.Text = msg;
+
+            textboxOutput.AppendText(msg);
+            textboxOutput.AppendText(Environment.NewLine);
         }
 
         public Main()
@@ -223,7 +241,7 @@ namespace Contractor.Gui
 
         protected async void StartAnalisisAsync(TypeDefinition typeToAnalyze)
         {
-            var backend = (string) cmbBackend.SelectedItem;
+            var backend = (string)cmbBackend.SelectedItem;
 
             var inputAssembly = decompiler.Decompile(inputFile, contractFile);
             selectedType = inputAssembly.Types().First(t => t.Name.Equals(typeToAnalyze.Name));
@@ -275,7 +293,7 @@ namespace Contractor.Gui
             catch (Exception ex)
             {
                 BeginInvoke(new Action<Exception>(HandleException), ex);
-                BeginInvoke(new Action<TypeAnalysisResult>(UpdateAnalysisEnd), (object) null);
+                BeginInvoke(new Action<TypeAnalysisResult>(UpdateAnalysisEnd), (object)null);
             }
         }
 
@@ -343,7 +361,7 @@ namespace Contractor.Gui
 
         private void GenerateAssembly(string fileName)
         {
-            BeginInvoke((Action) delegate
+            BeginInvoke((Action)delegate
             {
                 var name = Path.GetFileName(fileName);
                 StartBackgroundTask("Generating assembly {0}...", name);
@@ -360,7 +378,7 @@ namespace Contractor.Gui
                 BeginInvoke(new Action<Exception>(HandleException), ex);
             }
 
-            BeginInvoke((Action) delegate { EndBackgroundTask(); });
+            BeginInvoke((Action)delegate { EndBackgroundTask(); });
         }
 
         public void HandleException(Exception ex)
@@ -381,7 +399,7 @@ namespace Contractor.Gui
             sb.AppendLine(string.Format("Operating System: {0}", Environment.OSVersion));
             sb.AppendLine(Environment.Is64BitOperatingSystem ? " (64 bits)" : " (32 bits)");
 
-            sb.AppendLine(string.Format("CLR Version: {0}",Environment.Version));
+            sb.AppendLine(string.Format("CLR Version: {0}", Environment.Version));
 
             var codeContractsVersion = "Code Contracts is not installed.";
             var checkerFileName = Configuration.CheckerFileName;
@@ -404,7 +422,7 @@ namespace Contractor.Gui
             Contract.Requires(!string.IsNullOrEmpty(fileName));
             Contract.Requires(epa != null);
 
-            BeginInvoke((Action) delegate
+            BeginInvoke((Action)delegate
             {
                 var name = Path.GetFileName(fileName);
                 StartBackgroundTask("Exporting graph to {0}...", name);
@@ -435,12 +453,12 @@ namespace Contractor.Gui
                 BeginInvoke(new Action<Exception>(HandleException), ex);
             }
 
-            BeginInvoke((Action) delegate { EndBackgroundTask(); });
+            BeginInvoke((Action)delegate { EndBackgroundTask(); });
         }
 
         private async void LoadAssembly(string fileName)
         {
-            BeginInvoke((Action) delegate
+            BeginInvoke((Action)delegate
             {
                 var name = Path.GetFileName(fileName);
                 StartBackgroundTask("Loading assembly {0}...", name);
@@ -449,7 +467,7 @@ namespace Contractor.Gui
             var assembly = decompiler.Decompile(fileName, null);
             await Task.Run(() => typesViewerPresenter.ShowTypes(assembly));
 
-            BeginInvoke((Action) delegate
+            BeginInvoke((Action)delegate
             {
                 buttonLoadContracts.Enabled = true;
 
