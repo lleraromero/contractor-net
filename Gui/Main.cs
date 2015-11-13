@@ -19,8 +19,6 @@ namespace Contractor.Gui
 {
     internal partial class Main : Form
     {
-        private CancellationTokenSource _cancellationSource;
-
         private TypeAnalysisResult _LastResult;
         private Options _Options;
 
@@ -30,9 +28,11 @@ namespace Contractor.Gui
         protected SynchronizationContext syncContext;
         protected TypesViewerPresenter typesViewerPresenter;
 
-        protected CciDecompiler decompiler;
         protected string inputFile;
         protected string contractFile;
+
+        protected CciDecompiler decompiler;
+        protected CancellationTokenSource cancellationSource;
 
         public Main()
         {
@@ -108,17 +108,15 @@ namespace Contractor.Gui
         private void OnLoadAssembly(object sender, EventArgs e)
         {
             var result = loadAssemblyDialog.ShowDialog(this);
-            if (result != DialogResult.OK)
+            if (result == DialogResult.OK)
             {
-                return;
+                var fileName = loadAssemblyDialog.FileName;
+                loadAssemblyDialog.InitialDirectory = Path.GetDirectoryName(fileName);
+
+                inputFile = fileName;
+
+                Task.Run(() => LoadAssembly(fileName));
             }
-
-            var fileName = loadAssemblyDialog.FileName;
-            loadAssemblyDialog.InitialDirectory = Path.GetDirectoryName(fileName);
-
-            inputFile = fileName;
-
-            Task.Run(() => LoadAssembly(fileName));
         }
 
         private void OnLoadContracts(object sender, EventArgs e)
@@ -146,7 +144,7 @@ namespace Contractor.Gui
 
         protected void OnStopAnalysis(object sender, EventArgs e)
         {
-            _cancellationSource.Cancel();
+            cancellationSource.Cancel();
 
             buttonStopAnalysis.Enabled = false;
 
@@ -222,16 +220,16 @@ namespace Contractor.Gui
             var inputAssembly = decompiler.Decompile(inputFile, contractFile);
             selectedType = inputAssembly.Types().First(t => t.Name.Equals(typeToAnalyze.Name));
 
-            _cancellationSource = new CancellationTokenSource();
+            cancellationSource = new CancellationTokenSource();
 
-            IAnalyzer analyzer = null;
+            IAnalyzer analyzer;
             switch (backend)
             {
                 case "CodeContracts":
                     throw new NotImplementedException();
                 case "Corral":
                     analyzer = new CorralAnalyzer(decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly, inputFile,
-                        selectedType, _cancellationSource.Token);
+                        selectedType, cancellationSource.Token);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -262,8 +260,6 @@ namespace Contractor.Gui
                 var selectedMethods = from m in methodFilterPresenter.SelectedMethods() select m.ToString();
 
                 BeginInvoke(new Action<string, string>(SetBackgroundStatus), "Generating contractor graph for {0}...", typeFullName);
-
-                var inputAssembly = decompiler.Decompile(inputFile, contractFile);
 
                 var typeAnalysisResult = epaGenerator.GenerateEpa(typeToAnalyze, selectedMethods);
                 BeginInvoke(new Action<TypeAnalysisResult>(UpdateAnalysisEnd), typeAnalysisResult);
@@ -298,7 +294,7 @@ namespace Contractor.Gui
 
             var typeFullName = selectedType.ToString();
 
-            if (_cancellationSource.IsCancellationRequested)
+            if (cancellationSource.IsCancellationRequested)
             {
                 EndBackgroundTask("Analysis for {0} aborted", typeFullName);
             }
@@ -335,23 +331,6 @@ namespace Contractor.Gui
             var typeFullName = selectedType.ToString();
             var msg = "Performing analysis for {0}: {1} states, {2} transitions";
             //statusLabel.Text = string.Format(msg, typeFullName, _Graph.NodeCount, _Graph.EdgeCount);
-
-            ////_Graph.Attr.AspectRatio = (double)graphViewer.ClientSize.Width / graphViewer.ClientSize.Height;
-            //graphViewer.Graph = _Graph;
-            //graphViewer.Enabled = true;
-
-            //foreach (var obj in graphViewer.Entities)
-            //{
-            //    if (obj is IViewerNode)
-            //    {
-            //        obj.MarkedForDraggingEvent += OnNodeMarkedForDragging;
-            //        obj.UnmarkedForDraggingEvent += OnNodeUnmarkedForDragging;
-            //    }
-            //    else
-            //    {
-            //        obj.UnmarkedForDraggingEvent += OnObjectUnmarkedForDragging;
-            //    }
-            //}
         }
 
         private void GenerateAssembly(string fileName)
@@ -387,65 +366,29 @@ namespace Contractor.Gui
             MessageBox.Show(msg, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
-        private string GetEnvironmentInfo()
+        protected string GetEnvironmentInfo()
         {
             var sb = new StringBuilder();
             sb.AppendLine("========================================");
-
-            sb.Append("Operating System: ");
-            sb.Append(Environment.OSVersion);
+            sb.AppendLine(string.Format("Operating System: {0}", Environment.OSVersion));
             sb.AppendLine(Environment.Is64BitOperatingSystem ? " (64 bits)" : " (32 bits)");
 
-            sb.Append("CLR Version: ");
-            sb.AppendLine(Environment.Version.ToString());
+            sb.AppendLine(string.Format("CLR Version: {0}",Environment.Version));
 
             var codeContractsVersion = "Code Contracts is not installed.";
             var checkerFileName = Configuration.CheckerFileName;
-
             if (!string.IsNullOrEmpty(checkerFileName) && File.Exists(checkerFileName))
             {
-                var vi = FileVersionInfo.GetVersionInfo(checkerFileName);
-                codeContractsVersion = vi.ProductVersion;
+                codeContractsVersion = FileVersionInfo.GetVersionInfo(checkerFileName).ProductVersion;
             }
 
-            sb.Append("Code Contracts Version: ");
-            sb.AppendLine(codeContractsVersion);
+            sb.AppendLine(string.Format("Code Contracts Version: {0}", codeContractsVersion));
 
             var assemblyName = Assembly.GetExecutingAssembly().GetName();
-
-            sb.Append("Contractor.NET Version: ");
-            sb.AppendLine(assemblyName.Version.ToString());
+            sb.AppendLine(string.Format("Contractor.NET Version: {0}", assemblyName.Version));
 
             sb.AppendLine("----------------------------------------");
             return sb.ToString();
-        }
-
-        private string GetStateInfo(EpaBuilder epaBuilder, State state)
-        {
-            var info = new StringBuilder();
-            info.Append(@"{\rtf1\ansi\fs8\par\fs18");
-
-            if (epaBuilder.Initial.Equals(state))
-            {
-                info.Append(@" \b Initial State \b0 \fs8\par\par\fs18");
-            }
-
-            if (state.EnabledActions.Any())
-            {
-                info.Append(@" \b Enabled Actions \b0 \par ");
-                var text = string.Join(@" \par ", state.EnabledActions);
-                info.Append(text);
-            }
-
-            if (state.DisabledActions.Any())
-            {
-                info.Append(@" \fs8\par\par\fs18 \b Disabled Actions \b0 \par ");
-                var text = string.Join(@" \par ", state.DisabledActions);
-                info.Append(text);
-            }
-
-            info.Append(@"}");
-            return info.ToString();
         }
 
         private void ExportGraph(string fileName, Epa epa)
@@ -471,18 +414,11 @@ namespace Contractor.Gui
                             new EpaXmlSerializer().Serialize(stream, epa);
                         }
                         break;
-
-                    case ".gv":
-                        ExportGraphvizGraph(fileName, epa);
-                        break;
-
-                    case ".emf":
-                    case ".wmf":
-                        ExportVectorGraph(fileName);
-                        break;
-
                     default:
-                        ExportImageGraph(fileName, epa);
+                        using (var fileStream = File.Create(fileName))
+                        {
+                            new EpaBinarySerializer().Serialize(fileStream, epa);
+                        }
                         break;
                 }
             }
@@ -492,130 +428,6 @@ namespace Contractor.Gui
             }
 
             BeginInvoke((Action) delegate { EndBackgroundTask(); });
-        }
-
-        private void ExportGraphvizGraph(string fileName, Epa epa)
-        {
-            throw new NotImplementedException();
-            //using (var sw = File.CreateText(fileName))
-            //{
-            //    var typeFullName = _AnalizedType.GetDisplayName();
-            //    var nodes = graphViewer.Graph.GeometryGraph.CollectAllNodes();
-            //    var initialNodes = nodes.Where(n => epa.Initial.Equals((n.UserData as Node).UserData as State));
-            //    var otherNodes = nodes.Where(n => !epa.Initial.Equals((n.UserData as Node).UserData as State));
-
-            //    sw.WriteLine("digraph \"{0}\"", typeFullName);
-            //    sw.WriteLine("{");
-            //    sw.WriteLine("\trankdir=LR;");
-            //    sw.WriteLine("\tnode [style = filled, fillcolor = aliceblue, fontname = \"{0}\"];", "Cambria");
-
-            //    sw.WriteLine();
-            //    sw.WriteLine("\tnode [shape = doublecircle];");
-
-            //    foreach (var n in initialNodes)
-            //    {
-            //        var node = n.UserData as Node;
-            //        var name = node.LabelText.Replace(sw.NewLine, @"\n");
-
-            //        sw.WriteLine("\tnode [label = \"{0}\"]; \"{1}\";", name, node.Id);
-            //    }
-
-            //    sw.WriteLine();
-            //    sw.WriteLine("\tnode [shape = circle];");
-
-            //    foreach (var n in otherNodes)
-            //    {
-            //        var node = n.UserData as Node;
-            //        var name = node.LabelText.Replace(sw.NewLine, @"\n");
-
-            //        sw.WriteLine("\tnode [label = \"{0}\"]; \"{1}\";", name, node.Id);
-            //    }
-
-            //    sw.WriteLine();
-            //    sw.WriteLine("\tedge [fontname = \"{0}\"];", "Cambria");
-            //    sw.WriteLine();
-
-            //    foreach (var edge in graphViewer.Graph.Edges)
-            //    {
-            //        var from = edge.SourceNode.Id;
-            //        var to = edge.TargetNode.Id;
-            //        var label = edge.LabelText.Replace(sw.NewLine, @"\n");
-
-            //        sw.WriteLine("\tedge [label = \"{0}\"] \"{1}\" -> \"{2}\";", label, from, to);
-            //    }
-
-            //    sw.WriteLine("}");
-            //}
-        }
-
-        private void ExportVectorGraph(string fileName)
-        {
-            throw new NotImplementedException();
-            //var scale = 6.0f;
-            //var w = (int) (graphViewer.Graph.Width*scale);
-            //var h = (int) (graphViewer.Graph.Height*scale);
-
-            //using (var temp = CreateGraphics())
-            //{
-            //    var hdc = temp.GetHdc();
-
-            //    using (var img = new Metafile(fileName, hdc, EmfType.EmfOnly))
-            //    {
-            //        temp.ReleaseHdc(hdc);
-
-            //        using (var g = Graphics.FromImage(img))
-            //        {
-            //            g.SmoothingMode = SmoothingMode.HighQuality;
-            //            g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
-            //            g.CompositingQuality = CompositingQuality.HighQuality;
-            //            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-
-            //            DrawGraph(g, w, h, scale);
-            //        }
-            //    }
-            //}
-        }
-
-        private void ExportImageGraph(string fileName, Epa epa)
-        {
-            using (var fileStream = File.Create(fileName))
-            {
-                new EpaBinarySerializer().Serialize(fileStream, epa);
-            }
-        }
-
-        private void DrawGraph(Graphics g, int w, int h, float scale)
-        {
-            throw new NotImplementedException();
-            //var graph = graphViewer.Graph;
-
-            //var num1 = (float) (0.5*w - scale*(graph.Left + 0.5*graph.Width));
-            //var num2 = (float) (0.5*h + scale*(graph.Bottom + 0.5*graph.Height));
-
-            //using (var brush = new SolidBrush(Draw.MsaglColorToDrawingColor(graph.Attr.BackgroundColor)))
-            //    g.FillRectangle(brush, 0, 0, w, h);
-
-            //using (var matrix = new Matrix(scale, 0f, 0f, -scale, num1, num2))
-            //{
-            //    g.Transform = matrix;
-            //    Draw.DrawPrecalculatedLayoutObject(g, graphViewer.ViewerGraph);
-            //}
-        }
-
-        private void UpdateCommands()
-        {
-            //var graphGenerated = graphViewer.Graph != null;
-            //var analisisRunning = _AnalisisThread != null;
-
-            //buttonExportGraph.Enabled = graphGenerated && !analisisRunning;
-            //buttonGenerateAssembly.Enabled = graphGenerated && !analisisRunning;
-            //buttonPan.Enabled = graphGenerated;
-            //buttonResetLayout.Enabled = graphGenerated;
-            //buttonZoomBestFit.Enabled = graphGenerated;
-            //buttonZoomIn.Enabled = graphGenerated;
-            //buttonZoomOut.Enabled = graphGenerated;
-            //buttonRedo.Enabled = false;
-            //buttonUndo.Enabled = false;
         }
 
         private async void LoadAssembly(string fileName)
