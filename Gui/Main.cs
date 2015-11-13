@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -17,7 +16,11 @@ using Action = System.Action;
 
 namespace Contractor.Gui
 {
-    internal partial class Main : Form
+    interface IMainScreen
+    {
+        void StartApplication();
+    }
+    internal partial class Main : Form, IMainScreen
     {
         private TypeAnalysisResult _LastResult;
         private Options _Options;
@@ -33,6 +36,11 @@ namespace Contractor.Gui
 
         protected CciDecompiler decompiler;
         protected CancellationTokenSource cancellationSource;
+
+        public void StartApplication()
+        {
+            Application.Run(this);
+        }
 
         public Main()
         {

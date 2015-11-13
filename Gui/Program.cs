@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
+using Contractor.Gui.Models;
+using Contractor.Gui.Presenters;
 
 namespace Contractor.Gui
 {
@@ -13,7 +15,9 @@ namespace Contractor.Gui
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Main());
+
+            var presenter = new MainPresenter(new Main(), new MainModel());
+            presenter.StartApplication();
         }
     }
 }
