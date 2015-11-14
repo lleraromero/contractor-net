@@ -70,13 +70,13 @@ namespace Contractor.Core
             var unprovenTransitionsCount = this.EPA.Transitions.Count<Transition>(t => t.IsUnproven);
 
             var sb = new StringBuilder();
-            sb.AppendFormat(@"Total duration:             {0}", this.TotalDuration).AppendLine();
-            sb.AppendFormat(@"Analysis total duration:    {0}", this.Statistics["TotalAnalyzerDuration"]).AppendLine();
-            sb.AppendFormat(@"Analysis precision:         {0}%", precision).AppendLine();
-            sb.AppendFormat(@"Executions:                 {0}", this.Statistics["ExecutionsCount"]).AppendLine();
-            sb.AppendFormat(@"Generated queries:          {0} ({1} unproven)", totalGeneratedQueriesCount, unprovenQueriesCount).AppendLine();
-            sb.AppendFormat(@"States:                     {0} (1 initial)", statesCount).AppendLine();
-            sb.AppendFormat(@"Transitions:                {0} ({1} unproven)", transitionsCount, unprovenTransitionsCount).AppendLine();
+            sb.AppendFormat(@"Total time:          {0:%m} minutes {0:%s} seconds", this.TotalDuration).AppendLine();
+            sb.AppendFormat(@"Analysis total time: {0}", this.Statistics["TotalAnalyzerDuration"]).AppendLine();
+            sb.AppendFormat(@"Analysis precision:  {0}%", precision).AppendLine();
+            sb.AppendFormat(@"Executions:          {0}", this.Statistics["ExecutionsCount"]).AppendLine();
+            sb.AppendFormat(@"Generated queries:   {0} ({1} unproven)", totalGeneratedQueriesCount, unprovenQueriesCount).AppendLine();
+            sb.AppendFormat(@"States:              {0} (1 initial)", statesCount).AppendLine();
+            sb.AppendFormat(@"Transitions:         {0} ({1} unproven)", transitionsCount, unprovenTransitionsCount).AppendLine();
 
             return sb.ToString();
         }

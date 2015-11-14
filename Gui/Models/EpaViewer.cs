@@ -22,9 +22,14 @@ namespace Contractor.Gui
 
         public EpaViewer()
         {
-            graph = new Graph();
-            graph.Attr.OptimizeLabelPositions = true;
-            graph.Attr.LayerDirection = LayerDirection.LR;
+            graph = new Graph
+            {
+                Attr =
+                {
+                    OptimizeLabelPositions = true,
+                    LayerDirection = LayerDirection.LR
+                }
+            };
         }
 
         public void AddState(State state)
