@@ -161,6 +161,7 @@ namespace Contractor.Gui
 
                 if (LoadAssembly != null)
                 {
+                    methodFilterPresenter.Reset();
                     LoadAssembly(sender, new FileInfo(fileName));
                     buttonStartAnalysis.Enabled = false;
                     buttonLoadContracts.Enabled = true;

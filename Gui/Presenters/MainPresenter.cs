@@ -10,7 +10,6 @@ using Analyzer.Corral;
 using Contractor.Core;
 using Contractor.Core.Model;
 using Contractor.Gui.Models;
-using Action = System.Action;
 
 namespace Contractor.Gui.Presenters
 {
@@ -49,20 +48,20 @@ namespace Contractor.Gui.Presenters
             decompiler = new CciDecompiler();
         }
 
-        private void ScreenOnLoadAssembly(object sender, FileInfo fileInfo)
+        private async void ScreenOnLoadAssembly(object sender, FileInfo fileInfo)
         {
             inputFile = fileInfo;
             UpdateStatus("Decompiling assembly {0}...", inputFile.Name);
-            inputAssembly = decompiler.Decompile(inputFile.FullName, null);
+            inputAssembly = await Task.Run(() => decompiler.Decompile(inputFile.FullName, null));
             screen.ShowTypes(inputAssembly);
             UpdateStatus("Ready");
         }
 
-        private void ScreenOnLoadContracts(object sender, FileInfo fileInfo)
+        private async void ScreenOnLoadContracts(object sender, FileInfo fileInfo)
         {
             contractFile = fileInfo;
             UpdateStatus("Loading contracts from assembly {0}...", contractFile.Name);
-            inputAssembly = decompiler.Decompile(inputFile.FullName, contractFile.FullName);
+            inputAssembly = await Task.Run(() =>  decompiler.Decompile(inputFile.FullName, contractFile.FullName));
             UpdateStatus("Ready");
         }
 

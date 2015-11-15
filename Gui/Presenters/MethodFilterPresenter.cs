@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Contractor.Core.Model;
 
 namespace Contractor.Gui
@@ -14,7 +15,14 @@ namespace Contractor.Gui
 
         public void LoadMethods(TypeDefinition typeDefinition)
         {
-            screen.LoadMethods(typeDefinition);
+            var methods = typeDefinition.Constructors()
+                .Union(typeDefinition.Actions());
+            screen.LoadMethods(methods);
+        }
+
+        public void Reset()
+        {
+            screen.LoadMethods(new List<Action>());
         }
 
         public IEnumerable<Action> SelectedMethods()

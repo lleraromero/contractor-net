@@ -38,7 +38,7 @@ namespace Contractor.Core
         public Task<TypeAnalysisResult> GenerateEpa(TypeDefinition typeToAnalyze, IEnumerable<string> selectedMethods)
         {
             Contract.Requires(typeToAnalyze != null);
-            Contract.Requires(selectedMethods != null && selectedMethods.Any());
+            Contract.Requires(selectedMethods != null);
 
             var constructors = new HashSet<Action>(typeToAnalyze.Constructors().Where(a => selectedMethods.Contains(a.ToString())));
             var actions = new HashSet<Action>(typeToAnalyze.Actions().Where(a => selectedMethods.Contains(a.ToString())));

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using Contractor.Core.Model;
 using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Gui
@@ -10,7 +9,7 @@ namespace Contractor.Gui
     internal interface IMethodFilterScreen
     {
         IEnumerable<Action> SelectedMethods { get; }
-        void LoadMethods(TypeDefinition typeDefinition);
+        void LoadMethods(IEnumerable<Action> typeDefinition);
     }
 
     public partial class MethodFilterScreen : UserControl, IMethodFilterScreen
@@ -20,20 +19,15 @@ namespace Contractor.Gui
             InitializeComponent();
         }
 
-        public void LoadMethods(TypeDefinition typeDefinition)
+        public void LoadMethods(IEnumerable<Action> methods)
         {
             lsbMethods.BeginUpdate();
 
             lsbMethods.Items.Clear();
 
-            foreach (var constructor in typeDefinition.Constructors())
+            foreach (var method in methods)
             {
-                lsbMethods.Items.Add(constructor, CheckState.Checked);
-            }
-            
-            foreach (var action in typeDefinition.Actions())
-            {
-                lsbMethods.Items.Add(action, CheckState.Checked);
+                lsbMethods.Items.Add(method, CheckState.Checked);
             }
 
             lsbMethods.EndUpdate();
