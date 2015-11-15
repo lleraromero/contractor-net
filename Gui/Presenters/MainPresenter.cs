@@ -18,104 +18,62 @@ namespace Contractor.Gui.Presenters
         protected IMainScreen screen;
         protected IMainModel model;
 
-        protected FileInfo inputFile;
-        protected FileInfo contractFile;
-        protected IAssemblyXXX inputAssembly;
-
-        protected CciDecompiler decompiler;
-        protected CancellationTokenSource cancellationSource;
-
         protected SynchronizationContext syncContext;
 
-        protected Epa generatedEpa;
-
-        public MainPresenter(SynchronizationContext syncContext, IMainScreen screen)
+        public MainPresenter(SynchronizationContext syncContext, IMainScreen screen, IMainModel model)
         {
             Configuration.Initialize();
 
             this.syncContext = syncContext;
 
+            this.model = model;
+            this.model.StateAdded += OnStateAdded;
+            this.model.TransitionAdded += OnTransitionAdded;
+
             this.screen = screen;
             this.screen.LoadAssembly += ScreenOnLoadAssembly; 
             this.screen.LoadContracts += ScreenOnLoadContracts;
             this.screen.StartAnalysis += async (sender, analysisEventArgs) => await StartAnalisis(analysisEventArgs);
-            this.screen.StopAnalysis += (sender, args) => cancellationSource.Cancel();
-            this.screen.ExportGraph += (sender, outputFileInfo) => ExportGraph(outputFileInfo, generatedEpa, new EpaBinarySerializer());
-            this.screen.GenerateAssembly += (sender, outputFileInfo) => GenerateAssembly(outputFileInfo, generatedEpa);
-
-            model = new MainModel();
-
-            decompiler = new CciDecompiler();
+            this.screen.StopAnalysis += (sender, args) => this.model.Stop();
+            this.screen.ExportGraph += (sender, outputFileInfo) => ExportGraph(outputFileInfo, this.model.GeneratedEpa, new EpaBinarySerializer());
+            this.screen.GenerateAssembly += (sender, outputFileInfo) => GenerateAssembly(outputFileInfo, this.model.GeneratedEpa);
         }
 
-        private async void ScreenOnLoadAssembly(object sender, FileInfo fileInfo)
+        protected void OnStateAdded(object sender, StateAddedEventArgs e)
         {
-            inputFile = fileInfo;
-            UpdateStatus("Decompiling assembly {0}...", inputFile.Name);
-            inputAssembly = await Task.Run(() => decompiler.Decompile(inputFile.FullName, null));
-            screen.ShowTypes(inputAssembly);
+            syncContext.Post(_ => screen.StateAdded(e), null);
+        }
+
+        protected void OnTransitionAdded(object sender, TransitionAddedEventArgs e)
+        {
+            syncContext.Post(_ => screen.TransitionAdded(e), null);
+        }
+
+        protected async void ScreenOnLoadAssembly(object sender, FileInfo fileInfo)
+        {
+            UpdateStatus("Decompiling assembly {0}...", fileInfo.Name);
+            await model.LoadAssembly(fileInfo);
+            screen.ShowTypes(model.InputAssembly);
             UpdateStatus("Ready");
         }
 
-        private async void ScreenOnLoadContracts(object sender, FileInfo fileInfo)
+        protected async void ScreenOnLoadContracts(object sender, FileInfo fileInfo)
         {
-            contractFile = fileInfo;
-            UpdateStatus("Loading contracts from assembly {0}...", contractFile.Name);
-            inputAssembly = await Task.Run(() =>  decompiler.Decompile(inputFile.FullName, contractFile.FullName));
+            UpdateStatus("Loading contracts from assembly {0}...", fileInfo.Name);
+            await model.LoadContracts(fileInfo);
             UpdateStatus("Ready");
         }
-
 
         protected async Task StartAnalisis(AnalysisEventArgs analysisEventArgs)
         {
             screen.DisableInterfaceWhileAnalyzing();
-            cancellationSource = new CancellationTokenSource();
 
-            var analyzer = GetAnalyzer(analysisEventArgs.TypeToAnalyze, cancellationSource.Token);
-            var epaGenerator = GetEpaGenerator(analyzer);
-            
-            await GenerateGraph(epaGenerator, analysisEventArgs);
-
-            screen.EnableInterfaceAfterAnalysis();
-        }
-
-        protected EpaGenerator GetEpaGenerator(IAnalyzer analyzer)
-        {
-            var epaGenerator = new EpaGenerator(inputAssembly, analyzer);
-            epaGenerator.StateAdded += (sender, args) => syncContext.Post(_ => screen.StateAdded(args), null);
-            epaGenerator.TransitionAdded += (sender, args) => syncContext.Post(_ => screen.TransitionAdded(args), null);
-            return epaGenerator;
-        }        
-
-        protected IAnalyzer GetAnalyzer(TypeDefinition typeToAnalyze, CancellationToken cancellationToken)
-        {
-            IAnalyzer analyzer;
-            switch (screen.Engine)
-            {
-                case "CodeContracts":
-                    throw new NotImplementedException();
-                case "Corral":
-                    analyzer = new CorralAnalyzer(decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly, inputFile.FullName,
-                        typeToAnalyze, cancellationToken);
-                    break;
-                default:
-                    throw new NotSupportedException();
-            }
-
-            return analyzer;
-        }
-
-        protected async Task GenerateGraph(EpaGenerator epaGenerator, AnalysisEventArgs analysisEventArgs)
-        {
             var typeToAnalyze = analysisEventArgs.TypeToAnalyze;
-
-            var selectedMethods = from m in analysisEventArgs.SelectedMethods select m.ToString();
-
             UpdateStatus("Generating EPA for {0}...", typeToAnalyze.Name);
 
             try
             {
-                var analysisResult = await epaGenerator.GenerateEpa(typeToAnalyze, selectedMethods);   
+                var analysisResult = await model.Start(analysisEventArgs);
                 ShowAnalysisResult(typeToAnalyze, analysisResult);
             }
             catch (OperationCanceledException)
@@ -127,6 +85,9 @@ namespace Contractor.Gui.Presenters
                 UpdateStatus("Analysis for {0} aborted", typeToAnalyze.Name);
                 HandleException(ex);
             }
+
+            
+            screen.EnableInterfaceAfterAnalysis();
         }
 
         protected void ShowAnalysisResult(TypeDefinition typeToAnalyze, TypeAnalysisResult analysisResult)
@@ -192,25 +153,5 @@ namespace Contractor.Gui.Presenters
                 HandleException(ex);
             }
         }
-
-        //private void StartBackgroundTask(string message, params object[] args)
-        //{
-        //    progressBar.Visible = true;
-        //    UpdateStatus(string.Format(message, args));
-        //}
-
-        //private void EndBackgroundTask(string message = null, params object[] args)
-        //{
-        //    progressBar.Visible = false;
-
-        //    if (message == null)
-        //    {
-        //        statusLabel.Text = "Ready";
-        //    }
-        //    else
-        //    {
-        //        UpdateStatus(string.Format(message, args));
-        //    }
-        //}
     }
 }

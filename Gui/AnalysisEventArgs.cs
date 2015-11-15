@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Linq;
 using Contractor.Core.Model;
 using Action = Contractor.Core.Model.Action;
 
@@ -9,16 +8,19 @@ namespace Contractor.Gui
 {
     internal class AnalysisEventArgs : EventArgs
     {
-        protected IEnumerable<Action> selectedMethod;
+        protected IEnumerable<Action> selectedMethods;
         protected TypeDefinition typeToAnalyze;
+        protected string engine;
 
-        public AnalysisEventArgs(TypeDefinition typeDefinition, IEnumerable<Action> selectedMethods)
+        public AnalysisEventArgs(TypeDefinition typeDefinition, IEnumerable<Action> selectedMethods, string engine)
         {
             Contract.Requires(typeDefinition != null);
             Contract.Requires(selectedMethods != null);
+            Contract.Requires(!string.IsNullOrEmpty(engine));
 
             this.typeToAnalyze = typeDefinition;
-            selectedMethod = selectedMethods;
+            this.selectedMethods = selectedMethods;
+            this.engine = engine;
         }
 
         public TypeDefinition TypeToAnalyze
@@ -28,7 +30,12 @@ namespace Contractor.Gui
 
         public IEnumerable<Action> SelectedMethods
         {
-            get { return selectedMethod; }
+            get { return selectedMethods; }
+        }
+
+        public string Engine
+        {
+            get { return engine; }
         }
     }
 }
