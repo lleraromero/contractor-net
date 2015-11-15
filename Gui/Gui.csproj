@@ -115,6 +115,8 @@
     <Compile Include="AboutDialog.Designer.cs">
       <DependentUpon>AboutDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="AnalysisEventArgs.cs" />
+    <Compile Include="IMainScreen.cs" />
     <Compile Include="Models\EpaViewer.cs" />
     <Compile Include="EpaViewerScreen.cs">
       <SubType>UserControl</SubType>

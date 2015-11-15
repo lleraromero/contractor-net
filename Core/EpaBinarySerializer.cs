@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace Contractor.Core
 {
-    public class EpaBinarySerializer
+    public class EpaBinarySerializer : ISerializer
     {
         Epa epa;
         public EpaBinarySerializer()

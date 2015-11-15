@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Threading.Tasks;
 using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
@@ -34,14 +35,14 @@ namespace Contractor.Core
             return GenerateEpa(typeToAnalyze, constructors, actions);
         }
 
-        public TypeAnalysisResult GenerateEpa(TypeDefinition typeToAnalyze, IEnumerable<string> selectedMethods)
+        public Task<TypeAnalysisResult> GenerateEpa(TypeDefinition typeToAnalyze, IEnumerable<string> selectedMethods)
         {
             Contract.Requires(typeToAnalyze != null);
             Contract.Requires(selectedMethods != null && selectedMethods.Any());
 
             var constructors = new HashSet<Action>(typeToAnalyze.Constructors().Where(a => selectedMethods.Contains(a.ToString())));
             var actions = new HashSet<Action>(typeToAnalyze.Actions().Where(a => selectedMethods.Contains(a.ToString())));
-            return GenerateEpa(typeToAnalyze, constructors, actions);
+            return Task.Run(() => GenerateEpa(typeToAnalyze, constructors, actions));
         }
 
         /// <summary>
@@ -72,8 +73,8 @@ namespace Contractor.Core
             var statesToVisit = new Queue<State>();
             statesToVisit.Enqueue(dummy);
 
-            try
-            {
+            //try
+            //{
                 while (statesToVisit.Count > 0)
                 {
                     var source = statesToVisit.Dequeue();
@@ -122,11 +123,11 @@ namespace Contractor.Core
                         }
                     }
                 }
-            }
-            catch (OperationCanceledException)
-            {
-                // The user aborted the generation process
-            }
+            //}
+            //catch (OperationCanceledException)
+            //{
+            //    // The user aborted the generation process
+            //}
 
             analysisTimer.Stop();
 

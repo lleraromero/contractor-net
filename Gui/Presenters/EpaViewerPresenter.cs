@@ -1,4 +1,5 @@
-﻿using Contractor.Core.Model;
+﻿using System.Threading;
+using Contractor.Core.Model;
 
 namespace Contractor.Gui
 {
@@ -6,11 +7,13 @@ namespace Contractor.Gui
     {
         protected readonly IEpaViewerScreen screen;
         protected IEpaViewer epaViewer;
+        protected SynchronizationContext syncContext;
 
-        public EpaViewerPresenter(IEpaViewerScreen screen, IEpaViewer epaViewer)
+        public EpaViewerPresenter(IEpaViewerScreen screen, IEpaViewer epaViewer, SynchronizationContext syncContext)
         {
             this.screen = screen;
             this.epaViewer = epaViewer;
+            this.syncContext = syncContext;
 
             this.screen.Graph = this.epaViewer.Graph;
             this.screen.Reset += (sender, args) => { RefreshScreen(); };
@@ -19,7 +22,7 @@ namespace Contractor.Gui
         public void Reset()
         {
             epaViewer = new EpaViewer();
-            screen.Graph = epaViewer.Graph;
+            RefreshScreen();
         }
 
         public void AddState(State state)
@@ -36,7 +39,7 @@ namespace Contractor.Gui
 
         protected void RefreshScreen()
         {
-            screen.Graph = epaViewer.Graph;
+            syncContext.Post(_ => screen.Graph = epaViewer.Graph, null);
         }
     }
 }

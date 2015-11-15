@@ -11,7 +11,7 @@ using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
-    public class EpaXmlSerializer
+    public class EpaXmlSerializer : ISerializer
     {
         public EpaXmlSerializer()
         {

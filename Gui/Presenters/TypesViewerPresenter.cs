@@ -41,7 +41,7 @@ namespace Contractor.Gui
         public void ShowTypes(IAssemblyXXX assembly)
         {
             var rootNode = typesViewer.GetTypesTreeRoot(assembly);
-            syncContext.Post(param => { screen.Root = param as TreeNode; }, rootNode);
+            syncContext.Post(param => { screen.Reset(); screen.Root = param as TreeNode; }, rootNode);
         }
     }
 }
