@@ -11,18 +11,17 @@ using Microsoft.Msagl.Drawing;
 using Microsoft.Msagl.GraphViewerGdi;
 using Color = System.Drawing.Color;
 
-namespace Contractor.Core
+namespace EPAOverlapper
 {
-    public class EpaBinarySerializer : ISerializer
+    internal class EpaOverlapperBinarySerializer
     {
         protected Epa epa;
 
-        public void Serialize(Stream stream, Epa epa)
+        public void SerializeOverlapped(Stream stream, Epa e1, Epa e2)
         {
             Contract.Requires(stream != null && stream.CanWrite);
-            Contract.Requires(epa != null);
-
-            this.epa = epa;
+            Contract.Requires(e1 != null && e2 != null);
+            Contract.Requires(Contract.ForAll(e2.Transitions, t => e1.Transitions.Any(t2 => t2.Equals(t))), "e2 is subgraph of e1");
 
             var graph = new Graph
             {
@@ -33,14 +32,17 @@ namespace Contractor.Core
                 }
             };
 
-            foreach (var s in epa.States)
+            epa = e1;
+
+            foreach (var s in e1.States)
             {
                 AddState(s, graph);
             }
 
-            foreach (var t in epa.Transitions)
+            foreach (var t in e1.Transitions)
             {
-                AddTransition(t, graph);
+                var overlapped = e2.Transitions.Any(t2 => t2.Equals(t));
+                AddTransitionOverlapped(t, graph, overlapped);
             }
 
             RenderGraph(stream, graph);
@@ -159,11 +161,12 @@ namespace Contractor.Core
             return true;
         }
 
-        private void AddTransition(Transition t, Graph graph)
+        private void AddTransitionOverlapped(Transition t, Graph graph, bool overlapped)
         {
             var label = t.Action.ToString();
             var createEdge = true;
             var lineStyle = t.IsUnproven ? Style.Dashed : Style.Solid;
+            var lineColour = overlapped ? Microsoft.Msagl.Drawing.Color.Red : Microsoft.Msagl.Drawing.Color.Black;
 
 
             var n = graph.FindNode(t.SourceState.Name);
@@ -180,7 +183,8 @@ namespace Contractor.Core
 
                 foreach (var ed in edges)
                 {
-                    if (ed.Target == t.TargetState.Name && ed.Attr.Styles.Contains(lineStyle))
+                    if (ed.Target == t.TargetState.Name &&
+                        ed.Attr.Styles.Contains(lineStyle) && ed.Attr.Color == lineColour)
                     {
                         ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
                         createEdge = false;
@@ -196,6 +200,7 @@ namespace Contractor.Core
                 edge.Label.FontName = "Cambria";
                 edge.Label.FontSize = 6;
                 edge.Attr.AddStyle(lineStyle);
+                edge.Attr.Color = lineColour;
             }
         }
     }
