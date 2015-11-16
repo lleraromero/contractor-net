@@ -2,9 +2,8 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using Contractor.Core.Model;
 
-namespace Contractor.Core
+namespace Contractor.Core.Model
 {
     public class NamespaceDefinition
     {

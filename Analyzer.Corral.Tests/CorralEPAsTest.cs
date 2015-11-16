@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Analysis.Cci;
 using Contractor.Core;
+using Contractor.Core.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Analyzer.Corral.Tests

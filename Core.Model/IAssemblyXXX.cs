@@ -1,15 +1,12 @@
-﻿using Microsoft.Cci;
-using Microsoft.Cci.Contracts;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Linq;
-using Contractor.Core.Model;
-using Action = Contractor.Core.Model.Action;
+using Microsoft.Cci;
+using Microsoft.Cci.Contracts;
 
-namespace Contractor.Core
+namespace Contractor.Core.Model
 {
-    [ContractClass(typeof(IAssemblyXXXContracts))]
+    [ContractClass(typeof (IAssemblyXXXContracts))]
     public interface IAssemblyXXX
     {
         IReadOnlyCollection<NamespaceDefinition> Namespaces();
@@ -18,8 +15,9 @@ namespace Contractor.Core
     }
 
     #region IAssemblyXXX Contracts
-    [ContractClassFor(typeof(IAssemblyXXX))]
-    abstract class IAssemblyXXXContracts : IAssemblyXXX
+
+    [ContractClassFor(typeof (IAssemblyXXX))]
+    internal abstract class IAssemblyXXXContracts : IAssemblyXXX
     {
         [Pure]
         public IReadOnlyCollection<NamespaceDefinition> Namespaces()
@@ -41,5 +39,6 @@ namespace Contractor.Core
             throw new NotImplementedException();
         }
     }
+
     #endregion
 }

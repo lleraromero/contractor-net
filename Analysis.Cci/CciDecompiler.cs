@@ -1,7 +1,7 @@
-﻿using Contractor.Core;
-using Microsoft.Cci.MutableContracts;
-using System.Diagnostics.Contracts;
+﻿using System.Diagnostics.Contracts;
 using System.IO;
+using Contractor.Core.Model;
+using Microsoft.Cci.MutableContracts;
 
 namespace Analysis.Cci
 {
@@ -11,19 +11,19 @@ namespace Analysis.Cci
 
         public CciDecompiler()
         {
-            this.host = new CodeContractAwareHostEnvironment();
+            host = new CodeContractAwareHostEnvironment();
         }
 
         public IAssemblyXXX Decompile(string inputFileName, string contractsFileName)
         {
             Contract.Requires(!string.IsNullOrEmpty(inputFileName) && File.Exists(inputFileName));
 
-            return new CciAssembly(inputFileName, contractsFileName, this.host);
+            return new CciAssembly(inputFileName, contractsFileName, host);
         }
 
-        public CciQueryGenerator CreateQueryGenerator() 
+        public CciQueryGenerator CreateQueryGenerator()
         {
-            return new CciQueryGenerator(this.host);
+            return new CciQueryGenerator(host);
         }
     }
 }
