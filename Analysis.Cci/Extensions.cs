@@ -8,40 +8,6 @@ namespace Contractor.Utils
 {
     public static class Extensions
     {
-        public static string GetDisplayName(this IMethodDefinition method)
-        {
-            var name = new StringBuilder();
-
-            if (method.IsConstructor)
-            {
-                name.Append(TypeHelper.GetTypeName(method.ContainingTypeDefinition, NameFormattingOptions.OmitContainingNamespace));
-            }
-            else
-            {
-                name.Append(method.Name.Value);
-            }
-
-            if (method.IsGeneric)
-            {
-                var genericParameters = string.Join(",", method.GenericParameters);
-                name.Append('<');
-                name.Append(genericParameters);
-                name.Append('>');
-            }
-
-            var hasOverloads = method.ContainingTypeDefinition.Methods.Where(m => m.Name.Value == method.Name.Value).Count() > 1;
-            if (method.ParameterCount > 0 && hasOverloads)
-            {
-                var parametersTypes = method.Parameters.Select(p => p.Type);
-                var parameters = string.Join(",", parametersTypes);
-
-                name.Append('(');
-                name.Append(parameters);
-                name.Append(')');
-            }
-            return name.ToString();
-        }
-
         [Pure]
         public static string GetUniqueName(this INamedTypeDefinition type)
         {
