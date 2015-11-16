@@ -12,8 +12,8 @@ namespace Contractor.Core
         int TotalGeneratedQueriesCount { get; }
         int UnprovenQueriesCount { get; }
 
-        ActionAnalysisResults AnalyzeActions(State source, Action action, List<Action> actions);
+        ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions);
 
-        TransitionAnalysisResult AnalyzeTransitions(State source, Action action, List<State> targets);
+        TransitionAnalysisResult AnalyzeTransitions(State source, Action action, IEnumerable<State> targets);
     }
 }

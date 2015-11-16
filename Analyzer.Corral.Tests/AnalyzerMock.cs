@@ -30,7 +30,7 @@ namespace Analyzer.Corral.Tests
             get { return 0; }
         }
 
-        public ActionAnalysisResults AnalyzeActions(State source, Action action, List<Action> actions)
+        public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
         {
             var queries = GenerateQueries(source, action, actions);
             var result = Analyze(queries);
@@ -42,7 +42,7 @@ namespace Analyzer.Corral.Tests
         protected const string notPrefix = "_Not_";
         protected const string methodNameDelimiter = "~";
 
-        private List<string> GenerateQueries(State source, Action action, List<Action> actions)
+        private List<string> GenerateQueries(State source, Action action, IEnumerable<Action> actions)
         {
             var queries = new List<string>();
             foreach (var a in actions)
@@ -142,7 +142,7 @@ namespace Analyzer.Corral.Tests
         }
         #endregion
 
-        private ActionAnalysisResults EvaluateQueries(List<Action> actions, Dictionary<string, ResultKind> result)
+        private ActionAnalysisResults EvaluateQueries(IEnumerable<Action> actions, Dictionary<string, ResultKind> result)
         {
             HashSet<Action> enabledActions = new HashSet<Action>(actions);
             HashSet<Action> disabledActions = new HashSet<Action>(actions);
@@ -185,13 +185,13 @@ namespace Analyzer.Corral.Tests
                 }
             }
 
-            Contract.Assert(enabledActions.Count + disabledActions.Count <= actions.Count);
+            Contract.Assert(enabledActions.Count + disabledActions.Count <= actions.Count());
             Contract.Assert(!enabledActions.Intersect(disabledActions).Any());
 
             return new ActionAnalysisResults(enabledActions, disabledActions);
         }
 
-        public TransitionAnalysisResult AnalyzeTransitions(State source, Action action, List<State> targets)
+        public TransitionAnalysisResult AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
             var queries = GenerateQueries(source, action, targets);
             var result = Analyze(queries);
@@ -200,7 +200,7 @@ namespace Analyzer.Corral.Tests
             return resultAnalysis;
         }
 
-        private List<string> GenerateQueries(State source, Action action, List<State> targets)
+        private List<string> GenerateQueries(State source, Action action, IEnumerable<State> targets)
         {
             List<string> queries = new List<string>();
             foreach (var s in targets)
@@ -216,7 +216,7 @@ namespace Analyzer.Corral.Tests
             return queries;
         }
 
-        private TransitionAnalysisResult EvaluateQueries(State source, Action action, List<State> targets, Dictionary<string, ResultKind> result)
+        private TransitionAnalysisResult EvaluateQueries(State source, Action action, IEnumerable<State> targets, Dictionary<string, ResultKind> result)
         {
             var transitions = new HashSet<Transition>();
 
@@ -234,7 +234,7 @@ namespace Analyzer.Corral.Tests
 
                         var targetNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
                         var targetName = actionName.Substring(targetNameStart);
-                        var target = targets.Find(s => s.Name == targetName);
+                        var target = targets.First(s => s.Name == targetName);
                         var isUnproven = entry.Value == ResultKind.RecursionBoundReached;
 
                         if (target != null)

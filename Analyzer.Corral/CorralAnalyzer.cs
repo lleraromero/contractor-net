@@ -45,14 +45,14 @@ namespace Analyzer.Corral
         public int TotalGeneratedQueriesCount { get { return generatedQueriesCount; } }
         public int UnprovenQueriesCount { get { return unprovenQueriesCount; } }
 
-        public ActionAnalysisResults AnalyzeActions(State source, Action action, List<Action> actions)
+        public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
         {
             var queries = this.queryGenerator.CreateQueries(source, action, actions);
             var result = Analyze(queries);
             return EvaluateQueries(actions, result);
         }
 
-        public TransitionAnalysisResult AnalyzeTransitions(State source, Action action, List<State> targets)
+        public TransitionAnalysisResult AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
             var queries = this.queryGenerator.CreateQueries(source, action, targets);
             var result = Analyze(queries);
@@ -145,7 +145,7 @@ namespace Analyzer.Corral
             }
         }
 
-        private TransitionAnalysisResult EvaluateQueries(State source, Action action, List<State> targets, IEnumerable<Query> result)
+        private TransitionAnalysisResult EvaluateQueries(State source, Action action, IEnumerable<State> targets, IEnumerable<Query> result)
         {
             var transitions = new HashSet<Transition>();
 
@@ -159,7 +159,7 @@ namespace Analyzer.Corral
 
                     var targetNameStart = actionName.LastIndexOf(this.methodNameDelimiter) + 1;
                     var targetName = actionName.Substring(targetNameStart);
-                    var target = targets.Find(s => s.Name == targetName);
+                    var target = targets.First(s => s.Name == targetName);
                     var isUnproven = false;
 
                     if (target != null)
@@ -176,7 +176,7 @@ namespace Analyzer.Corral
 
                     var targetNameStart = actionName.LastIndexOf(this.methodNameDelimiter) + 1;
                     var targetName = actionName.Substring(targetNameStart);
-                    var target = targets.Find(s => s.Name == targetName);
+                    var target = targets.First(s => s.Name == targetName);
                     var isUnproven = true;
 
                     if (target != null)
