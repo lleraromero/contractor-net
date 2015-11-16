@@ -210,7 +210,6 @@
     <Compile Include="NamespaceDefinition.cs" />
     <Compile Include="Query.cs" />
     <Compile Include="StringAction.cs" />
-    <None Include="API.cd" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
