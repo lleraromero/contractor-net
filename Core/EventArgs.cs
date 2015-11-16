@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
+using Contractor.Core.Model;
 
-namespace Contractor.Core.Model
+namespace Contractor.Core
 {
     public abstract class TypeEventArgs : EventArgs
     {

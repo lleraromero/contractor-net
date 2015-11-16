@@ -203,6 +203,7 @@
     <Compile Include="EpaBinarySerializer.cs" />
     <Compile Include="EpaGenerator.cs" />
     <Compile Include="EpaXmlSerializer.cs" />
+    <Compile Include="EventArgs.cs" />
     <Compile Include="IAnalyzer.cs" />
     <Compile Include="ISerializer.cs" />
     <Compile Include="Logger.cs" />
