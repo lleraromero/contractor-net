@@ -102,7 +102,7 @@ namespace Contractor.Console
             //else
 
             var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
-            var analysisResult = generator.GenerateEpa(typeDefinition);
+            var analysisResult = generator.GenerateEpa(typeDefinition).Result;
 
             System.Console.WriteLine(analysisResult.ToString());
             var epas = new Dictionary<string, TypeAnalysisResult> {{options.TypeToAnalyze, analysisResult}};

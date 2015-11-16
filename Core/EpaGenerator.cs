@@ -26,13 +26,13 @@ namespace Contractor.Core
             this.analyzer = analyzer;
         }
 
-        public TypeAnalysisResult GenerateEpa(TypeDefinition typeToAnalyze)
+        public Task<TypeAnalysisResult> GenerateEpa(TypeDefinition typeToAnalyze)
         {
             Contract.Requires(typeToAnalyze != null);
 
             var constructors = typeToAnalyze.Constructors();
             var actions = typeToAnalyze.Actions();
-            return GenerateEpa(typeToAnalyze, constructors, actions);
+            return Task.Run(() => GenerateEpa(typeToAnalyze, constructors, actions));
         }
 
         public Task<TypeAnalysisResult> GenerateEpa(TypeDefinition typeToAnalyze, IEnumerable<string> selectedMethods)
@@ -62,8 +62,7 @@ namespace Contractor.Core
 
             var epaBuilder = new EpaBuilder(typeToAnalyze, dummy);
 
-            var discoveredStates = new HashSet<State>();
-            discoveredStates.Add(dummy);
+            var discoveredStates = new HashSet<State> {dummy};
 
             if (this.StateAdded != null)
             {

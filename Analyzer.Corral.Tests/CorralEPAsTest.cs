@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using Analysis.Cci;
@@ -54,7 +55,11 @@ namespace Analyzer.Corral.Tests
         {
             var epaGenerator = new EpaGenerator(inputAssembly, new AnalyzerMock());
             var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(typeToAnalyze));
-            epaGenerator.GenerateEpa(typeDefinition);
+            var epa = epaGenerator.GenerateEpa(typeDefinition);
+            epa.Wait();
+
+            Assert.IsFalse(epa.IsFaulted);
+            Assert.IsFalse(epa.IsCanceled);
         }
     }
 }
