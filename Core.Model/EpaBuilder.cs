@@ -1,28 +1,33 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using Contractor.Core;
 
 namespace Contractor.Core.Model
 {
     public class EpaBuilder : IEpaBuilder
     {
         protected Dictionary<State, HashSet<Transition>> graph;
-        protected TypeDefinition type;
         protected State initial;
+        protected TypeDefinition type;
 
-        public EpaBuilder(TypeDefinition Type, State initial)
+        public EpaBuilder(TypeDefinition type, State initial)
         {
-            this.type = Type;
-            this.graph = new Dictionary<State, HashSet<Transition>>();
+            this.type = type;
+            graph = new Dictionary<State, HashSet<Transition>>();
 
             Add(initial);
             this.initial = initial;
         }
 
-        public TypeDefinition Type { get { return this.type; } }
+        public TypeDefinition Type
+        {
+            get { return type; }
+        }
 
-        public State Initial { get { return initial; } }
+        public State Initial
+        {
+            get { return initial; }
+        }
 
         public HashSet<State> States
         {
@@ -31,17 +36,7 @@ namespace Contractor.Core.Model
 
         public HashSet<Transition> Transitions
         {
-            get
-            {
-                if (graph.Values.Count == 0)
-                {
-                    return new HashSet<Transition>();
-                }
-                else
-                {
-                    return new HashSet<Transition>(((IEnumerable<IEnumerable<Transition>>)graph.Values).Aggregate((acum, l) => acum.Union(l)));
-                }
-            }
+            get { return graph.Values.Aggregate(new HashSet<Transition>(), (acum, l) => new HashSet<Transition>(acum.Union(l))); }
         }
 
         public void Add(State s)
@@ -56,7 +51,7 @@ namespace Contractor.Core.Model
         {
             Contract.Requires(States.Contains(s));
 
-            var existingTransitions = Transitions.Where(t => t.SourceState == s || t.TargetState == s);
+            var existingTransitions = Transitions.Where(t => t.SourceState.Equals(s) || t.TargetState.Equals(s));
             if (!existingTransitions.Any())
             {
                 graph.Remove(s);
@@ -65,7 +60,7 @@ namespace Contractor.Core.Model
             {
                 foreach (var t in existingTransitions)
                 {
-                    Remove(t as Transition);
+                    Remove(t);
                 }
             }
         }

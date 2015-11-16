@@ -1,22 +1,17 @@
-﻿using Contractor.Core.Model;
-using Contractor.Utils;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using Contractor.Core.Model;
 using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
     public class EpaXmlSerializer : ISerializer
     {
-        public EpaXmlSerializer()
-        {
-        }
-
         public void Serialize(Stream stream, Epa epa)
         {
             Contract.Requires(stream != null && stream.CanWrite);
@@ -44,7 +39,7 @@ namespace Contractor.Core
             Contract.Requires(epa != null);
             Contract.Requires(writer != null);
 
-            SortedSet<string> actions = new SortedSet<string>(from t in epa.Transitions select t.Action.ToString());
+            var actions = new SortedSet<string>(from t in epa.Transitions select t.Action.ToString());
             foreach (var a in actions)
             {
                 writer.WriteStartElement("label");
@@ -63,10 +58,10 @@ namespace Contractor.Core
                 writer.WriteStartElement("state");
                 writer.WriteAttributeString("name", s.Name);
 
-                foreach (var a in (s as State).EnabledActions)
+                foreach (var a in s.EnabledActions)
                 {
                     writer.WriteStartElement("enabled_label");
-                    writer.WriteAttributeString("name", a.Method.GetDisplayName());
+                    writer.WriteAttributeString("name", a.ToString());
                     writer.WriteEndElement();
                 }
 
@@ -74,7 +69,6 @@ namespace Contractor.Core
 
                 writer.WriteEndElement(); // State
             }
-
         }
 
         private void SerializeTransitions(Epa epa, XmlTextWriter writer, State s)
@@ -83,7 +77,7 @@ namespace Contractor.Core
             Contract.Requires(writer != null);
             Contract.Requires(s != null);
 
-            SortedDictionary<string, List<Transition>> transitions = new SortedDictionary<string, List<Transition>>();
+            var transitions = new SortedDictionary<string, List<Transition>>();
             foreach (var t in epa.Transitions.Where(t => t.SourceState.Equals(s)))
             {
                 if (!transitions.ContainsKey(t.TargetState.Name))
@@ -98,7 +92,7 @@ namespace Contractor.Core
                 foreach (var t in kvp.Value)
                 {
                     writer.WriteStartElement("transition");
-                    writer.WriteAttributeString("destination", kvp.Key.ToString());
+                    writer.WriteAttributeString("destination", kvp.Key);
                     writer.WriteAttributeString("label", t.Action.ToString());
                     writer.WriteAttributeString("uncertain", t.IsUnproven.ToString().ToLower());
                     writer.WriteAttributeString("violates_invariant", "false"); //Contractor.NET does not support this attribute
@@ -145,12 +139,12 @@ namespace Contractor.Core
             Contract.Requires(type != null);
             Contract.Requires(!string.IsNullOrEmpty(initialState));
 
-            HashSet<Tuple<string, Action, string, bool>> transitions = new HashSet<Tuple<string, Model.Action, string, bool>>();
-            Dictionary<string, HashSet<Action>> epaActions = new Dictionary<string, HashSet<Action>>();
+            var transitions = new HashSet<Tuple<string, Action, string, bool>>();
+            var epaActions = new Dictionary<string, HashSet<Action>>();
 
 
             string name = null;
-            for (bool read = true; read; reader.Read())
+            for (var read = true; read; reader.Read())
             {
                 switch (reader.NodeType)
                 {
@@ -187,12 +181,12 @@ namespace Contractor.Core
                 }
             }
 
-            Dictionary<string, State> translator = new Dictionary<string, State>();
+            var translator = new Dictionary<string, State>();
             //TODO: arreglar las que estan deshabilitadas
-            State initial = new State(epaActions.First(kvp => kvp.Key.Equals(initialState)).Value, new HashSet<Action>());
-            
-            EpaBuilder epaBuilder = new EpaBuilder(type, initial);
-            
+            var initial = new State(epaActions.First(kvp => kvp.Key.Equals(initialState)).Value, new HashSet<Action>());
+
+            var epaBuilder = new EpaBuilder(type, initial);
+
             foreach (var kvp in epaActions)
             {
                 //TODO: arreglar las que estan deshabilitadas
