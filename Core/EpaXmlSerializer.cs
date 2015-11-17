@@ -185,7 +185,8 @@ namespace Contractor.Core
             //TODO: arreglar las que estan deshabilitadas
             var initial = new State(epaActions.First(kvp => kvp.Key.Equals(initialState)).Value, new HashSet<Action>());
 
-            var epaBuilder = new EpaBuilder(type, initial);
+            var epaBuilder = new EpaBuilder(type);
+            epaBuilder.SetStateAsInitial(initial);
 
             foreach (var kvp in epaActions)
             {

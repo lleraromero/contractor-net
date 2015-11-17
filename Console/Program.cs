@@ -95,7 +95,7 @@ namespace Contractor.Console
                     throw new NotSupportedException();
             }
 
-            var generator = new EpaGenerator(inputAssembly, analyzer);
+            var generator = new EpaGenerator(analyzer);
 
             //if (string.IsNullOrEmpty(options.type))
             //    epas = generator.GenerateEpas(cancellationSource.Token);

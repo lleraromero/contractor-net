@@ -207,6 +207,7 @@
     <Compile Include="IAnalyzer.cs" />
     <Compile Include="ISerializer.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="ObservableEpaBuilder.cs" />
     <Compile Include="Query.cs" />
     <Compile Include="StringAction.cs" />
     <Compile Include="Properties\Resources.Designer.cs">

@@ -7,16 +7,16 @@ namespace Contractor.Core
     public abstract class TypeEventArgs : EventArgs
     {
         public abstract TypeDefinition Type { get; }
-        public abstract EpaBuilder EpaBuilder { get; }
+        public abstract IEpaBuilder EpaBuilder { get; }
     }
 
     public class StateAddedEventArgs : TypeEventArgs
     {
-        protected EpaBuilder epaBuider;
+        protected IEpaBuilder epaBuider;
         protected State state;
         protected TypeDefinition type;
 
-        public StateAddedEventArgs(TypeDefinition type, EpaBuilder epaBuilder, State state)
+        public StateAddedEventArgs(TypeDefinition type, IEpaBuilder epaBuilder, State state)
         {
             Contract.Requires(type != null);
             Contract.Requires(epaBuilder != null);
@@ -32,7 +32,7 @@ namespace Contractor.Core
             get { return type; }
         }
 
-        public override EpaBuilder EpaBuilder
+        public override IEpaBuilder EpaBuilder
         {
             get { return epaBuider; }
         }
@@ -45,11 +45,11 @@ namespace Contractor.Core
 
     public class TransitionAddedEventArgs : TypeEventArgs
     {
-        protected EpaBuilder epaBuilder;
+        protected IEpaBuilder epaBuilder;
         protected Transition transition;
         protected TypeDefinition type;
 
-        public TransitionAddedEventArgs(TypeDefinition type, EpaBuilder epaBuilder, Transition transition)
+        public TransitionAddedEventArgs(TypeDefinition type, IEpaBuilder epaBuilder, Transition transition)
         {
             Contract.Requires(type != null);
             Contract.Requires(epaBuilder != null);
@@ -65,7 +65,7 @@ namespace Contractor.Core
             get { return type; }
         }
 
-        public override EpaBuilder EpaBuilder
+        public override IEpaBuilder EpaBuilder
         {
             get { return epaBuilder; }
         }

@@ -68,7 +68,7 @@ namespace Contractor.Gui.Models
 
         protected EpaGenerator GetEpaGenerator(IAnalyzer analyzer)
         {
-            var epaGenerator = new EpaGenerator(inputAssembly, analyzer);
+            var epaGenerator = new EpaGenerator(analyzer);
             epaGenerator.StateAdded += OnStateAdded;
             epaGenerator.TransitionAdded += OnTransitionAdded;
             return epaGenerator;

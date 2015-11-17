@@ -11,18 +11,14 @@ namespace Contractor.Core
 {
     public class EpaGenerator
     {
-        protected IAssemblyXXX assembly;
         protected IAnalyzer analyzer;
 
         public event EventHandler<StateAddedEventArgs> StateAdded;
         public event EventHandler<TransitionAddedEventArgs> TransitionAdded;
 
-        public EpaGenerator(IAssemblyXXX inputAssembly, IAnalyzer analyzer)
+        public EpaGenerator(IAnalyzer analyzer)
         {
-            Contract.Requires(inputAssembly != null);
             Contract.Requires(analyzer != null);
-
-            this.assembly = inputAssembly;
             this.analyzer = analyzer;
         }
 
@@ -32,7 +28,11 @@ namespace Contractor.Core
 
             var constructors = typeToAnalyze.Constructors();
             var actions = typeToAnalyze.Actions();
-            return Task.Run(() => GenerateEpa(typeToAnalyze, constructors, actions));
+            var epaBuilder = new ObservableEpaBuilder(new EpaBuilder(typeToAnalyze));
+            epaBuilder.StateAdded += StateAdded;
+            epaBuilder.TransitionAdded += TransitionAdded;
+
+            return Task.Run(() => GenerateEpa(constructors, actions, epaBuilder));
         }
 
         public Task<TypeAnalysisResult> GenerateEpa(TypeDefinition typeToAnalyze, IEnumerable<string> selectedMethods)
@@ -42,35 +42,30 @@ namespace Contractor.Core
 
             var constructors = new HashSet<Action>(typeToAnalyze.Constructors().Where(a => selectedMethods.Contains(a.ToString())));
             var actions = new HashSet<Action>(typeToAnalyze.Actions().Where(a => selectedMethods.Contains(a.ToString())));
-            return Task.Run(() => GenerateEpa(typeToAnalyze, constructors, actions));
+            var epaBuilder = new ObservableEpaBuilder(new EpaBuilder(typeToAnalyze));
+            epaBuilder.StateAdded += StateAdded;
+            epaBuilder.TransitionAdded += TransitionAdded;
+
+            return Task.Run(() => GenerateEpa(constructors, actions, epaBuilder));
         }
 
         /// <summary>
         /// Method to create an EPA of a particular type considering only the subset 'methods'
         /// </summary>
         /// <see cref="http://publicaciones.dc.uba.ar/Publications/2011/DBGU11/paper-icse-2011.pdf">Algorithm 1</see>
-        private TypeAnalysisResult GenerateEpa(TypeDefinition typeToAnalyze, ISet<Action> constructors, ISet<Action> actions)
+        private TypeAnalysisResult GenerateEpa(ISet<Action> constructors, ISet<Action> actions, IEpaBuilder epaBuilder)
         {
-            Contract.Requires(typeToAnalyze != null);
-            Contract.Requires(analyzer != null);
             Contract.Requires(constructors != null);
             Contract.Requires(actions != null);
+            Contract.Requires(epaBuilder != null);
 
             var analysisTimer = Stopwatch.StartNew();
 
-            var dummy = new State(constructors, new HashSet<Action>());
-
-            var epaBuilder = new EpaBuilder(typeToAnalyze, dummy);
-
-            var discoveredStates = new HashSet<State> {dummy};
-
-            if (this.StateAdded != null)
-            {
-                this.StateAdded(this, new StateAddedEventArgs(typeToAnalyze, epaBuilder, dummy));
-            }
+            var initialState = new State(constructors, new HashSet<Action>());
+            epaBuilder.SetStateAsInitial(initialState);
 
             var statesToVisit = new Queue<State>();
-            statesToVisit.Enqueue(dummy);
+            statesToVisit.Enqueue(initialState);
 
             //try
             //{
@@ -80,45 +75,26 @@ namespace Contractor.Core
                     foreach (var action in source.EnabledActions)
                     {
                         // Which actions are enabled or disabled if 'action' is called from 'source'?
-                        var actionsResult = analyzer.AnalyzeActions(source, action, actions.ToList<Action>());
-
-                        // Remove any inconsistency
-                        var inconsistentActions = actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).ToList();
-                        foreach (var act in inconsistentActions)
-                        {
-                            actionsResult.EnabledActions.Remove(act);
-                            actionsResult.DisabledActions.Remove(act);
-                        }
+                        var actionsResult = analyzer.AnalyzeActions(source, action, actions);
+                        Contract.Assert(!actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).Any(), "Results are consistent");
 
                         var possibleTargets = GeneratePossibleStates(actions, actionsResult, epaBuilder.States);
+                        Contract.Assert(possibleTargets.Any(), "There is always at least one target to reach");
+
                         // Which states are reachable from the current state (aka source) using 'action'?
-                        var transitionsResults = analyzer.AnalyzeTransitions(source, action, new List<State>(possibleTargets));
+                        var transitionsResults = analyzer.AnalyzeTransitions(source, action, possibleTargets);
+                        Contract.Assert(transitionsResults.Transitions.Count > 0, "There is always at least one transition to traverse");
 
                         foreach (var transition in transitionsResults.Transitions)
                         {
                             var target = transition.TargetState;
                             // Do I have to add a new state to the EPA?
-                            if (!discoveredStates.Contains(target))
+                            if (!epaBuilder.States.Contains(target))
                             {
                                 statesToVisit.Enqueue(target);
-
-                                discoveredStates.Add(target);
                                 epaBuilder.Add(target);
-
-                                if (this.StateAdded != null)
-                                {
-                                    var eventArgs = new StateAddedEventArgs(typeToAnalyze, epaBuilder, target);
-                                    this.StateAdded(this, eventArgs);
-                                }
                             }
-
                             epaBuilder.Add(transition);
-
-                            if (this.TransitionAdded != null)
-                            {
-                                var eventArgs = new TransitionAddedEventArgs(typeToAnalyze, epaBuilder, transition);
-                                this.TransitionAdded(this, eventArgs);
-                            }
                         }
                     }
                 }
@@ -141,7 +117,7 @@ namespace Contractor.Core
             return analysisResult;
         }
 
-        private IEnumerable<State> GeneratePossibleStates(ISet<Action> actions, ActionAnalysisResults actionsResult, ISet<State> knownStates)
+        private IEnumerable<State> GeneratePossibleStates(ISet<Action> actions, ActionAnalysisResults actionsResult, IReadOnlyCollection<State> knownStates)
         {
             Contract.Requires(actions != null);
             Contract.Requires(actionsResult != null);

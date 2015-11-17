@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
@@ -10,18 +11,10 @@ namespace Contractor.Core.Model
         protected State initial;
         protected TypeDefinition type;
 
-        public EpaBuilder(TypeDefinition type, State initial)
+        public EpaBuilder(TypeDefinition type)
         {
             this.type = type;
             graph = new Dictionary<State, HashSet<Transition>>();
-
-            Add(initial);
-            this.initial = initial;
-        }
-
-        public TypeDefinition Type
-        {
-            get { return type; }
         }
 
         public State Initial
@@ -29,14 +22,33 @@ namespace Contractor.Core.Model
             get { return initial; }
         }
 
-        public HashSet<State> States
+        public TypeDefinition Type
         {
-            get { return new HashSet<State>(graph.Keys); }
+            get { return type; }
         }
 
-        public HashSet<Transition> Transitions
+        public void SetStateAsInitial(State initial)
         {
-            get { return graph.Values.Aggregate(new HashSet<Transition>(), (acum, l) => new HashSet<Transition>(acum.Union(l))); }
+            if (!States.Contains(initial))
+            {
+                Add(initial);
+            }
+            this.initial = initial;
+        }
+
+        public IReadOnlyCollection<State> States
+        {
+            get { return new ReadOnlyCollection<State>(graph.Keys.ToList()); }
+        }
+
+        public IReadOnlyCollection<Transition> Transitions
+        {
+            get
+            {
+                return
+                    new ReadOnlyCollection<Transition>(
+                        graph.Values.Aggregate(new HashSet<Transition>(), (acum, l) => new HashSet<Transition>(acum.Union(l))).ToList());
+            }
         }
 
         public void Add(State s)
@@ -81,13 +93,13 @@ namespace Contractor.Core.Model
             graph[t.SourceState].Remove(t);
             // If sourceState has no transitions from or to it, it has to be deleted
             var sourceState = t.SourceState;
-            if (Transitions.All(x => x.SourceState != sourceState && x.TargetState != sourceState))
+            if (Transitions.All(x => !x.SourceState.Equals(sourceState) && !x.TargetState.Equals(sourceState)))
             {
                 Remove(sourceState);
             }
             // If targetState has no transitions from or to it, it has to be deleted
             var targetState = t.TargetState;
-            if (Transitions.All(x => x.SourceState != targetState && x.TargetState != targetState))
+            if (Transitions.All(x => !x.SourceState.Equals(targetState) && !x.TargetState.Equals(targetState)))
             {
                 Remove(targetState);
             }
@@ -95,6 +107,7 @@ namespace Contractor.Core.Model
 
         public Epa Build()
         {
+            Contract.Requires(Initial != null);
             return new Epa(type, graph, initial);
         }
     }
