@@ -8,6 +8,7 @@ using Analysis.Cci;
 using Analyzer.Corral;
 using CommandLine;
 using Contractor.Core;
+using Contractor.Core.Model;
 
 namespace Contractor.Console
 {
@@ -97,12 +98,9 @@ namespace Contractor.Console
 
             var generator = new EpaGenerator(analyzer);
 
-            //if (string.IsNullOrEmpty(options.type))
-            //    epas = generator.GenerateEpas(cancellationSource.Token);
-            //else
-
             var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
-            var analysisResult = generator.GenerateEpa(typeDefinition).Result;
+            var epaBuilder = new EpaBuilder(typeDefinition);
+            var analysisResult = generator.GenerateEpa(typeDefinition, epaBuilder).Result;
 
             System.Console.WriteLine(analysisResult.ToString());
             var epas = new Dictionary<string, TypeAnalysisResult> {{options.TypeToAnalyze, analysisResult}};

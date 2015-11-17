@@ -23,6 +23,9 @@ namespace Contractor.Gui.Models
         public MainModel()
         {
             decompiler = new CciDecompiler();
+
+            StateAdded += (sender, args) => { };
+            TransitionAdded += (sender, args) => { };
         }
 
         public Epa GeneratedEpa
@@ -48,10 +51,15 @@ namespace Contractor.Gui.Models
             cancellationSource = new CancellationTokenSource();
 
             var analyzer = GetAnalyzer(analysisEventArgs.TypeToAnalyze, analysisEventArgs.Engine, cancellationSource.Token);
-            var epaGenerator = GetEpaGenerator(analyzer);
+            var epaGenerator = new EpaGenerator(analyzer);
 
             var selectedMethods = from m in analysisEventArgs.SelectedMethods select m.ToString();
-            return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods);
+
+            var epaBuilderObservable = new ObservableEpaBuilder(new EpaBuilder(analysisEventArgs.TypeToAnalyze));
+            epaBuilderObservable.StateAdded += OnStateAdded;
+            epaBuilderObservable.TransitionAdded += OnTransitionAdded;
+
+            return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable);
         }
 
         public async Task LoadAssembly(FileInfo inputFileInfo)
@@ -66,30 +74,16 @@ namespace Contractor.Gui.Models
             inputAssembly = await Task.Run(() => decompiler.Decompile(inputFile.FullName, contractFile.FullName));
         }
 
-        protected EpaGenerator GetEpaGenerator(IAnalyzer analyzer)
-        {
-            var epaGenerator = new EpaGenerator(analyzer);
-            epaGenerator.StateAdded += OnStateAdded;
-            epaGenerator.TransitionAdded += OnTransitionAdded;
-            return epaGenerator;
-        }
-
         protected void OnStateAdded(object sender, StateAddedEventArgs e)
         {
             generatedEpa = e.EpaBuilder.Build();
-            if (StateAdded != null)
-            {
-                StateAdded(sender, e);
-            }
+            StateAdded(sender, e);
         }
 
         protected void OnTransitionAdded(object sender, TransitionAddedEventArgs e)
         {
             generatedEpa = e.EpaBuilder.Build();
-            if (TransitionAdded != null)
-            {
-                TransitionAdded(sender, e);
-            }
+            TransitionAdded(sender, e);
         }
 
         protected IAnalyzer GetAnalyzer(TypeDefinition typeToAnalyze, string engine, CancellationToken cancellationToken)

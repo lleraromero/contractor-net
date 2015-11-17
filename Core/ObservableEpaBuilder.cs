@@ -4,7 +4,7 @@ using Contractor.Core.Model;
 
 namespace Contractor.Core
 {
-    internal class ObservableEpaBuilder : IEpaBuilder
+    public class ObservableEpaBuilder : IEpaBuilder
     {
         protected IEpaBuilder epaBuilder;
 
@@ -40,6 +40,7 @@ namespace Contractor.Core
         public void SetStateAsInitial(State initial)
         {
             epaBuilder.SetStateAsInitial(initial);
+            StateAdded(this, new StateAddedEventArgs(epaBuilder.Type, epaBuilder, initial));
         }
 
         public IReadOnlyCollection<State> States

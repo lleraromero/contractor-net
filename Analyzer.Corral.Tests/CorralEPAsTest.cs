@@ -55,7 +55,8 @@ namespace Analyzer.Corral.Tests
         {
             var epaGenerator = new EpaGenerator(new AnalyzerMock());
             var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(typeToAnalyze));
-            var epa = epaGenerator.GenerateEpa(typeDefinition);
+            var epaBuilder = new EpaBuilder(typeDefinition);
+            var epa = epaGenerator.GenerateEpa(typeDefinition, epaBuilder);
             epa.Wait();
 
             Assert.IsFalse(epa.IsFaulted);
