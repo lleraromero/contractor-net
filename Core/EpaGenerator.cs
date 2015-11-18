@@ -24,7 +24,7 @@ namespace Contractor.Core
             var constructors = typeToAnalyze.Constructors();
             var actions = typeToAnalyze.Actions();
 
-            return Task.Run(() => GenerateEpa(constructors, actions, epaBuilder));
+            return GenerateEpaAndStatistics(constructors, actions, epaBuilder);
         }
 
         public Task<TypeAnalysisResult> GenerateEpa(TypeDefinition typeToAnalyze, IEnumerable<string> selectedMethods, IEpaBuilder epaBuilder)
@@ -35,29 +35,44 @@ namespace Contractor.Core
             var constructors = new HashSet<Action>(typeToAnalyze.Constructors().Where(a => selectedMethods.Contains(a.ToString())));
             var actions = new HashSet<Action>(typeToAnalyze.Actions().Where(a => selectedMethods.Contains(a.ToString())));
 
-            return Task.Run(() => GenerateEpa(constructors, actions, epaBuilder));
+            return GenerateEpaAndStatistics(constructors, actions, epaBuilder);
+        }
+
+        protected async Task<TypeAnalysisResult> GenerateEpaAndStatistics(ISet<Action> constructors, ISet<Action> actions, IEpaBuilder epaBuilder)
+        {
+            var analysisTimer = Stopwatch.StartNew();
+
+            await Task.Run(() => GenerateEpa(constructors, actions, epaBuilder));
+
+            analysisTimer.Stop();
+
+            var statistics = new Dictionary<string, object>();
+            statistics["TotalAnalyzerDuration"] = analyzer.TotalAnalysisDuration;
+            statistics["ExecutionsCount"] = analyzer.ExecutionsCount;
+            statistics["TotalGeneratedQueriesCount"] = analyzer.TotalGeneratedQueriesCount;
+            statistics["UnprovenQueriesCount"] = analyzer.UnprovenQueriesCount;
+
+            var analysisResult = new TypeAnalysisResult(epaBuilder.Build(), analysisTimer.Elapsed, statistics);
+
+            return analysisResult;
         }
 
         /// <summary>
         ///     Method to create an EPA of a particular type considering only the subset 'methods'
         /// </summary>
         /// <see cref="http://publicaciones.dc.uba.ar/Publications/2011/DBGU11/paper-icse-2011.pdf">Algorithm 1</see>
-        private TypeAnalysisResult GenerateEpa(ISet<Action> constructors, ISet<Action> actions, IEpaBuilder epaBuilder)
+        protected Epa GenerateEpa(ISet<Action> constructors, ISet<Action> actions, IEpaBuilder epaBuilder)
         {
             Contract.Requires(constructors != null);
             Contract.Requires(actions != null);
             Contract.Requires(epaBuilder != null);
-
-            var analysisTimer = Stopwatch.StartNew();
 
             var initialState = new State(constructors, new HashSet<Action>());
             epaBuilder.SetStateAsInitial(initialState);
 
             var statesToVisit = new Queue<State>();
             statesToVisit.Enqueue(initialState);
-
-            //try
-            //{
+            
             while (statesToVisit.Count > 0)
             {
                 var source = statesToVisit.Dequeue();
@@ -87,26 +102,11 @@ namespace Contractor.Core
                     }
                 }
             }
-            //}
-            //catch (OperationCanceledException)
-            //{
-            //    // The user aborted the generation process
-            //}
 
-            analysisTimer.Stop();
-
-            var statistics = new Dictionary<string, object>();
-            statistics["TotalAnalyzerDuration"] = analyzer.TotalAnalysisDuration;
-            statistics["ExecutionsCount"] = analyzer.ExecutionsCount;
-            statistics["TotalGeneratedQueriesCount"] = analyzer.TotalGeneratedQueriesCount;
-            statistics["UnprovenQueriesCount"] = analyzer.UnprovenQueriesCount;
-
-            var analysisResult = new TypeAnalysisResult(epaBuilder.Build(), analysisTimer.Elapsed, statistics);
-
-            return analysisResult;
+            return epaBuilder.Build();
         }
 
-        private IEnumerable<State> GeneratePossibleStates(ISet<Action> actions, ActionAnalysisResults actionsResult,
+        protected IEnumerable<State> GeneratePossibleStates(ISet<Action> actions, ActionAnalysisResults actionsResult,
             IReadOnlyCollection<State> knownStates)
         {
             Contract.Requires(actions != null);
