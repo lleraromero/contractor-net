@@ -1,11 +1,6 @@
-﻿using Contractor.Core;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Diagnostics.Contracts;
-using System.IO;
-using System.Threading;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Tests
+namespace Core.Tests
 {
     [TestClass]
     public class EpaXmlSerializerTest
