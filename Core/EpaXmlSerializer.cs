@@ -17,9 +17,14 @@ namespace Contractor.Core
             Contract.Requires(stream != null && stream.CanWrite);
             Contract.Requires(epa != null && epa.Type != null);
 
-            using (var writer = new XmlTextWriter(stream, Encoding.UTF8))
+            var settings = new XmlWriterSettings()
             {
-                writer.Formatting = Formatting.Indented;
+                CloseOutput = false, 
+                Indent = true
+            };
+
+            using (var writer = XmlWriter.Create(stream, settings))
+            {
                 writer.WriteStartDocument();
 
                 writer.WriteStartElement("abstraction");
@@ -34,7 +39,7 @@ namespace Contractor.Core
             }
         }
 
-        private void SerializeActions(Epa epa, XmlTextWriter writer)
+        private void SerializeActions(Epa epa, XmlWriter writer)
         {
             Contract.Requires(epa != null);
             Contract.Requires(writer != null);
@@ -48,7 +53,7 @@ namespace Contractor.Core
             }
         }
 
-        private void SerializeStates(Epa epa, XmlTextWriter writer)
+        private void SerializeStates(Epa epa, XmlWriter writer)
         {
             Contract.Requires(epa != null && epa.Type != null);
             Contract.Requires(writer != null);
@@ -71,7 +76,7 @@ namespace Contractor.Core
             }
         }
 
-        private void SerializeTransitions(Epa epa, XmlTextWriter writer, State s)
+        private void SerializeTransitions(Epa epa, XmlWriter writer, State s)
         {
             Contract.Requires(epa != null && epa.Type != null);
             Contract.Requires(writer != null);

@@ -35,6 +35,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Cci.CodeModel">
+      <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.CodeModel.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Cci.MetadataModel">
+      <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.MetadataModel.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <Choose>
@@ -52,12 +58,24 @@
   <ItemGroup>
     <Compile Include="EpaXmlSerializerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StringAction.cs" />
+    <Compile Include="StringTypeDefinition.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="EPAs\Door.xml" />
     <Content Include="EPAs\FiniteStack.xml" />
     <Content Include="EPAs\Linear.xml" />
     <Content Include="EPAs\ListItr.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core.Model\Core.Model.csproj">
+      <Project>{c172f5cc-8814-46df-b25d-2994e524e1d5}</Project>
+      <Name>Core.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Core\Core.csproj">
+      <Project>{ebedd305-0975-416b-a4e5-4c8f5eadb304}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

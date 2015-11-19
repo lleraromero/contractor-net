@@ -1,47 +1,90 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Collections.Generic;
+using System.IO;
+using Contractor.Core;
+using Contractor.Core.Model;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Core.Tests
 {
     [TestClass]
     public class EpaXmlSerializerTest
     {
-        //private static EpaGenerator epaGenerator;
-        //private const string InputFilePath = @"..\..\..\Examples\obj\Debug\Decl\Examples.dll";
+        protected Epa NoConstructorsNoActionsEpa()
+        {
+            var constructors = new HashSet<Action>();
+            var actions = new HashSet<Action>();
+            var typeDefinition = new StringTypeDefinition("NoConstructorsNoActiosnEpa", constructors, actions);
 
-        //[ClassInitialize()]
-        //public static void GenerateEPAs(TestContext tc)
-        //{
-        //    Configuration.Initialize();
-        //    Configuration.TempPath = Directory.GetParent(tc.TestDir).ToString();
-        //    Configuration.InlineMethodsBody = true;
+            var graph = new Dictionary<State, HashSet<Transition>>();
+            var s = new State(constructors, new HashSet<Action>());
+            graph.Add(s, new HashSet<Transition>());
 
-        //    var ExamplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, InputFilePath));
-        //    epaGenerator = new EpaGenerator(EpaGenerator.Backend.Corral, ExamplesPath, null);
-        //}
+            return new Epa(typeDefinition, graph, s);
+        }
 
-        //[TestMethod]
-        //public void SerializeAndDeserializeLinear()
-        //{
-        //    var cancellationSource = new CancellationTokenSource();
-        //    var epa = epaGenerator.GenerateEpa("Examples.Linear", cancellationSource.Token).EPA;
+        protected Epa OneConstructorNoActionsEpa()
+        {
+            var constructors = new HashSet<Action>();
+            var constructor = new StringAction("ctor");
+            constructors.Add(constructor);
+            var actions = new HashSet<Action>();
+            var typeDefinition = new StringTypeDefinition("OneConstructorNoActionsEpa", constructors, actions);
 
-        //    SerializeAndDeserialize(epa);
-        //}
+            var graph = new Dictionary<State, HashSet<Transition>>();
+            var s1 = new State(constructors, new HashSet<Action>());
+            var s2 = new State(new HashSet<Action>(), new HashSet<Action>());
+            graph.Add(s1, new HashSet<Transition>());
+            graph.Add(s2, new HashSet<Transition>());
+            graph[s1].Add(new Transition(constructor, s1, s2, false));
 
-        //public void SerializeAndDeserialize(Epa epa)
-        //{
-        //    var filePath = Path.Combine(Configuration.TempPath, "epa.xml");
-        //    // Export the EPA as an XML
-        //    var serializer = new EpaXmlSerializer();
-        //    using (Stream oStream = new FileStream(filePath, FileMode.Create))
-        //    {
-        //        serializer.Serialize(oStream, epa);
-        //    }
-        //    using (Stream oStream = new FileStream(filePath, FileMode.Open))
-        //    {
-        //        var deserializedEPA = serializer.Deserialize(oStream, InputFilePath);
-        //        Contract.Assert(epa.Equals(deserializedEPA));
-        //    }
-        //}
+            return new Epa(typeDefinition, graph, s1);
+        }
+
+        [TestMethod]
+        public void SerializeNoConstructorsNoActionsEpa()
+        {
+            var epa = NoConstructorsNoActionsEpa();
+            using (var stream = new MemoryStream())
+            {
+                new EpaXmlSerializer().Serialize(stream, epa);
+
+                stream.Position = 0;
+                using (var reader = new StreamReader(stream))
+                {
+                    const string expected =
+                        @"<?xml version=""1.0"" encoding=""utf-8""?>
+<abstraction initial_state=""STATE$deadlock"" input_format=""code-with-pre"" name=""NoConstructorsNoActiosnEpa"">
+  <state name=""STATE$deadlock"" />
+</abstraction>";
+                    Assert.AreEqual(expected, reader.ReadToEnd());
+                }
+            }
+        }
+
+        [TestMethod]
+        public void SerializeOneConstructorsNoActionsEpa()
+        {
+            var epa = OneConstructorNoActionsEpa();
+            using (var stream = new MemoryStream())
+            {
+                new EpaXmlSerializer().Serialize(stream, epa);
+
+                stream.Position = 0;
+                using (var reader = new StreamReader(stream))
+                {
+                    const string expected =
+                        @"<?xml version=""1.0"" encoding=""utf-8""?>
+<abstraction initial_state=""STATE$ctor"" input_format=""code-with-pre"" name=""OneConstructorNoActionsEpa"">
+  <label name=""ctor"" />
+  <state name=""STATE$ctor"">
+    <enabled_label name=""ctor"" />
+    <transition destination=""STATE$deadlock"" label=""ctor"" uncertain=""false"" violates_invariant=""false"" />
+  </state>
+  <state name=""STATE$deadlock"" />
+</abstraction>";
+                    Assert.AreEqual(expected, reader.ReadToEnd());
+                }
+            }
+        }
     }
 }
