@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Contractor.Core;
 
 namespace Analyzer.Corral.Tests
 {
@@ -463,13 +464,13 @@ STATE$get_MaxSystemInt32$get_NextSystemInt32$PopSystemVoid~get_NextSystemInt32~S
 
         #endregion
 
-        private readonly Dictionary<string, ResultKind> queries;
+        private readonly Dictionary<string, Query> queries;
 
-        protected ResultKind result;
+        protected Query result;
 
         public CorralMock()
         {
-            queries = new Dictionary<string, ResultKind>();
+            queries = new Dictionary<string, Query>();
             var allTheQueries = VendingQueries + Environment.NewLine +
                                 LinearQueries + Environment.NewLine +
                                 DoorQueries + Environment.NewLine +
@@ -482,13 +483,13 @@ STATE$get_MaxSystemInt32$get_NextSystemInt32$PopSystemVoid~get_NextSystemInt32~S
                 switch (result[1])
                 {
                     case "NoBugs":
-                        queries.Add(result[0], ResultKind.NoBugs);
+                        queries.Add(result[0], new UnreachableQuery(new StringAction(result[0])));
                         break;
                     case "TrueBug":
-                        queries.Add(result[0], ResultKind.TrueBug);
+                        queries.Add(result[0], new ReachableQuery(new StringAction(result[0])));
                         break;
                     case "RecursionBoundReached":
-                        queries.Add(result[0], ResultKind.RecursionBoundReached);
+                        queries.Add(result[0], new MayBeReachableQuery(new StringAction(result[0])));
                         break;
                     default:
                         throw new Exception();
@@ -496,7 +497,7 @@ STATE$get_MaxSystemInt32$get_NextSystemInt32$PopSystemVoid~get_NextSystemInt32~S
             }
         }
 
-        public ResultKind Result
+        public Query Result
         {
             get { return result; }
         }

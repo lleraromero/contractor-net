@@ -8,13 +8,6 @@ using Contractor.Core;
 
 namespace Analyzer.Corral
 {
-    public enum ResultKind
-    {
-        TrueBug,
-        NoBugs,
-        RecursionBoundReached
-    }
-
     internal class CorralRunner
     {
         protected CancellationToken token;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Contractor.Core;
 using Contractor.Core.Model;
 using Action = Contractor.Core.Model.Action;
@@ -10,6 +11,9 @@ namespace Analyzer.Corral.Tests
 {
     public class AnalyzerMock : IAnalyzer
     {
+        protected const string notPrefix = "_Not_";
+        protected const string methodNameDelimiter = "~";
+
         public TimeSpan TotalAnalysisDuration
         {
             get { return new TimeSpan(); }
@@ -39,8 +43,14 @@ namespace Analyzer.Corral.Tests
             return analysisResult;
         }
 
-        protected const string notPrefix = "_Not_";
-        protected const string methodNameDelimiter = "~";
+        public TransitionAnalysisResult AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
+        {
+            var queries = GenerateQueries(source, action, targets);
+            var result = Analyze(queries);
+            var resultAnalysis = EvaluateQueries(source, action, targets, result);
+
+            return resultAnalysis;
+        }
 
         private List<string> GenerateQueries(State source, Action action, IEnumerable<Action> actions)
         {
@@ -70,9 +80,9 @@ namespace Analyzer.Corral.Tests
             return queries;
         }
 
-        private Dictionary<string, ResultKind> Analyze(List<string> queries)
+        private Dictionary<string, Query> Analyze(List<string> queries)
         {
-            Dictionary<string, ResultKind> results = new Dictionary<string, ResultKind>();
+            var results = new Dictionary<string, Query>();
             foreach (var query in queries)
             {
                 var queryName = CreateUniqueMethodName(query);
@@ -87,7 +97,96 @@ namespace Analyzer.Corral.Tests
             return results;
         }
 
+        private ActionAnalysisResults EvaluateQueries(IEnumerable<Action> actions, Dictionary<string, Query> result)
+        {
+            var enabledActions = new HashSet<Action>(actions);
+            var disabledActions = new HashSet<Action>(actions);
+
+            foreach (var entry in result)
+            {
+                if (entry.Value.GetType() == typeof (ReachableQuery) || entry.Value.GetType() == typeof (MayBeReachableQuery))
+                {
+                    var actionName = entry.Key;
+                    var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
+                    actionName = actionName.Substring(actionNameStart);
+                    var isNegative = actionName.StartsWith(notPrefix);
+
+                    if (isNegative)
+                    {
+                        actionName = actionName.Remove(0, notPrefix.Length);
+                        if (disabledActions.Any(a => a.Name.Equals(actionName)))
+                        {
+                            disabledActions.Remove(disabledActions.First(a => a.Name.Equals(actionName)));
+                        }
+                    }
+                    else
+                    {
+                        if (enabledActions.Any(a => a.Name.Equals(actionName)))
+                        {
+                            enabledActions.Remove(enabledActions.First(a => a.Name.Equals(actionName)));
+                        }
+                    }
+
+                    //if (entry.Value == ResultKind.RecursionBoundReached)
+                    //    base.UnprovenQueriesCount++;
+                }
+            }
+
+            Contract.Assert(enabledActions.Count + disabledActions.Count <= actions.Count());
+            Contract.Assert(!enabledActions.Intersect(disabledActions).Any());
+
+            return new ActionAnalysisResults(enabledActions, disabledActions);
+        }
+
+        private List<string> GenerateQueries(State source, Action action, IEnumerable<State> targets)
+        {
+            var queries = new List<string>();
+            foreach (var s in targets)
+            {
+                var actionName = action.Name;
+                var stateName = source.Name;
+                var targetName = s.Name;
+                var methodName = string.Format("{1}{0}{2}{0}{3}", methodNameDelimiter, stateName, actionName, targetName);
+
+                queries.Add(methodName);
+            }
+
+            return queries;
+        }
+
+        private TransitionAnalysisResult EvaluateQueries(State source, Action action, IEnumerable<State> targets, Dictionary<string, Query> result)
+        {
+            var transitions = new HashSet<Transition>();
+
+            foreach (var entry in result)
+            {
+                if (entry.Value.GetType() == typeof (ReachableQuery) || entry.Value.GetType() == typeof (MayBeReachableQuery))
+                {
+                    var actionName = entry.Key;
+                    var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
+                    actionName = actionName.Substring(actionNameStart);
+
+                    var targetNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
+                    var targetName = actionName.Substring(targetNameStart);
+                    var target = targets.First(s => s.Name == targetName);
+                    var isUnproven = entry.Value.GetType() == typeof (MayBeReachableQuery);
+
+                    if (target != null)
+                    {
+                        var transition = new Transition(action, source, target, isUnproven);
+                        transitions.Add(transition);
+                    }
+
+                    //if (isUnproven)
+                    //    base.UnprovenQueriesCount++;
+                }
+            }
+
+            return new TransitionAnalysisResult(transitions);
+        }
+
         #region BCT-TranslationHelper.cs
+
         public static string CreateUniqueMethodName(string method)
         {
             var s = method;
@@ -99,7 +198,6 @@ namespace Analyzer.Corral.Tests
 
         public static string TurnStringIntoValidIdentifier(string s)
         {
-
             // Do this specially just to make the resulting string a little bit more readable.
             // REVIEW: Just let the main replacement take care of it?
             s = s.Replace("[0:,0:]", "2DArray"); // TODO: Do this programmatically to handle arbitrary arity
@@ -117,15 +215,15 @@ namespace Analyzer.Corral.Tests
             // nondigit = letter + special.
             // ident =  [ '\\' ] nondigit {nondigit | digit}.
 
-            s = System.Text.RegularExpressions.Regex.Replace(s, "[^A-Za-z0-9'~#$^_.?`]", "$");
+            s = Regex.Replace(s, "[^A-Za-z0-9'~#$^_.?`]", "$");
 
             s = GetRidOfSurrogateCharacters(s);
             return s;
         }
 
         /// <summary>
-        /// Unicode surrogates cannot be handled by Boogie.
-        /// http://msdn.microsoft.com/en-us/library/dd374069(v=VS.85).aspx
+        ///     Unicode surrogates cannot be handled by Boogie.
+        ///     http://msdn.microsoft.com/en-us/library/dd374069(v=VS.85).aspx
         /// </summary>
         private static string GetRidOfSurrogateCharacters(string s)
         {
@@ -134,124 +232,13 @@ namespace Analyzer.Corral.Tests
             var okayChars = new char[cs.Length];
             for (int i = 0, j = 0; i < cs.Length; i++)
             {
-                if (Char.IsSurrogate(cs[i])) continue;
+                if (char.IsSurrogate(cs[i])) continue;
                 okayChars[j++] = cs[i];
             }
-            var raw = String.Concat(okayChars);
-            return raw.Trim(new char[] { '\0' });
+            var raw = string.Concat(okayChars);
+            return raw.Trim('\0');
         }
+
         #endregion
-
-        private ActionAnalysisResults EvaluateQueries(IEnumerable<Action> actions, Dictionary<string, ResultKind> result)
-        {
-            HashSet<Action> enabledActions = new HashSet<Action>(actions);
-            HashSet<Action> disabledActions = new HashSet<Action>(actions);
-
-            foreach (var entry in result)
-            {
-                switch (entry.Value)
-                {
-                    case ResultKind.NoBugs:
-                        break;
-                    case ResultKind.TrueBug:
-                    case ResultKind.RecursionBoundReached:
-                        var actionName = entry.Key;
-                        var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
-                        actionName = actionName.Substring(actionNameStart);
-                        var isNegative = actionName.StartsWith(notPrefix);
-
-                        if (isNegative)
-                        {
-                            actionName = actionName.Remove(0, notPrefix.Length);
-                            if (disabledActions.Any(a => a.Name.Equals(actionName)))
-                            {
-                                disabledActions.Remove(disabledActions.First(a => a.Name.Equals(actionName)));
-                            }
-                        }
-                        else
-                        {
-                            if (enabledActions.Any(a => a.Name.Equals(actionName)))
-                            {
-                                enabledActions.Remove(enabledActions.First(a => a.Name.Equals(actionName)));
-                            }
-                        }
-
-                        //if (entry.Value == ResultKind.RecursionBoundReached)
-                        //    base.UnprovenQueriesCount++;
-
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            Contract.Assert(enabledActions.Count + disabledActions.Count <= actions.Count());
-            Contract.Assert(!enabledActions.Intersect(disabledActions).Any());
-
-            return new ActionAnalysisResults(enabledActions, disabledActions);
-        }
-
-        public TransitionAnalysisResult AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
-        {
-            var queries = GenerateQueries(source, action, targets);
-            var result = Analyze(queries);
-            var resultAnalysis = EvaluateQueries(source, action, targets, result);
-
-            return resultAnalysis;
-        }
-
-        private List<string> GenerateQueries(State source, Action action, IEnumerable<State> targets)
-        {
-            List<string> queries = new List<string>();
-            foreach (var s in targets)
-            {
-                var actionName = action.Name;
-                var stateName = source.Name;
-                var targetName = s.Name;
-                var methodName = string.Format("{1}{0}{2}{0}{3}", methodNameDelimiter, stateName, actionName, targetName);
-
-                queries.Add(methodName);
-            }
-
-            return queries;
-        }
-
-        private TransitionAnalysisResult EvaluateQueries(State source, Action action, IEnumerable<State> targets, Dictionary<string, ResultKind> result)
-        {
-            var transitions = new HashSet<Transition>();
-
-            foreach (var entry in result)
-            {
-                switch (entry.Value)
-                {
-                    case ResultKind.NoBugs:
-                        break;
-                    case ResultKind.TrueBug:
-                    case ResultKind.RecursionBoundReached:
-                        var actionName = entry.Key;
-                        var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
-                        actionName = actionName.Substring(actionNameStart);
-
-                        var targetNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
-                        var targetName = actionName.Substring(targetNameStart);
-                        var target = targets.First(s => s.Name == targetName);
-                        var isUnproven = entry.Value == ResultKind.RecursionBoundReached;
-
-                        if (target != null)
-                        {
-                            var transition = new Transition(action, source, target, isUnproven);
-                            transitions.Add(transition);
-                        }
-
-                        //if (isUnproven)
-                        //    base.UnprovenQueriesCount++;
-                        break;
-                    default:
-                        throw new NotImplementedException("Unknown result");
-                }
-            }
-
-            return new TransitionAnalysisResult(transitions);
-        }
     }
 }
