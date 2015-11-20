@@ -42,7 +42,10 @@ namespace Analyzer.Corral
 
         public static void Log(LogLevel level, string message)
         {
-            Contract.Requires(message != null);
+            if (string.IsNullOrEmpty(message))
+            {
+                return;
+            }
 
             NLog.LogManager.GetCurrentClassLogger().Log(ToLibraryLogLevel(level), message);
         }

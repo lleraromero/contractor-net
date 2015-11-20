@@ -1,22 +1,35 @@
-﻿using Contractor.Core;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.IO;
+using System.Text;
 using System.Threading;
+using Contractor.Core;
 
 namespace Analyzer.Corral
 {
-    public enum ResultKind { TrueBug, NoBugs, RecursionBoundReached }
-    class CorralRunner
+    public enum ResultKind
+    {
+        TrueBug,
+        NoBugs,
+        RecursionBoundReached
+    }
+
+    internal class CorralRunner
     {
         protected CancellationToken token;
         protected Query result;
-        public Query Result { get { return result; } }
+
         public CorralRunner(CancellationToken token)
         {
             Contract.Requires(token != null);
 
             this.token = token;
+        }
+
+        public Query Result
+        {
+            get { return result; }
         }
 
         public TimeSpan Run(string args, Query query)
@@ -28,39 +41,71 @@ namespace Analyzer.Corral
 
             var timer = Stopwatch.StartNew();
 
-            var corral = new cba.Driver();
-            try
+            var tmpDir = Path.Combine(Configuration.TempPath, Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tmpDir);
+
+            var output = new StringBuilder();
+
+            using (var corral = new Process())
             {
-                if (corral.run(args.Split(' ')) != 0)
+                corral.StartInfo = new ProcessStartInfo
+                {
+                    FileName = @"C:\Users\lean\Desktop\corral\bin\Debug\corral.exe",
+                    Arguments = args,
+                    WorkingDirectory = tmpDir,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false
+                };
+
+                Logger.Log(LogLevel.Info, "=============== CORRAL ===============");
+                corral.OutputDataReceived += (sender, e) =>
+                {
+                    output.AppendLine(e.Data);
+                    Logger.Log(LogLevel.Debug, e.Data);
+                };
+                corral.ErrorDataReceived += (sender, e) => { Logger.Log(LogLevel.Fatal, e.Data); };
+                corral.Start();
+                corral.BeginErrorReadLine();
+                corral.BeginOutputReadLine();
+                corral.WaitForExit();
+
+                if (corral.ExitCode != 0)
                 {
                     throw new Exception("Error executing corral");
                 }
             }
-            catch (Exception ex)
-            {
-                Logger.Log(LogLevel.Fatal, ex);
-                Logger.Log(LogLevel.Info, args);
-                throw;
-            }
 
+            Directory.Delete(tmpDir, true);
             timer.Stop();
 
-            switch (corral.Result)
-            {
-                case cba.CorralResult.BugFound:
-                    this.result = new ReachableQuery(query.Action);
-                    break;
-                case cba.CorralResult.NoBugs:
-                    this.result = new UnreachableQuery(query.Action);
-                    break;
-                case cba.CorralResult.RecursionBoundReached:
-                    this.result = new MayBeReachableQuery(query.Action);
-                    break;
-                default:
-                    throw new NotImplementedException("The result was not understood");
-            }
+            result = ParseResultKind(output.ToString(), query);
 
             return timer.Elapsed;
+        }
+
+        protected Query ParseResultKind(string message, Query query)
+        {
+            message = message.ToLower();
+
+            if (message.Contains("true bug"))
+            {
+                return new ReachableQuery(query.Action);
+            }
+
+            if (message.Contains("has no bugs"))
+            {
+                return new UnreachableQuery(query.Action);
+            }
+
+            if (message.Contains("recursion bound reached"))
+            {
+                return new MayBeReachableQuery(query.Action);
+            }
+
+            throw new NotImplementedException("The result was not understood");
         }
     }
 }

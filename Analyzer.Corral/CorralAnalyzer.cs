@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Action = Contractor.Core.Model.Action;
 
 namespace Analyzer.Corral
@@ -73,19 +74,17 @@ namespace Analyzer.Corral
             return TestQueries(queries, boogieQueryFilePath);
         }
 
-        private IEnumerable<Query> TestQueries(IEnumerable<Query> queries, string boogieQueryFilePath)
+        protected IEnumerable<Query> TestQueries(IEnumerable<Query> queries, string boogieQueryFilePath)
         {
             var result = new List<Query>();
-           
-            foreach (var query in queries)
+            Parallel.ForEach(queries, query =>
             {
                 var queryName = BctTranslator.CreateUniqueMethodName(query.Action.Method);
-
                 var corralRunner = new CorralRunner(this.token);
                 var corralArgs = string.Format("{0} /main:{1} {2}", boogieQueryFilePath, queryName, Configuration.CorralArguments);
                 this.totalAnalysisTime += corralRunner.Run(corralArgs, query);
                 result.Add(corralRunner.Result);
-            }
+            });
 
             return result;
         }
