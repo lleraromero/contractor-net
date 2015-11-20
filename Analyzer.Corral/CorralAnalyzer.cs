@@ -3,6 +3,7 @@ using Contractor.Core;
 using Contractor.Core.Model;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -80,10 +81,16 @@ namespace Analyzer.Corral
             Parallel.ForEach(queries, query =>
             {
                 var queryName = BctTranslator.CreateUniqueMethodName(query.Action.Method);
-                var corralRunner = new CorralRunner(this.token);
+                var corralRunner = new CorralRunnerSequential(this.token);
                 var corralArgs = string.Format("{0} /main:{1} {2}", boogieQueryFilePath, queryName, Configuration.CorralArguments);
-                this.totalAnalysisTime += corralRunner.Run(corralArgs, query);
-                result.Add(corralRunner.Result);
+                
+                var timer = Stopwatch.StartNew();
+                var corralResult = corralRunner.Run(corralArgs, query);
+                timer.Stop();
+                
+                this.totalAnalysisTime += timer.Elapsed;
+                
+                result.Add(corralResult);
             });
 
             return result;

@@ -8,31 +8,28 @@ using Contractor.Core;
 
 namespace Analyzer.Corral
 {
-    internal class CorralRunner
+    internal interface ICorralRunner
+    {
+        Query Run(string args, Query query);
+    }
+
+    internal class CorralRunnerSequential : ICorralRunner
     {
         protected CancellationToken token;
-        protected Query result;
 
-        public CorralRunner(CancellationToken token)
+        public CorralRunnerSequential(CancellationToken token)
         {
             Contract.Requires(token != null);
 
             this.token = token;
         }
 
-        public Query Result
-        {
-            get { return result; }
-        }
-
-        public TimeSpan Run(string args, Query query)
+        public Query Run(string args, Query query)
         {
             Contract.Requires(!string.IsNullOrEmpty(args));
 
             // Check if the user stopped the analysis
             token.ThrowIfCancellationRequested();
-
-            var timer = Stopwatch.StartNew();
 
             var tmpDir = Path.Combine(Configuration.TempPath, Guid.NewGuid().ToString());
             Directory.CreateDirectory(tmpDir);
@@ -72,11 +69,8 @@ namespace Analyzer.Corral
             }
 
             Directory.Delete(tmpDir, true);
-            timer.Stop();
 
-            result = ParseResultKind(output.ToString(), query);
-
-            return timer.Elapsed;
+            return ParseResultKind(output.ToString(), query);
         }
 
         protected Query ParseResultKind(string message, Query query)
