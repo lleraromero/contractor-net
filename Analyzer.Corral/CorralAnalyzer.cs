@@ -1,13 +1,12 @@
-﻿using Analysis.Cci;
-using Contractor.Core;
-using Contractor.Core.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
+using Analysis.Cci;
+using Contractor.Core;
+using Contractor.Core.Model;
 using Action = Contractor.Core.Model.Action;
 
 namespace Analyzer.Corral
@@ -28,7 +27,8 @@ namespace Analyzer.Corral
         protected string notPrefix = "_Not_";
         protected string methodNameDelimiter = "~";
 
-        public CorralAnalyzer(CciQueryGenerator queryGenerator, CciAssembly inputAssembly, string inputFileName,  TypeDefinition typeToAnalyze, CancellationToken token)
+        public CorralAnalyzer(CciQueryGenerator queryGenerator, CciAssembly inputAssembly, string inputFileName, TypeDefinition typeToAnalyze,
+            CancellationToken token)
         {
             this.queryGenerator = queryGenerator;
             this.inputAssembly = inputAssembly;
@@ -36,27 +36,42 @@ namespace Analyzer.Corral
             this.inputFileName = inputFileName;
             this.token = token;
 
-            this.totalAnalysisTime = new TimeSpan();
-            this.executionsCount = 0;
-            this.generatedQueriesCount = 0;
-            this.unprovenQueriesCount = 0;
+            totalAnalysisTime = new TimeSpan();
+            executionsCount = 0;
+            generatedQueriesCount = 0;
+            unprovenQueriesCount = 0;
         }
 
-        public TimeSpan TotalAnalysisDuration { get { return totalAnalysisTime; } }
-        public int ExecutionsCount { get { return executionsCount; } }
-        public int TotalGeneratedQueriesCount { get { return generatedQueriesCount; } }
-        public int UnprovenQueriesCount { get { return unprovenQueriesCount; } }
+        public TimeSpan TotalAnalysisDuration
+        {
+            get { return totalAnalysisTime; }
+        }
+
+        public int ExecutionsCount
+        {
+            get { return executionsCount; }
+        }
+
+        public int TotalGeneratedQueriesCount
+        {
+            get { return generatedQueriesCount; }
+        }
+
+        public int UnprovenQueriesCount
+        {
+            get { return unprovenQueriesCount; }
+        }
 
         public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
         {
-            var queries = this.queryGenerator.CreateQueries(source, action, actions);
+            var queries = queryGenerator.CreateQueries(source, action, actions);
             var result = Analyze(queries);
             return EvaluateQueries(actions, result);
         }
 
         public TransitionAnalysisResult AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
-            var queries = this.queryGenerator.CreateQueries(source, action, targets);
+            var queries = queryGenerator.CreateQueries(source, action, targets);
             var result = Analyze(queries);
             return EvaluateQueries(source, action, targets, result);
         }
@@ -64,9 +79,9 @@ namespace Analyzer.Corral
         private IEnumerable<Query> Analyze(IEnumerable<Action> queriesActions)
         {
             var queries = from a in queriesActions select new Query(a);
-            var queryAssembly = new CciQueryAssembly(this.inputAssembly, this.typeToAnalyze, queries);
+            var queryAssembly = new CciQueryAssembly(inputAssembly, typeToAnalyze, queries);
 
-            string queryFilePath = Path.Combine(Configuration.TempPath, Guid.NewGuid().ToString(), Path.GetFileName(this.inputFileName));
+            var queryFilePath = Path.Combine(Configuration.TempPath, Guid.NewGuid().ToString(), Path.GetFileName(inputFileName));
             Directory.CreateDirectory(Path.GetDirectoryName(queryFilePath));
             queryAssembly.Save(queryFilePath);
 
@@ -78,30 +93,21 @@ namespace Analyzer.Corral
         protected IEnumerable<Query> TestQueries(IEnumerable<Query> queries, string boogieQueryFilePath)
         {
             var result = new List<Query>();
-            Parallel.ForEach(queries, query =>
-            {
-                var queryName = BctTranslator.CreateUniqueMethodName(query.Action.Method);
-                var corralRunner = new CorralRunnerSequential(this.token);
-                var corralArgs = string.Format("{0} /main:{1} {2}", boogieQueryFilePath, queryName, Configuration.CorralArguments);
-                
-                var timer = Stopwatch.StartNew();
-                var corralResult = corralRunner.Run(corralArgs, query);
-                timer.Stop();
-                
-                this.totalAnalysisTime += timer.Elapsed;
-                
-                result.Add(corralResult);
-            });
+            var corralRunner = new CorralRunnerParallel(token, queries, new FileInfo(boogieQueryFilePath));
+            var timer = Stopwatch.StartNew();
+            result.AddRange(corralRunner.Run());
+            timer.Stop();
+            totalAnalysisTime += timer.Elapsed;
 
             return result;
         }
 
         protected string TranslateCSharpToBoogie(string queryAssemblyPath)
         {
-            var bctRunner = new BctRunner(this.token);
-            var args = new string[] { queryAssemblyPath, "/lib:" + Path.GetDirectoryName(this.inputFileName) };
+            var bctRunner = new BctRunner(token);
+            var args = new[] {queryAssemblyPath, "/lib:" + Path.GetDirectoryName(inputFileName)};
 
-            this.totalAnalysisTime += bctRunner.Run(args);
+            totalAnalysisTime += bctRunner.Run(args);
 
             return queryAssemblyPath.Replace("dll", "bpl");
         }
@@ -113,14 +119,14 @@ namespace Analyzer.Corral
 
             foreach (var evaluatedQuery in result)
             {
-                if (evaluatedQuery.GetType() == typeof(ReachableQuery))
+                if (evaluatedQuery.GetType() == typeof (ReachableQuery))
                 {
                     EnableOrDisable(enabledActions, disabledActions, evaluatedQuery);
                 }
-                else if (evaluatedQuery.GetType() == typeof(MayBeReachableQuery))
+                else if (evaluatedQuery.GetType() == typeof (MayBeReachableQuery))
                 {
                     EnableOrDisable(enabledActions, disabledActions, evaluatedQuery);
-                    this.unprovenQueriesCount++;
+                    unprovenQueriesCount++;
                 }
             }
 
@@ -130,13 +136,13 @@ namespace Analyzer.Corral
         private void EnableOrDisable(HashSet<Action> enabledActions, HashSet<Action> disabledActions, Query query)
         {
             var actionName = query.Action.Method.Name.Value;
-            var actionNameStart = actionName.LastIndexOf(this.methodNameDelimiter) + 1;
+            var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
             actionName = actionName.Substring(actionNameStart);
-            var isNegative = actionName.StartsWith(this.notPrefix);
+            var isNegative = actionName.StartsWith(notPrefix);
 
             if (isNegative)
             {
-                actionName = actionName.Remove(0, this.notPrefix.Length);
+                actionName = actionName.Remove(0, notPrefix.Length);
                 if (disabledActions.Any(a => a.Name.Equals(actionName)))
                 {
                     disabledActions.Remove(disabledActions.First(a => a.Name.Equals(actionName)));
@@ -157,13 +163,13 @@ namespace Analyzer.Corral
 
             foreach (var evaluatedQuery in result)
             {
-                if (evaluatedQuery.GetType() == typeof(ReachableQuery))
+                if (evaluatedQuery.GetType() == typeof (ReachableQuery))
                 {
                     var actionName = evaluatedQuery.Action.Method.Name.Value;
-                    var actionNameStart = actionName.LastIndexOf(this.methodNameDelimiter) + 1;
+                    var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
                     actionName = actionName.Substring(actionNameStart);
 
-                    var targetNameStart = actionName.LastIndexOf(this.methodNameDelimiter) + 1;
+                    var targetNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
                     var targetName = actionName.Substring(targetNameStart);
                     var target = targets.First(s => s.Name == targetName);
                     var isUnproven = false;
@@ -174,13 +180,13 @@ namespace Analyzer.Corral
                         transitions.Add(transition);
                     }
                 }
-                else if (evaluatedQuery.GetType() == typeof(MayBeReachableQuery))
+                else if (evaluatedQuery.GetType() == typeof (MayBeReachableQuery))
                 {
                     var actionName = evaluatedQuery.Action.Method.Name.Value;
-                    var actionNameStart = actionName.LastIndexOf(this.methodNameDelimiter) + 1;
+                    var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
                     actionName = actionName.Substring(actionNameStart);
 
-                    var targetNameStart = actionName.LastIndexOf(this.methodNameDelimiter) + 1;
+                    var targetNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
                     var targetName = actionName.Substring(targetNameStart);
                     var target = targets.First(s => s.Name == targetName);
                     var isUnproven = true;
@@ -191,7 +197,7 @@ namespace Analyzer.Corral
                         transitions.Add(transition);
                     }
 
-                    this.unprovenQueriesCount++;
+                    unprovenQueriesCount++;
                 }
             }
 

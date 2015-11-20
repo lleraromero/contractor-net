@@ -1,17 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
+using BytecodeTranslator;
 
 namespace Analyzer.Corral
 {
-    class BctRunner
+    internal class BctRunner
     {
         protected CancellationToken token;
+
         public BctRunner(CancellationToken token)
         {
             this.token = token;
@@ -27,8 +25,8 @@ namespace Analyzer.Corral
             // I need to change the current directory so BCT can write the output in the correct folder
             var tmp = Environment.CurrentDirectory;
             Environment.CurrentDirectory = Path.GetDirectoryName(args[0]);
-            var boogieTranslator = new BytecodeTranslator.BCT();
-            
+            var boogieTranslator = new BCT();
+
             if (boogieTranslator.Main(args) != 0)
             {
                 Logger.Log(LogLevel.Fatal, "Error translating the query assembly to boogie");

@@ -5,17 +5,18 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Contractor.Core;
 
 namespace Analyzer.Corral
 {
-    internal class CorralRunnerSequential : ICorralRunner
+    internal class CorralRunnerParallel : ICorralRunner
     {
         protected CancellationToken token;
         protected IEnumerable<Query> queries;
         protected FileInfo boogieFilePath;
 
-        public CorralRunnerSequential(CancellationToken token, IEnumerable<Query> queries, FileInfo boogieFilePath)
+        public CorralRunnerParallel(CancellationToken token, IEnumerable<Query> queries, FileInfo boogieFilePath)
         {
             Contract.Requires(token != null);
             Contract.Requires(queries != null);
@@ -30,7 +31,7 @@ namespace Analyzer.Corral
         {
             var result = new List<Query>();
 
-            foreach (var query in queries)
+            Parallel.ForEach(queries, query =>
             {
                 // Check if the user stopped the analysis
                 token.ThrowIfCancellationRequested();
@@ -38,7 +39,8 @@ namespace Analyzer.Corral
                 var tmpDir = Path.Combine(Configuration.TempPath, Guid.NewGuid().ToString());
                 Directory.CreateDirectory(tmpDir);
 
-                var args = string.Format("{0} /main:{1} {2}", boogieFilePath.FullName, BctTranslator.CreateUniqueMethodName(query), Configuration.CorralArguments);
+                var args = string.Format("{0} /main:{1} {2}", boogieFilePath.FullName, BctTranslator.CreateUniqueMethodName(query),
+                    Configuration.CorralArguments);
                 var output = new StringBuilder();
 
                 using (var corral = new Process())
@@ -55,12 +57,7 @@ namespace Analyzer.Corral
                         UseShellExecute = false
                     };
 
-                    Logger.Log(LogLevel.Info, "=============== CORRAL ===============");
-                    corral.OutputDataReceived += (sender, e) =>
-                    {
-                        output.AppendLine(e.Data);
-                        Logger.Log(LogLevel.Debug, e.Data);
-                    };
+                    corral.OutputDataReceived += (sender, e) => { output.AppendLine(e.Data); };
                     corral.ErrorDataReceived += (sender, e) => { Logger.Log(LogLevel.Fatal, e.Data); };
                     corral.Start();
                     corral.BeginErrorReadLine();
@@ -73,10 +70,14 @@ namespace Analyzer.Corral
                     }
                 }
 
-                result.Add(ParseResultKind(output.ToString(), query));
+                var queryResult = ParseResultKind(output.ToString(), query);
+                lock (result)
+                {
+                    result.Add(queryResult);
+                }
 
                 Directory.Delete(tmpDir, true);
-            }
+            });
 
             return result;
         }

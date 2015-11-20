@@ -1,18 +1,19 @@
-﻿using Microsoft.Cci;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
+using Contractor.Core;
+using Microsoft.Cci;
 
 namespace Analyzer.Corral
 {
     /// <summary>
-    /// BCT-TranslationHelper.cs
+    ///     BCT-TranslationHelper.cs
     /// </summary>
-    class BctTranslator
+    internal class BctTranslator
     {
+        public static string CreateUniqueMethodName(Query query)
+        {
+            return CreateUniqueMethodName(query.Action.Method);
+        }
+
         public static string CreateUniqueMethodName(IMethodReference method)
         {
             var containingTypeName = TypeHelper.GetTypeName(method.ContainingType, NameFormattingOptions.None);
@@ -25,7 +26,6 @@ namespace Analyzer.Corral
 
         protected static string TurnStringIntoValidIdentifier(string s)
         {
-
             // Do this specially just to make the resulting string a little bit more readable.
             // REVIEW: Just let the main replacement take care of it?
             s = s.Replace("[0:,0:]", "2DArray"); // TODO: Do this programmatically to handle arbitrary arity
@@ -50,8 +50,8 @@ namespace Analyzer.Corral
         }
 
         /// <summary>
-        /// Unicode surrogates cannot be handled by Boogie.
-        /// http://msdn.microsoft.com/en-us/library/dd374069(v=VS.85).aspx
+        ///     Unicode surrogates cannot be handled by Boogie.
+        ///     http://msdn.microsoft.com/en-us/library/dd374069(v=VS.85).aspx
         /// </summary>
         protected static string GetRidOfSurrogateCharacters(string s)
         {
@@ -60,11 +60,11 @@ namespace Analyzer.Corral
             var okayChars = new char[cs.Length];
             for (int i = 0, j = 0; i < cs.Length; i++)
             {
-                if (Char.IsSurrogate(cs[i])) continue;
+                if (char.IsSurrogate(cs[i])) continue;
                 okayChars[j++] = cs[i];
             }
-            var raw = String.Concat(okayChars);
-            return raw.Trim(new char[] { '\0' });
+            var raw = string.Concat(okayChars);
+            return raw.Trim('\0');
         }
     }
 }
