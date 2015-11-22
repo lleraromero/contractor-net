@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
@@ -29,7 +30,7 @@ namespace Analyzer.Corral
 
         public IEnumerable<Query> Run()
         {
-            var result = new List<Query>();
+            var result = new ConcurrentBag<Query>();
 
             Parallel.ForEach(queries, query =>
             {
@@ -71,10 +72,7 @@ namespace Analyzer.Corral
                 }
 
                 var queryResult = ParseResultKind(output.ToString(), query);
-                lock (result)
-                {
-                    result.Add(queryResult);
-                }
+                result.Add(queryResult);
 
                 Directory.Delete(tmpDir, true);
             });
