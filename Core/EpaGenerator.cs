@@ -87,9 +87,9 @@ namespace Contractor.Core
 
                     // Which states are reachable from the current state (aka source) using 'action'?
                     var transitionsResults = analyzer.AnalyzeTransitions(source, action, possibleTargets);
-                    Contract.Assert(transitionsResults.Transitions.Count > 0, "There is always at least one transition to traverse");
+                    Contract.Assert(transitionsResults.Count > 0, "There is always at least one transition to traverse");
 
-                    foreach (var transition in transitionsResults.Transitions)
+                    foreach (var transition in transitionsResults)
                     {
                         var target = transition.TargetState;
                         // Do I have to add a new state to the EPA?

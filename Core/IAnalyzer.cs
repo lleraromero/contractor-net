@@ -14,6 +14,6 @@ namespace Contractor.Core
 
         ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions);
 
-        TransitionAnalysisResult AnalyzeTransitions(State source, Action action, IEnumerable<State> targets);
+        ICollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets);
     }
 }

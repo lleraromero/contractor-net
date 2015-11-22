@@ -170,7 +170,7 @@ namespace Analysis.Cci
             throw new NotImplementedException();
         }
 
-        public virtual TransitionAnalysisResult AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
+        public virtual ICollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
             throw new NotImplementedException();
         }

@@ -26,19 +26,6 @@ namespace Contractor.Core
         }
     }
 
-    public class TransitionAnalysisResult
-    {
-        protected HashSet<Transition> transitions;
-        public IImmutableSet<Transition> Transitions { get { return transitions.ToImmutableHashSet(); } }
-
-        public TransitionAnalysisResult(ISet<Transition> transitions)
-        {
-            Contract.Requires(transitions != null && !transitions.Contains(null));
-
-            this.transitions = new HashSet<Transition>(transitions);
-        }
-    }
-
     public class TypeAnalysisResult
     {
         protected Epa epa;

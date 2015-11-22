@@ -43,7 +43,7 @@ namespace Analyzer.Corral.Tests
             return analysisResult;
         }
 
-        public TransitionAnalysisResult AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
+        public ICollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
             var queries = GenerateQueries(source, action, targets);
             var result = Analyze(queries);
@@ -154,7 +154,7 @@ namespace Analyzer.Corral.Tests
             return queries;
         }
 
-        private TransitionAnalysisResult EvaluateQueries(State source, Action action, IEnumerable<State> targets, Dictionary<string, Query> result)
+        private ICollection<Transition> EvaluateQueries(State source, Action action, IEnumerable<State> targets, Dictionary<string, Query> result)
         {
             var transitions = new HashSet<Transition>();
 
@@ -182,7 +182,7 @@ namespace Analyzer.Corral.Tests
                 }
             }
 
-            return new TransitionAnalysisResult(transitions);
+            return new List<Transition>(transitions);
         }
 
         #region BCT-TranslationHelper.cs

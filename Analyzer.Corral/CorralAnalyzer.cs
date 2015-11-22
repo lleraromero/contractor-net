@@ -69,7 +69,7 @@ namespace Analyzer.Corral
             return EvaluateQueries(actions, result);
         }
 
-        public TransitionAnalysisResult AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
+        public ICollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
             var queries = queryGenerator.CreateQueries(source, action, targets);
             var result = Analyze(queries);
@@ -157,7 +157,7 @@ namespace Analyzer.Corral
             }
         }
 
-        private TransitionAnalysisResult EvaluateQueries(State source, Action action, IEnumerable<State> targets, IEnumerable<Query> result)
+        private ICollection<Transition> EvaluateQueries(State source, Action action, IEnumerable<State> targets, IEnumerable<Query> result)
         {
             var transitions = new HashSet<Transition>();
 
@@ -201,7 +201,7 @@ namespace Analyzer.Corral
                 }
             }
 
-            return new TransitionAnalysisResult(transitions);
+            return new List<Transition>(transitions);
         }
     }
 }
