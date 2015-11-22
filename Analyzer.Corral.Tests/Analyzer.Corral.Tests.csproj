@@ -35,6 +35,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FakeItEasy, Version=1.25.3.0, Culture=neutral, PublicKeyToken=eff28e2146d5fd2c, processorArchitecture=MSIL">
+      <HintPath>..\packages\FakeItEasy.1.25.3\lib\net40\FakeItEasy.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.Cci.CodeModel, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.CodeModel.dll</HintPath>
@@ -62,7 +66,6 @@
     <Compile Include="CorralEPAsTest.cs" />
     <Compile Include="CorralMock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StringAction.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Analysis.Cci\Analysis.Cci.csproj">
@@ -81,6 +84,9 @@
       <Project>{ebedd305-0975-416b-a4e5-4c8f5eadb304}</Project>
       <Name>Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Contractor.Core;
+using FakeItEasy;
 
 namespace Analyzer.Corral.Tests
 {
@@ -483,13 +484,13 @@ STATE$get_MaxSystemInt32$get_NextSystemInt32$PopSystemVoid~get_NextSystemInt32~S
                 switch (result[1])
                 {
                     case "NoBugs":
-                        queries.Add(result[0], new UnreachableQuery(new StringAction(result[0])));
+                        queries.Add(result[0], new UnreachableQuery(A.Dummy<Contractor.Core.Model.Action>()));
                         break;
                     case "TrueBug":
-                        queries.Add(result[0], new ReachableQuery(new StringAction(result[0])));
+                        queries.Add(result[0], new ReachableQuery(A.Dummy<Contractor.Core.Model.Action>()));
                         break;
                     case "RecursionBoundReached":
-                        queries.Add(result[0], new MayBeReachableQuery(new StringAction(result[0])));
+                        queries.Add(result[0], new MayBeReachableQuery(A.Dummy<Contractor.Core.Model.Action>()));
                         break;
                     default:
                         throw new Exception();
