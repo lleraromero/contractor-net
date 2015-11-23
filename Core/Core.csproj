@@ -201,6 +201,7 @@
     <Compile Include="AnalysisResults.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="EpaBinarySerializer.cs" />
+    <Compile Include="EpaBuilder.cs" />
     <Compile Include="EpaGenerator.cs" />
     <Compile Include="EpaXmlSerializer.cs" />
     <Compile Include="EventArgs.cs" />
