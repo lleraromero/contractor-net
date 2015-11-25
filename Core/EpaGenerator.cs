@@ -84,7 +84,7 @@ namespace Contractor.Core
                     var actionsResult = analyzer.AnalyzeActions(source, action, actions);
                     Contract.Assert(!actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).Any(), "Results are consistent");
 
-                    var possibleTargets = GeneratePossibleStates(actions, actionsResult, epaBuilder.States);
+                    var possibleTargets = GeneratePossibleStates(actions, actionsResult);
                     Contract.Assert(possibleTargets.Any(), "There is always at least one target to reach");
 
                     // Which states are reachable from the current state (aka source) using 'action'?
@@ -107,12 +107,10 @@ namespace Contractor.Core
             return epaBuilder.Build();
         }
 
-        protected IEnumerable<State> GeneratePossibleStates(ISet<Action> actions, ActionAnalysisResults actionsResult,
-            IReadOnlyCollection<State> knownStates)
+        protected IEnumerable<State> GeneratePossibleStates(ISet<Action> actions, ActionAnalysisResults actionsResult)
         {
             Contract.Requires(actions != null);
             Contract.Requires(actionsResult != null);
-            Contract.Requires(knownStates != null);
 
             var unknownActions = new HashSet<Action>(actions);
             unknownActions.ExceptWith(actionsResult.EnabledActions);
@@ -124,11 +122,6 @@ namespace Contractor.Core
             var disabledActions = new HashSet<Action>(actionsResult.DisabledActions);
             disabledActions.UnionWith(unknownActions);
             var v = new State(enabledActions, disabledActions);
-
-            if (knownStates.Contains(v))
-            {
-                v = knownStates.Single(s => s.Equals(v));
-            }
             states.Add(v);
 
             while (unknownActions.Count > 0)
@@ -148,12 +141,6 @@ namespace Contractor.Core
                     disabledActions.Remove(action);
 
                     var w = new State(enabledActions, disabledActions);
-
-                    if (knownStates.Contains(w))
-                    {
-                        w = knownStates.Single(s => s.Equals(w));
-                    }
-
                     states.Add(w);
                 }
             }

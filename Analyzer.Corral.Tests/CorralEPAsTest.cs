@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using Analysis.Cci;
 using Contractor.Core;
 using Contractor.Core.Model;
+using FakeItEasy;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Analyzer.Corral.Tests
@@ -55,8 +55,7 @@ namespace Analyzer.Corral.Tests
         {
             var epaGenerator = new EpaGenerator(new AnalyzerMock());
             var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(typeToAnalyze));
-            var epaBuilder = new EpaBuilder(typeDefinition);
-            var epa = epaGenerator.GenerateEpa(typeDefinition, epaBuilder);
+            var epa = epaGenerator.GenerateEpa(typeDefinition, A.Dummy<IEpaBuilder>());
             epa.Wait();
 
             Assert.IsFalse(epa.IsFaulted);
