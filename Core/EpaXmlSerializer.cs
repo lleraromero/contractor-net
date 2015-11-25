@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Xml;
 using Contractor.Core.Model;
 using Action = Contractor.Core.Model.Action;
@@ -17,9 +16,9 @@ namespace Contractor.Core
             Contract.Requires(stream != null && stream.CanWrite);
             Contract.Requires(epa != null && epa.Type != null);
 
-            var settings = new XmlWriterSettings()
+            var settings = new XmlWriterSettings
             {
-                CloseOutput = false, 
+                CloseOutput = false,
                 Indent = true
             };
 
@@ -187,22 +186,13 @@ namespace Contractor.Core
             }
 
             var translator = new Dictionary<string, State>();
-            //TODO: arreglar las que estan deshabilitadas
-            var initial = new State(epaActions.First(kvp => kvp.Key.Equals(initialState)).Value, new HashSet<Action>());
 
             var epaBuilder = new EpaBuilder(type);
-            epaBuilder.SetStateAsInitial(initial);
 
             foreach (var kvp in epaActions)
             {
                 //TODO: arreglar las que estan deshabilitadas
                 var s = new State(kvp.Value, new HashSet<Action>());
-
-                if (!kvp.Key.Equals(initialState))
-                {
-                    epaBuilder.Add(s);
-                }
-
                 translator[kvp.Key] = s;
             }
 

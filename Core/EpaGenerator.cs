@@ -68,14 +68,16 @@ namespace Contractor.Core
             Contract.Requires(epaBuilder != null);
 
             var initialState = new State(constructors, new HashSet<Action>());
-            epaBuilder.SetStateAsInitial(initialState);
+            epaBuilder.Add(initialState);
 
             var statesToVisit = new Queue<State>();
+            var visitedStates = new HashSet<State>();
             statesToVisit.Enqueue(initialState);
-            
+
             while (statesToVisit.Count > 0)
             {
                 var source = statesToVisit.Dequeue();
+                visitedStates.Add(source);
                 foreach (var action in source.EnabledActions)
                 {
                     // Which actions are enabled or disabled if 'action' is called from 'source'?
@@ -93,10 +95,9 @@ namespace Contractor.Core
                     {
                         var target = transition.TargetState;
                         // Do I have to add a new state to the EPA?
-                        if (!epaBuilder.States.Contains(target))
+                        if (!visitedStates.Contains(target) && !statesToVisit.Contains(target))
                         {
                             statesToVisit.Enqueue(target);
-                            epaBuilder.Add(target);
                         }
                         epaBuilder.Add(transition);
                     }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Contractor.Core;
 using Contractor.Core.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -15,11 +16,7 @@ namespace Core.Tests
             var actions = new HashSet<Action>();
             var typeDefinition = new StringTypeDefinition("NoConstructorsNoActiosnEpa", constructors, actions);
 
-            var graph = new Dictionary<State, HashSet<Transition>>();
-            var s = new State(constructors, new HashSet<Action>());
-            graph.Add(s, new HashSet<Transition>());
-
-            return new Epa(typeDefinition, graph, s);
+            return new Epa(typeDefinition, new List<Transition>());
         }
 
         protected Epa OneConstructorNoActionsEpa()
@@ -30,14 +27,13 @@ namespace Core.Tests
             var actions = new HashSet<Action>();
             var typeDefinition = new StringTypeDefinition("OneConstructorNoActionsEpa", constructors, actions);
 
-            var graph = new Dictionary<State, HashSet<Transition>>();
+            var transitions = new HashSet<Transition>();
             var s1 = new State(constructors, new HashSet<Action>());
             var s2 = new State(new HashSet<Action>(), new HashSet<Action>());
-            graph.Add(s1, new HashSet<Transition>());
-            graph.Add(s2, new HashSet<Transition>());
-            graph[s1].Add(new Transition(constructor, s1, s2, false));
 
-            return new Epa(typeDefinition, graph, s1);
+            transitions.Add(new Transition(constructor, s1, s2, false));
+
+            return new Epa(typeDefinition, transitions.ToList());
         }
 
         [TestMethod]

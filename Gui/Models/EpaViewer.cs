@@ -12,7 +12,7 @@ namespace Contractor.Gui
     internal interface IEpaViewer
     {
         Graph Graph { get; }
-        void AddState(State state);
+        Node AddState(State state);
         void AddTransition(Transition transition);
     }
 
@@ -32,26 +32,33 @@ namespace Contractor.Gui
             };
         }
 
-        public void AddState(State state)
+        public Node AddState(State state)
         {
-            var n = graph.AddNode(state.Name);
+            var node = graph.FindNode(state.Name);
+            if (node != null)
+            {
+                return node;
+            }
 
-            n.UserData = state;
-            n.DrawNodeDelegate += OnDrawNode;
-            n.Attr.Shape = Shape.Circle;
-            n.Attr.LabelMargin = 7;
-            n.Label.FontName = "Cambria";
-            n.Label.FontSize = 6;
+            node = graph.AddNode(state.Name);
+
+            node.UserData = state;
+            node.DrawNodeDelegate += OnDrawNode;
+            node.Attr.Shape = Shape.Circle;
+            node.Attr.LabelMargin = 7;
+            node.Label.FontName = "Cambria";
+            node.Label.FontSize = 6;
 
             // TODO: Permitir elegir la descripcion
             //if (_Options.StateDescription)
             //{
-            n.LabelText = state.ToString();
+            node.LabelText = state.ToString();
             //}
             //else
             //{
-            //    n.LabelText = string.Format("S{0}", graph.NodeCount);
+            //    node.LabelText = string.Format("S{0}", graph.NodeCount);
             //}
+            return node;
         }
 
         public void AddTransition(Transition transition)
@@ -60,13 +67,15 @@ namespace Contractor.Gui
             var createEdge = true;
             var lineStyle = transition.IsUnproven ? Style.Dashed : Style.Solid;
 
-
-            var n = graph.FindNode(transition.SourceState.Name);
+            AddState(transition.TargetState);
+            var n = AddState(transition.SourceState);
             Contract.Assert(n != null);
 
             // TODO: Permitir elegir
             if ( /*_Options.UnprovenTransitions &&*/ transition.IsUnproven)
+            {
                 label = string.Format("{0}?", label);
+            }
 
             // TODO: Permitir elegir
             if ( /*_Options.CollapseTransitions*/ true)

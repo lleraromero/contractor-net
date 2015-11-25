@@ -7,11 +7,8 @@ namespace Contractor.Core.Model
         IReadOnlyCollection<State> States { get; }
         IReadOnlyCollection<Transition> Transitions { get; }
         TypeDefinition Type { get; }
-        void Add(State s);
-        void Remove(State s);
         void Add(Transition t);
-        void Remove(Transition t);
-        void SetStateAsInitial(State initial);
+        void Add(State s);
         Epa Build();
     }
 }

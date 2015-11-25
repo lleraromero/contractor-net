@@ -1,27 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.Contracts;
 using System.Linq;
 
 namespace Contractor.Core.Model
 {
     public class Epa : IEquatable<Epa>
     {
-        protected Dictionary<State, HashSet<Transition>> graph;
-        protected State initial;
-        protected TypeDefinition type;
+        protected readonly TypeDefinition type;
+        protected Dictionary<State, ISet<Transition>> graph;
 
-        public Epa(TypeDefinition type, Dictionary<State, HashSet<Transition>> graph, State initial)
+        public Epa(TypeDefinition typeDefinition, IReadOnlyCollection<Transition> transitions)
         {
-            Contract.Requires(type != null);
-            Contract.Requires(graph != null);
-            Contract.Requires(graph.Values.All(trans => trans.All(t => graph.Keys.Contains(t.SourceState) && graph.Keys.Contains(t.TargetState))));
-            Contract.Requires(initial != null && graph.Keys.Contains(initial));
+            type = typeDefinition;
+            graph = new Dictionary<State, ISet<Transition>>();
 
-            this.type = type;
-            this.graph = graph;
-            this.initial = initial;
+            foreach (var t in transitions)
+            {
+                if (!graph.ContainsKey(t.SourceState))
+                {
+                    graph.Add(t.SourceState, new HashSet<Transition>());
+                }
+                graph[t.SourceState].Add(t);
+            }
         }
 
         public TypeDefinition Type
@@ -31,12 +32,32 @@ namespace Contractor.Core.Model
 
         public State Initial
         {
-            get { return initial; }
+            get
+            {
+                var transitions = Transitions;
+                var initialStates = transitions.Where(t => transitions.All(t2 => !t2.TargetState.Equals(t.SourceState))).ToList();
+                return !initialStates.Any() ? new State(new HashSet<Action>(), new HashSet<Action>()) : initialStates.First().SourceState;
+            }
         }
 
         public IImmutableSet<State> States
         {
-            get { return graph.Keys.ToImmutableHashSet(); }
+            get
+            {
+                if (graph.Keys.Count == 0)
+                {
+                    var s = new State(new HashSet<Action>(), new HashSet<Action>());
+                    return new HashSet<State> {s}.ToImmutableHashSet();
+                }
+
+                var states = new HashSet<State>();
+                foreach (var t in Transitions)
+                {
+                    states.Add(t.SourceState);
+                    states.Add(t.TargetState);
+                }
+                return states.ToImmutableHashSet();
+            }
         }
 
         public IImmutableSet<Transition> Transitions
@@ -64,15 +85,16 @@ namespace Contractor.Core.Model
 
         public bool Equals(Epa other)
         {
-            return type.Equals(other.type) && initial.Equals(other.initial) &&
+            return type.Equals(other.type) &&
                    HashSet<State>.CreateSetComparer().Equals(new HashSet<State>(graph.Keys), new HashSet<State>(other.graph.Keys)) &&
-                   graph.Keys.All(s => HashSet<Transition>.CreateSetComparer().Equals(graph[s], other.graph[s]));
+                   graph.Keys.All(
+                       s => HashSet<Transition>.CreateSetComparer().Equals(graph[s] as HashSet<Transition>, other.graph[s] as HashSet<Transition>));
         }
 
         public override int GetHashCode()
         {
             //TODO: mejorar para que valga la propiedad equals => mismo hash
-            return type.GetHashCode() ^ initial.GetHashCode();
+            return type.GetHashCode();
         }
 
         #endregion

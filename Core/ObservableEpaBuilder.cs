@@ -21,26 +21,10 @@ namespace Contractor.Core
             StateAdded(this, new StateAddedEventArgs(epaBuilder.Type, epaBuilder, s));
         }
 
-        public void Remove(State s)
-        {
-            epaBuilder.Remove(s);
-        }
-
         public void Add(Transition t)
         {
             epaBuilder.Add(t);
             TransitionAdded(this, new TransitionAddedEventArgs(epaBuilder.Type, epaBuilder, t));
-        }
-
-        public void Remove(Transition t)
-        {
-            epaBuilder.Remove(t);
-        }
-
-        public void SetStateAsInitial(State initial)
-        {
-            epaBuilder.SetStateAsInitial(initial);
-            StateAdded(this, new StateAddedEventArgs(epaBuilder.Type, epaBuilder, initial));
         }
 
         public IReadOnlyCollection<State> States
