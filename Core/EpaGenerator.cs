@@ -107,7 +107,7 @@ namespace Contractor.Core
             return epaBuilder.Build();
         }
 
-        protected IEnumerable<State> GeneratePossibleStates(ISet<Action> actions, ActionAnalysisResults actionsResult)
+        protected IReadOnlyCollection<State> GeneratePossibleStates(ISet<Action> actions, ActionAnalysisResults actionsResult)
         {
             Contract.Requires(actions != null);
             Contract.Requires(actionsResult != null);
