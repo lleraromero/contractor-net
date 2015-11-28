@@ -73,7 +73,7 @@ namespace Analyzer.Corral
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
             var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(negativeQueries));
 
-            
+
             var positiveQueries = queryGenerator.CreatePositiveQueries(source, action, actions);
             queryAssembly = CreateBoogieQueryAssembly(positiveQueries);
             evaluator = new QueryEvaluator(corralRunner, queryAssembly);
@@ -124,11 +124,14 @@ namespace Analyzer.Corral
         {
             Contract.Ensures(Contract.Result<FileInfo>().Exists);
 
-            var bctRunner = new BctRunner(token);
+            var bctRunner = new BctRunner();
             var args = new[] {queryAssemblyPath, "/lib:" + Path.GetDirectoryName(inputFileName)};
 
-            totalAnalysisTime += bctRunner.Run(args);
-
+            token.ThrowIfCancellationRequested();
+            var timer = Stopwatch.StartNew();
+            bctRunner.Run(args);
+            timer.Stop();
+            totalAnalysisTime += timer.Elapsed;
             return new FileInfo(queryAssemblyPath.Replace("dll", "bpl"));
         }
     }
