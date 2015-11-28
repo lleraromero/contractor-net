@@ -19,7 +19,7 @@ namespace Analyzer.Corral
             : base(inputAssembly)
         {
             var cciType = FindType(typeToAnalyze.Name);
-            cciType.Methods.AddRange(from a in queries select a.Action.Method);
+            cciType.Methods.AddRange(from a in queries select a.Method.Method);
 
 
             var newContractProvider = new ContractProvider(new ContractMethods(this.host), this.host.FindUnit(this.decompiledModule.UnitIdentity));
@@ -28,9 +28,9 @@ namespace Analyzer.Corral
 
             foreach (var query in queries)
             {
-                var method = cciType.Methods.Find(m => m.GetUniqueName() == query.Action.Name) as MethodDefinition;
+                var method = cciType.Methods.Find(m => m.GetUniqueName() == query.Method.Name) as MethodDefinition;
                 method.ContainingTypeDefinition = cciType;
-                (this.contractProvider as ContractProvider).AssociateMethodWithContract(query.Action.Method, query.Action.Contract);
+                (this.contractProvider as ContractProvider).AssociateMethodWithContract(query.Method.Method, query.Method.Contract);
             }
         }
 

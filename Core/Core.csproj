@@ -206,10 +206,12 @@
     <Compile Include="EpaXmlSerializer.cs" />
     <Compile Include="EventArgs.cs" />
     <Compile Include="IAnalyzer.cs" />
+    <Compile Include="ISolver.cs" />
     <Compile Include="ISerializer.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="ObservableEpaBuilder.cs" />
     <Compile Include="Query.cs" />
+    <Compile Include="QueryEvaluator.cs" />
     <Compile Include="StringAction.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

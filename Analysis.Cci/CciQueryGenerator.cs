@@ -25,29 +25,19 @@ namespace Analysis.Cci
             this.host = host;
         }
 
-        public IEnumerable<Action> CreateQueries(State state, Action action, IEnumerable<Action> actions)
+        public IReadOnlyCollection<ActionQuery> CreatePositiveQueries(State state, Action action, IEnumerable<Action> actions)
         {
-            var queries = new List<Action>();
-            foreach (var target in actions)
-            {
-                // Add positive query
-                queries.Add(GenerateQuery(state, action, target));
-                // Add negative query
-                queries.Add(GenerateQuery(state, action, target, true));
-            }
-
-            return queries;
+            return actions.Select(target => new ActionQuery(GenerateQuery(state, action, target), QueryType.Positive, target)).ToList();
         }
 
-        public IEnumerable<Action> CreateQueries(State state, Action action, IEnumerable<State> actions)
+        public IReadOnlyCollection<ActionQuery> CreateNegativeQueries(State state, Action action, IEnumerable<Action> actions)
         {
-            var queries = new List<Action>();
-            foreach (var target in actions)
-            {
-                queries.Add(GenerateQuery(state, action, target));
-            }
+            return actions.Select(target => new ActionQuery(GenerateQuery(state, action, target, true), QueryType.Negative, target)).ToList();
+        }
 
-            return queries;
+        public IReadOnlyCollection<TransitionQuery> CreateTransitionQueries(State sourceState, Action action, IEnumerable<State> targetStates)
+        {
+            return targetStates.Select(targetState => new TransitionQuery(GenerateQuery(sourceState, action, targetState), sourceState, action, targetState)).ToList();
         }
 
         private CciAction GenerateQuery(State state, Action action, Action target, bool negate = false)

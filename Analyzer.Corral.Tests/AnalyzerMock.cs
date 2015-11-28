@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Analysis.Cci;
 using Contractor.Core;
 using Contractor.Core.Model;
+using FakeItEasy;
 using Action = Contractor.Core.Model.Action;
 
 namespace Analyzer.Corral.Tests
@@ -36,36 +39,34 @@ namespace Analyzer.Corral.Tests
 
         public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
         {
-            var queries = GenerateQueries(source, action, actions);
-            var result = Analyze(queries);
-            var analysisResult = EvaluateQueries(actions, result);
+            var evaluator = new QueryEvaluator(new CorralMock(), new FileInfo(@"C:\Windows\notepad.exe"));
 
-            return analysisResult;
+            var negativeQueries = CreateNegativeQueries(source, action, actions);
+            var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(negativeQueries));
+
+            var positiveQueries = CreatePositiveQueries(source, action, actions);
+            var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(positiveQueries));
+
+            var enabledAndDisabledActions = new HashSet<Action>(enabledActions);
+            enabledAndDisabledActions.IntersectWith(disabledActions);
+
+            enabledActions.ExceptWith(enabledAndDisabledActions);
+            disabledActions.ExceptWith(enabledAndDisabledActions);
+
+            return new ActionAnalysisResults(enabledActions, disabledActions);
         }
 
-        public ICollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
+        public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
-            var queries = GenerateQueries(source, action, targets);
-            var result = Analyze(queries);
-            var resultAnalysis = EvaluateQueries(source, action, targets, result);
+            var evaluator = new QueryEvaluator(new CorralMock(), new FileInfo(@"C:\Windows\notepad.exe"));
 
-            return resultAnalysis;
+            var transitionQueries = CreateTransitionQueries(source, action, targets);
+            return evaluator.GetFeasibleTransitions(transitionQueries);
         }
 
-        private List<string> GenerateQueries(State source, Action action, IEnumerable<Action> actions)
+        protected IReadOnlyCollection<ActionQuery> CreatePositiveQueries(State source, Action action, IEnumerable<Action> actions)
         {
-            var queries = new List<string>();
-            foreach (var a in actions)
-            {
-                var prefix = notPrefix;
-                var actionName = action.Name;
-                var stateName = source.Name;
-                var targetName = a.Name;
-                var methodName = string.Format("{1}{0}{2}{0}{3}{4}", methodNameDelimiter, stateName, actionName, prefix, targetName);
-
-                queries.Add(methodName);
-            }
-
+            var queries = new List<ActionQuery>();
             foreach (var a in actions)
             {
                 var prefix = string.Empty;
@@ -74,73 +75,38 @@ namespace Analyzer.Corral.Tests
                 var targetName = a.Name;
                 var methodName = string.Format("{1}{0}{2}{0}{3}{4}", methodNameDelimiter, stateName, actionName, prefix, targetName);
 
-                queries.Add(methodName);
+                var fakeAction = A.Fake<Action>();
+                A.CallTo(() => fakeAction.Name).Returns(CreateUniqueMethodName(methodName));
+                var fakeQuery = new ActionQuery(fakeAction, QueryType.Positive, a);
+                queries.Add(fakeQuery);
             }
 
             return queries;
         }
 
-        private Dictionary<string, Query> Analyze(List<string> queries)
+        protected IReadOnlyCollection<ActionQuery> CreateNegativeQueries(State source, Action action, IEnumerable<Action> actions)
         {
-            var results = new Dictionary<string, Query>();
-            foreach (var query in queries)
+            var queries = new List<ActionQuery>();
+            foreach (var a in actions)
             {
-                var queryName = CreateUniqueMethodName(query);
+                var prefix = notPrefix;
+                var actionName = action.Name;
+                var stateName = source.Name;
+                var targetName = a.Name;
+                var methodName = string.Format("{1}{0}{2}{0}{3}{4}", methodNameDelimiter, stateName, actionName, prefix, targetName);
 
-                var corralRunner = new CorralMock();
-                var corralArgs = string.Format("{0} /main:{1} {2}", "Z:\\DummyPath\\Query.bpl", queryName, Configuration.CorralArguments);
-                corralRunner.Run(corralArgs);
-
-                results[query] = corralRunner.Result;
+                var fakeAction = A.Fake<Action>();
+                A.CallTo(() => fakeAction.Name).Returns(CreateUniqueMethodName(methodName));
+                var fakeQuery = new ActionQuery(fakeAction, QueryType.Negative, a);
+                queries.Add(fakeQuery);
             }
 
-            return results;
+            return queries;
         }
 
-        private ActionAnalysisResults EvaluateQueries(IEnumerable<Action> actions, Dictionary<string, Query> result)
+        protected IReadOnlyCollection<TransitionQuery> CreateTransitionQueries(State source, Action action, IEnumerable<State> targets)
         {
-            var enabledActions = new HashSet<Action>(actions);
-            var disabledActions = new HashSet<Action>(actions);
-
-            foreach (var entry in result)
-            {
-                if (entry.Value.GetType() == typeof (ReachableQuery) || entry.Value.GetType() == typeof (MayBeReachableQuery))
-                {
-                    var actionName = entry.Key;
-                    var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
-                    actionName = actionName.Substring(actionNameStart);
-                    var isNegative = actionName.StartsWith(notPrefix);
-
-                    if (isNegative)
-                    {
-                        actionName = actionName.Remove(0, notPrefix.Length);
-                        if (disabledActions.Any(a => a.Name.Equals(actionName)))
-                        {
-                            disabledActions.Remove(disabledActions.First(a => a.Name.Equals(actionName)));
-                        }
-                    }
-                    else
-                    {
-                        if (enabledActions.Any(a => a.Name.Equals(actionName)))
-                        {
-                            enabledActions.Remove(enabledActions.First(a => a.Name.Equals(actionName)));
-                        }
-                    }
-
-                    //if (entry.Value == ResultKind.RecursionBoundReached)
-                    //    base.UnprovenQueriesCount++;
-                }
-            }
-
-            Contract.Assert(enabledActions.Count + disabledActions.Count <= actions.Count());
-            Contract.Assert(!enabledActions.Intersect(disabledActions).Any());
-
-            return new ActionAnalysisResults(enabledActions, disabledActions);
-        }
-
-        private List<string> GenerateQueries(State source, Action action, IEnumerable<State> targets)
-        {
-            var queries = new List<string>();
+            var queries = new List<TransitionQuery>();
             foreach (var s in targets)
             {
                 var actionName = action.Name;
@@ -148,42 +114,115 @@ namespace Analyzer.Corral.Tests
                 var targetName = s.Name;
                 var methodName = string.Format("{1}{0}{2}{0}{3}", methodNameDelimiter, stateName, actionName, targetName);
 
-                queries.Add(methodName);
+                var fakeAction = A.Fake<Action>();
+                A.CallTo(() => fakeAction.Name).Returns(CreateUniqueMethodName(methodName));
+                var fakeQuery = new TransitionQuery(fakeAction, source, action, s);
+                queries.Add(fakeQuery);
             }
 
             return queries;
         }
 
-        private ICollection<Transition> EvaluateQueries(State source, Action action, IEnumerable<State> targets, Dictionary<string, Query> result)
+        protected TransitionQuery CreateFakeTransitionQuery(string methodName)
         {
-            var transitions = new HashSet<Transition>();
-
-            foreach (var entry in result)
-            {
-                if (entry.Value.GetType() == typeof (ReachableQuery) || entry.Value.GetType() == typeof (MayBeReachableQuery))
-                {
-                    var actionName = entry.Key;
-                    var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
-                    actionName = actionName.Substring(actionNameStart);
-
-                    var targetNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
-                    var targetName = actionName.Substring(targetNameStart);
-                    var target = targets.First(s => s.Name == targetName);
-                    var isUnproven = entry.Value.GetType() == typeof (MayBeReachableQuery);
-
-                    if (target != null)
-                    {
-                        var transition = new Transition(action, source, target, isUnproven);
-                        transitions.Add(transition);
-                    }
-
-                    //if (isUnproven)
-                    //    base.UnprovenQueriesCount++;
-                }
-            }
-
-            return new List<Transition>(transitions);
+            var fakeQuery = A.Fake<TransitionQuery>();
+            var fakeAction = A.Fake<Action>();
+            A.CallTo(() => fakeAction.Name).Returns(CreateUniqueMethodName(methodName));
+            A.CallTo(() => fakeQuery.Action).Returns(fakeAction);
+            return fakeQuery;
         }
+        
+
+        //private Dictionary<string, Query> Analyze(List<string> queries)
+        //{
+        //    var results = new Dictionary<string, Query>();
+        //    foreach (var query in queries)
+        //    {
+        //        var queryName = CreateUniqueMethodName(query);
+
+        //        var corralRunner = new CorralMock();
+        //        var corralArgs = string.Format("{0} /main:{1} {2}", "Z:\\DummyPath\\Query.bpl", queryName, Configuration.CorralArguments);
+        //        corralRunner.Run(corralArgs);
+
+        //        results[query] = corralRunner.Result;
+        //    }
+
+        //    return results;
+        //}
+
+        //private ActionAnalysisResults EvaluateQueries(IEnumerable<Action> actions, Dictionary<string, Query> result)
+        //{
+        //    var enabledActions = new HashSet<Action>(actions);
+        //    var disabledActions = new HashSet<Action>(actions);
+
+        //    foreach (var entry in result)
+        //    {
+        //        if (entry.Value.GetType() == typeof (ReachableQuery) || entry.Value.GetType() == typeof (MayBeReachableQuery))
+        //        {
+        //            var actionName = entry.Key;
+        //            var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
+        //            actionName = actionName.Substring(actionNameStart);
+        //            var isNegative = actionName.StartsWith(notPrefix);
+
+        //            if (isNegative)
+        //            {
+        //                actionName = actionName.Remove(0, notPrefix.Length);
+        //                if (disabledActions.Any(a => a.Name.Equals(actionName)))
+        //                {
+        //                    disabledActions.Remove(disabledActions.First(a => a.Name.Equals(actionName)));
+        //                }
+        //            }
+        //            else
+        //            {
+        //                if (enabledActions.Any(a => a.Name.Equals(actionName)))
+        //                {
+        //                    enabledActions.Remove(enabledActions.First(a => a.Name.Equals(actionName)));
+        //                }
+        //            }
+
+        //            //if (entry.Value == ResultKind.RecursionBoundReached)
+        //            //    base.UnprovenQueriesCount++;
+        //        }
+        //    }
+
+        //    Contract.Assert(enabledActions.Count + disabledActions.Count <= actions.Count());
+        //    Contract.Assert(!enabledActions.Intersect(disabledActions).Any());
+
+        //    return new ActionAnalysisResults(enabledActions, disabledActions);
+        //}
+
+        
+
+        //private IReadOnlyCollection<Transition> EvaluateQueries(State source, Action action, IEnumerable<State> targets, Dictionary<string, Query> result)
+        //{
+        //    var transitions = new HashSet<Transition>();
+
+        //    foreach (var entry in result)
+        //    {
+        //        if (entry.Value.GetType() == typeof (ReachableQuery) || entry.Value.GetType() == typeof (MayBeReachableQuery))
+        //        {
+        //            var actionName = entry.Key;
+        //            var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
+        //            actionName = actionName.Substring(actionNameStart);
+
+        //            var targetNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
+        //            var targetName = actionName.Substring(targetNameStart);
+        //            var target = targets.First(s => s.Name == targetName);
+        //            var isUnproven = entry.Value.GetType() == typeof (MayBeReachableQuery);
+
+        //            if (target != null)
+        //            {
+        //                var transition = new Transition(action, source, target, isUnproven);
+        //                transitions.Add(transition);
+        //            }
+
+        //            //if (isUnproven)
+        //            //    base.UnprovenQueriesCount++;
+        //        }
+        //    }
+
+        //    return new List<Transition>(transitions);
+        //}
 
         #region BCT-TranslationHelper.cs
 

@@ -30,6 +30,10 @@ namespace Analyzer.Corral.Tests
         [TestMethod]
         public void TestVendingMachine()
         {
+            //var Type = FindTypeDefinitionInAssemblyWithName("VendingMachine");
+            //var epa = GenerateEpa(type)
+            //assert
+            //assert
             GenerateEpa("Examples.VendingMachine");
         }
 

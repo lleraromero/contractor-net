@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Contractor.Core;
-using FakeItEasy;
 
 namespace Analyzer.Corral.Tests
 {
-    internal class CorralMock
+    internal class CorralMock : ISolver
     {
         #region VendingMachine Queries
 
@@ -465,13 +465,11 @@ STATE$get_MaxSystemInt32$get_NextSystemInt32$PopSystemVoid~get_NextSystemInt32~S
 
         #endregion
 
-        private readonly Dictionary<string, Query> queries;
-
-        protected Query result;
+        private readonly Dictionary<string, QueryResult> queries;
 
         public CorralMock()
         {
-            queries = new Dictionary<string, Query>();
+            queries = new Dictionary<string, QueryResult>();
             var allTheQueries = VendingQueries + Environment.NewLine +
                                 LinearQueries + Environment.NewLine +
                                 DoorQueries + Environment.NewLine +
@@ -484,13 +482,13 @@ STATE$get_MaxSystemInt32$get_NextSystemInt32$PopSystemVoid~get_NextSystemInt32~S
                 switch (result[1])
                 {
                     case "NoBugs":
-                        queries.Add(result[0], new UnreachableQuery(A.Dummy<Contractor.Core.Model.Action>()));
+                        queries.Add(result[0], QueryResult.Unreachable);
                         break;
                     case "TrueBug":
-                        queries.Add(result[0], new ReachableQuery(A.Dummy<Contractor.Core.Model.Action>()));
+                        queries.Add(result[0], QueryResult.Reachable);
                         break;
                     case "RecursionBoundReached":
-                        queries.Add(result[0], new MayBeReachableQuery(A.Dummy<Contractor.Core.Model.Action>()));
+                        queries.Add(result[0], QueryResult.MaybeReachable);
                         break;
                     default:
                         throw new Exception();
@@ -498,22 +496,9 @@ STATE$get_MaxSystemInt32$get_NextSystemInt32$PopSystemVoid~get_NextSystemInt32~S
             }
         }
 
-        public Query Result
+        public QueryResult Execute(FileInfo queryAssembly, Query query)
         {
-            get { return result; }
-        }
-
-        public TimeSpan Run(string args)
-        {
-            var queryName = args.Split(' ')[1].Replace("/main:", "");
-            if (!queries.ContainsKey(queryName))
-            {
-                throw new Exception("Query not recognized");
-            }
-
-            result = queries[queryName];
-
-            return new TimeSpan();
+            return queries[query.Method.Name];
         }
     }
 }

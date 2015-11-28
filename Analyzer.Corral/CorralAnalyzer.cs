@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using Analysis.Cci;
 using Contractor.Core;
@@ -64,144 +64,72 @@ namespace Analyzer.Corral
 
         public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
         {
-            var queries = queryGenerator.CreateQueries(source, action, actions);
-            var result = Analyze(queries);
-            return EvaluateQueries(actions, result);
+            var timer = Stopwatch.StartNew();
+
+            ISolver corralRunner = new CorralRunner();
+
+            var negativeQueries = queryGenerator.CreateNegativeQueries(source, action, actions);
+            var queryAssembly = CreateBoogieQueryAssembly(negativeQueries);
+            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(negativeQueries));
+
+            
+            var positiveQueries = queryGenerator.CreatePositiveQueries(source, action, actions);
+            queryAssembly = CreateBoogieQueryAssembly(positiveQueries);
+            evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(positiveQueries));
+
+            timer.Stop();
+            totalAnalysisTime += timer.Elapsed;
+
+            var enabledAndDisabledActions = new HashSet<Action>(enabledActions);
+            enabledAndDisabledActions.IntersectWith(disabledActions);
+
+            enabledActions.ExceptWith(enabledAndDisabledActions);
+            disabledActions.ExceptWith(enabledAndDisabledActions);
+
+            return new ActionAnalysisResults(enabledActions, disabledActions);
         }
 
-        public ICollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
+        public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
-            var queries = queryGenerator.CreateQueries(source, action, targets);
-            var result = Analyze(queries);
-            return EvaluateQueries(source, action, targets, result);
+            var timer = Stopwatch.StartNew();
+
+            ISolver corralRunner = new CorralRunner();
+            var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets);
+            var queryAssembly = CreateBoogieQueryAssembly(transitionQueries);
+            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var feasibleTransitions = evaluator.GetFeasibleTransitions(transitionQueries);
+
+            timer.Stop();
+            totalAnalysisTime += timer.Elapsed;
+
+            return feasibleTransitions;
         }
 
-        private IEnumerable<Query> Analyze(IEnumerable<Action> queriesActions)
+        protected FileInfo CreateBoogieQueryAssembly(IReadOnlyCollection<Query> queries)
         {
-            var queries = from a in queriesActions select new Query(a);
+            Contract.Ensures(Contract.Result<FileInfo>().Exists);
+
             var queryAssembly = new CciQueryAssembly(inputAssembly, typeToAnalyze, queries);
 
             var queryFilePath = Path.Combine(Configuration.TempPath, Guid.NewGuid().ToString(), Path.GetFileName(inputFileName));
             Directory.CreateDirectory(Path.GetDirectoryName(queryFilePath));
             queryAssembly.Save(queryFilePath);
 
-            var boogieQueryFilePath = TranslateCSharpToBoogie(queryFilePath);
-
-            return TestQueries(queries, boogieQueryFilePath);
+            return TranslateCSharpToBoogie(queryFilePath);
         }
 
-        protected IEnumerable<Query> TestQueries(IEnumerable<Query> queries, string boogieQueryFilePath)
+        protected FileInfo TranslateCSharpToBoogie(string queryAssemblyPath)
         {
-            var result = new List<Query>();
-            var corralRunner = new CorralRunnerParallel(token, queries, new FileInfo(boogieQueryFilePath));
-            var timer = Stopwatch.StartNew();
-            result.AddRange(corralRunner.Run());
-            timer.Stop();
-            totalAnalysisTime += timer.Elapsed;
+            Contract.Ensures(Contract.Result<FileInfo>().Exists);
 
-            return result;
-        }
-
-        protected string TranslateCSharpToBoogie(string queryAssemblyPath)
-        {
             var bctRunner = new BctRunner(token);
             var args = new[] {queryAssemblyPath, "/lib:" + Path.GetDirectoryName(inputFileName)};
 
             totalAnalysisTime += bctRunner.Run(args);
 
-            return queryAssemblyPath.Replace("dll", "bpl");
-        }
-
-        private ActionAnalysisResults EvaluateQueries(IEnumerable<Action> actions, IEnumerable<Query> result)
-        {
-            var enabledActions = new HashSet<Action>(actions);
-            var disabledActions = new HashSet<Action>(actions);
-
-            foreach (var evaluatedQuery in result)
-            {
-                if (evaluatedQuery.GetType() == typeof (ReachableQuery))
-                {
-                    EnableOrDisable(enabledActions, disabledActions, evaluatedQuery);
-                }
-                else if (evaluatedQuery.GetType() == typeof (MayBeReachableQuery))
-                {
-                    EnableOrDisable(enabledActions, disabledActions, evaluatedQuery);
-                    unprovenQueriesCount++;
-                }
-            }
-
-            return new ActionAnalysisResults(enabledActions, disabledActions);
-        }
-
-        private void EnableOrDisable(HashSet<Action> enabledActions, HashSet<Action> disabledActions, Query query)
-        {
-            var actionName = query.Action.Method.Name.Value;
-            var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
-            actionName = actionName.Substring(actionNameStart);
-            var isNegative = actionName.StartsWith(notPrefix);
-
-            if (isNegative)
-            {
-                actionName = actionName.Remove(0, notPrefix.Length);
-                if (disabledActions.Any(a => a.Name.Equals(actionName)))
-                {
-                    disabledActions.Remove(disabledActions.First(a => a.Name.Equals(actionName)));
-                }
-            }
-            else
-            {
-                if (enabledActions.Any(a => a.Name.Equals(actionName)))
-                {
-                    enabledActions.Remove(enabledActions.First(a => a.Name.Equals(actionName)));
-                }
-            }
-        }
-
-        private ICollection<Transition> EvaluateQueries(State source, Action action, IEnumerable<State> targets, IEnumerable<Query> result)
-        {
-            var transitions = new HashSet<Transition>();
-
-            foreach (var evaluatedQuery in result)
-            {
-                if (evaluatedQuery.GetType() == typeof (ReachableQuery))
-                {
-                    var actionName = evaluatedQuery.Action.Method.Name.Value;
-                    var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
-                    actionName = actionName.Substring(actionNameStart);
-
-                    var targetNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
-                    var targetName = actionName.Substring(targetNameStart);
-                    var target = targets.First(s => s.Name == targetName);
-                    var isUnproven = false;
-
-                    if (target != null)
-                    {
-                        var transition = new Transition(action, source, target, isUnproven);
-                        transitions.Add(transition);
-                    }
-                }
-                else if (evaluatedQuery.GetType() == typeof (MayBeReachableQuery))
-                {
-                    var actionName = evaluatedQuery.Action.Method.Name.Value;
-                    var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
-                    actionName = actionName.Substring(actionNameStart);
-
-                    var targetNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
-                    var targetName = actionName.Substring(targetNameStart);
-                    var target = targets.First(s => s.Name == targetName);
-                    var isUnproven = true;
-
-                    if (target != null)
-                    {
-                        var transition = new Transition(action, source, target, isUnproven);
-                        transitions.Add(transition);
-                    }
-
-                    unprovenQueriesCount++;
-                }
-            }
-
-            return new List<Transition>(transitions);
+            return new FileInfo(queryAssemblyPath.Replace("dll", "bpl"));
         }
     }
 }

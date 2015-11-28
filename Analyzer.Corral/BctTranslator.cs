@@ -11,7 +11,7 @@ namespace Analyzer.Corral
     {
         public static string CreateUniqueMethodName(Query query)
         {
-            return CreateUniqueMethodName(query.Action.Method);
+            return CreateUniqueMethodName(query.Method.Method);
         }
 
         public static string CreateUniqueMethodName(IMethodReference method)

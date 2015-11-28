@@ -133,26 +133,28 @@ namespace Analysis.Cci
         {
             Contract.Requires(typeof (T) == typeof (Action) || typeof (T) == typeof (State));
 
-            var queries = new List<Action>();
+            var queries = new List<Query>();
 
             if (typeof (T) == typeof (Action))
             {
-                queries.AddRange(queryGenerator.CreateQueries(state, action, actions as List<Action>));
+                queries.AddRange(queryGenerator.CreatePositiveQueries(state, action, actions as List<Action>));
+                queries.AddRange(queryGenerator.CreateNegativeQueries(state, action, actions as List<Action>));
+
             }
             else if (typeof (T) == typeof (State))
             {
-                queries.AddRange(queryGenerator.CreateQueries(state, action, actions as List<State>));
+                queries.AddRange(queryGenerator.CreateTransitionQueries(state, action, actions as List<State>));
             }
 
             TotalGeneratedQueriesCount += queries.Count;
 
             foreach (var query in queries)
             {
-                (query.Method as MethodDefinition).ContainingTypeDefinition = typeToAnalyze;
-                queryContractProvider.AssociateMethodWithContract(query.Method as MethodDefinition, query.Contract);
+                (query.Method.Method as MethodDefinition).ContainingTypeDefinition = typeToAnalyze;
+                queryContractProvider.AssociateMethodWithContract(query.Method.Method as MethodDefinition, query.Method.Contract);
             }
 
-            return new List<MethodDefinition>(from a in queries select a.Method as MethodDefinition);
+            return new List<MethodDefinition>(from a in queries select a.Method.Method as MethodDefinition);
         }
 
         #region IAnalyzer interface
@@ -170,7 +172,7 @@ namespace Analysis.Cci
             throw new NotImplementedException();
         }
 
-        public virtual ICollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
+        public virtual IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
             throw new NotImplementedException();
         }

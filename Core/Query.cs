@@ -2,29 +2,86 @@
 
 namespace Contractor.Core
 {
-    public class Query
+    public abstract class Query
     {
-        protected Action action;
-        public Action Action { get { return action; } }
+        public abstract Action Method { get; }
+    }
 
-        public Query(Action action)
+    public enum QueryType
+    {
+        Positive,
+        Negative
+    }
+
+    public enum QueryResult
+    {
+        Reachable,
+        MaybeReachable,
+        Unreachable
+    }
+
+    public class TransitionQuery : Query
+    {
+        protected readonly Action queryMethod;
+        protected readonly State sourceState;
+        protected readonly Action action;
+        protected readonly State targetState;
+
+        public TransitionQuery(Action queryMethod, State sourceState, Action action, State targetState)
         {
+            this.queryMethod = queryMethod;
+            this.sourceState = sourceState;
             this.action = action;
+            this.targetState = targetState;
+        }
+
+        public override Action Method
+        {
+            get { return queryMethod; }
+        }
+
+        public State SourceState
+        {
+            get { return sourceState; }
+        }
+
+        public Action Action
+        {
+            get { return action; }
+        }
+
+        public State TargetState
+        {
+            get { return targetState; }
         }
     }
 
-    public class ReachableQuery : Query
+    public class ActionQuery : Query
     {
-        public ReachableQuery(Action action) : base(action) { }
-    }
+        protected readonly Action queryMethod;
+        protected readonly QueryType queryType;
+        protected readonly Action actionUnderTest;
 
-    public class UnreachableQuery : Query
-    {
-        public UnreachableQuery(Action action) : base(action) { }
-    }
+        public ActionQuery(Action queryMethod, QueryType queryType, Action actionUnderTest)
+        {
+            this.queryMethod = queryMethod;
+            this.queryType = queryType;
+            this.actionUnderTest = actionUnderTest;
+        }
 
-    public class MayBeReachableQuery : Query
-    {
-        public MayBeReachableQuery(Action action) : base(action) { }
+        public override Action Method
+        {
+            get { return queryMethod; }
+        }
+
+        public QueryType Type
+        {
+            get { return queryType; }
+        }
+
+        public Action ActionUnderTest
+        {
+            get { return actionUnderTest; }
+        }
     }
 }
