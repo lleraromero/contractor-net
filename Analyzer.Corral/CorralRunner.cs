@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using Contractor.Core;
+using Log;
 
 namespace Analyzer.Corral
 {

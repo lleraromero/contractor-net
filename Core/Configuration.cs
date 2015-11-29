@@ -42,8 +42,6 @@ namespace Contractor.Core
 
                 throw new DirectoryNotFoundException(msg.ToString());
             }
-
-            Logger.SetUpLogger(Path.Combine(TempPath, "contractor.out"));
         }
 
         public static string ExpandVariables(string text)
