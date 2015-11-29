@@ -10,7 +10,6 @@ namespace Contractor.Core
         public static string TempPath;
         public static string CheckerFileName;
         public static string CheckerArguments;
-        public static string CorralArguments;
         public static bool InlineMethodsBody;
 
         private static string windows;
@@ -29,7 +28,6 @@ namespace Contractor.Core
             CheckerFileName = ExpandVariables(Resources.CheckerFileName);
             CheckerArguments = Resources.CheckerArguments;
             var dependenciesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\Dependencies"));
-            CorralArguments = Resources.CorralArguments;
 
             TempPath = Path.Combine(Path.GetTempPath(), "Contractor");
             Directory.CreateDirectory(TempPath);

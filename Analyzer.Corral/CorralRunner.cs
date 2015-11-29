@@ -8,13 +8,19 @@ namespace Analyzer.Corral
 {
     internal class CorralRunner : ISolver
     {
+        protected readonly string corralArguments;
+
+        public CorralRunner(string defaultArgs)
+        {
+            corralArguments = defaultArgs;
+        }
+
         public QueryResult Execute(FileInfo queryAssembly, Query query)
         {
             var tmpDir = Path.Combine(Configuration.TempPath, Guid.NewGuid().ToString());
             Directory.CreateDirectory(tmpDir);
 
-            var args = string.Format("{0} /main:{1} {2}", queryAssembly.FullName, BctTranslator.CreateUniqueMethodName(query),
-                Configuration.CorralArguments);
+            var args = string.Format("{0} /main:{1} {2}", queryAssembly.FullName, BctTranslator.CreateUniqueMethodName(query), corralArguments);
             var output = new StringBuilder();
 
             using (var corral = new Process())

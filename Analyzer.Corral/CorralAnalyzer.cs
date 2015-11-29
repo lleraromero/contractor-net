@@ -14,6 +14,7 @@ namespace Analyzer.Corral
 {
     public class CorralAnalyzer : IAnalyzer
     {
+        protected string defaultArgs;
         protected CciQueryGenerator queryGenerator;
         protected CciAssembly inputAssembly;
         protected string inputFileName;
@@ -23,9 +24,10 @@ namespace Analyzer.Corral
         protected int generatedQueriesCount;
         protected int unprovenQueriesCount;
 
-        public CorralAnalyzer(CciQueryGenerator queryGenerator, CciAssembly inputAssembly, string inputFileName, TypeDefinition typeToAnalyze,
+        public CorralAnalyzer(string defaultArgs, CciQueryGenerator queryGenerator, CciAssembly inputAssembly, string inputFileName, TypeDefinition typeToAnalyze,
             CancellationToken token)
         {
+            this.defaultArgs = defaultArgs;
             this.queryGenerator = queryGenerator;
             this.inputAssembly = inputAssembly;
             this.typeToAnalyze = typeToAnalyze;
@@ -39,7 +41,7 @@ namespace Analyzer.Corral
 
         public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
         {
-            ISolver corralRunner = new CorralRunner();
+            ISolver corralRunner = new CorralRunner(defaultArgs);
 
             var enabledActions = GetEnabledActions(source, action, actions, corralRunner);
             var disabledActions = GetDisabledActions(source, action, actions, corralRunner);
@@ -75,7 +77,7 @@ namespace Analyzer.Corral
 
         public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
-            ISolver corralRunner = new CorralRunner();
+            ISolver corralRunner = new CorralRunner(defaultArgs);
             var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets);
             var queryAssembly = CreateBoogieQueryAssembly(transitionQueries);
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -94,7 +95,8 @@ namespace Contractor.Gui.Models
                 case "CodeContracts":
                     throw new NotImplementedException();
                 case "Corral":
-                    analyzer = new CorralAnalyzer(decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly, inputFile.FullName,
+                    var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
+                    analyzer = new CorralAnalyzer(corralDefaultArgs, decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly, inputFile.FullName,
                         typeToAnalyze, cancellationToken);
                     break;
                 default:

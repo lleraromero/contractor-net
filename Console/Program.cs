@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,7 @@ using Analyzer.Corral;
 using CommandLine;
 using Contractor.Core;
 using Contractor.Core.Model;
+using Configuration = Contractor.Core.Configuration;
 
 namespace Contractor.Console
 {
@@ -89,7 +91,8 @@ namespace Contractor.Console
                 case "CodeContracts":
                     throw new NotImplementedException();
                 case "Corral":
-                    analyzer = new CorralAnalyzer(decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly,
+                    var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
+                    analyzer = new CorralAnalyzer(corralDefaultArgs, decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly,
                         options.InputAssembly, typeToAnalyze, cancellationSource.Token);
                     break;
                 default:
