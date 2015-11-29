@@ -19,9 +19,6 @@ namespace Contractor.Core
 
         public void Serialize(Stream stream, Epa epa)
         {
-            Contract.Requires(stream != null && stream.CanWrite);
-            Contract.Requires(epa != null);
-
             this.epa = epa;
 
             var graph = new Graph
