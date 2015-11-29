@@ -7,13 +7,8 @@ namespace Contractor.Core
 {
     public interface IAnalyzer
     {
-        TimeSpan TotalAnalysisDuration { get; }
-        int ExecutionsCount { get; }
-        int TotalGeneratedQueriesCount { get; }
-        int UnprovenQueriesCount { get; }
-
         ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions);
-
         IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets);
+        string GetUsageStatistics();
     }
 }

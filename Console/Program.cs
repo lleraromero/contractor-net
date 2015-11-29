@@ -54,7 +54,7 @@ namespace Contractor.Console
                     var typeName = result.Key.Replace('.', '_');
                     using (var stream = File.Create(string.Format("{0}\\{1}.png", options.GraphDirectory, typeName)))
                     {
-                        new EpaBinarySerializer().Serialize(stream, result.Value.EPA);
+                        new EpaBinarySerializer().Serialize(stream, result.Value.Epa);
                     }
                 }
             }

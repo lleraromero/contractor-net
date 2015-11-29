@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
+using System.Text;
 using System.Threading;
 using Analysis.Cci;
 using Contractor.Core;
@@ -19,13 +20,8 @@ namespace Analyzer.Corral
         protected TypeDefinition typeToAnalyze;
         protected CancellationToken token;
 
-        protected TimeSpan totalAnalysisTime;
-        protected int executionsCount;
         protected int generatedQueriesCount;
         protected int unprovenQueriesCount;
-
-        protected string notPrefix = "_Not_";
-        protected string methodNameDelimiter = "~";
 
         public CorralAnalyzer(CciQueryGenerator queryGenerator, CciAssembly inputAssembly, string inputFileName, TypeDefinition typeToAnalyze,
             CancellationToken token)
@@ -36,51 +32,17 @@ namespace Analyzer.Corral
             this.inputFileName = inputFileName;
             this.token = token;
 
-            totalAnalysisTime = new TimeSpan();
-            executionsCount = 0;
             generatedQueriesCount = 0;
+            //TODO: necesito saber cuantas maybe hubieron
             unprovenQueriesCount = 0;
-        }
-
-        public TimeSpan TotalAnalysisDuration
-        {
-            get { return totalAnalysisTime; }
-        }
-
-        public int ExecutionsCount
-        {
-            get { return executionsCount; }
-        }
-
-        public int TotalGeneratedQueriesCount
-        {
-            get { return generatedQueriesCount; }
-        }
-
-        public int UnprovenQueriesCount
-        {
-            get { return unprovenQueriesCount; }
         }
 
         public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
         {
-            var timer = Stopwatch.StartNew();
-
             ISolver corralRunner = new CorralRunner();
 
-            var negativeQueries = queryGenerator.CreateNegativeQueries(source, action, actions);
-            var queryAssembly = CreateBoogieQueryAssembly(negativeQueries);
-            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
-            var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(negativeQueries));
-
-
-            var positiveQueries = queryGenerator.CreatePositiveQueries(source, action, actions);
-            queryAssembly = CreateBoogieQueryAssembly(positiveQueries);
-            evaluator = new QueryEvaluator(corralRunner, queryAssembly);
-            var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(positiveQueries));
-
-            timer.Stop();
-            totalAnalysisTime += timer.Elapsed;
+            var enabledActions = GetEnabledActions(source, action, actions, corralRunner);
+            var disabledActions = GetDisabledActions(source, action, actions, corralRunner);
 
             var enabledAndDisabledActions = new HashSet<Action>(enabledActions);
             enabledAndDisabledActions.IntersectWith(disabledActions);
@@ -91,18 +53,33 @@ namespace Analyzer.Corral
             return new ActionAnalysisResults(enabledActions, disabledActions);
         }
 
+        protected ISet<Action> GetDisabledActions(State source, Action action, IEnumerable<Action> actions, ISolver corralRunner)
+        {
+            var positiveQueries = queryGenerator.CreatePositiveQueries(source, action, actions);
+            generatedQueriesCount += positiveQueries.Count;
+            var queryAssembly = CreateBoogieQueryAssembly(positiveQueries);
+            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(positiveQueries));
+            return disabledActions;
+        }
+
+        protected ISet<Action> GetEnabledActions(State source, Action action, IEnumerable<Action> actions, ISolver corralRunner)
+        {
+            var negativeQueries = queryGenerator.CreateNegativeQueries(source, action, actions);
+            generatedQueriesCount += negativeQueries.Count;
+            var queryAssembly = CreateBoogieQueryAssembly(negativeQueries);
+            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(negativeQueries));
+            return enabledActions;
+        }
+
         public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
-            var timer = Stopwatch.StartNew();
-
             ISolver corralRunner = new CorralRunner();
             var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets);
             var queryAssembly = CreateBoogieQueryAssembly(transitionQueries);
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
             var feasibleTransitions = evaluator.GetFeasibleTransitions(transitionQueries);
-
-            timer.Stop();
-            totalAnalysisTime += timer.Elapsed;
 
             return feasibleTransitions;
         }
@@ -128,11 +105,23 @@ namespace Analyzer.Corral
             var args = new[] {queryAssemblyPath, "/lib:" + Path.GetDirectoryName(inputFileName)};
 
             token.ThrowIfCancellationRequested();
-            var timer = Stopwatch.StartNew();
             bctRunner.Run(args);
-            timer.Stop();
-            totalAnalysisTime += timer.Elapsed;
+
             return new FileInfo(queryAssemblyPath.Replace("dll", "bpl"));
+        }
+
+        public string GetUsageStatistics()
+        {
+            var statisticsBuilder = new StringBuilder();
+
+            //TODO: habilitar cuando tengamos el conteo de maybes
+            statisticsBuilder.AppendFormat(@"Generated queries: {0}" /*({1} unproven)"*/, generatedQueriesCount, unprovenQueriesCount).AppendLine();
+
+            //TODO: habilitar cuando tengamos el conteo de maybes
+            //var precision = 100 - Math.Ceiling((double)unprovenQueriesCount * 100 / generatedQueriesCount);
+            //statisticsBuilder.AppendFormat(@"Analysis precision: {0}%", precision).AppendLine();
+
+            return statisticsBuilder.ToString();
         }
     }
 }

@@ -10,6 +10,7 @@ namespace Contractor.Gui
         string Engine { get; }
 
         void UpdateStatus(string msg);
+        void UpdateOutput(string msg);
         void StateAdded(StateAddedEventArgs e);
         void TransitionAdded(TransitionAddedEventArgs e);
         void ShowTypes(IAssemblyXXX inputAssembly);

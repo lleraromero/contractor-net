@@ -46,13 +46,7 @@ namespace Contractor.Core
 
             analysisTimer.Stop();
 
-            var statistics = new Dictionary<string, object>();
-            statistics["TotalAnalyzerDuration"] = analyzer.TotalAnalysisDuration;
-            statistics["ExecutionsCount"] = analyzer.ExecutionsCount;
-            statistics["TotalGeneratedQueriesCount"] = analyzer.TotalGeneratedQueriesCount;
-            statistics["UnprovenQueriesCount"] = analyzer.UnprovenQueriesCount;
-
-            var analysisResult = new TypeAnalysisResult(epaBuilder.Build(), analysisTimer.Elapsed, statistics);
+            var analysisResult = new TypeAnalysisResult(epaBuilder.Build(), analysisTimer.Elapsed, analyzer.GetUsageStatistics());
 
             return analysisResult;
         }

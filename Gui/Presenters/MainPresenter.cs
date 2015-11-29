@@ -92,12 +92,14 @@ namespace Contractor.Gui.Presenters
 
         protected void ShowAnalysisResult(TypeDefinition typeToAnalyze, TypeAnalysisResult analysisResult)
         {
-            var totalTime = analysisResult.TotalDuration;
-            var statesCount = analysisResult.EPA.States.Count();
-            var transitionsCount = analysisResult.EPA.Transitions.Count();
+            var totalTime = analysisResult.TotalTime;
+            var statesCount = analysisResult.Epa.States.Count();
+            var transitionsCount = analysisResult.Epa.Transitions.Count();
 
             UpdateStatus("Analysis for {0} done in {1:%m} minutes {1:%s} seconds ({2} states, {3} transitions)", typeToAnalyze.Name, totalTime, statesCount,
                 transitionsCount);
+
+            UpdateOutput(analysisResult.ToString());
         }
 
         protected void HandleException(Exception ex)
@@ -116,6 +118,12 @@ namespace Contractor.Gui.Presenters
         protected void UpdateStatus(string format, params object[] args)
         {
             screen.UpdateStatus(string.Format(format, args));
+            UpdateOutput(format, args);
+        }
+
+        protected void UpdateOutput(string format, params object[] args)
+        {
+            screen.UpdateOutput(string.Format(format, args));
         }
 
         private void GenerateAssembly(FileInfo outputFile, Epa epa)

@@ -146,8 +146,6 @@ namespace Analysis.Cci
                 queries.AddRange(queryGenerator.CreateTransitionQueries(state, action, actions as List<State>));
             }
 
-            TotalGeneratedQueriesCount += queries.Count;
-
             foreach (var query in queries)
             {
                 (query.Method.Method as MethodDefinition).ContainingTypeDefinition = typeToAnalyze;
@@ -158,14 +156,8 @@ namespace Analysis.Cci
         }
 
         #region IAnalyzer interface
-
-        public TimeSpan TotalAnalysisDuration { get; set; }
-        public int ExecutionsCount { get; set; }
-        public int TotalGeneratedQueriesCount { get; set; }
-        public int UnprovenQueriesCount { get; set; }
-
         // Token that allows the user to stop the analysis
-        public CancellationToken token;
+        protected CancellationToken token;
 
         public virtual ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
         {
@@ -177,6 +169,11 @@ namespace Analysis.Cci
             throw new NotImplementedException();
         }
 
-        #endregion IAnalyzer interface
+        public string GetUsageStatistics()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion IAnalyzer interface   
     }
 }

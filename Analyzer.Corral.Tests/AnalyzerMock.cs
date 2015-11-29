@@ -17,24 +17,9 @@ namespace Analyzer.Corral.Tests
         protected const string notPrefix = "_Not_";
         protected const string methodNameDelimiter = "~";
 
-        public TimeSpan TotalAnalysisDuration
+        public string GetUsageStatistics()
         {
-            get { return new TimeSpan(); }
-        }
-
-        public int ExecutionsCount
-        {
-            get { return 0; }
-        }
-
-        public int TotalGeneratedQueriesCount
-        {
-            get { return 0; }
-        }
-
-        public int UnprovenQueriesCount
-        {
-            get { return 0; }
+            return string.Empty;
         }
 
         public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)

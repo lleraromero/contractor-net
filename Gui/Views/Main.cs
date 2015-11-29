@@ -55,7 +55,10 @@ namespace Contractor.Gui
         public void UpdateStatus(string msg)
         {
             statusLabel.Text = msg;
+        }
 
+        public void UpdateOutput(string msg)
+        {
             textboxOutput.AppendText(msg);
             textboxOutput.AppendText(Environment.NewLine);
         }
@@ -109,8 +112,10 @@ namespace Contractor.Gui
 
         protected void UpdateProgress(TypeEventArgs e)
         {
-            UpdateStatus(string.Format("Performing analysis for {0}: {1} states, {2} transitions", e.EpaBuilder.Type.Name, e.EpaBuilder.States.Count,
-                e.EpaBuilder.Transitions.Count));
+            var status = string.Format("Performing analysis for {0}: {1} states, {2} transitions", e.EpaBuilder.Type.Name, e.EpaBuilder.States.Count,
+                e.EpaBuilder.Transitions.Count);
+            UpdateStatus(status);
+            UpdateOutput(status);
         }
 
         protected void TypesViewerPresenterOnStartAnalysis(object sender, TypeDefinition typeDefinition)
