@@ -78,7 +78,7 @@ namespace Contractor.Core
             {
                 var source = statesToVisit.Dequeue();
                 visitedStates.Add(source);
-                foreach (var action in source.EnabledActions)
+                Parallel.ForEach(source.EnabledActions, action =>
                 {
                     // Which actions are enabled or disabled if 'action' is called from 'source'?
                     var actionsResult = analyzer.AnalyzeActions(source, action, actions);
@@ -101,7 +101,7 @@ namespace Contractor.Core
                         }
                         epaBuilder.Add(transition);
                     }
-                }
+                });
             }
 
             return epaBuilder.Build();

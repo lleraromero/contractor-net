@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Contractor.Core.Model;
 using Action = Contractor.Core.Model.Action;
 
@@ -51,7 +52,7 @@ namespace Contractor.Core
 
             var feasibleTransitions = new List<Transition>();
             var unproven = 0;
-            foreach (var query in transitionQueries)
+            Parallel.ForEach(transitionQueries, query =>
             {
                 var result = solver.Execute(queryAssembly, query);
                 switch (result)
@@ -68,7 +69,7 @@ namespace Contractor.Core
                     default:
                         throw new NotSupportedException();
                 }
-            }
+            });
 
             return feasibleTransitions;
         }
@@ -77,7 +78,7 @@ namespace Contractor.Core
         {
             var reachableQueries = new List<ActionQuery>();
             var unproven = 0;
-            foreach (var query in actionQueries)
+            Parallel.ForEach(actionQueries, query =>
             {
                 var result = solver.Execute(queryAssembly, query);
                 switch (result)
@@ -94,103 +95,9 @@ namespace Contractor.Core
                     default:
                         throw new NotSupportedException();
                 }
-            }
+            });
 
             return reachableQueries;
         }
-
-        /*
-         private ActionAnalysisResults EvaluateQueries(IEnumerable<Action> actions, IEnumerable<Query> result)
-        {
-            var enabledActions = new HashSet<Action>(actions);
-            var disabledActions = new HashSet<Action>(actions);
-
-            foreach (var evaluatedQuery in result)
-            {
-                if (evaluatedQuery.GetType() == typeof (ReachableQuery))
-                {
-                    EnableOrDisable(enabledActions, disabledActions, evaluatedQuery);
-                }
-                else if (evaluatedQuery.GetType() == typeof (MayBeReachableQuery))
-                {
-                    EnableOrDisable(enabledActions, disabledActions, evaluatedQuery);
-                    unprovenQueriesCount++;
-                }
-            }
-
-            return new ActionAnalysisResults(enabledActions, disabledActions);
-        }
-
-        private void EnableOrDisable(HashSet<Action> enabledActions, HashSet<Action> disabledActions, Query query)
-        {
-            var actionName = query.Action.Method.Name.Value;
-            var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
-            actionName = actionName.Substring(actionNameStart);
-            var isNegative = actionName.StartsWith(notPrefix);
-
-            if (isNegative)
-            {
-                actionName = actionName.Remove(0, notPrefix.Length);
-                if (disabledActions.Any(a => a.Name.Equals(actionName)))
-                {
-                    disabledActions.Remove(disabledActions.First(a => a.Name.Equals(actionName)));
-                }
-            }
-            else
-            {
-                if (enabledActions.Any(a => a.Name.Equals(actionName)))
-                {
-                    enabledActions.Remove(enabledActions.First(a => a.Name.Equals(actionName)));
-                }
-            }
-        }
-
-        private ICollection<Transition> EvaluateQueries(State source, Action action, IEnumerable<State> targets, IEnumerable<Query> result)
-        {
-            var transitions = new HashSet<Transition>();
-
-            foreach (var evaluatedQuery in result)
-            {
-                if (evaluatedQuery.GetType() == typeof (ReachableQuery))
-                {
-                    var actionName = evaluatedQuery.Action.Method.Name.Value;
-                    var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
-                    actionName = actionName.Substring(actionNameStart);
-
-                    var targetNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
-                    var targetName = actionName.Substring(targetNameStart);
-                    var target = targets.First(s => s.Name == targetName);
-                    var isUnproven = false;
-
-                    if (target != null)
-                    {
-                        var transition = new Transition(action, source, target, isUnproven);
-                        transitions.Add(transition);
-                    }
-                }
-                else if (evaluatedQuery.GetType() == typeof (MayBeReachableQuery))
-                {
-                    var actionName = evaluatedQuery.Action.Method.Name.Value;
-                    var actionNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
-                    actionName = actionName.Substring(actionNameStart);
-
-                    var targetNameStart = actionName.LastIndexOf(methodNameDelimiter) + 1;
-                    var targetName = actionName.Substring(targetNameStart);
-                    var target = targets.First(s => s.Name == targetName);
-                    var isUnproven = true;
-
-                    if (target != null)
-                    {
-                        var transition = new Transition(action, source, target, isUnproven);
-                        transitions.Add(transition);
-                    }
-
-                    unprovenQueriesCount++;
-                }
-            }
-
-            return new List<Transition>(transitions);
-        }
-         */
     }
 }
