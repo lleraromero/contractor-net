@@ -9,14 +9,7 @@ using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
-    public interface IQueryEvaluator
-    {
-        IReadOnlyCollection<Action> GetEnabledActions(IReadOnlyCollection<ActionQuery> actionQueries);
-        IReadOnlyCollection<Action> GetDisabledActions(IReadOnlyCollection<ActionQuery> actionQueries);
-        IReadOnlyCollection<Transition> GetFeasibleTransitions(IReadOnlyCollection<TransitionQuery> transitionQueries);
-    }
-
-    public class QueryEvaluator : IQueryEvaluator
+    public class QueryEvaluator
     {
         protected ISolver solver;
         protected FileInfo queryAssembly;
