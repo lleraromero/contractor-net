@@ -266,7 +266,9 @@ namespace Analysis.Cci
 
             BlockStatement block = null;
 
-            if (Configuration.InlineMethodsBody)
+            // TODO: agregar polimorfismo
+            //if (Configuration.InlineMethodsBody)
+            if (true)
             {
                 block = InlineMethodBody(action);
             }

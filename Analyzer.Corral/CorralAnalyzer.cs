@@ -20,14 +20,16 @@ namespace Analyzer.Corral
         protected string inputFileName;
         protected TypeDefinition typeToAnalyze;
         protected CancellationToken token;
+        protected DirectoryInfo workingDir;
 
         protected int generatedQueriesCount;
         protected int unprovenQueriesCount;
 
-        public CorralAnalyzer(string defaultArgs, CciQueryGenerator queryGenerator, CciAssembly inputAssembly, string inputFileName, TypeDefinition typeToAnalyze,
+        public CorralAnalyzer(string defaultArgs, DirectoryInfo workingDir,  CciQueryGenerator queryGenerator, CciAssembly inputAssembly, string inputFileName, TypeDefinition typeToAnalyze,
             CancellationToken token)
         {
             this.defaultArgs = defaultArgs;
+            this.workingDir = workingDir;
             this.queryGenerator = queryGenerator;
             this.inputAssembly = inputAssembly;
             this.typeToAnalyze = typeToAnalyze;
@@ -41,7 +43,7 @@ namespace Analyzer.Corral
 
         public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
         {
-            ISolver corralRunner = new CorralRunner(defaultArgs);
+            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
 
             var enabledActions = GetEnabledActions(source, action, actions, corralRunner);
             var disabledActions = GetDisabledActions(source, action, actions, corralRunner);
@@ -77,7 +79,7 @@ namespace Analyzer.Corral
 
         public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
-            ISolver corralRunner = new CorralRunner(defaultArgs);
+            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
             var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets);
             var queryAssembly = CreateBoogieQueryAssembly(transitionQueries);
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
@@ -92,7 +94,7 @@ namespace Analyzer.Corral
 
             var queryAssembly = new CciQueryAssembly(inputAssembly, typeToAnalyze, queries);
 
-            var queryFilePath = Path.Combine(Configuration.TempPath, Guid.NewGuid().ToString(), Path.GetFileName(inputFileName));
+            var queryFilePath = Path.Combine(workingDir.FullName, Guid.NewGuid().ToString(), Path.GetFileName(inputFileName));
             Directory.CreateDirectory(Path.GetDirectoryName(queryFilePath));
             queryAssembly.Save(queryFilePath);
 

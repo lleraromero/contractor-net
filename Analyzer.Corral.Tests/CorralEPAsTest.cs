@@ -18,10 +18,6 @@ namespace Analyzer.Corral.Tests
         [ClassInitialize]
         public static void GenerateEPAs(TestContext tc)
         {
-            Configuration.Initialize();
-            Configuration.TempPath = Directory.GetParent(tc.TestDir).ToString();
-            Configuration.InlineMethodsBody = true;
-
             var ExamplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, InputFilePath));
 
             inputAssembly = new CciDecompiler().Decompile(ExamplesPath, null);

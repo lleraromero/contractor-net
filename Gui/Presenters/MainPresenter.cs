@@ -22,8 +22,6 @@ namespace Contractor.Gui.Presenters
 
         public MainPresenter(SynchronizationContext syncContext, IMainScreen screen, IMainModel model)
         {
-            Configuration.Initialize();
-
             this.syncContext = syncContext;
 
             this.model = model;

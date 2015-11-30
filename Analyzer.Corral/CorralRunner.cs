@@ -10,15 +10,17 @@ namespace Analyzer.Corral
     internal class CorralRunner : ISolver
     {
         protected readonly string corralArguments;
+        protected readonly DirectoryInfo workingDir;
 
-        public CorralRunner(string defaultArgs)
+        public CorralRunner(string defaultArgs, DirectoryInfo workingDir)
         {
             corralArguments = defaultArgs;
+            this.workingDir = workingDir;
         }
 
         public QueryResult Execute(FileInfo queryAssembly, Query query)
         {
-            var tmpDir = Path.Combine(Configuration.TempPath, Guid.NewGuid().ToString());
+            var tmpDir = Path.Combine(workingDir.FullName, Guid.NewGuid().ToString());
             Directory.CreateDirectory(tmpDir);
 
             var args = string.Format("{0} /main:{1} {2}", queryAssembly.FullName, BctTranslator.CreateUniqueMethodName(query), corralArguments);

@@ -9,8 +9,6 @@ using Analysis.Cci;
 using Analyzer.Corral;
 using CommandLine;
 using Contractor.Core;
-using Contractor.Core.Model;
-using Configuration = Contractor.Core.Configuration;
 
 namespace Contractor.Console
 {
@@ -18,11 +16,10 @@ namespace Contractor.Console
     {
         public static int Main(string[] args)
         {
-            Configuration.Initialize();
-
             var options = new Options();
 #if DEBUG
-            var graphPath = Path.Combine(Configuration.TempPath, "Graph");
+            var tempPath = ConfigurationManager.AppSettings["WorkingDir"];
+            var graphPath = Path.Combine(tempPath, "Graph");
             if (!Directory.Exists(graphPath))
             {
                 Directory.CreateDirectory(graphPath);
@@ -34,7 +31,7 @@ namespace Contractor.Console
             {
                 "-i", examplesPath,
                 "-g", graphPath,
-                "--tmp", Configuration.TempPath,
+                "--tmp", tempPath,
                 "-t", "Examples.Linear"
             };
 #endif
@@ -92,7 +89,9 @@ namespace Contractor.Console
                     throw new NotImplementedException();
                 case "Corral":
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
-                    analyzer = new CorralAnalyzer(corralDefaultArgs, decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly,
+                    var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
+                    Contract.Assert(workingDir.Exists);
+                    analyzer = new CorralAnalyzer(corralDefaultArgs, workingDir, decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly,
                         options.InputAssembly, typeToAnalyze, cancellationSource.Token);
                     break;
                 default:

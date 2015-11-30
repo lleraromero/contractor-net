@@ -28,12 +28,14 @@ namespace Analysis.Cci
         public ContractProvider queryContractProvider;
 
         public CciQueryGenerator queryGenerator;
-
+        protected string tempPath;
         public GenericTypeInstance specializedInputType;
 
-        public Analyzer(IContractAwareHost host, IModule module, NamespaceTypeDefinition type, CancellationToken token)
+        public Analyzer(IContractAwareHost host, IModule module, NamespaceTypeDefinition type, CancellationToken token, string tempPath)
         {
             Contract.Requires(host != null && module != null && type != null && token != null);
+
+            this.tempPath = tempPath;
 
             this.host = host;
             inputAssembly = new AssemblyInfo(host);
@@ -114,7 +116,7 @@ namespace Analysis.Cci
         {
             Contract.Requires(inputAssembly != null);
 
-            return Path.Combine(Configuration.TempPath, queryAssembly.Module.ModuleName.Value);
+            return Path.Combine(tempPath, queryAssembly.Module.ModuleName.Value);
         }
 
         public PdbReader GetPDBReader(IModule module, IContractAwareHost host)

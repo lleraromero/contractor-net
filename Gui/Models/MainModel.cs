@@ -111,7 +111,9 @@ namespace Contractor.Gui.Models
                     throw new NotImplementedException();
                 case "Corral":
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
-                    analyzer = new CorralAnalyzer(corralDefaultArgs, decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly, inputFile.FullName,
+                    var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
+                    Contract.Assert(workingDir.Exists);
+                    analyzer = new CorralAnalyzer(corralDefaultArgs, workingDir, decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly, inputFile.FullName,
                         typeToAnalyze, cancellationToken);
                     break;
                 default:
