@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Configuration;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Analysis.Cci;
@@ -93,6 +95,19 @@ namespace Contractor.Gui.Models
             switch (engine)
             {
                 case "CodeContracts":
+                    var codeContracts = Environment.GetEnvironmentVariable("CodeContractsInstallDir");
+                    if (string.IsNullOrEmpty(codeContracts))
+                    {
+                        var msg = new StringBuilder();
+                        msg.AppendLine("The environment variable %CodeContractsInstallDir% does not exist.");
+                        msg.AppendLine("Please make sure that Code Contracts is installed correctly.");
+                        msg.AppendLine("This might be because the system was not restarted after Code Contracts installation.");
+
+                        throw new DirectoryNotFoundException(msg.ToString());
+                    }
+                    var cccheckArgs = ConfigurationManager.AppSettings["CccheckArgs"];
+                    var cccheck = new FileInfo(ConfigurationManager.AppSettings["CccheckFullName"]);
+                    Contract.Assert(cccheck.Exists);
                     throw new NotImplementedException();
                 case "Corral":
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
