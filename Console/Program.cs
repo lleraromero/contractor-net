@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics.Contracts;
 using System.IO;
@@ -9,6 +8,7 @@ using Analysis.Cci;
 using Analyzer.Corral;
 using CommandLine;
 using Contractor.Core;
+using Contractor.Core.Model;
 
 namespace Contractor.Console
 {
@@ -35,26 +35,25 @@ namespace Contractor.Console
             };
 #endif
             var options = new Options();
-            if (!Parser.Default.ParseArguments(args, options))
+            if (!Parser.Default.ParseArgumentsStrict(args, options))
             {
-                // TODO: imprimir errores
-                System.Console.ReadLine();
+                System.Console.WriteLine("Args parsing error!");
+#if DEBUG
+                System.Console.ReadKey();
+#endif
                 return -1;
             }
 
             try
             {
-                // epas is a mapping between Typename and the result of the analysis.
-                var epas = Execute(options);
+                var analysisResult = GenerateEpa(options);
+                var epa = analysisResult.Epa;
 
-                // Save each EPA as an image in the Graph folder
-                foreach (var result in epas)
+                SaveEpasAsImages(epa, new DirectoryInfo(options.GraphDirectory));
+
+                if (options.GenerateStrengthenedAssembly)
                 {
-                    var typeName = result.Key.Replace('.', '_');
-                    using (var stream = File.Create(string.Format("{0}\\{1}.png", options.GraphDirectory, typeName)))
-                    {
-                        new EpaBinarySerializer().Serialize(stream, result.Value.Epa);
-                    }
+                    GenerateStrengthenedAssembly(epa, new FileInfo(options.OutputAssembly));
                 }
             }
             catch (Exception ex)
@@ -70,10 +69,10 @@ namespace Contractor.Console
             return 0;
         }
 
-        private static Dictionary<string, TypeAnalysisResult> Execute(Options options)
+        protected static TypeAnalysisResult GenerateEpa(Options options)
         {
-            Contract.Assert(!string.IsNullOrEmpty(options.TypeToAnalyze));
-            Contract.Assert(!string.IsNullOrEmpty(options.InputAssembly) && File.Exists(options.InputAssembly));
+            Contract.Requires(!string.IsNullOrEmpty(options.TypeToAnalyze));
+            Contract.Requires(!string.IsNullOrEmpty(options.InputAssembly) && File.Exists(options.InputAssembly));
 
             System.Console.WriteLine("Starting analysis for type {0}", options.TypeToAnalyze);
 
@@ -103,17 +102,28 @@ namespace Contractor.Console
             var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
             var epaBuilder = new EpaBuilder(typeDefinition);
             var analysisResult = generator.GenerateEpa(typeDefinition, epaBuilder).Result;
+            return analysisResult;
+        }
 
-            System.Console.WriteLine(analysisResult.ToString());
-            var epas = new Dictionary<string, TypeAnalysisResult> {{options.TypeToAnalyze, analysisResult}};
+        protected static void SaveEpasAsImages(Epa epa, DirectoryInfo outputDir)
+        {
+            Contract.Requires(epa != null);
+            Contract.Requires(outputDir != null);
 
-            if (options.GenerateStrengthenedAssembly)
+            var typeName = epa.Type.ToString().Replace('.', '_');
+            using (var stream = File.Create(string.Format("{0}\\{1}.png", outputDir.FullName, typeName)))
             {
-                System.Console.WriteLine("Generating strengthened output assembly");
-                //new Instrumenter().GenerateOutputAssembly(options.output, analysisResult.EPA);
+                new EpaBinarySerializer().Serialize(stream, epa);
             }
+        }
 
-            return epas;
+        protected static void GenerateStrengthenedAssembly(Epa epa, FileInfo outputFile)
+        {
+            Contract.Requires(epa != null);
+            Contract.Requires(outputFile != null);
+
+            System.Console.WriteLine("Generating strengthened output assembly");
+            //new Instrumenter().GenerateOutputAssembly(options.output, analysisResult.EPA);
         }
     }
 }
