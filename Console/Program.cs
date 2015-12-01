@@ -16,7 +16,6 @@ namespace Contractor.Console
     {
         public static int Main(string[] args)
         {
-            var options = new Options();
 #if DEBUG
             var tempPath = ConfigurationManager.AppSettings["WorkingDir"];
             var graphPath = Path.Combine(tempPath, "Graph");
@@ -35,6 +34,7 @@ namespace Contractor.Console
                 "-t", "Examples.Linear"
             };
 #endif
+            var options = new Options();
             if (!Parser.Default.ParseArguments(args, options))
             {
                 // TODO: imprimir errores

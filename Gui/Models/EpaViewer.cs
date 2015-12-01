@@ -48,16 +48,7 @@ namespace Contractor.Gui
             node.Attr.LabelMargin = 7;
             node.Label.FontName = "Cambria";
             node.Label.FontSize = 6;
-
-            // TODO: Permitir elegir la descripcion
-            //if (_Options.StateDescription)
-            //{
             node.LabelText = state.ToString();
-            //}
-            //else
-            //{
-            //    node.LabelText = string.Format("S{0}", graph.NodeCount);
-            //}
             return node;
         }
 
@@ -71,25 +62,20 @@ namespace Contractor.Gui
             var n = AddState(transition.SourceState);
             Contract.Assert(n != null);
 
-            // TODO: Permitir elegir
-            if ( /*_Options.UnprovenTransitions &&*/ transition.IsUnproven)
+            if (transition.IsUnproven)
             {
                 label = string.Format("{0}?", label);
             }
 
-            // TODO: Permitir elegir
-            if ( /*_Options.CollapseTransitions*/ true)
-            {
-                var edges = n.OutEdges.Union(n.SelfEdges);
+            var edges = n.OutEdges.Union(n.SelfEdges);
 
-                foreach (var ed in edges)
+            foreach (var ed in edges)
+            {
+                if (ed.Target == transition.TargetState.Name && ed.Attr.Styles.Contains(lineStyle))
                 {
-                    if (ed.Target == transition.TargetState.Name && ed.Attr.Styles.Contains(lineStyle))
-                    {
-                        ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
-                        createEdge = false;
-                        break;
-                    }
+                    ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
+                    createEdge = false;
+                    break;
                 }
             }
 

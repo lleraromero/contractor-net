@@ -92,16 +92,7 @@ namespace Contractor.Core
             n.Attr.LabelMargin = 7;
             n.Label.FontName = "Cambria";
             n.Label.FontSize = 6;
-
-            // TODO: Permitir elegir la descripcion
-            //if (_Options.StateDescription)
-            //{
             n.LabelText = s.ToString();
-            //}
-            //else
-            //{
-            //    n.LabelText = string.Format("S{0}", graph.NodeCount);
-            //}
         }
 
         private bool OnDrawNode(Node node, object graphics)
@@ -162,27 +153,23 @@ namespace Contractor.Core
             var createEdge = true;
             var lineStyle = t.IsUnproven ? Style.Dashed : Style.Solid;
 
-
             var n = graph.FindNode(t.SourceState.Name);
             Contract.Assert(n != null);
 
-            // TODO: Permitir elegir
-            if ( /*_Options.UnprovenTransitions &&*/ t.IsUnproven)
-                label = string.Format("{0}?", label);
-
-            // TODO: Permitir elegir
-            if ( /*_Options.CollapseTransitions*/ true)
+            if (t.IsUnproven)
             {
-                var edges = n.OutEdges.Union(n.SelfEdges);
+                label = string.Format("{0}?", label);
+            }
 
-                foreach (var ed in edges)
+            var edges = n.OutEdges.Union(n.SelfEdges);
+
+            foreach (var ed in edges)
+            {
+                if (ed.Target == t.TargetState.Name && ed.Attr.Styles.Contains(lineStyle))
                 {
-                    if (ed.Target == t.TargetState.Name && ed.Attr.Styles.Contains(lineStyle))
-                    {
-                        ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
-                        createEdge = false;
-                        break;
-                    }
+                    ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
+                    createEdge = false;
+                    break;
                 }
             }
 

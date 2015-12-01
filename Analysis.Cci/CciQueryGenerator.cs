@@ -254,8 +254,6 @@ namespace Analysis.Cci
             var method = new MethodDefinition()
             {
                 CallingConvention = Microsoft.Cci.CallingConvention.HasThis,
-                //TODO: agregar esto en el query assembly
-                //ContainingTypeDefinition = this.typeToAnalyze,
                 InternFactory = host.InternFactory,
                 IsStatic = false,
                 Name = host.NameTable.GetNameFor(name),
