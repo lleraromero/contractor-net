@@ -46,8 +46,8 @@ namespace Contractor.Core
             Contract.Requires(transitionQueries != null);
 
             var feasibleTransitions = new List<Transition>();
-            //TODO: race condition
-            Parallel.ForEach(transitionQueries, query =>
+
+            foreach(var query in transitionQueries)
             {
                 var result = solver.Execute(queryAssembly, query);
                 switch (result)
@@ -64,7 +64,7 @@ namespace Contractor.Core
                     default:
                         throw new NotSupportedException();
                 }
-            });
+            }
 
             return feasibleTransitions;
         }
@@ -72,8 +72,8 @@ namespace Contractor.Core
         protected IReadOnlyCollection<ActionQuery> ExecuteQueriesAndGetPosiblyReachableOnes(IReadOnlyCollection<ActionQuery> actionQueries)
         {
             var reachableQueries = new List<ActionQuery>();
-            //TODO: race condition
-            Parallel.ForEach(actionQueries, query =>
+
+            foreach(var query in actionQueries)
             {
                 var result = solver.Execute(queryAssembly, query);
                 switch (result)
@@ -90,7 +90,7 @@ namespace Contractor.Core
                     default:
                         throw new NotSupportedException();
                 }
-            });
+            }
 
             return reachableQueries;
         }
