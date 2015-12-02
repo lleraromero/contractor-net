@@ -104,9 +104,11 @@ namespace Contractor.Gui
 
             g.FillEllipse(Brushes.AliceBlue, (float) x, (float) y, (float) w, (float) h);
 
-            var penWidth = /*(_SelectedGraphNode != null && _SelectedGraphNode.Node == node ? 2f : 1f);*/ 1f;
+            var penWidth = 1f;
             using (var pen = new Pen(Color.Black, penWidth))
+            {
                 g.DrawEllipse(pen, (float) x, (float) y, (float) w, (float) h);
+            }
 
             // TODO: arreglar que el inicial se vea distinto
             //if ((node.UserData as State).Equals(this.epa.Initial))

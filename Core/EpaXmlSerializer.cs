@@ -107,99 +107,92 @@ namespace Contractor.Core
             Contract.Requires(stream != null && stream.CanRead);
             Contract.Ensures(Contract.Result<Epa>() != null);
 
-            //TODO: arreglar
-            throw new NotImplementedException();
-            //EpaBuilder epaBuilder;
-            //using (var reader = new XmlTextReader(stream))
-            //{
-            //    reader.Read(); // Document
-            //    reader.Read();
-            //    reader.Read(); // Epa
-
-            //    string type = reader.GetAttribute("name");
-            //    string initialState = reader.GetAttribute("initial_state");
-
-            //    DeserializeActions(reader);
-            //    epaBuilder = DeserializeStates(reader, type, initialState);
-            //}
-
-            //return epaBuilder.Build();
-        }
-
-        private void DeserializeActions(XmlTextReader reader)
-        {
-            while (reader.Name != "state")
+            EpaBuilder epaBuilder;
+            using (var reader = new XmlTextReader(stream))
             {
+                reader.Read(); // Document
                 reader.Read();
-            }
-        }
+                reader.Read(); // Epa
 
-        private EpaBuilder DeserializeStates(XmlTextReader reader, TypeDefinition type, string initialState)
-        {
-            Contract.Requires(reader != null);
-            Contract.Requires(type != null);
-            Contract.Requires(!string.IsNullOrEmpty(initialState));
+                var typename = reader.GetAttribute("name");
+                var typeDefinition = new StringTypeDefinition(typename, null, null);
+                
+                var actions = DeserializeActions(reader);
+                var states = DeserializeStates(reader);
 
-            var transitions = new HashSet<Tuple<string, Action, string, bool>>();
-            var epaActions = new Dictionary<string, HashSet<Action>>();
+                var translator = new Dictionary<string, State>();
 
+                epaBuilder = new EpaBuilder(typeDefinition);
 
-            string name = null;
-            for (var read = true; read; reader.Read())
-            {
-                switch (reader.NodeType)
+                foreach (var state in states)
                 {
-                    case XmlNodeType.Element:
-                        switch (reader.Name)
-                        {
-                            case "state":
-                                name = reader.GetAttribute("name");
-                                epaActions[name] = new HashSet<Action>();
-                                break;
-                            case "enabled_label":
-                                epaActions[name].Add(new StringAction(reader.GetAttribute("name")));
-                                break;
-                            case "transition":
-                                var sourceState = name;
-                                var targetState = reader.GetAttribute("destination");
-                                var isUnproven = bool.Parse(reader.GetAttribute("uncertain"));
-                                var action = new StringAction(reader.GetAttribute("label"));
-                                var t = new Tuple<string, Action, string, bool>(sourceState, action, targetState, isUnproven);
-                                transitions.Add(t);
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
-                    case XmlNodeType.EndElement:
-                        if (reader.Name == "abstraction")
-                        {
-                            read = false;
-                        }
-                        break;
-                    default:
-                        break;
+                    var enabledActions = new HashSet<Action>();
+                    foreach (var t in state.Value)
+                    {
+                        enabledActions.Add(t.Item2);
+                    }
+                    var disabledActions = new HashSet<Action>(actions);
+                    disabledActions.ExceptWith(enabledActions);
+
+                    var s = new State(enabledActions, disabledActions);
+                    epaBuilder.Add(s);
+
+                    var stateName = state.Key;
+                    translator[stateName] = s;
+                }
+
+                foreach (var state in states)
+                {
+                    foreach (var transition in state.Value)
+                    {
+                        epaBuilder.Add(new Transition(transition.Item2, translator[transition.Item1], translator[transition.Item3], transition.Item4));
+                    }
                 }
             }
 
-            var translator = new Dictionary<string, State>();
+            return epaBuilder.Build();
+        }
 
-            var epaBuilder = new EpaBuilder(type);
-
-            foreach (var kvp in epaActions)
+        protected IReadOnlyCollection<Action> DeserializeActions(XmlTextReader reader)
+        {
+            var actions = new List<Action>();
+            while (reader.Name != "state")
             {
-                //TODO: arreglar las que estan deshabilitadas
-                var s = new State(kvp.Value, new HashSet<Action>());
-                translator[kvp.Key] = s;
+                actions.Add(new StringAction(reader.Name));
+                reader.Read();
             }
+            return actions;
+        }
 
-            foreach (var t in transitions)
+        protected Dictionary<string, List<Tuple<string, Action, string, bool>>> DeserializeStates(XmlTextReader reader)
+        {   
+            var states = new Dictionary<string, List<Tuple<string, Action, string, bool>>>();
+            string name = null;
+            do
             {
-                var transition = new Transition(t.Item2, translator[t.Item1], translator[t.Item3], t.Item4);
-                epaBuilder.Add(transition);
-            }
+                var nodeType = reader.NodeType;
+                if (nodeType.Equals(XmlNodeType.Element))
+                {
+                    switch (reader.Name)
+                    {
+                        case "state":
+                            name = reader.GetAttribute("name");
+                            states[name] = new List<Tuple<string, Action, string, bool>>();
+                            break;
+                        case "enabled_label":
+                            break;
+                        case "transition":
+                            var sourceState = name;
+                            var targetState = reader.GetAttribute("destination");
+                            var isUnproven = bool.Parse(reader.GetAttribute("uncertain"));
+                            var action = new StringAction(reader.GetAttribute("label"));
+                            states[name].Add(new Tuple<string, Action, string, bool>(sourceState, action, targetState, isUnproven));
+                            break;
+                    }
+                }
+            } while (reader.Read());
 
-            return epaBuilder;
+            return states;
         }
     }
 }
