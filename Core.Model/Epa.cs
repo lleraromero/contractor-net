@@ -93,7 +93,6 @@ namespace Contractor.Core.Model
 
         public override int GetHashCode()
         {
-            //TODO: mejorar para que valga la propiedad equals => mismo hash
             return type.GetHashCode();
         }
 

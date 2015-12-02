@@ -13,6 +13,7 @@ namespace Contractor.Core
     {
         protected ISolver solver;
         protected FileInfo queryAssembly;
+        protected int unprovenQueries;
 
         public QueryEvaluator(ISolver solver, FileInfo queryAssembly)
         {
@@ -21,6 +22,7 @@ namespace Contractor.Core
 
             this.solver = solver;
             this.queryAssembly = queryAssembly;
+            unprovenQueries = 0;
         }
 
         public IReadOnlyCollection<Action> GetEnabledActions(IReadOnlyCollection<ActionQuery> actionQueries)
@@ -44,7 +46,7 @@ namespace Contractor.Core
             Contract.Requires(transitionQueries != null);
 
             var feasibleTransitions = new List<Transition>();
-            var unproven = 0;
+            //TODO: race condition
             Parallel.ForEach(transitionQueries, query =>
             {
                 var result = solver.Execute(queryAssembly, query);
@@ -55,7 +57,7 @@ namespace Contractor.Core
                         break;
                     case QueryResult.MaybeReachable:
                         feasibleTransitions.Add(new Transition(query.Action, query.SourceState, query.TargetState, true));
-                        unproven++;
+                        unprovenQueries++;
                         break;
                     case QueryResult.Unreachable:
                         break;
@@ -70,7 +72,7 @@ namespace Contractor.Core
         protected IReadOnlyCollection<ActionQuery> ExecuteQueriesAndGetPosiblyReachableOnes(IReadOnlyCollection<ActionQuery> actionQueries)
         {
             var reachableQueries = new List<ActionQuery>();
-            var unproven = 0;
+            //TODO: race condition
             Parallel.ForEach(actionQueries, query =>
             {
                 var result = solver.Execute(queryAssembly, query);
@@ -81,7 +83,7 @@ namespace Contractor.Core
                         break;
                     case QueryResult.MaybeReachable:
                         reachableQueries.Add(query);
-                        unproven++;
+                        unprovenQueries++;
                         break;
                     case QueryResult.Unreachable:
                         break;
@@ -91,6 +93,11 @@ namespace Contractor.Core
             });
 
             return reachableQueries;
+        }
+
+        public int UnprovenQueries
+        {
+            get { return unprovenQueries; }
         }
     }
 }

@@ -37,7 +37,6 @@ namespace Analyzer.Corral
             this.token = token;
 
             generatedQueriesCount = 0;
-            //TODO: necesito saber cuantas maybe hubieron
             unprovenQueriesCount = 0;
         }
 
@@ -64,6 +63,7 @@ namespace Analyzer.Corral
             var queryAssembly = CreateBoogieQueryAssembly(positiveQueries);
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
             var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(positiveQueries));
+            unprovenQueriesCount += evaluator.UnprovenQueries;
             return disabledActions;
         }
 
@@ -74,6 +74,7 @@ namespace Analyzer.Corral
             var queryAssembly = CreateBoogieQueryAssembly(negativeQueries);
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
             var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(negativeQueries));
+            unprovenQueriesCount += evaluator.UnprovenQueries;
             return enabledActions;
         }
 
@@ -84,6 +85,7 @@ namespace Analyzer.Corral
             var queryAssembly = CreateBoogieQueryAssembly(transitionQueries);
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
             var feasibleTransitions = evaluator.GetFeasibleTransitions(transitionQueries);
+            unprovenQueriesCount += evaluator.UnprovenQueries;
 
             return feasibleTransitions;
         }
@@ -118,12 +120,10 @@ namespace Analyzer.Corral
         {
             var statisticsBuilder = new StringBuilder();
 
-            //TODO: habilitar cuando tengamos el conteo de maybes
-            statisticsBuilder.AppendFormat(@"Generated queries: {0}" /*({1} unproven)"*/, generatedQueriesCount, unprovenQueriesCount).AppendLine();
+            statisticsBuilder.AppendFormat(@"Generated queries: {0} ({1} unproven)", generatedQueriesCount, unprovenQueriesCount).AppendLine();
 
-            //TODO: habilitar cuando tengamos el conteo de maybes
-            //var precision = 100 - Math.Ceiling((double)unprovenQueriesCount * 100 / generatedQueriesCount);
-            //statisticsBuilder.AppendFormat(@"Analysis precision: {0}%", precision).AppendLine();
+            var precision = 100 - Math.Ceiling((double)unprovenQueriesCount * 100 / generatedQueriesCount);
+            statisticsBuilder.AppendFormat(@"Analysis precision: {0}%", precision).AppendLine();
 
             return statisticsBuilder.ToString();
         }
