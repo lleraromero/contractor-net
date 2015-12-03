@@ -97,9 +97,7 @@
             // exportGraphDialog
             // 
             this.exportGraphDialog.DefaultExt = "png";
-            this.exportGraphDialog.Filter = "PNG Files (*.png)|*.png|JPG Files (*.jpg)|*.jpg|BMP Files (*.bmp)|*.bmp|GIF Files" +
-    " (*.gif)|*.gif|EMF Files (*.emf)|*.emf|WMF Files (*.wmf)|*.wmf|XML Files (*.xml)" +
-    "|*.xml|Graphviz Files (*.gv)|*.gv";
+            this.exportGraphDialog.Filter = "PNG Files (*.png)|*.png|XML Files (*.xml)|*.xml";
             this.exportGraphDialog.Title = "Export Graph...";
             // 
             // generateOutputDialog

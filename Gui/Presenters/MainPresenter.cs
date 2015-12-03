@@ -33,8 +33,26 @@ namespace Contractor.Gui.Presenters
             this.screen.LoadContracts += ScreenOnLoadContracts;
             this.screen.StartAnalysis += async (sender, analysisEventArgs) => await StartAnalisis(analysisEventArgs);
             this.screen.StopAnalysis += (sender, args) => this.model.Stop();
-            this.screen.ExportGraph += (sender, outputFileInfo) => ExportGraph(outputFileInfo, this.model.GeneratedEpa, new EpaBinarySerializer());
+            this.screen.ExportGraph += ScreenOnExportGraph;
             this.screen.GenerateAssembly += (sender, outputFileInfo) => GenerateAssembly(outputFileInfo, this.model.GeneratedEpa);
+        }
+
+        protected void ScreenOnExportGraph(object sender, FileInfo outputFileInfo)
+        {
+            ISerializer serializer;
+            switch (outputFileInfo.Extension)
+            {
+                case ".xml":
+                    serializer = new EpaXmlSerializer();
+                    break;
+                case ".png":
+                    serializer = new EpaBinarySerializer();
+                    break;
+                default:
+                    throw new NotSupportedException("Unexpected file type");
+            }
+
+            ExportGraph(outputFileInfo, this.model.GeneratedEpa, serializer);
         }
 
         protected void OnStateAdded(object sender, StateAddedEventArgs e)
@@ -142,14 +160,14 @@ namespace Contractor.Gui.Presenters
 
         protected void ExportGraph(FileInfo outputFile, Epa epa, ISerializer serializer)
         {
-            Contract.Requires(outputFile != null && !outputFile.Exists);
+            Contract.Requires(outputFile != null);
             Contract.Requires(epa != null);
             Contract.Requires(serializer != null);
 
             UpdateStatus("Exporting graph to {0}...", outputFile);
             try
             {
-                using (var fileStream = outputFile.OpenWrite())
+                using (var fileStream = File.Create(outputFile.FullName))
                 {
                     serializer.Serialize(fileStream, epa);
                 }
@@ -158,6 +176,7 @@ namespace Contractor.Gui.Presenters
             {
                 HandleException(ex);
             }
+            UpdateStatus("Done!", outputFile);
         }
     }
 }
