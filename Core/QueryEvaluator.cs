@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Contractor.Core.Model;
 using Action = Contractor.Core.Model.Action;
 
@@ -25,20 +24,49 @@ namespace Contractor.Core
             unprovenQueries = 0;
         }
 
+        public int UnprovenQueries
+        {
+            get { return unprovenQueries; }
+        }
+
         public IReadOnlyCollection<Action> GetEnabledActions(IReadOnlyCollection<ActionQuery> actionQueries)
         {
-            Contract.Requires(actionQueries.All(query => query.Type.Equals(QueryType.Negative)), "queries must be negative");
+            Contract.Requires(actionQueries.All(query => query.Type.Equals(QueryType.Positive)), "queries must be positive");
 
-            var posiblyReachableQueries = ExecuteQueriesAndGetPosiblyReachableOnes(actionQueries);
-            return posiblyReachableQueries.Select(query => query.ActionUnderTest).ToList();
+            var unreachableQueries = UnreachableQueries(actionQueries);
+            return unreachableQueries.Select(query => query.ActionUnderTest).ToList();
+        }
+
+        protected IReadOnlyCollection<ActionQuery> UnreachableQueries(IReadOnlyCollection<ActionQuery> actionQueries)
+        {
+            var unreachableQueries = new List<ActionQuery>();
+
+            foreach (var query in actionQueries)
+            {
+                var result = solver.Execute(queryAssembly, query);
+                switch (result)
+                {
+                    case QueryResult.Reachable:
+                        break;
+                    case QueryResult.MaybeReachable:
+                        unprovenQueries++;
+                        break;
+                    case QueryResult.Unreachable:
+                        unreachableQueries.Add(query);
+                        break;
+                    default:
+                        throw new NotSupportedException();
+                }
+            }
+            return unreachableQueries;
         }
 
         public IReadOnlyCollection<Action> GetDisabledActions(IReadOnlyCollection<ActionQuery> actionQueries)
         {
-            Contract.Requires(actionQueries.All(query => query.Type.Equals(QueryType.Positive)), "queries must be positive");
+            Contract.Requires(actionQueries.All(query => query.Type.Equals(QueryType.Negative)), "queries must be negative");
 
-            var posiblyReachableQueries = ExecuteQueriesAndGetPosiblyReachableOnes(actionQueries);
-            return posiblyReachableQueries.Select(query => query.ActionUnderTest).ToList();
+            var unreachableQueries = UnreachableQueries(actionQueries);
+            return unreachableQueries.Select(query => query.ActionUnderTest).ToList();
         }
 
         public IReadOnlyCollection<Transition> GetFeasibleTransitions(IReadOnlyCollection<TransitionQuery> transitionQueries)
@@ -47,7 +75,7 @@ namespace Contractor.Core
 
             var feasibleTransitions = new List<Transition>();
 
-            foreach(var query in transitionQueries)
+            foreach (var query in transitionQueries)
             {
                 var result = solver.Execute(queryAssembly, query);
                 switch (result)
@@ -67,37 +95,6 @@ namespace Contractor.Core
             }
 
             return feasibleTransitions;
-        }
-
-        protected IReadOnlyCollection<ActionQuery> ExecuteQueriesAndGetPosiblyReachableOnes(IReadOnlyCollection<ActionQuery> actionQueries)
-        {
-            var reachableQueries = new List<ActionQuery>();
-
-            foreach(var query in actionQueries)
-            {
-                var result = solver.Execute(queryAssembly, query);
-                switch (result)
-                {
-                    case QueryResult.Reachable:
-                        reachableQueries.Add(query);
-                        break;
-                    case QueryResult.MaybeReachable:
-                        reachableQueries.Add(query);
-                        unprovenQueries++;
-                        break;
-                    case QueryResult.Unreachable:
-                        break;
-                    default:
-                        throw new NotSupportedException();
-                }
-            }
-
-            return reachableQueries;
-        }
-
-        public int UnprovenQueries
-        {
-            get { return unprovenQueries; }
         }
     }
 }

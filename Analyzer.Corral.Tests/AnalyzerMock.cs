@@ -27,16 +27,12 @@ namespace Analyzer.Corral.Tests
             var evaluator = new QueryEvaluator(new CorralMock(), new FileInfo(@"C:\Windows\notepad.exe"));
 
             var negativeQueries = CreateNegativeQueries(source, action, actions);
-            var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(negativeQueries));
+            var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(negativeQueries));
 
             var positiveQueries = CreatePositiveQueries(source, action, actions);
-            var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(positiveQueries));
+            var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(positiveQueries));
 
-            var enabledAndDisabledActions = new HashSet<Action>(enabledActions);
-            enabledAndDisabledActions.IntersectWith(disabledActions);
-
-            enabledActions.ExceptWith(enabledAndDisabledActions);
-            disabledActions.ExceptWith(enabledAndDisabledActions);
+            Contract.Assert(!enabledActions.Intersect(disabledActions).Any());
 
             return new ActionAnalysisResults(enabledActions, disabledActions);
         }

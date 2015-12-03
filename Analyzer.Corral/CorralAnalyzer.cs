@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using Analysis.Cci;
@@ -25,7 +25,8 @@ namespace Analyzer.Corral
         protected int generatedQueriesCount;
         protected int unprovenQueriesCount;
 
-        public CorralAnalyzer(string defaultArgs, DirectoryInfo workingDir,  CciQueryGenerator queryGenerator, CciAssembly inputAssembly, string inputFileName, TypeDefinition typeToAnalyze,
+        public CorralAnalyzer(string defaultArgs, DirectoryInfo workingDir, CciQueryGenerator queryGenerator, CciAssembly inputAssembly,
+            string inputFileName, TypeDefinition typeToAnalyze,
             CancellationToken token)
         {
             this.defaultArgs = defaultArgs;
@@ -44,38 +45,12 @@ namespace Analyzer.Corral
         {
             ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
 
-            var enabledActions = GetEnabledActions(source, action, actions, corralRunner);
-            var disabledActions = GetDisabledActions(source, action, actions, corralRunner);
+            var enabledActions = GetMustBeEnabledActions(source, action, actions, corralRunner);
+            var disabledActions = GetMustBeDisabledActions(source, action, actions, corralRunner);
 
-            var enabledAndDisabledActions = new HashSet<Action>(enabledActions);
-            enabledAndDisabledActions.IntersectWith(disabledActions);
-
-            enabledActions.ExceptWith(enabledAndDisabledActions);
-            disabledActions.ExceptWith(enabledAndDisabledActions);
+            Contract.Assert(!enabledActions.Intersect(disabledActions).Any());
 
             return new ActionAnalysisResults(enabledActions, disabledActions);
-        }
-
-        protected ISet<Action> GetDisabledActions(State source, Action action, IEnumerable<Action> actions, ISolver corralRunner)
-        {
-            var positiveQueries = queryGenerator.CreatePositiveQueries(source, action, actions);
-            generatedQueriesCount += positiveQueries.Count;
-            var queryAssembly = CreateBoogieQueryAssembly(positiveQueries);
-            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
-            var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(positiveQueries));
-            unprovenQueriesCount += evaluator.UnprovenQueries;
-            return disabledActions;
-        }
-
-        protected ISet<Action> GetEnabledActions(State source, Action action, IEnumerable<Action> actions, ISolver corralRunner)
-        {
-            var negativeQueries = queryGenerator.CreateNegativeQueries(source, action, actions);
-            generatedQueriesCount += negativeQueries.Count;
-            var queryAssembly = CreateBoogieQueryAssembly(negativeQueries);
-            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
-            var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(negativeQueries));
-            unprovenQueriesCount += evaluator.UnprovenQueries;
-            return enabledActions;
         }
 
         public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
@@ -90,9 +65,53 @@ namespace Analyzer.Corral
             return feasibleTransitions;
         }
 
+        public string GetUsageStatistics()
+        {
+            var statisticsBuilder = new StringBuilder();
+
+            statisticsBuilder.AppendFormat(@"Generated queries: {0} ({1} unproven)", generatedQueriesCount, unprovenQueriesCount).AppendLine();
+
+            var precision = 100 - Math.Ceiling((double) unprovenQueriesCount*100/generatedQueriesCount);
+            statisticsBuilder.AppendFormat(@"Analysis precision: {0}%", precision).AppendLine();
+
+            return statisticsBuilder.ToString();
+        }
+
+        protected ISet<Action> GetMustBeDisabledActions(State source, Action action, IEnumerable<Action> actions, ISolver corralRunner)
+        {
+            Contract.Requires(source != null);
+            Contract.Requires(action != null);
+            Contract.Requires(actions != null && actions.Any());
+            Contract.Requires(corralRunner != null);
+
+            var targetNegatedPreconditionQueries = queryGenerator.CreateNegativeQueries(source, action, actions);
+            generatedQueriesCount += targetNegatedPreconditionQueries.Count;
+            var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries);
+            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
+            unprovenQueriesCount += evaluator.UnprovenQueries;
+            return disabledActions;
+        }
+
+        protected ISet<Action> GetMustBeEnabledActions(State source, Action action, IEnumerable<Action> actions, ISolver corralRunner)
+        {
+            Contract.Requires(source != null);
+            Contract.Requires(action != null);
+            Contract.Requires(actions != null && actions.Any());
+            Contract.Requires(corralRunner != null);
+
+            var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(source, action, actions);
+            generatedQueriesCount += targetPreconditionQueries.Count;
+            var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries);
+            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
+            unprovenQueriesCount += evaluator.UnprovenQueries;
+            return enabledActions;
+        }
+
         protected FileInfo CreateBoogieQueryAssembly(IReadOnlyCollection<Query> queries)
         {
-            Contract.Ensures(Contract.Result<FileInfo>().Exists);
+            Contract.Requires(queries != null && queries.Any());
 
             var queryAssembly = new CciQueryAssembly(inputAssembly, typeToAnalyze, queries);
 
@@ -105,7 +124,7 @@ namespace Analyzer.Corral
 
         protected FileInfo TranslateCSharpToBoogie(string queryAssemblyPath)
         {
-            Contract.Ensures(Contract.Result<FileInfo>().Exists);
+            Contract.Requires(!string.IsNullOrEmpty(queryAssemblyPath));
 
             var bctRunner = new BctRunner();
             var args = new[] {queryAssemblyPath, "/lib:" + Path.GetDirectoryName(inputFileName)};
@@ -114,18 +133,6 @@ namespace Analyzer.Corral
             bctRunner.Run(args);
 
             return new FileInfo(queryAssemblyPath.Replace("dll", "bpl"));
-        }
-
-        public string GetUsageStatistics()
-        {
-            var statisticsBuilder = new StringBuilder();
-
-            statisticsBuilder.AppendFormat(@"Generated queries: {0} ({1} unproven)", generatedQueriesCount, unprovenQueriesCount).AppendLine();
-
-            var precision = 100 - Math.Ceiling((double)unprovenQueriesCount * 100 / generatedQueriesCount);
-            statisticsBuilder.AppendFormat(@"Analysis precision: {0}%", precision).AppendLine();
-
-            return statisticsBuilder.ToString();
         }
     }
 }

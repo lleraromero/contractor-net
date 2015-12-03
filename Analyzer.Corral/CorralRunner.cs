@@ -67,6 +67,11 @@ namespace Analyzer.Corral
         {
             message = message.ToLower();
 
+            if (message.Contains("reached recursion bound"))
+            {
+                return QueryResult.MaybeReachable;
+            }
+
             if (message.Contains("true bug"))
             {
                 return QueryResult.Reachable;
@@ -75,11 +80,6 @@ namespace Analyzer.Corral
             if (message.Contains("has no bugs"))
             {
                 return QueryResult.Unreachable;
-            }
-
-            if (message.Contains("recursion bound reached"))
-            {
-                return QueryResult.MaybeReachable;
             }
 
             throw new NotImplementedException("The result was not understood");
