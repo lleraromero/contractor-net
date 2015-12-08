@@ -168,6 +168,7 @@
     <Compile Include="CciAction.cs" />
     <Compile Include="CciAssembly.cs" />
     <Compile Include="CciDecompiler.cs" />
+    <Compile Include="CciQueryAssembly.cs" />
     <Compile Include="CciQueryGenerator.cs" />
     <Compile Include="CciTypeDefinition.cs" />
     <Compile Include="Extensions.cs" />

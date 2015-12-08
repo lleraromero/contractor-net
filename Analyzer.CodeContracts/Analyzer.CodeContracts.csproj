@@ -170,10 +170,6 @@
     <Reference Include="Microsoft.Cci.SourceModel">
       <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.SourceModel.dll</HintPath>
     </Reference>
-    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.2.0\lib\net45\NLog.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="RevisedSimplexMethod">
       <HintPath>..\Dependencies\CodeContracts\RevisedSimplexMethod.dll</HintPath>
     </Reference>
@@ -197,8 +193,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeContractsAnalyzer.cs" />
+    <Compile Include="CodeContractsRunner.cs" />
     <Compile Include="Instrumenter.cs" />
-    <Compile Include="Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -214,9 +210,9 @@
       <Project>{ebedd305-0975-416b-a4e5-4c8f5eadb304}</Project>
       <Name>Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Utils\Utils.csproj">
-      <Project>{2c562e2c-32c3-4d1d-8f06-74767fa382e2}</Project>
-      <Name>Utils</Name>
+    <ProjectReference Include="..\Logger\Log.csproj">
+      <Project>{c60da473-d2f6-4650-ada9-ff5aa1c7b75c}</Project>
+      <Name>Log</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

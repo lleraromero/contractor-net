@@ -1,290 +1,241 @@
-﻿using Contractor.Core;
+﻿using System;
+using Contractor.Core;
 using Contractor.Core.Model;
-using Contractor.Core.Properties;
-using Contractor.Utils;
-using Microsoft.Cci;
-using Microsoft.Cci.Contracts;
-using Microsoft.Cci.MutableCodeModel;
-using Microsoft.Research.CodeAnalysis;
-using System.Collections;
 using System.Collections.Generic;
-using System.Compiler.Analysis;
-using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
+using Analysis.Cci;
+using Action = Contractor.Core.Model.Action;
 
 namespace Analyzer.CodeContracts
 {
-    class CodeContractsAnalyzer : Contractor.Core.Analyzer
+    public class CodeContractsAnalyzer : IAnalyzer
     {
-        private enum ResultKind
-        {
-            None,
-            UnsatisfiableRequires,
-            FalseRequires,
-            UnprovenEnsures,
-            FalseEnsures
-        }
+        protected CciQueryGenerator queryGenerator;
+        protected CciAssembly inputAssembly;
+        protected string inputFileName;
+        protected TypeDefinition typeToAnalyze;
+        protected CancellationToken token;
+        protected DirectoryInfo workingDir;
+        protected string ccCheckDefaultArgs;
+        protected string libPaths;
 
-        public CodeContractsAnalyzer(IContractAwareHost host, AssemblyInfo assembly, NamespaceTypeDefinition type, CancellationToken token)
-            : base(host, assembly.Module, type, token)
-        {
-            Contract.Requires(host != null && assembly != null && type != null && token != null);
+        protected int generatedQueriesCount;
+        protected int unprovenQueriesCount;
 
-            ITypeContract typeContract = this.inputContractProvider.GetTypeContractFor(type);
-            this.queryContractProvider.AssociateTypeWithContract(this.typeToAnalyze, typeContract);
+        public CodeContractsAnalyzer(DirectoryInfo workingDir, string ccCheckDefaultArgs, string libPaths, CciQueryGenerator queryGenerator, CciAssembly inputAssembly,
+            string inputFileName, TypeDefinition typeToAnalyze, CancellationToken token)
+        {
+            this.workingDir = workingDir;
+            this.ccCheckDefaultArgs = ccCheckDefaultArgs;
+            this.libPaths = libPaths;
+            this.queryGenerator = queryGenerator;
+            this.inputAssembly = inputAssembly;
+            this.typeToAnalyze = typeToAnalyze;
+            this.inputFileName = inputFileName;
+            this.token = token;
+
+            generatedQueriesCount = 0;
+            unprovenQueriesCount = 0;
 
             // We assume that the methods were already proved by cccheck during the compilation
-            AddVerifierAttribute();
+            //AddVerifierAttribute();
+        }
+
+        public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
+        {
+            ISolver corralRunner = new CodeContractsRunner(workingDir, ccCheckDefaultArgs, libPaths, typeToAnalyze);
+
+            var enabledActions = GetMustBeEnabledActions(source, action, actions, corralRunner);
+            var disabledActions = GetMustBeDisabledActions(source, action, actions, corralRunner);
+
+            Contract.Assert(!enabledActions.Intersect(disabledActions).Any());
+
+            return new ActionAnalysisResults(enabledActions, disabledActions);
+        }
+
+        public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
+        {
+            ISolver corralRunner = new CodeContractsRunner(workingDir, ccCheckDefaultArgs, libPaths, typeToAnalyze);
+
+            var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets);
+            var queryAssembly = CreateQueryAssembly(transitionQueries);
+            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var feasibleTransitions = evaluator.GetFeasibleTransitions(transitionQueries);
+            unprovenQueriesCount += evaluator.UnprovenQueries;
+
+            return feasibleTransitions;
+        }
+
+        public string GetUsageStatistics()
+        {
+            var statisticsBuilder = new StringBuilder();
+
+            statisticsBuilder.AppendFormat(@"Generated queries: {0} ({1} unproven)", generatedQueriesCount, unprovenQueriesCount).AppendLine();
+
+            var precision = 100 - Math.Ceiling((double)unprovenQueriesCount * 100 / generatedQueriesCount);
+            statisticsBuilder.AppendFormat(@"Analysis precision: {0}%", precision).AppendLine();
+
+            return statisticsBuilder.ToString();
+        }
+
+        protected ISet<Action> GetMustBeDisabledActions(State source, Action action, IEnumerable<Action> actions, ISolver corralRunner)
+        {
+            Contract.Requires(source != null);
+            Contract.Requires(action != null);
+            Contract.Requires(actions != null && actions.Any());
+            Contract.Requires(corralRunner != null);
+
+            var targetNegatedPreconditionQueries = queryGenerator.CreateNegativeQueries(source, action, actions);
+            generatedQueriesCount += targetNegatedPreconditionQueries.Count;
+            var queryAssembly = CreateQueryAssembly(targetNegatedPreconditionQueries);
+            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
+            unprovenQueriesCount += evaluator.UnprovenQueries;
+            return disabledActions;
+        }
+
+        protected ISet<Action> GetMustBeEnabledActions(State source, Action action, IEnumerable<Action> actions, ISolver corralRunner)
+        {
+            Contract.Requires(source != null);
+            Contract.Requires(action != null);
+            Contract.Requires(actions != null && actions.Any());
+            Contract.Requires(corralRunner != null);
+
+            var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(source, action, actions);
+            generatedQueriesCount += targetPreconditionQueries.Count;
+            var queryAssembly = CreateQueryAssembly(targetPreconditionQueries);
+            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
+            unprovenQueriesCount += evaluator.UnprovenQueries;
+            return enabledActions;
+        }
+
+        protected FileInfo CreateQueryAssembly(IReadOnlyCollection<Query> queries)
+        {
+            Contract.Requires(queries != null && queries.Any());
+
+            var queryAssembly = new CciQueryAssembly(inputAssembly, typeToAnalyze, queries);
+
+            var queryFilePath = Path.Combine(workingDir.FullName, Guid.NewGuid().ToString(), Path.GetFileName(inputFileName));
+            Directory.CreateDirectory(Path.GetDirectoryName(queryFilePath));
+            queryAssembly.Save(queryFilePath);
+
+            return new FileInfo(queryFilePath);
         }
 
         private void AddVerifierAttribute()
         {
             Contract.Requires(this.typeToAnalyze != null);
+            //TODO: arreglar
+            //foreach (var m in this.typeToAnalyze.Methods)
+            //{
+            //    if (m.Visibility != TypeMemberVisibility.Public)
+            //    {
+            //        continue;
+            //    }
 
-            foreach (var m in this.typeToAnalyze.Methods)
-            {
-                if (m.Visibility != TypeMemberVisibility.Public)
-                {
-                    continue;
-                }
+            //    var disableVerifier = new CustomAttribute()
+            //    {
+            //        Arguments = new List<IMetadataExpression>() { new MetadataConstant() { Value = false, Type = this.host.PlatformType.SystemBoolean } },
+            //        Constructor = new Microsoft.Cci.MethodReference(this.host, this.host.PlatformType.SystemDiagnosticsContractsContract.ResolvedType.ContainingNamespace.GetMembersNamed(this.host.NameTable.GetNameFor("ContractVerificationAttribute"), false).First() as INamespaceTypeReference, CallingConvention.HasThis,
+            //    this.host.PlatformType.SystemVoid, this.host.NameTable.GetNameFor(".ctor"), 0, this.host.PlatformType.SystemBoolean),
+            //    };
 
-                var disableVerifier = new CustomAttribute()
-                {
-                    Arguments = new List<IMetadataExpression>() { new MetadataConstant() { Value = false, Type = this.host.PlatformType.SystemBoolean } },
-                    Constructor = new Microsoft.Cci.MethodReference(this.host, this.host.PlatformType.SystemDiagnosticsContractsContract.ResolvedType.ContainingNamespace.GetMembersNamed(this.host.NameTable.GetNameFor("ContractVerificationAttribute"), false).First() as INamespaceTypeReference, CallingConvention.HasThis,
-                this.host.PlatformType.SystemVoid, this.host.NameTable.GetNameFor(".ctor"), 0, this.host.PlatformType.SystemBoolean),
-                };
-
-                var tmp = m as MethodDefinition;
-                if (tmp.Attributes == null)
-                {
-                    tmp.Attributes = new List<ICustomAttribute>();
-                }
-                tmp.Attributes.Add(disableVerifier);
-            }
+            //    var tmp = m as MethodDefinition;
+            //    if (tmp.Attributes == null)
+            //    {
+            //        tmp.Attributes = new List<ICustomAttribute>();
+            //    }
+            //    tmp.Attributes.Add(disableVerifier);
+            //}
         }
 
-        public override ActionAnalysisResults AnalyzeActions(State source, Action action, List<Action> actions)
-        {
-            Contract.Requires(source != null && action != null && actions != null);
-            Contract.Requires(actions.Count > 0);
+        //private ActionAnalysisResults evaluateQueries(List<Action> actions, Dictionary<string, List<ResultKind>> result)
+        //{
+        //    var enabledActions = new HashSet<Action>(actions);
+        //    var disabledActions = new HashSet<Action>(actions);
 
-            var queries = base.GenerateQueries<Action>(source, action, actions);
-            this.typeToAnalyze.Methods.AddRange(queries);
-            queryAssembly.InjectContracts(this.queryContractProvider);
+        //    foreach (var entry in result)
+        //    {
+        //        if (entry.Value.Contains(ResultKind.FalseEnsures) ||
+        //            entry.Value.Contains(ResultKind.FalseRequires) ||
+        //            entry.Value.Contains(ResultKind.UnsatisfiableRequires) ||
+        //            entry.Value.Contains(ResultKind.UnprovenEnsures))
+        //        {
+        //            var query = entry.Key;
+        //            var queryParametersStart = query.LastIndexOf('(');
 
-            var queryAssemblyName = GetQueryAssemblyPath();
-            queryAssembly.Save(queryAssemblyName);
-            this.typeToAnalyze.Methods.RemoveAll(m => queries.Contains(m));
+        //            // Borramos los parametros del query
+        //            if (queryParametersStart != -1)
+        //                query = query.Remove(queryParametersStart);
 
-            var result = executeChecker(queryAssemblyName);
-            var evalResult = evaluateQueries(actions, result);
+        //            var actionNameStart = query.LastIndexOf(methodNameDelimiter) + 1;
+        //            var actionName = query.Substring(actionNameStart);
+        //            var isNegative = actionName.StartsWith(notPrefix);
 
-            return evalResult;
-        }
+        //            if (isNegative)
+        //            {
+        //                actionName = actionName.Remove(0, notPrefix.Length);
 
-        private ActionAnalysisResults evaluateQueries(List<Action> actions, Dictionary<string, List<ResultKind>> result)
-        {
-            var enabledActions = new HashSet<Action>(actions);
-            var disabledActions = new HashSet<Action>(actions);
+        //                if (disabledActions.Any(a => a.Name.Equals(actionName)))
+        //                {
+        //                    disabledActions.Remove(disabledActions.First(a => a.Name.Equals(actionName)));
+        //                }
+        //            }
+        //            else
+        //            {
+        //                if (enabledActions.Any(a => a.Name.Equals(actionName)))
+        //                {
+        //                    enabledActions.Remove(enabledActions.First(a => a.Name.Equals(actionName)));
+        //                }
+        //            }
 
-            foreach (var entry in result)
-            {
-                if (entry.Value.Contains(ResultKind.FalseEnsures) ||
-                    entry.Value.Contains(ResultKind.FalseRequires) ||
-                    entry.Value.Contains(ResultKind.UnsatisfiableRequires) ||
-                    entry.Value.Contains(ResultKind.UnprovenEnsures))
-                {
-                    var query = entry.Key;
-                    var queryParametersStart = query.LastIndexOf('(');
+        //            if (entry.Value.Contains(ResultKind.UnprovenEnsures))
+        //                this.UnprovenQueriesCount++;
+        //        }
+        //    }
 
-                    // Borramos los parametros del query
-                    if (queryParametersStart != -1)
-                        query = query.Remove(queryParametersStart);
+        //    return new ActionAnalysisResults(enabledActions, disabledActions);
+        //}
 
-                    var actionNameStart = query.LastIndexOf(methodNameDelimiter) + 1;
-                    var actionName = query.Substring(actionNameStart);
-                    var isNegative = actionName.StartsWith(notPrefix);
+        //private IReadOnlyCollection<Transition> evaluateQueries(State source, IMethodDefinition action, List<State> targets, Dictionary<string, List<ResultKind>> result)
+        //{
+        //    var transitions = new HashSet<Transition>();
 
-                    if (isNegative)
-                    {
-                        actionName = actionName.Remove(0, notPrefix.Length);
+        //    foreach (var entry in result)
+        //    {
+        //        if (entry.Value.Contains(ResultKind.FalseEnsures) ||
+        //            entry.Value.Contains(ResultKind.UnprovenEnsures))
+        //        {
+        //            var query = entry.Key;
+        //            var queryParametersStart = query.LastIndexOf('(');
 
-                        if (disabledActions.Any(a => a.Name.Equals(actionName)))
-                        {
-                            disabledActions.Remove(disabledActions.First(a => a.Name.Equals(actionName)));
-                        }
-                    }
-                    else
-                    {
-                        if (enabledActions.Any(a => a.Name.Equals(actionName)))
-                        {
-                            enabledActions.Remove(enabledActions.First(a => a.Name.Equals(actionName)));
-                        }
-                    }
+        //            // Borramos los parametros del query
+        //            if (queryParametersStart != -1)
+        //                query = query.Remove(queryParametersStart);
 
-                    if (entry.Value.Contains(ResultKind.UnprovenEnsures))
-                        this.UnprovenQueriesCount++;
-                }
-            }
+        //            var targetNameStart = query.LastIndexOf(methodNameDelimiter) + 1;
+        //            var targetName = query.Substring(targetNameStart);
+        //            var target = targets.Find(s => s.Name == targetName);
+        //            var isUnproven = entry.Value.Contains(ResultKind.UnprovenEnsures);
 
-            return new ActionAnalysisResults(enabledActions, disabledActions);
-        }
+        //            if (target != null)
+        //            {
+        //                // TODO: arreglar
+        //                var transition = new Transition(new CciAction(action, null), source, target, isUnproven);
+        //                transitions.Add(transition);
+        //            }
 
-        private Dictionary<string, List<ResultKind>> executeChecker(string queryAssemblyName)
-        {
-            string libPaths;
+        //            if (isUnproven)
+        //                this.UnprovenQueriesCount++;
+        //        }
+        //    }
 
-            if (inputAssembly.Module.TargetRuntimeVersion.StartsWith("v4.0"))
-                libPaths = Configuration.ExpandVariables(Resources.Netv40);
-            else
-                libPaths = Configuration.ExpandVariables(Resources.Netv35);
-
-            var inputAssemblyPath = Path.GetDirectoryName(inputAssembly.FileName);
-            libPaths = string.Format("{0};{1}", libPaths, inputAssemblyPath);
-
-            var typeName = this.typeToAnalyze.ToString();
-
-            if (this.typeToAnalyze.IsGeneric)
-                typeName = string.Format("{0}`{1}", typeName, this.typeToAnalyze.GenericParameterCount);
-
-            string outputString;
-            using (var output = new StringWriter())
-            {
-                var cccheckArgs = Configuration.CheckerArguments;
-                cccheckArgs = cccheckArgs.Replace("\"@assemblyName\"", queryAssemblyName);
-                cccheckArgs = cccheckArgs.Replace("@fullTypeName", typeName);
-
-                // If the user didn't stop the analysis, execute cccheck
-                if (!base.token.IsCancellationRequested)
-                {
-                    var cccheckTime = Stopwatch.StartNew();
-
-                    var args = cccheckArgs.Split(' ');
-                    args[args.Length - 2] = args[args.Length - 2].Replace("@libPaths", libPaths);
-
-                    IOutputFullResultsFactory<System.Compiler.Method, System.Compiler.AssemblyNode> outputFactory =
-                        new FullTextWriterOutputFactory<System.Compiler.Method, System.Compiler.AssemblyNode>(output);
-                    var errorCode = Clousot.ClousotMain(args, CCIMDDecoder.Value, CCIContractDecoder.Value, new Hashtable(), outputFactory);
-
-                    cccheckTime.Stop();
-
-                    if (errorCode != 0)
-                    {
-                        Logger.Log(LogLevel.Warn, string.Format("Clousot exited with code {0}", errorCode));
-                    }
-
-                    var analysisDuration = cccheckTime.Elapsed;
-                    this.TotalAnalysisDuration += analysisDuration;
-                    this.ExecutionsCount++;
-                }
-
-                outputString = output.ToString();
-            }
-
-            var result = new Dictionary<string, List<ResultKind>>();
-            using (var reader = new StringReader(outputString))
-            {
-                for (string ccMessage = reader.ReadLine(); ccMessage != null; ccMessage = reader.ReadLine())
-                {
-                    try
-                    {
-                        string currentMethod = ccMessage.Substring(0, ccMessage.IndexOf('['));
-                        //Para el caso de .#ctor
-                        currentMethod = currentMethod.Replace("#", string.Empty);
-
-                        if (!result.ContainsKey(currentMethod))
-                            result.Add(currentMethod, new List<ResultKind>());
-
-                        var message = ccMessage.Substring(ccMessage.IndexOf(':') + 1).Trim();
-                        var resultKind = parseResultKind(message);
-                        result[currentMethod].Add(resultKind);
-                    }
-                    catch { }
-                }
-            }
-
-            return result;
-        }
-
-        private ResultKind parseResultKind(string message)
-        {
-            if (message.Contains("Requires (including invariants) are unsatisfiable"))
-                return ResultKind.UnsatisfiableRequires;
-
-            else if (message.Contains("ensures unproven"))
-                return ResultKind.UnprovenEnsures;
-
-            else if (message.Contains("ensures unreachable"))
-                return ResultKind.UnprovenEnsures;
-
-            else if (message.Contains("ensures is false"))
-                return ResultKind.FalseEnsures;
-
-            else if (message.Contains("ensures (always false) may be reachable"))
-                return ResultKind.FalseEnsures;
-
-            else if (message.Contains("requires is false"))
-                return ResultKind.FalseRequires;
-
-            else return ResultKind.None;
-        }
-
-        public override TransitionAnalysisResult AnalyzeTransitions(State source, Action action, List<State> targets)
-        {
-            var queries = base.GenerateQueries<State>(source, action, targets);
-            this.typeToAnalyze.Methods.AddRange(queries);
-            queryAssembly.InjectContracts(this.queryContractProvider);
-
-            var queryAssemblyName = GetQueryAssemblyPath();
-            queryAssembly.Save(queryAssemblyName);
-            this.typeToAnalyze.Methods.RemoveAll(m => queries.Contains(m));
-
-            var result = executeChecker(queryAssemblyName);
-            var evalResult = evaluateQueries(source, action.Method, targets, result);
-
-            return evalResult;
-        }
-
-        private TransitionAnalysisResult evaluateQueries(State source, IMethodDefinition action, List<State> targets, Dictionary<string, List<ResultKind>> result)
-        {
-            var transitions = new HashSet<Transition>();
-
-            foreach (var entry in result)
-            {
-                if (entry.Value.Contains(ResultKind.FalseEnsures) ||
-                    entry.Value.Contains(ResultKind.UnprovenEnsures))
-                {
-                    var query = entry.Key;
-                    var queryParametersStart = query.LastIndexOf('(');
-
-                    // Borramos los parametros del query
-                    if (queryParametersStart != -1)
-                        query = query.Remove(queryParametersStart);
-
-                    var targetNameStart = query.LastIndexOf(methodNameDelimiter) + 1;
-                    var targetName = query.Substring(targetNameStart);
-                    var target = targets.Find(s => s.Name == targetName);
-                    var isUnproven = entry.Value.Contains(ResultKind.UnprovenEnsures);
-
-                    if (target != null)
-                    {
-                        // TODO: arreglar
-                        var transition = new Transition(new CciAction(action, null), source, target, isUnproven);
-                        transitions.Add(transition);
-                    }
-
-                    if (isUnproven)
-                        this.UnprovenQueriesCount++;
-                }
-            }
-
-            return new TransitionAnalysisResult(transitions);
-        }
+        //    return transitions.ToList();
+        //}
     }
 }
