@@ -1,13 +1,13 @@
-﻿using Microsoft.Cci;
+﻿using System.Diagnostics.Contracts;
+using Microsoft.Cci;
 using Microsoft.Cci.MutableCodeModel;
-using System.Diagnostics.Contracts;
 
 namespace Analyzer.Corral
 {
-    class ReturnRewriter : CodeRewriter
+    internal class ReturnRewriter : CodeRewriter
     {
-        private ILabeledStatement target;
-        private ILocalDeclarationStatement local;
+        protected readonly ILabeledStatement target;
+        protected readonly ILocalDeclarationStatement local;
 
         public ReturnRewriter(IMetadataHost host, ILabeledStatement target, ILocalDeclarationStatement local)
             : base(host)
@@ -18,7 +18,7 @@ namespace Analyzer.Corral
         }
 
         /// <summary>
-        /// Rewrites the return statement.
+        ///     Rewrites the return statement.
         /// </summary>
         /// <param name="returnStatement"></param>
         public override IStatement Rewrite(IReturnStatement returnStatement)
@@ -27,17 +27,21 @@ namespace Analyzer.Corral
 
             var blockStmt = new BlockStatement();
 
-            blockStmt.Statements.Add(new ExpressionStatement()
+            // If local is null it means that the type of the method that contains this return is 'void'
+            if (local != null)
             {
-                Expression = new Assignment()
+                blockStmt.Statements.Add(new ExpressionStatement
                 {
-                    Target = new TargetExpression() { Definition = local.LocalVariable, Instance = null, Type = local.LocalVariable.Type },
-                    Source = this.Rewrite(returnStatement.Expression),
-                    Type = returnStatement.Expression.Type
-                }
-            });
+                    Expression = new Assignment
+                    {
+                        Target = new TargetExpression { Definition = local.LocalVariable, Instance = null, Type = local.LocalVariable.Type },
+                        Source = Rewrite(returnStatement.Expression),
+                        Type = returnStatement.Expression.Type
+                    }
+                });
+            }
 
-            blockStmt.Statements.Add(new GotoStatement() { TargetStatement = target });
+            blockStmt.Statements.Add(new GotoStatement { TargetStatement = target });
 
             return blockStmt;
         }
