@@ -1,4 +1,6 @@
-# Contractor.NET | A .NET validation and specification strengthening tool #
+# Contractor.NET #
+
+## A .NET validation and specification strengthening tool ##
 
 Contractor.NET is a tool developed to construct contract specifications with typestate information which can be used for verification of client code. Contractor.NET uses and extends Code Contracts to provide stronger contract specifications.
 
