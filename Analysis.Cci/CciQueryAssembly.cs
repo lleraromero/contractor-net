@@ -29,7 +29,7 @@ namespace Analysis.Cci
             {
                 var method = cciType.Methods.Find(m => m.GetUniqueName() == query.Method.Name) as MethodDefinition;
                 method.ContainingTypeDefinition = cciType;
-                (this.contractProvider as ContractProvider).AssociateMethodWithContract(query.Method.Method, query.Method.Contract);
+                ((ContractProvider)this.contractProvider).AssociateMethodWithContract(query.Method.Method, query.Method.Contract);
             }
         }
 
@@ -37,22 +37,13 @@ namespace Analysis.Cci
         {
             Contract.Requires(!string.IsNullOrEmpty(path) && !File.Exists(path));
 
-            var pdbReader = GetPdbReader(this.decompiledModule);
+            ISourceLocationProvider sourceLocationProvider = GetPdbReader(this.decompiledModule);            
+            ContractHelper.InjectContractCalls(this.host, this.decompiledModule, (ContractProvider) this.contractProvider, sourceLocationProvider);
+
             // Save the query assembly to run Corral
             using (var peStream = File.Create(path))
             {
-                if (GetPdbReader(this.decompiledModule) == null)
-                {
-                    PeWriter.WritePeToStream(this.decompiledModule, this.host, peStream);
-                }
-                else
-                {
-                    var pdbName = Path.ChangeExtension(path, "pdb");
-                    using (var pdbWriter = new PdbWriter(pdbName, pdbReader))
-                    {
-                        PeWriter.WritePeToStream(this.decompiledModule, this.host, peStream, pdbReader, pdbReader, pdbWriter);
-                    }
-                }
+                PeWriter.WritePeToStream(this.decompiledModule, this.host, peStream);
             }
         }
 

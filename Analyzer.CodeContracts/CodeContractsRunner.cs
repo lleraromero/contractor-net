@@ -46,10 +46,10 @@ namespace Analyzer.CodeContracts
             //if (this.typeToAnalyze.IsGeneric)
             //    typeName = string.Format("{0}`{1}", typeName, this.typeToAnalyze.GenericParameterCount);
 
-            var args = ccCheckDefaultArgs;
-            args = args.Replace("\"@assemblyName\"", queryAssembly.FullName);
-            args = args.Replace("@fullTypeName", typeToAnalyze.ToString());
-            args = args.Replace("@libPaths", libPaths);
+            var args = new StringBuilder(ccCheckDefaultArgs);
+            args.AppendFormat(" -typeNameSelect={0}", typeToAnalyze);
+            args.AppendFormat(" -libPaths:\"{0}\"", libPaths);
+            args.AppendFormat(" \"{0}\"", queryAssembly.FullName);
 
             var output = new StringBuilder();
 
@@ -58,7 +58,7 @@ namespace Analyzer.CodeContracts
                 codeContracts.StartInfo = new ProcessStartInfo
                 {
                     FileName = @"C:\Program Files (x86)\Microsoft\Contracts\Bin\cccheck.exe",
-                    Arguments = args,
+                    Arguments = args.ToString(),
                     WorkingDirectory = tmpDir,
                     CreateNoWindow = true,
                     WindowStyle = ProcessWindowStyle.Hidden,

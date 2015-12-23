@@ -47,10 +47,10 @@ namespace Analyzer.CodeContracts
 
         public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
         {
-            ISolver corralRunner = new CodeContractsRunner(workingDir, ccCheckDefaultArgs, libPaths, typeToAnalyze);
+            ISolver codeContractsRunner = new CodeContractsRunner(workingDir, ccCheckDefaultArgs, libPaths, typeToAnalyze);
 
-            var enabledActions = GetMustBeEnabledActions(source, action, actions, corralRunner);
-            var disabledActions = GetMustBeDisabledActions(source, action, actions, corralRunner);
+            var enabledActions = GetMustBeEnabledActions(source, action, actions, codeContractsRunner);
+            var disabledActions = GetMustBeDisabledActions(source, action, actions, codeContractsRunner);
 
             Contract.Assert(!enabledActions.Intersect(disabledActions).Any());
 
@@ -125,33 +125,6 @@ namespace Analyzer.CodeContracts
             queryAssembly.Save(queryFilePath);
 
             return new FileInfo(queryFilePath);
-        }
-
-        private void AddVerifierAttribute()
-        {
-            Contract.Requires(this.typeToAnalyze != null);
-            //TODO: arreglar
-            //foreach (var m in this.typeToAnalyze.Methods)
-            //{
-            //    if (m.Visibility != TypeMemberVisibility.Public)
-            //    {
-            //        continue;
-            //    }
-
-            //    var disableVerifier = new CustomAttribute()
-            //    {
-            //        Arguments = new List<IMetadataExpression>() { new MetadataConstant() { Value = false, Type = this.host.PlatformType.SystemBoolean } },
-            //        Constructor = new Microsoft.Cci.MethodReference(this.host, this.host.PlatformType.SystemDiagnosticsContractsContract.ResolvedType.ContainingNamespace.GetMembersNamed(this.host.NameTable.GetNameFor("ContractVerificationAttribute"), false).First() as INamespaceTypeReference, CallingConvention.HasThis,
-            //    this.host.PlatformType.SystemVoid, this.host.NameTable.GetNameFor(".ctor"), 0, this.host.PlatformType.SystemBoolean),
-            //    };
-
-            //    var tmp = m as MethodDefinition;
-            //    if (tmp.Attributes == null)
-            //    {
-            //        tmp.Attributes = new List<ICustomAttribute>();
-            //    }
-            //    tmp.Attributes.Add(disableVerifier);
-            //}
         }
 
         //private ActionAnalysisResults evaluateQueries(List<Action> actions, Dictionary<string, List<ResultKind>> result)

@@ -8,7 +8,7 @@ using Microsoft.Cci.MutableContracts;
 using MethodReference = Microsoft.Cci.MethodReference;
 using NamespaceTypeReference = Microsoft.Cci.Immutable.NamespaceTypeReference;
 
-namespace Analyzer.Corral
+namespace Analysis.Cci
 {
     public class ContractRewriter : CodeAndContractRewriter
     {

@@ -7,9 +7,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Analysis.Cci;
+using Analyzer.CodeContracts;
 using Analyzer.Corral;
 using Contractor.Core;
 using Contractor.Core.Model;
+
 
 namespace Contractor.Gui.Models
 {
@@ -91,6 +93,10 @@ namespace Contractor.Gui.Models
 
         protected IAnalyzer GetAnalyzer(TypeDefinition typeToAnalyze, string engine, CancellationToken cancellationToken)
         {
+            var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
+            Contract.Assert(workingDir.Exists);
+            var queryGenerator = decompiler.CreateQueryGenerator();
+
             IAnalyzer analyzer;
             switch (engine)
             {
@@ -106,14 +112,15 @@ namespace Contractor.Gui.Models
                         throw new DirectoryNotFoundException(msg.ToString());
                     }
                     var cccheckArgs = ConfigurationManager.AppSettings["CccheckArgs"];
+                    Contract.Assert(cccheckArgs != null);
                     var cccheck = new FileInfo(ConfigurationManager.AppSettings["CccheckFullName"]);
                     Contract.Assert(cccheck.Exists);
-                    throw new NotImplementedException();
+                    analyzer = new CodeContractsAnalyzer(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly as CciAssembly, inputFile.FullName,
+                        typeToAnalyze, cancellationToken);
+                    break;
                 case "Corral":
-                    var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
-                    var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
-                    Contract.Assert(workingDir.Exists);
-                    analyzer = new CorralAnalyzer(corralDefaultArgs, workingDir, decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly, inputFile.FullName,
+                    var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];        
+                    analyzer = new CorralAnalyzer(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly, inputFile.FullName,
                         typeToAnalyze, cancellationToken);
                     break;
                 default:

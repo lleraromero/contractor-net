@@ -217,6 +217,10 @@
       <Project>{9a922e63-a371-4aa3-8026-edb091fef659}</Project>
       <Name>Analysis.Cci</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Analyzer.CodeContracts\Analyzer.CodeContracts.csproj">
+      <Project>{d0af37f6-01ae-4aa0-afa7-1fb91d226c8f}</Project>
+      <Name>Analyzer.CodeContracts</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Analyzer.Corral\Analyzer.Corral.csproj">
       <Project>{62808611-4211-4c87-9628-c237900a581a}</Project>
       <Name>Analyzer.Corral</Name>

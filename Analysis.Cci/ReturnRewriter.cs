@@ -2,7 +2,7 @@
 using Microsoft.Cci;
 using Microsoft.Cci.MutableCodeModel;
 
-namespace Analyzer.Corral
+namespace Analysis.Cci
 {
     internal class ReturnRewriter : CodeRewriter
     {
