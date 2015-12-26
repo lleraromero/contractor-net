@@ -37,7 +37,7 @@ namespace Core.Tests
         }
 
         [TestMethod]
-        public void SerializeNoConstructorsNoActionsEpa()
+        public void SerializeEpaWithNoConstructorsAndNoActions()
         {
             var epa = NoConstructorsNoActionsEpa();
             using (var stream = new MemoryStream())
@@ -58,7 +58,7 @@ namespace Core.Tests
         }
 
         [TestMethod]
-        public void SerializeOneConstructorsNoActionsEpa()
+        public void SerializeEpaWithOneConstructorAndNoActions()
         {
             var epa = OneConstructorNoActionsEpa();
             using (var stream = new MemoryStream())
