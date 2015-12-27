@@ -166,8 +166,11 @@
     <Compile Include="Analyzer.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="CciAction.cs" />
+    <Compile Include="CciActionQueryGenerator.cs" />
     <Compile Include="CciAssembly.cs" />
     <Compile Include="CciDecompiler.cs" />
+    <Compile Include="CciNegativeActionQueryGenerator.cs" />
+    <Compile Include="CciPositiveActionQueryGenerator.cs" />
     <Compile Include="CciQueryAssembly.cs" />
     <Compile Include="CciQueryGenerator.cs" />
     <Compile Include="CciTypeDefinition.cs" />

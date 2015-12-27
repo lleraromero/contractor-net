@@ -7,7 +7,6 @@ using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableContracts;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using Action = Contractor.Core.Model.Action;
 
@@ -15,8 +14,8 @@ namespace Analysis.Cci
 {
     public class CciQueryGenerator
     {
-        protected const string notPrefix = "_Not_";
-        protected const string methodNameDelimiter = "~";
+        protected const string NotPrefix = "_Not_";
+        protected const string MethodNameDelimiter = "~";
 
         protected IContractAwareHost host;
 
@@ -27,12 +26,24 @@ namespace Analysis.Cci
 
         public IReadOnlyCollection<ActionQuery> CreatePositiveQueries(State state, Action action, IEnumerable<Action> actions)
         {
-            return actions.Select(target => new ActionQuery(GenerateQuery(state, action, target), QueryType.Positive, target)).ToList();
+            var queryGenerator = new CciPositiveActionQueryGenerator(host);
+            return CreateQueries(state, action, actions, queryGenerator);
         }
 
         public IReadOnlyCollection<ActionQuery> CreateNegativeQueries(State state, Action action, IEnumerable<Action> actions)
         {
-            return actions.Select(target => new ActionQuery(GenerateQuery(state, action, target, true), QueryType.Negative, target)).ToList();
+            var queryGenerator = new CciNegativeActionQueryGenerator(host);
+            return CreateQueries(state, action, actions, queryGenerator);
+        }
+
+        protected IReadOnlyCollection<ActionQuery> CreateQueries(State state, Action action, IEnumerable<Action> actions, CciActionQueryGenerator queryGenerator)
+        {
+            var queries = new List<ActionQuery>();
+            foreach (var actionUnderTest in actions)
+            {
+                queries.Add(queryGenerator.CreateQuery(state, action, actionUnderTest));
+            }
+            return queries;
         }
 
         public IReadOnlyCollection<TransitionQuery> CreateTransitionQueries(State sourceState, Action action, IEnumerable<State> targetStates)
@@ -40,135 +51,12 @@ namespace Analysis.Cci
             return targetStates.Select(targetState => new TransitionQuery(GenerateQuery(sourceState, action, targetState), sourceState, action, targetState)).ToList();
         }
 
-        private CciAction GenerateQuery(State state, Action action, Action target, bool negate = false)
-        {
-            Contract.Requires(state != null && action != null && target != null);
-
-            var prefix = negate ? notPrefix : string.Empty;
-            var actionName = action.Name;
-            var stateName = state.Name;
-            var targetName = target.Name;
-            var methodName = string.Format("{1}{0}{2}{0}{3}{4}", methodNameDelimiter, stateName, actionName, prefix, targetName);
-
-            var method = CreateQueryMethod(state, methodName, action, target);
-            var queryContract = CreateQueryContract(state, target, negate);
-
-            return new CciAction(method, queryContract);
-        }
-
-        private MethodContract CreateQueryContract(State state, Action target, bool negate)
-        {
-            var queryContract = new MethodContract();
-            var targetContract = target.Contract;
-
-            // Add preconditions of enabled actions
-            foreach (var a in state.EnabledActions)
-            {
-                var actionContract = a.Contract;
-                if (actionContract == null) continue;
-
-                var preconditions = from p in actionContract.Preconditions
-                                    select new Precondition()
-                                    {
-                                        Condition = p.Condition,
-                                        Description = new CompileTimeConstant()
-                                        {
-                                            Value = string.Format("Enabled action ({0})", a.Name),
-                                            Type = this.host.PlatformType.SystemString
-                                        },
-                                        OriginalSource = Helper.PrintExpression(p.Condition)
-                                    };
-                queryContract.Preconditions.AddRange(preconditions);
-            }
-
-            // Add negated preconditions of disabled actions
-            foreach (var a in state.DisabledActions)
-            {
-                var actionContract = a.Contract;
-                if (actionContract == null || actionContract.Preconditions.Count() == 0) continue;
-
-                var preconditions = from p in actionContract.Preconditions
-                                    select p.Condition;
-                var joinedPreconditions = new LogicalNot()
-                {
-                    Type = this.host.PlatformType.SystemBoolean,
-                    Operand = Helper.JoinWithLogicalAnd(this.host, preconditions.ToList(), true)
-                };
-                var compactPrecondition = new Precondition()
-                {
-                    Condition = joinedPreconditions,
-                    // Add the user message to identify easily each precondition
-                    Description = new CompileTimeConstant()
-                    {
-                        Value = string.Format("Disabled action ({0})", a.Name),
-                        Type = this.host.PlatformType.SystemString
-                    },
-                    // Add the string-ified version of the condition to help debugging
-                    OriginalSource = Helper.PrintExpression(joinedPreconditions)
-                };
-                queryContract.Preconditions.Add(compactPrecondition);
-            }
-
-            // Now the postconditions
-            // Having no preconditions is the same as having the 'true' precondition
-            if (targetContract == null || targetContract.Preconditions.Count() == 0)
-            {
-                if (negate)
-                {
-                    var post = new Postcondition()
-                    {
-                        Condition = new CompileTimeConstant()
-                        {
-                            Type = this.host.PlatformType.SystemBoolean,
-                            Value = false
-                        },
-                        OriginalSource = "false",
-                        Description = new CompileTimeConstant() { Value = "Target negated precondition", Type = this.host.PlatformType.SystemString }
-                    };
-
-                    queryContract.Postconditions.Add(post);
-                }
-            }
-            else
-            {
-                if (negate)
-                {
-                    var exprs = (from pre in targetContract.Preconditions
-                                 select pre.Condition).ToList();
-
-                    var post = new Postcondition()
-                    {
-                        Condition = new LogicalNot()
-                        {
-                            Type = this.host.PlatformType.SystemBoolean,
-                            Operand = Helper.JoinWithLogicalAnd(this.host, exprs, true)
-                        },
-                        OriginalSource = Helper.PrintExpression(Helper.JoinWithLogicalAnd(this.host, exprs, true)),
-                        Description = new CompileTimeConstant() { Value = "Target negated precondition", Type = this.host.PlatformType.SystemString }
-                    };
-                    queryContract.Postconditions.Add(post);
-                }
-                else
-                {
-                    var targetPreconditions = from pre in targetContract.Preconditions
-                                              select new Postcondition()
-                                              {
-                                                  Condition = pre.Condition,
-                                                  OriginalSource = Helper.PrintExpression(pre.Condition),
-                                                  Description = new CompileTimeConstant() { Value = "Target precondition", Type = this.host.PlatformType.SystemString }
-                                              };
-                    queryContract.Postconditions.AddRange(targetPreconditions);
-                }
-            }
-            return queryContract;
-        }
-
         private Action GenerateQuery(State state, Action action, State target)
         {
             var actionName = action.Name;
             var stateName = state.Name;
             var targetName = target.Name;
-            var methodName = string.Format("{1}{0}{2}{0}{3}", methodNameDelimiter, stateName, actionName, targetName);
+            var methodName = string.Format("{1}{0}{2}{0}{3}", MethodNameDelimiter, stateName, actionName, targetName);
 
             var method = CreateQueryMethod(state, methodName, action, target);
             var queryContract = CreateQueryContract(state, target);
@@ -210,17 +98,6 @@ namespace Analysis.Cci
             contracts.Postconditions.Add(postcondition);
 
             return contracts;
-        }
-
-        private MethodDefinition CreateQueryMethod(State state, string name, Action action, Action target)
-        {
-            var parameters = GetStateParameters(state);
-
-            parameters.UnionWith(action.Method.Parameters);
-
-            parameters.UnionWith(target.Method.Parameters);
-
-            return CreateMethod(name, action, parameters);
         }
 
         private MethodDefinition CreateQueryMethod(State state, string name, Action action, State target)
@@ -346,7 +223,7 @@ namespace Analysis.Cci
 
             var mc = action.Contract;
 
-            if (mc != null && mc.Preconditions.Count() > 0)
+            if (mc != null && mc.Preconditions.Any())
             {
                 var asserts = from pre in mc.Preconditions
                               select new AssertStatement()
@@ -376,7 +253,7 @@ namespace Analysis.Cci
             var skipCount = action.Method.IsConstructor ? 1 : 0;
             block.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));
 
-            if (mc != null && mc.Postconditions.Count() > 0)
+            if (mc != null && mc.Postconditions.Any())
             {
                 var assumes = from post in mc.Postconditions
                               select new AssumeStatement()
