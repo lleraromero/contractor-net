@@ -24,7 +24,7 @@ namespace Analysis.Cci
 
         public override string Name
         {
-            get { return TypeHelper.GetTypeName(typeDefinition, NameFormattingOptions.None); }
+            get { return TypeHelper.GetTypeName(typeDefinition); }
         }
 
         public override ISet<Action> Constructors()
