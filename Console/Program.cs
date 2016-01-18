@@ -89,7 +89,8 @@ namespace Contractor.Console
                 case "Corral":
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
                     var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
-                    Contract.Assert(workingDir.Exists);
+                    workingDir.Create();
+
                     analyzer = new CorralAnalyzer(corralDefaultArgs, workingDir, decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly,
                         options.InputAssembly, typeToAnalyze, cancellationSource.Token);
                     break;

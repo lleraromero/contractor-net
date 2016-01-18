@@ -94,7 +94,8 @@ namespace Contractor.Gui.Models
         protected IAnalyzer GetAnalyzer(TypeDefinition typeToAnalyze, string engine, CancellationToken cancellationToken)
         {
             var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
-            Contract.Assert(workingDir.Exists);
+            workingDir.Create();
+
             var queryGenerator = decompiler.CreateQueryGenerator();
 
             IAnalyzer analyzer;
