@@ -262,6 +262,7 @@ namespace Analysis.Cci
             // now, that all the existing statements were added it is time for the postcondition block
             newStatements.Add(dummyPostconditionStatement);
 
+            // Add assume statements for each postcondition that predicates ONLY about parameters (ie. not about the instance)
             var contractDependencyAnalyzer = new CciContractDependenciesAnalyzer(contractProvider);
             foreach (var postcondition in methodContract.Postconditions)
             {

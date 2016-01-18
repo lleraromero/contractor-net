@@ -1,13 +1,13 @@
-﻿using Contractor.Core;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Contractor.Core;
 using Contractor.Core.Model;
 using Contractor.Utils;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableContracts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Action = Contractor.Core.Model.Action;
 
 namespace Analysis.Cci
@@ -36,7 +36,8 @@ namespace Analysis.Cci
             return CreateQueries(state, action, actions, queryGenerator);
         }
 
-        protected IReadOnlyCollection<ActionQuery> CreateQueries(State state, Action action, IEnumerable<Action> actions, CciActionQueryGenerator queryGenerator)
+        protected IReadOnlyCollection<ActionQuery> CreateQueries(State state, Action action, IEnumerable<Action> actions,
+            CciActionQueryGenerator queryGenerator)
         {
             var queries = new List<ActionQuery>();
             foreach (var actionUnderTest in actions)
@@ -48,7 +49,9 @@ namespace Analysis.Cci
 
         public IReadOnlyCollection<TransitionQuery> CreateTransitionQueries(State sourceState, Action action, IEnumerable<State> targetStates)
         {
-            return targetStates.Select(targetState => new TransitionQuery(GenerateQuery(sourceState, action, targetState), sourceState, action, targetState)).ToList();
+            return
+                targetStates.Select(
+                    targetState => new TransitionQuery(GenerateQuery(sourceState, action, targetState), sourceState, action, targetState)).ToList();
         }
 
         private Action GenerateQuery(State state, Action action, State target)
@@ -69,31 +72,57 @@ namespace Analysis.Cci
             var contracts = new MethodContract();
 
             // Source state invariant as a precondition
-            var stateInv = Helper.GenerateStateInvariant(this.host, state);
+            var stateInv = Helper.GenerateStateInvariant(host, state);
 
             var preconditions = from condition in stateInv
-                                select new Precondition()
-                                {
-                                    Condition = condition,
-                                    OriginalSource = Helper.PrintExpression(condition),
-                                    Description = new CompileTimeConstant() { Value = "Source state invariant", Type = this.host.PlatformType.SystemString }
-                                };
+                select new Precondition
+                {
+                    Condition = condition,
+                    OriginalSource = Helper.PrintExpression(condition),
+                    Description = new CompileTimeConstant { Value = "Source state invariant", Type = host.PlatformType.SystemString }
+                };
             contracts.Preconditions.AddRange(preconditions);
 
-            // Negated target state invariant as a postcondition
-            var targetInv = Helper.GenerateStateInvariant(this.host, target);
-
-            IExpression joinedTargetInv = new LogicalNot()
+            // Add a redundant postcondition for only those conditions that predicate ONLY about parameters and not the instance. 
+            // These postconditions will be translated as assumes in the ContractRewriter.cs
+            var contractDependencyAnalyzer = new CciContractDependenciesAnalyzer(new ContractProvider(new ContractMethods(host), null));
+            foreach (var action in target.EnabledActions.Union(target.DisabledActions))
             {
-                Type = this.host.PlatformType.SystemBoolean,
-                Operand = Helper.JoinWithLogicalAnd(this.host, targetInv, true)
+                if (action.Contract != null)
+                {
+                    foreach (var pre in action.Contract.Preconditions)
+                    {
+                        if (contractDependencyAnalyzer.PredicatesAboutInstance(pre) ||
+                            !contractDependencyAnalyzer.PredicatesAboutParameter(pre))
+                        {
+                            continue;
+                        }
+
+                        var post = new Postcondition
+                        {
+                            Condition = pre.Condition,
+                            OriginalSource = Helper.PrintExpression(pre.Condition),
+                            Description = new CompileTimeConstant { Value = "Conditions over parameters are assumed satisfiable", Type = host.PlatformType.SystemString }
+                        };
+                        contracts.Postconditions.Add(post);
+                    }
+                }
+            }
+
+            // Negated target state invariant as a postcondition
+            var targetInv = Helper.GenerateStateInvariant(host, target);
+
+            IExpression joinedTargetInv = new LogicalNot
+            {
+                Type = host.PlatformType.SystemBoolean,
+                Operand = Helper.JoinWithLogicalAnd(host, targetInv, true)
             };
 
-            var postcondition = new Postcondition()
+            var postcondition = new Postcondition
             {
                 Condition = joinedTargetInv,
                 OriginalSource = Helper.PrintExpression(joinedTargetInv),
-                Description = new CompileTimeConstant() { Value = "Negated target state invariant", Type = this.host.PlatformType.SystemString }
+                Description = new CompileTimeConstant { Value = "Negated target state invariant", Type = host.PlatformType.SystemString }
             };
             contracts.Postconditions.Add(postcondition);
 
@@ -128,9 +157,9 @@ namespace Analysis.Cci
 
         private MethodDefinition CreateMethod(string name, Action action, HashSet<IParameterDefinition> parameters)
         {
-            var method = new MethodDefinition()
+            var method = new MethodDefinition
             {
-                CallingConvention = Microsoft.Cci.CallingConvention.HasThis,
+                CallingConvention = CallingConvention.HasThis,
                 InternFactory = host.InternFactory,
                 IsStatic = false,
                 Name = host.NameTable.GetNameFor(name),
@@ -226,12 +255,12 @@ namespace Analysis.Cci
             if (mc != null && mc.Preconditions.Any())
             {
                 var asserts = from pre in mc.Preconditions
-                              select new AssertStatement()
-                              {
-                                  Condition = pre.Condition,
-                                  OriginalSource = pre.OriginalSource,
-                                  Description = new CompileTimeConstant() { Value = "Inlined method precondition", Type = this.host.PlatformType.SystemString }
-                              };
+                    select new AssertStatement
+                    {
+                        Condition = pre.Condition,
+                        OriginalSource = pre.OriginalSource,
+                        Description = new CompileTimeConstant { Value = "Inlined method precondition", Type = host.PlatformType.SystemString }
+                    };
 
                 block.Statements.AddRange(asserts);
             }
@@ -256,12 +285,12 @@ namespace Analysis.Cci
             if (mc != null && mc.Postconditions.Any())
             {
                 var assumes = from post in mc.Postconditions
-                              select new AssumeStatement()
-                              {
-                                  Condition = post.Condition,
-                                  OriginalSource = post.OriginalSource,
-                                  Description = new CompileTimeConstant() { Value = "Inlined method postcondition", Type = this.host.PlatformType.SystemString }
-                              };
+                    select new AssumeStatement
+                    {
+                        Condition = post.Condition,
+                        OriginalSource = post.OriginalSource,
+                        Description = new CompileTimeConstant { Value = "Inlined method postcondition", Type = host.PlatformType.SystemString }
+                    };
                 //Ponemos los assume antes del return
                 if (block.Statements.Count > 0 && block.Statements.Last() is IReturnStatement)
                 {

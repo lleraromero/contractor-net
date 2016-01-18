@@ -13,7 +13,7 @@ namespace Analysis.Cci
             this.contractProvider = contractProvider;
         }
 
-        public bool PredicatesAboutInstance(IPostcondition postcondition)
+        public bool PredicatesAboutInstance(IContractElement postcondition)
         {
             var instanceVisitor = new CciContractVisitor(contractProvider);
             var expressionTraverser = new CciContractTraverser(contractProvider, instanceVisitor);
@@ -21,7 +21,7 @@ namespace Analysis.Cci
             return instanceVisitor.InstanceIsUsed;
         }
 
-        public bool PredicatesAboutParameter(IPostcondition postcondition)
+        public bool PredicatesAboutParameter(IContractElement postcondition)
         {
             var parameterVisitor = new CciContractParameterVisitor(contractProvider);
             var expressionTraverser = new CciContractTraverser(contractProvider, parameterVisitor);

@@ -66,7 +66,7 @@ namespace Contractor.Utils
 
             foreach (var action in s.DisabledActions)
             {
-                if (action.Contract == null || action.Contract.Preconditions.Count() == 0)
+                if (action.Contract == null || !action.Contract.Preconditions.Any())
                 {
                     var literal = new CompileTimeConstant
                     {
