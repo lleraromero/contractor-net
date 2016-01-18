@@ -1,4 +1,4 @@
-﻿using Contractor.Utils;
+﻿using Analysis.Cci;
 using Microsoft.Cci.MutableContracts;
 using System;
 

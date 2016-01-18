@@ -1,76 +1,78 @@
-﻿using Microsoft.Cci;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Linq;
+using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
+using System.Linq;
+using System.Text;
+using Contractor.Core.Model;
+using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
-    class ActionAnalysisResults
+    public class ActionAnalysisResults
     {
-        public List<IMethodDefinition> EnabledActions { get; private set; }
-        public List<IMethodDefinition> DisabledActions { get; private set; }
+        protected HashSet<Action> enabledActions;
+        protected HashSet<Action> disabledActions;
 
-        public ActionAnalysisResults()
+        public ActionAnalysisResults(ISet<Action> enabledActions, ISet<Action> disabledActions)
         {
-            this.EnabledActions = new List<IMethodDefinition>();
-            this.DisabledActions = new List<IMethodDefinition>();
+            Contract.Requires(enabledActions != null && !enabledActions.Contains(null));
+            Contract.Requires(disabledActions != null && !disabledActions.Contains(null));
+
+            this.enabledActions = new HashSet<Action>(enabledActions);
+            this.disabledActions = new HashSet<Action>(disabledActions);
         }
 
-        [ContractInvariantMethod]
-        private void ObjectInvariant()
+        public IImmutableSet<Action> EnabledActions
         {
-            Contract.Invariant(!this.EnabledActions.Contains(null));
-            Contract.Invariant(!this.DisabledActions.Contains(null));
+            get { return enabledActions.ToImmutableHashSet(); }
         }
 
-    }
-
-    class TransitionAnalysisResult
-    {
-        public List<Transition> Transitions { get; private set; }
-
-        public TransitionAnalysisResult()
+        public IImmutableSet<Action> DisabledActions
         {
-            this.Transitions = new List<Transition>();
+            get { return disabledActions.ToImmutableHashSet(); }
         }
     }
 
     public class TypeAnalysisResult
     {
-        public Epa EPA { get; internal set; }
-        public EpaGenerator.Backend Backend { get; internal set; }
-        public TimeSpan TotalDuration { get; internal set; }
-        public Dictionary<string, object> Statistics { get; internal set; }        
+        protected Epa epa;
+        protected string statistics;
+        protected TimeSpan totalTime;
 
-        public TypeAnalysisResult()
+        public TypeAnalysisResult(Epa epa, TimeSpan totalTime, string statistics)
         {
-            EPA = new Epa();
-            TotalDuration = TimeSpan.Zero;
-            Statistics = new Dictionary<string, object>();
+            Contract.Requires(epa != null);
+            Contract.Requires(totalTime != null);
+            Contract.Requires(statistics != null);
+
+            this.epa = epa;
+            this.totalTime = totalTime;
+            this.statistics = statistics;
+        }
+
+        public Epa Epa
+        {
+            get { return epa; }
+        }
+
+        public TimeSpan TotalTime
+        {
+            get { return totalTime; }
         }
 
         public override string ToString()
         {
-            var statesCount = this.EPA.States.Count;
-            var transitionsCount = this.EPA.Transitions.Count;
-            var initialStatesCount = (from s in this.EPA.States where s.IsInitial select s).Count();
-            var unprovenQueriesCount = Convert.ToInt32(this.Statistics["UnprovenQueriesCount"]);
-            var totalGeneratedQueriesCount = Convert.ToInt32(this.Statistics["TotalGeneratedQueriesCount"]);
-            var precision = 100 - Math.Ceiling((double)unprovenQueriesCount * 100 / totalGeneratedQueriesCount);
-            var unprovenTransitionsCount = this.EPA.Transitions.Count(t => t.IsUnproven);
+            var statesCount = Epa.States.Count;
+            var transitionsCount = Epa.Transitions.Count;
+            var unprovenTransitionsCount = Epa.Transitions.Count(t => t.IsUnproven);
 
             var sb = new StringBuilder();
-            sb.AppendFormat(@"Total duration:             {0}"                 , this.TotalDuration).AppendLine();
-            sb.AppendFormat(@"Engine:                     {0}"                 , this.Backend).AppendLine();
-            sb.AppendFormat(@"Analysis total duration:    {0}"                 , this.Statistics["TotalAnalyzerDuration"]).AppendLine();
-            sb.AppendFormat(@"Analysis precision:         {0}%"                , precision).AppendLine();
-            sb.AppendFormat(@"Executions:                 {0}"                 , this.Statistics["ExecutionsCount"]).AppendLine();
-            sb.AppendFormat(@"Generated queries:          {0} ({1} unproven)"  , totalGeneratedQueriesCount, unprovenQueriesCount).AppendLine();
-            sb.AppendFormat(@"States:                     {0} ({1} initial)"   , statesCount, initialStatesCount).AppendLine();
-            sb.AppendFormat(@"Transitions:                {0} ({1} unproven)"  , transitionsCount, unprovenTransitionsCount).AppendLine();
-                                 
+            sb.AppendFormat(@"Total time:          {0:%m} minutes {0:%s} seconds", totalTime).AppendLine();
+            sb.AppendFormat(@"States:              {0} (1 initial)", statesCount).AppendLine();
+            sb.AppendFormat(@"Transitions:         {0} ({1} unproven)", transitionsCount, unprovenTransitionsCount).AppendLine();
+            sb.AppendLine(statistics);
+
             return sb.ToString();
         }
     }

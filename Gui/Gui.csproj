@@ -84,25 +84,6 @@
     <ApplicationIcon>Resources\Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Cci.MetadataHelper, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.MetadataHelper.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Cci.MetadataModel, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.MetadataModel.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Cci.MutableMetadataModel, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.MutableMetadataModel.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Cci.PdbReader">
-      <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.PdbReader.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Cci.PeReader, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.PeReader.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Msagl, Version=2.0.1.0, Culture=neutral, PublicKeyToken=7f84f738e1fc245c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Dependencies\Msagl\Microsoft.Msagl.dll</HintPath>
@@ -116,10 +97,14 @@
       <HintPath>..\Dependencies\Msagl\Microsoft.Msagl.GraphViewerGdi.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable, Version=1.1.37.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Immutable.1.1.37\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\GlobalAssemblyInfo.cs">
@@ -131,11 +116,31 @@
     <Compile Include="AboutDialog.Designer.cs">
       <DependentUpon>AboutDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Main.cs">
+    <Compile Include="AnalysisEventArgs.cs" />
+    <Compile Include="Models\IMainModel.cs" />
+    <Compile Include="Views\IMainScreen.cs" />
+    <Compile Include="Models\EpaViewer.cs" />
+    <Compile Include="Views\EpaViewerScreen.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\EpaViewerScreen.Designer.cs">
+      <DependentUpon>EpaViewerScreen.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Models\MainModel.cs" />
+    <Compile Include="Presenters\EpaViewerPresenter.cs" />
+    <Compile Include="Views\Main.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Main.Designer.cs">
+    <Compile Include="Views\Main.Designer.cs">
       <DependentUpon>Main.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Presenters\MainPresenter.cs" />
+    <Compile Include="Presenters\MethodFilterPresenter.cs" />
+    <Compile Include="Views\MethodFilterScreen.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\MethodFilterScreen.Designer.cs">
+      <DependentUpon>MethodFilterScreen.cs</DependentUpon>
     </Compile>
     <Compile Include="Options.cs" />
     <Compile Include="OptionsDialog.cs">
@@ -152,11 +157,25 @@
     <Compile Include="TitleBar.Designer.cs">
       <DependentUpon>TitleBar.cs</DependentUpon>
     </Compile>
+    <Compile Include="Models\TypesViewer.cs" />
+    <Compile Include="Presenters\TypesViewerPresenter.cs" />
+    <Compile Include="TypesViewerScreen.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="TypesViewerScreen.Designer.cs">
+      <DependentUpon>TypesViewerScreen.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="AboutDialog.resx">
       <DependentUpon>AboutDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Main.resx">
+    <EmbeddedResource Include="Views\EpaViewerScreen.resx">
+      <DependentUpon>EpaViewerScreen.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Main.resx">
       <DependentUpon>Main.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\MethodFilterScreen.resx">
+      <DependentUpon>MethodFilterScreen.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="OptionsDialog.resx">
       <DependentUpon>OptionsDialog.cs</DependentUpon>
@@ -178,7 +197,11 @@
       <Link>Resources\License.rtf</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <EmbeddedResource Include="TypesViewerScreen.resx">
+      <DependentUpon>TypesViewerScreen.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="app.config" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -190,6 +213,22 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Analysis.Cci\Analysis.Cci.csproj">
+      <Project>{9a922e63-a371-4aa3-8026-edb091fef659}</Project>
+      <Name>Analysis.Cci</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Analyzer.CodeContracts\Analyzer.CodeContracts.csproj">
+      <Project>{d0af37f6-01ae-4aa0-afa7-1fb91d226c8f}</Project>
+      <Name>Analyzer.CodeContracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Analyzer.Corral\Analyzer.Corral.csproj">
+      <Project>{62808611-4211-4c87-9628-c237900a581a}</Project>
+      <Name>Analyzer.Corral</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Core.Model\Core.Model.csproj">
+      <Project>{c172f5cc-8814-46df-b25d-2994e524e1d5}</Project>
+      <Name>Core.Model</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Core\Core.csproj">
       <Project>{EBEDD305-0975-416B-A4E5-4C8F5EADB304}</Project>
       <Name>Core</Name>

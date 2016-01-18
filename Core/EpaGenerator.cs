@@ -1,400 +1,145 @@
-﻿using Contractor.Utils;
-using Microsoft.Cci;
-using Microsoft.Cci.Contracts;
-using Microsoft.Cci.MutableCodeModel;
-using Microsoft.Cci.MutableContracts;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using System.IO;
 using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
+using Contractor.Core.Model;
 
 namespace Contractor.Core
 {
-    #region EPAGenerator EventArgs
-
-    public abstract class TypeEventArgs : EventArgs
+    public class EpaGenerator
     {
-        public string TypeFullName { get; private set; }
+        protected IAnalyzer analyzer;
 
-        public TypeEventArgs(string typeFullName)
+        public EpaGenerator(IAnalyzer analyzer)
         {
-            this.TypeFullName = typeFullName;
-        }
-    }
-
-    public class TypeAnalysisStartedEventArgs : TypeEventArgs
-    {
-        public TypeAnalysisStartedEventArgs(string typeFullName)
-            : base(typeFullName)
-        {
-        }
-    }
-
-    public class TypeAnalysisDoneEventArgs : TypeEventArgs
-    {
-        public TypeAnalysisResult AnalysisResult { get; private set; }
-
-        public TypeAnalysisDoneEventArgs(string typeFullName, TypeAnalysisResult analysisResult)
-            : base(typeFullName)
-        {
-            this.AnalysisResult = analysisResult;
-        }
-    }
-
-    public class StateAddedEventArgs : TypeEventArgs
-    {
-        public IState State { get; private set; }
-
-        public StateAddedEventArgs(string typeFullName, IState state)
-            : base(typeFullName)
-        {
-            this.State = state;
-        }
-    }
-
-    public class TransitionAddedEventArgs : TypeEventArgs
-    {
-        public ITransition Transition { get; private set; }
-
-        public IState SourceState { get; private set; }
-
-        public TransitionAddedEventArgs(string typeFullName, ITransition transition, IState sourceState)
-            : base(typeFullName)
-        {
-            this.Transition = transition;
-            this.SourceState = sourceState;
-        }
-    }
-
-    #endregion EPAGenerator EventArgs
-
-    public class EpaGenerator : IDisposable
-    {
-        public enum Backend { CodeContracts, Corral };
-
-        private AssemblyInfo inputAssembly;
-        private static Dictionary<string, TypeAnalysisResult> epas = new Dictionary<string,TypeAnalysisResult>();
-        private CodeContractAwareHostEnvironment host;
-        private Backend backend;
-
-        public event EventHandler<TypeAnalysisStartedEventArgs> TypeAnalysisStarted;
-        public event EventHandler<TypeAnalysisDoneEventArgs> TypeAnalysisDone;
-        public event EventHandler<StateAddedEventArgs> StateAdded;
-        public event EventHandler<TransitionAddedEventArgs> TransitionAdded;
-
-        public EpaGenerator(Backend backend)
-        {
-            Contract.Ensures(host != null);
-            Contract.Ensures(inputAssembly != null);
-
-            host = new CodeContractAwareHostEnvironment(true);
-            inputAssembly = new AssemblyInfo(host);
-            this.backend = backend;
+            Contract.Requires(analyzer != null);
+            this.analyzer = analyzer;
         }
 
-        public void Dispose()
+        public Task<TypeAnalysisResult> GenerateEpa(TypeDefinition typeToAnalyze, IEpaBuilder epaBuilder)
         {
-            host.Dispose();
+            Contract.Requires(typeToAnalyze != null);
+
+            var constructors = typeToAnalyze.Constructors();
+            var actions = typeToAnalyze.Actions();
+
+            return GenerateEpaAndStatistics(constructors, actions, epaBuilder);
         }
 
-        public void LoadAssembly(string inputFileName)
+        public Task<TypeAnalysisResult> GenerateEpa(TypeDefinition typeToAnalyze, IEnumerable<string> selectedMethods, IEpaBuilder epaBuilder)
         {
-            Contract.Requires(!string.IsNullOrEmpty(inputFileName));
+            Contract.Requires(typeToAnalyze != null);
+            Contract.Requires(selectedMethods != null);
 
-            inputAssembly.Load(inputFileName);
-            // Cleaning the EPAs that were generated with another assembly
-            epas.Clear();
+            var constructors = new HashSet<Action>(typeToAnalyze.Constructors().Where(a => selectedMethods.Contains(a.ToString())));
+            var actions = new HashSet<Action>(typeToAnalyze.Actions().Where(a => selectedMethods.Contains(a.ToString())));
+
+            return GenerateEpaAndStatistics(constructors, actions, epaBuilder);
         }
 
-        // Loads the contract reference assembly in the host.
-        public void LoadContractReferenceAssembly(string inputFileName)
+        protected async Task<TypeAnalysisResult> GenerateEpaAndStatistics(ISet<Action> constructors, ISet<Action> actions, IEpaBuilder epaBuilder)
         {
-            Contract.Requires(!string.IsNullOrEmpty(inputFileName));
+            var analysisTimer = Stopwatch.StartNew();
 
-            var contractsAssembly = new AssemblyInfo(host);
-            contractsAssembly.Load(inputFileName);
-        }
+            await Task.Run(() => GenerateEpa(constructors, actions, epaBuilder));
 
-        public Dictionary<string, TypeAnalysisResult> GenerateEpas(CancellationToken token)
-        {
-            Contract.Requires(token != null);
+            analysisTimer.Stop();
 
-            var types = inputAssembly.DecompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
-            var analysisResults = new Dictionary<string, TypeAnalysisResult>();
+            var analysisResult = new TypeAnalysisResult(epaBuilder.Build(), analysisTimer.Elapsed, analyzer.GetUsageStatistics());
 
-            foreach (var type in types)
-            {
-                var typeUniqueName = type.GetUniqueName();
-
-                var result = GenerateEpa(type.ToString(), token);
-                analysisResults.Add(typeUniqueName, result);
-            }
-
-            return analysisResults;
-        }
-
-        public TypeAnalysisResult GenerateEpa(string typeFullName, CancellationToken token)
-        {
-            Contract.Requires(!string.IsNullOrEmpty(typeFullName));
-            Contract.Requires(token != null);
-
-            //Borramos del nombre los parametros de generics
-            int start = typeFullName.IndexOf('<');
-
-            if (start != -1)
-                typeFullName = typeFullName.Remove(start);
-
-            var types = inputAssembly.DecompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
-            var type = types.First(t => t.ToString() == typeFullName);
-
-            var methods = from m in type.GetPublicInstanceMethods()
-                          select m.GetDisplayName();
-            return GenerateEpa(typeFullName, methods, token);
-        }
-
-        public TypeAnalysisResult GenerateEpa(string typeFullName, IEnumerable<string> selectedMethods, CancellationToken token)
-        {
-            Contract.Requires(!string.IsNullOrEmpty(typeFullName));
-            Contract.Requires(selectedMethods != null && selectedMethods.Count() > 0);
-            Contract.Requires(token != null);
-
-            //Borramos del nombre los parametros de generics
-            int start = typeFullName.IndexOf('<');
-
-            if (start != -1)
-                typeFullName = typeFullName.Remove(start);
-
-            var types = inputAssembly.DecompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
-            var type = types.First(t => t.ToString() == typeFullName);
-            var typeUniqueName = type.GetUniqueName();
-
-            if (!epas.ContainsKey(typeUniqueName))
-                epas.Add(typeUniqueName, new TypeAnalysisResult());
-
-            var typeAnalysis = epas[typeUniqueName];
-
-            if (!typeAnalysis.EPA.GenerationCompleted)
-            {
-                var methods = from name in selectedMethods
-                              join m in type.Methods
-                              on name equals m.GetDisplayName()
-                              select m;
-                GenerateEpa(type, methods, token);
-            }
-
-            return typeAnalysis;
+            return analysisResult;
         }
 
         /// <summary>
-        /// Method to create an EPA of a particular type considering only the subset 'methods'
+        ///     Method to create an EPA of a particular type considering only the subset 'methods'
         /// </summary>
         /// <see cref="http://publicaciones.dc.uba.ar/Publications/2011/DBGU11/paper-icse-2011.pdf">Algorithm 1</see>
-        private void GenerateEpa(NamespaceTypeDefinition type, IEnumerable<IMethodDefinition> methods, CancellationToken token)
+        protected Epa GenerateEpa(ISet<Action> constructors, ISet<Action> actions, IEpaBuilder epaBuilder)
         {
-            Contract.Requires(type != null);
-            Contract.Requires(methods != null && methods.Count() > 0);
-            Contract.Requires(token != null);
+            Contract.Requires(constructors != null);
+            Contract.Requires(actions != null);
+            Contract.Requires(epaBuilder != null);
 
-            var typeDisplayName = type.GetDisplayName();
-            var typeUniqueName = type.GetUniqueName();
-            var analysisTimer = Stopwatch.StartNew();
+            var initialState = new State(constructors, new HashSet<Action>());
+            epaBuilder.Add(initialState);
 
-            if (this.TypeAnalysisStarted != null)
-                this.TypeAnalysisStarted(this, new TypeAnalysisStartedEventArgs(typeDisplayName));
+            var statesToVisit = new Queue<State>();
+            var visitedStates = new HashSet<State>();
+            statesToVisit.Enqueue(initialState);
 
-            var constructors = (from m in methods
-                                where m.IsConstructor
-                                select m)
-                                .ToList();
-
-            var actions = (from m in methods
-                           where !m.IsConstructor
-                           select m)
-                           .ToList();
-
-            var epa = epas[typeUniqueName].EPA;
-            epa.Type = typeUniqueName;
-
-            IAnalyzer checker;
-            switch (this.backend)
+            while (statesToVisit.Count > 0)
             {
-                case Backend.CodeContracts:
-                    checker = new CodeContractsAnalyzer(host, inputAssembly, type, token);
-                    break;
-                case Backend.Corral:
-                    checker = new CorralAnalyzer(host, inputAssembly.Module, type, token);
-                    break;
-                default:
-                    throw new NotImplementedException("Unknown backend");
-            }
-
-            var states = new Dictionary<string, State>();
-
-            var dummy = new State();
-            dummy.EnabledActions.UnionWith(constructors);
-            dummy.IsInitial = true;
-            dummy.Id = 0;
-
-            states.Add(dummy.UniqueName, dummy);
-            epa.Add(dummy);
-
-            if (this.StateAdded != null)
-                this.StateAdded(this, new StateAddedEventArgs(typeDisplayName, dummy));
-
-            var newStates = new Queue<State>();
-            newStates.Enqueue(dummy);
-
-            while (newStates.Count > 0 && !token.IsCancellationRequested)
-            {
-                var source = newStates.Dequeue();
-                foreach (var action in source.EnabledActions)
+                var source = statesToVisit.Dequeue();
+                visitedStates.Add(source);
+                foreach(var action in source.EnabledActions)
                 {
-                    var actionUniqueName = action.GetUniqueName();
                     // Which actions are enabled or disabled if 'action' is called from 'source'?
-                    var actionsResult = checker.AnalyzeActions(source, action, actions);
+                    var actionsResult = analyzer.AnalyzeActions(source, action, actions);
+                    Contract.Assert(!actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).Any(), "Results are consistent");
 
-                    // Remove any inconsistency
-                    var inconsistentActions = actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).ToList();
-                    foreach (var act in inconsistentActions)
-                    {
-                        actionsResult.EnabledActions.Remove(act);
-                        actionsResult.DisabledActions.Remove(act);
-                    }
+                    var possibleTargets = GeneratePossibleStates(actions, actionsResult);
+                    Contract.Assert(possibleTargets.Any(), "There is always at least one target to reach");
 
-                    var possibleTargets = generatePossibleStates(actions, actionsResult, epa.States);
                     // Which states are reachable from the current state (aka source) using 'action'?
-                    var transitionsResults = checker.AnalyzeTransitions(source, action, possibleTargets);
+                    var transitionsResults = analyzer.AnalyzeTransitions(source, action, possibleTargets);
+                    Contract.Assert(transitionsResults.Count > 0, "There is always at least one transition to traverse");
 
-                    foreach (var transition in transitionsResults.Transitions)
+                    foreach (var transition in transitionsResults)
                     {
                         var target = transition.TargetState;
                         // Do I have to add a new state to the EPA?
-                        if (!states.ContainsKey(target.UniqueName))
+                        if (!visitedStates.Contains(target) && !statesToVisit.Contains(target))
                         {
-                            target.Id = (uint)states.Keys.Count;
-                            target.IsInitial = false;
-                            newStates.Enqueue(target);
-
-                            states.Add(target.UniqueName, target);
-                            epa.Add(target);
-
-                            if (this.StateAdded != null)
-                            {
-                                var eventArgs = new StateAddedEventArgs(typeDisplayName, target as IState);
-                                this.StateAdded(this, eventArgs);
-                            }
+                            statesToVisit.Enqueue(target);
                         }
-
-                        epa.Add(transition);
-
-                        if (this.TransitionAdded != null)
-                        {
-                            var eventArgs = new TransitionAddedEventArgs(typeDisplayName, transition as ITransition, source as IState);
-                            this.TransitionAdded(this, eventArgs);
-                        }
+                        epaBuilder.Add(transition);
                     }
                 }
             }
 
-            analysisTimer.Stop();
-
-            epa.GenerationCompleted = true;
-
-            if (this.TypeAnalysisDone != null)
-            {
-                var analysisResult = new TypeAnalysisResult();
-                analysisResult.EPA = epa;
-                analysisResult.TotalDuration = analysisTimer.Elapsed;
-                analysisResult.Statistics["TotalAnalyzerDuration"] = checker.TotalAnalysisDuration;
-                analysisResult.Statistics["ExecutionsCount"] = checker.ExecutionsCount;
-                analysisResult.Statistics["TotalGeneratedQueriesCount"] = checker.TotalGeneratedQueriesCount;
-                analysisResult.Statistics["UnprovenQueriesCount"] = checker.UnprovenQueriesCount;
-                analysisResult.Backend = this.backend;
-
-                var eventArgs = new TypeAnalysisDoneEventArgs(typeDisplayName, analysisResult);
-                this.TypeAnalysisDone(this, eventArgs);
-            }
+            return epaBuilder.Build();
         }
 
-        private List<State> generatePossibleStates(List<IMethodDefinition> actions, ActionAnalysisResults actionsResult, HashSet<IState> knownStates)
+        protected IReadOnlyCollection<State> GeneratePossibleStates(ISet<Action> actions, ActionAnalysisResults actionsResult)
         {
             Contract.Requires(actions != null);
             Contract.Requires(actionsResult != null);
-            Contract.Requires(knownStates != null);
 
-            var unknownActions = new HashSet<IMethodDefinition>(actions);
-
+            var unknownActions = new HashSet<Action>(actions);
             unknownActions.ExceptWith(actionsResult.EnabledActions);
             unknownActions.ExceptWith(actionsResult.DisabledActions);
 
             var states = new List<State>();
 
-            var v = new State();
-            v.EnabledActions.UnionWith(actionsResult.EnabledActions);
-            v.DisabledActions.UnionWith(actionsResult.DisabledActions);
-            v.DisabledActions.UnionWith(unknownActions);
-            if (knownStates.Contains(v))
-            {
-                v = knownStates.Single(s => s.Equals(v)) as State;
-            }
+            var enabledActions = new HashSet<Action>(actionsResult.EnabledActions);
+            var disabledActions = new HashSet<Action>(actionsResult.DisabledActions);
+            disabledActions.UnionWith(unknownActions);
+            var v = new State(enabledActions, disabledActions);
             states.Add(v);
 
             while (unknownActions.Count > 0)
             {
-                var m = unknownActions.First();
-                unknownActions.Remove(m);
+                var action = unknownActions.First();
+                unknownActions.Remove(action);
 
                 var count = states.Count;
 
-                for (int i = 0; i < count; ++i)
+                for (var i = 0; i < count; ++i)
                 {
-                    var w = new State();
+                    enabledActions = new HashSet<Action>();
+                    enabledActions.Add(action);
+                    enabledActions.UnionWith(states[i].EnabledActions);
+                    disabledActions = new HashSet<Action>();
+                    disabledActions.UnionWith(states[i].DisabledActions);
+                    disabledActions.Remove(action);
 
-                    w.EnabledActions.Add(m);
-                    w.EnabledActions.UnionWith(states[i].EnabledActions);
-                    w.DisabledActions.UnionWith(states[i].DisabledActions);
-                    w.DisabledActions.Remove(m);
-
-                    if (knownStates.Contains(w))
-                    {
-                        w = knownStates.Single(s => s.Equals(w)) as State;
-                    }
-
+                    var w = new State(enabledActions, disabledActions);
                     states.Add(w);
                 }
             }
 
             return states;
-        }
-
-        public void GenerateOutputAssembly(string outputFileName)
-        {
-            Contract.Requires(!string.IsNullOrEmpty(outputFileName));
-
-            var contractProvider = inputAssembly.ExtractContracts();
-            var instrumenter = new Instrumenter(host, contractProvider);
-
-            foreach (var typeUniqueName in epas.Keys)
-            {
-                var typeAnalysis = epas[typeUniqueName];
-
-                if (!typeAnalysis.EPA.Instrumented)
-                {
-                    var type = (from t in inputAssembly.DecompiledModule.AllTypes
-                                where typeUniqueName == t.GetUniqueName()
-                                select t as NamespaceTypeDefinition)
-                                .First();
-
-                    instrumenter.InstrumentType(type, typeAnalysis.EPA);
-                    typeAnalysis.EPA.Instrumented = true;
-                }
-            }
-
-            inputAssembly.InjectContracts(contractProvider);
-            inputAssembly.Save(outputFileName);
         }
     }
 }

@@ -1,38 +1,32 @@
-﻿using Contractor.Utils;
-using Microsoft.Cci;
-using Microsoft.Cci.ILToCodeModel;
-using Microsoft.Cci.MutableCodeModel;
-using Microsoft.Cci.MutableContracts;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Xml;
+using Contractor.Core.Model;
+using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
-    public class EpaXmlSerializer
+    public class EpaXmlSerializer : ISerializer
     {
-        public EpaXmlSerializer()
-        {
-        }
-
         public void Serialize(Stream stream, Epa epa)
         {
-            Contract.Requires(stream != null && stream.CanWrite);
-            Contract.Requires(epa != null && !string.IsNullOrEmpty(epa.Type));
-
-            using (var writer = new XmlTextWriter(stream, Encoding.UTF8))
+            var settings = new XmlWriterSettings
             {
-                writer.Formatting = Formatting.Indented;
+                CloseOutput = false,
+                Indent = true
+            };
+
+            using (var writer = XmlWriter.Create(stream, settings))
+            {
                 writer.WriteStartDocument();
 
                 writer.WriteStartElement("abstraction");
-                writer.WriteAttributeString("initial_state", epa.Initial.Id.ToString());
+                writer.WriteAttributeString("initial_state", epa.Initial.Name);
                 writer.WriteAttributeString("input_format", "code-with-pre");
-                writer.WriteAttributeString("name", epa.Type);
+                writer.WriteAttributeString("name", epa.Type.Name);
 
                 SerializeActions(epa, writer);
                 SerializeStates(epa, writer);
@@ -41,12 +35,12 @@ namespace Contractor.Core
             }
         }
 
-        private void SerializeActions(Epa epa, XmlTextWriter writer)
+        private void SerializeActions(Epa epa, XmlWriter writer)
         {
             Contract.Requires(epa != null);
             Contract.Requires(writer != null);
 
-            SortedSet<string> actions = new SortedSet<string>(from t in epa.Transitions select t.Action);
+            var actions = new SortedSet<string>(from t in epa.Transitions select t.Action.ToString());
             foreach (var a in actions)
             {
                 writer.WriteStartElement("label");
@@ -55,20 +49,20 @@ namespace Contractor.Core
             }
         }
 
-        private void SerializeStates(Epa epa, XmlTextWriter writer)
+        private void SerializeStates(Epa epa, XmlWriter writer)
         {
-            Contract.Requires(epa != null && !string.IsNullOrEmpty(epa.Type));
+            Contract.Requires(epa != null && epa.Type != null);
             Contract.Requires(writer != null);
 
             foreach (var s in epa.States)
             {
                 writer.WriteStartElement("state");
-                writer.WriteAttributeString("name", s.Id.ToString());
+                writer.WriteAttributeString("name", s.Name);
 
-                foreach (var a in (s as State).EnabledActions)
+                foreach (var a in s.EnabledActions)
                 {
                     writer.WriteStartElement("enabled_label");
-                    writer.WriteAttributeString("name", a.GetDisplayName());
+                    writer.WriteAttributeString("name", a.ToString());
                     writer.WriteEndElement();
                 }
 
@@ -76,23 +70,22 @@ namespace Contractor.Core
 
                 writer.WriteEndElement(); // State
             }
-
         }
 
-        private void SerializeTransitions(Epa epa, XmlTextWriter writer, IState s)
+        private void SerializeTransitions(Epa epa, XmlWriter writer, State s)
         {
-            Contract.Requires(epa != null && !string.IsNullOrEmpty(epa.Type));
+            Contract.Requires(epa != null && epa.Type != null);
             Contract.Requires(writer != null);
             Contract.Requires(s != null);
 
-            SortedDictionary<uint, List<ITransition>> transitions = new SortedDictionary<uint, List<ITransition>>();
-            foreach (var t in epa[s])
+            var transitions = new SortedDictionary<string, List<Transition>>();
+            foreach (var t in epa.Transitions.Where(t => t.SourceState.Equals(s)))
             {
-                if (!transitions.ContainsKey(t.TargetState.Id))
+                if (!transitions.ContainsKey(t.TargetState.Name))
                 {
-                    transitions.Add(t.TargetState.Id, new List<ITransition>());
+                    transitions.Add(t.TargetState.Name, new List<Transition>());
                 }
-                transitions[t.TargetState.Id].Add(t);
+                transitions[t.TargetState.Name].Add(t);
             }
 
             foreach (var kvp in transitions)
@@ -100,8 +93,8 @@ namespace Contractor.Core
                 foreach (var t in kvp.Value)
                 {
                     writer.WriteStartElement("transition");
-                    writer.WriteAttributeString("destination", kvp.Key.ToString());
-                    writer.WriteAttributeString("label", t.Action);
+                    writer.WriteAttributeString("destination", kvp.Key);
+                    writer.WriteAttributeString("label", t.Action.ToString());
                     writer.WriteAttributeString("uncertain", t.IsUnproven.ToString().ToLower());
                     writer.WriteAttributeString("violates_invariant", "false"); //Contractor.NET does not support this attribute
                     writer.WriteEndElement();
@@ -109,138 +102,97 @@ namespace Contractor.Core
             }
         }
 
-        public Epa Deserialize(Stream stream, string inputAssemblyPath)
+        public Epa Deserialize(Stream stream)
         {
             Contract.Requires(stream != null && stream.CanRead);
-            Contract.Requires(!string.IsNullOrEmpty(inputAssemblyPath));
             Contract.Ensures(Contract.Result<Epa>() != null);
 
-            var epa = new Epa();
+            EpaBuilder epaBuilder;
             using (var reader = new XmlTextReader(stream))
             {
                 reader.Read(); // Document
                 reader.Read();
                 reader.Read(); // Epa
-                epa.Type = reader.GetAttribute("name");
-                uint initialState = uint.Parse(reader.GetAttribute("initial_state").Replace("Sinit", "0"));
 
-                var resolvedType = FindType(inputAssemblyPath, epa.Type);
-                Contract.Assert(resolvedType != null);
-                DeserializeActions(reader);
-                DeserializeStates(reader, epa, resolvedType, initialState);
+                var typename = reader.GetAttribute("name");
+                var typeDefinition = new StringTypeDefinition(typename, null, null);
+                
+                var actions = DeserializeActions(reader);
+                var states = DeserializeStates(reader);
+
+                var translator = new Dictionary<string, State>();
+
+                epaBuilder = new EpaBuilder(typeDefinition);
+
+                foreach (var state in states)
+                {
+                    var enabledActions = new HashSet<Action>();
+                    foreach (var t in state.Value)
+                    {
+                        enabledActions.Add(t.Item2);
+                    }
+                    var disabledActions = new HashSet<Action>(actions);
+                    disabledActions.ExceptWith(enabledActions);
+
+                    var s = new State(enabledActions, disabledActions);
+                    epaBuilder.Add(s);
+
+                    var stateName = state.Key;
+                    translator[stateName] = s;
+                }
+
+                foreach (var state in states)
+                {
+                    foreach (var transition in state.Value)
+                    {
+                        epaBuilder.Add(new Transition(transition.Item2, translator[transition.Item1], translator[transition.Item3], transition.Item4));
+                    }
+                }
             }
 
-            return epa;
+            return epaBuilder.Build();
         }
 
-        private void DeserializeActions(XmlTextReader reader)
+        protected IReadOnlyCollection<Action> DeserializeActions(XmlTextReader reader)
         {
+            var actions = new List<Action>();
             while (reader.Name != "state")
             {
+                actions.Add(new StringAction(reader.Name));
                 reader.Read();
             }
+            return actions;
         }
 
-        private NamespaceTypeDefinition FindType(string inputAssemblyPath, string type)
-        {
-            Contract.Requires(!string.IsNullOrEmpty(inputAssemblyPath) && !string.IsNullOrEmpty(type));
-
-            var host = new CodeContractAwareHostEnvironment();
-
-            // Load module
-            var module = host.LoadUnitFrom(inputAssemblyPath) as IModule;
-            if (module == null || module is Dummy || module == Dummy.Assembly)
-                throw new Exception(string.Concat(inputAssemblyPath, " is not a PE file containing a CLR module or assembly."));
-
-            // Load PDB
-            PdbReader pdbReader = null;
-            string pdbFile = Path.ChangeExtension(module.Location, "pdb");
-            if (File.Exists(pdbFile))
-                using (var pdbStream = File.OpenRead(pdbFile))
-                    pdbReader = new PdbReader(pdbStream, host);
-
-            // Decompile module
-            var decompiledModule = Decompiler.GetCodeModelFromMetadataModel(host, module, pdbReader);
-
-            // Find the type that I am trying to analyse
-            var resolvedType = decompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>().First(t => TypeHelper.GetTypeName(t) == type);
-            Contract.Assert(resolvedType != null);
-
-            if (pdbReader != null)
+        protected Dictionary<string, List<Tuple<string, Action, string, bool>>> DeserializeStates(XmlTextReader reader)
+        {   
+            var states = new Dictionary<string, List<Tuple<string, Action, string, bool>>>();
+            string name = null;
+            do
             {
-                pdbReader.Dispose();
-            }
-
-            return resolvedType;
-        }
-
-        private void DeserializeStates(XmlTextReader reader, Epa epa, NamespaceTypeDefinition type, uint initialState)
-        {
-            Contract.Requires(reader != null && epa != null && type != null);
-
-            Dictionary<uint, List<Transition>> epaStructure = new Dictionary<uint, List<Transition>>();
-
-
-            State s = null;
-            for (bool read = true; read; reader.Read())
-            {
-                switch (reader.NodeType)
+                var nodeType = reader.NodeType;
+                if (nodeType.Equals(XmlNodeType.Element))
                 {
-                    case XmlNodeType.Element:
-                        switch (reader.Name)
-                        {
-                            case "state":
-                                if (s != null)
-                                {
-                                    epa.Add(s);
-                                }
-                                s = new State();
-                                s.Id = uint.Parse(reader.GetAttribute("name").Replace("Sinit", "0").Replace("S", ""));
-                                s.IsInitial = s.Id == initialState;
-
-                                epaStructure[s.Id] = new List<Transition>();
-                                break;
-                            case "enabled_label":
-                                var method = type.Methods.First(m => m.GetDisplayName() == reader.GetAttribute("name"));
-                                s.EnabledActions.Add(method);
-                                break;
-                            case "transition":
-                                method = type.Methods.First(m => m.GetDisplayName() == reader.GetAttribute("label"));
-                                Contract.Assert(s != null);
-                                var sourceState = s;
-                                var targetState = new State() { Id = uint.Parse(reader.GetAttribute("destination").Replace("S", "")) };
-                                var isUnproven = bool.Parse(reader.GetAttribute("uncertain"));
-                                var t = new Transition(method, sourceState, targetState, isUnproven);
-                                epaStructure[s.Id].Add(t);
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
-                    case XmlNodeType.EndElement:
-                        if (reader.Name == "abstraction")
-                        {
-                            if (s != null)
-                            {
-                                epa.Add(s);
-                            }
-                            read = false;
-                        }
-                        break;
-                    default:
-                        break;
+                    switch (reader.Name)
+                    {
+                        case "state":
+                            name = reader.GetAttribute("name");
+                            states[name] = new List<Tuple<string, Action, string, bool>>();
+                            break;
+                        case "enabled_label":
+                            break;
+                        case "transition":
+                            var sourceState = name;
+                            var targetState = reader.GetAttribute("destination");
+                            var isUnproven = bool.Parse(reader.GetAttribute("uncertain"));
+                            var action = new StringAction(reader.GetAttribute("label"));
+                            states[name].Add(new Tuple<string, Action, string, bool>(sourceState, action, targetState, isUnproven));
+                            break;
+                    }
                 }
-            }
+            } while (reader.Read());
 
-            foreach (var kvp in epaStructure)
-            {
-                foreach (var t in kvp.Value)
-                {
-                    var targetState = epa.States.First(state => state.Id == t.TargetState.Id) as State;
-                    var newTrans = new Transition(t.Action, t.SourceState, targetState, t.IsUnproven);
-                    epa.Add(newTrans);
-                }
-            }
+            return states;
         }
     }
 }

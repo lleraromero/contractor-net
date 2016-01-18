@@ -1,34 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Contractor.Core;
+﻿using System.Configuration;
 
 namespace Contractor.Gui
 {
-	class Options
-	{
-		public bool CollapseTransitions { get; set; }
-		public bool UnprovenTransitions { get; set; }
-		public bool StateDescription { get; set; }
+    internal class Options
+    {
+        public Options()
+        {
+            CollapseTransitions = true;
+            UnprovenTransitions = true;
+            StateDescription = true;
+        }
 
-		public Options()
-		{
-			this.CollapseTransitions = true;
-			this.UnprovenTransitions = true;
-			this.StateDescription = true;
-		}
+        public bool CollapseTransitions { get; set; }
+        public bool UnprovenTransitions { get; set; }
+        public bool StateDescription { get; set; }
 
-		public string CheckerArguments
-		{
-			get { return Configuration.CheckerArguments; }
-			set { Configuration.CheckerArguments = value; }
-		}
-
-		public bool InlineMethodsBody
-		{
-			get { return Configuration.InlineMethodsBody; }
-			set { Configuration.InlineMethodsBody = value; }
-		}
-	}
+        public string CheckerArguments
+        {
+            get { return ConfigurationManager.AppSettings["CccheckArgs"]; }
+            set { ConfigurationManager.AppSettings.Set("CccheckArgs", value); }
+        }
+    }
 }

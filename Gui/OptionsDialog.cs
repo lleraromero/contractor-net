@@ -20,7 +20,6 @@ namespace Contractor.Gui
 			{
 				var options = new Options();
 
-				options.InlineMethodsBody = checkboxInlineMethodsBody.Checked;
 				options.CollapseTransitions = checkboxCollapseTransitions.Checked;
 				options.UnprovenTransitions = checkboxUnprovenTransitions.Checked;
 				options.StateDescription = checkboxStatesDescriptions.Checked;
@@ -30,7 +29,6 @@ namespace Contractor.Gui
 			}
 			set
 			{
-				checkboxInlineMethodsBody.Checked = value.InlineMethodsBody;
 				checkboxCollapseTransitions.Checked = value.CollapseTransitions;
 				checkboxUnprovenTransitions.Checked = value.UnprovenTransitions;
 				checkboxStatesDescriptions.Checked = value.StateDescription;
