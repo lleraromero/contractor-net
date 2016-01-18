@@ -262,6 +262,34 @@ namespace Analysis.Cci
             // now, that all the existing statements were added it is time for the postcondition block
             newStatements.Add(dummyPostconditionStatement);
 
+            var contractDependencyAnalyzer = new CciContractDependenciesAnalyzer(contractProvider);
+            foreach (var postcondition in methodContract.Postconditions)
+            {
+                if (contractDependencyAnalyzer.PredicatesAboutInstance(postcondition) ||
+                    !contractDependencyAnalyzer.PredicatesAboutParameter(postcondition))
+                {
+                    continue;
+                }
+
+                var methodCall = new MethodCall
+                {
+                    Arguments =
+                        new List<IExpression>
+                        {
+                            Rewrite(postcondition.Condition),
+                            new CompileTimeConstant { Type = host.PlatformType.SystemString, Value = "Conditions over parameters are assumed satisfiable" }
+                        },
+                    IsStaticCall = true,
+                    MethodToCall = AssumeReference,
+                    Type = systemVoid,
+                    Locations = new List<ILocation>(postcondition.Locations)
+                };
+                var es = new ExpressionStatement
+                {
+                    Expression = methodCall
+                };
+                newStatements.Add(es);
+            }
 
             // the postcondition block. Add each postcondition as an assert
             foreach (var postcondition in methodContract.Postconditions)
