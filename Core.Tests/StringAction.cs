@@ -8,10 +8,12 @@ namespace Core.Tests
     internal class StringAction : Action
     {
         protected string name;
+
         public StringAction(string name)
         {
             this.name = name;
         }
+
         public override string Name
         {
             get { return name; }
@@ -27,10 +29,16 @@ namespace Core.Tests
             get { throw new NotImplementedException(); }
         }
 
+        public override string ToString()
+        {
+            return name;
+        }
+
         #region IEquatable
+
         public override bool Equals(Action other)
         {
-            return base.Equals((object)other) && Equals((StringAction)other);
+            return base.Equals((object) other) && Equals((StringAction) other);
         }
 
         public bool Equals(StringAction other)
@@ -42,11 +50,7 @@ namespace Core.Tests
         {
             return name.GetHashCode();
         }
-        #endregion
 
-        public override string ToString()
-        {
-            return name;
-        }
+        #endregion
     }
 }

@@ -1,37 +1,40 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Analysis.Cci;
 using Contractor.Core;
 using Contractor.Core.Model;
 using FakeItEasy;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+// ReSharper disable InconsistentNaming
 
 namespace Analyzer.Corral.Tests
 {
     [TestClass]
     public class CorralEPAsTest
     {
-        //private const string InputFilePath = @"..\..\..\Examples\obj\Debug\Decl\Examples.dll";
-        //protected static IAssemblyXXX inputAssembly;
+        [TestMethod]
+        public void TestVendingMachine()
+        {
+            var typeToAnalyze = FindTypeDefinitionInAssemblyWithName("Examples.VendingMachine");
+            var epaGenerator = new EpaGenerator(new AnalyzerMock());
+            var result = epaGenerator.GenerateEpa(typeToAnalyze, A.Dummy<IEpaBuilder>());
 
-        //[ClassInitialize]
-        //public static void GenerateEPAs(TestContext tc)
-        //{
-        //    var ExamplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, InputFilePath));
+            Assert.IsFalse(result.IsFaulted);
+            Assert.IsFalse(result.IsCanceled);
 
-        //    inputAssembly = new CciDecompiler().Decompile(ExamplesPath, null);
-        //}
+            Assert.IsNotNull(result.Result.Epa);
+        }
 
-        //[TestMethod]
-        //public void TestVendingMachine()
-        //{
-        //    //var Type = FindTypeDefinitionInAssemblyWithName("VendingMachine");
-        //    //var epa = GenerateEpa(type)
-        //    //assert
-        //    //assert
-        //    GenerateEpa("Examples.VendingMachine");
-        //}
+        protected TypeDefinition FindTypeDefinitionInAssemblyWithName(string typeName)
+        {
+            const string InputFilePath = @"..\..\..\Examples\obj\Debug\Decl\Examples.dll";
+            var ExamplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, InputFilePath));
+            var inputAssembly = new CciDecompiler().Decompile(ExamplesPath, null);
+
+            return inputAssembly.Types().First(t => t.Name.Equals(typeName));
+        }
 
         //[TestMethod]
         //public void TestLinear()
@@ -49,17 +52,6 @@ namespace Analyzer.Corral.Tests
         //public void TestFiniteStack()
         //{
         //    GenerateEpa("Examples.FiniteStack");
-        //}
-
-        //private void GenerateEpa(string typeToAnalyze)
-        //{
-        //    var epaGenerator = new EpaGenerator(new AnalyzerMock());
-        //    var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(typeToAnalyze));
-        //    var epa = epaGenerator.GenerateEpa(typeDefinition, A.Dummy<IEpaBuilder>());
-        //    epa.Wait();
-
-        //    Assert.IsFalse(epa.IsFaulted);
-        //    Assert.IsFalse(epa.IsCanceled);
         //}
     }
 }

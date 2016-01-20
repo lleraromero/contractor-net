@@ -3,11 +3,10 @@ using System.IO;
 using System.Linq;
 using Contractor.Core;
 using Contractor.Core.Model;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Core.Tests
 {
-    [TestClass]
     public class EpaXmlSerializerTest
     {
         protected Epa NoConstructorsNoActionsEpa()
@@ -36,7 +35,7 @@ namespace Core.Tests
             return new Epa(typeDefinition, transitions.ToList());
         }
 
-        [TestMethod]
+        [Fact]
         public void SerializeEpaWithNoConstructorsAndNoActions()
         {
             var epa = NoConstructorsNoActionsEpa();
@@ -52,12 +51,12 @@ namespace Core.Tests
 <abstraction initial_state=""STATE$deadlock"" input_format=""code-with-pre"" name=""NoConstructorsNoActiosnEpa"">
   <state name=""STATE$deadlock"" />
 </abstraction>";
-                    Assert.AreEqual(expected, reader.ReadToEnd());
+                    Assert.Equal(expected, reader.ReadToEnd());
                 }
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void SerializeEpaWithOneConstructorAndNoActions()
         {
             var epa = OneConstructorNoActionsEpa();
@@ -78,7 +77,7 @@ namespace Core.Tests
   </state>
   <state name=""STATE$deadlock"" />
 </abstraction>";
-                    Assert.AreEqual(expected, reader.ReadToEnd());
+                    Assert.Equal(expected, reader.ReadToEnd());
                 }
             }
         }
