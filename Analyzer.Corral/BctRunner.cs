@@ -20,7 +20,7 @@ namespace Analyzer.Corral
             {
                 bct.StartInfo = new ProcessStartInfo
                 {
-                    FileName = @"D:\bct\Binaries\BytecodeTranslator.exe",
+                    FileName = @"D:\contractor-net\Dependencies\BCT\BytecodeTranslator.exe",
                     Arguments = string.Join(" ", args),
                     WorkingDirectory = tmpDir,
                     CreateNoWindow = true,

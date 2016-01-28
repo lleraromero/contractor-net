@@ -30,7 +30,7 @@ namespace Analyzer.Corral
             {
                 corral.StartInfo = new ProcessStartInfo
                 {
-                    FileName = @"D:\corral\bin\Debug\corral.exe",
+                    FileName = @"D:\contractor-net\Dependencies\Corral\corral.exe",
                     Arguments = args,
                     WorkingDirectory = tmpDir,
                     CreateNoWindow = true,
