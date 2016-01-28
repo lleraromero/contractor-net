@@ -118,7 +118,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BctRunner.cs" />
-    <Compile Include="BctTranslator.cs" />
+    <Compile Include="BctMethodNamer.cs" />
     <Compile Include="CciQueryAssembly.cs" />
     <Compile Include="CorralAnalyzer.cs" />
     <Compile Include="CorralRunner.cs" />

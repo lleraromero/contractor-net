@@ -23,7 +23,7 @@ namespace Analyzer.Corral
             var tmpDir = Path.Combine(workingDir.FullName, Guid.NewGuid().ToString());
             Directory.CreateDirectory(tmpDir);
 
-            var args = string.Format("{0} /main:{1} {2}", queryAssembly.FullName, BctTranslator.CreateUniqueMethodName(query), corralArguments);
+            var args = string.Format("{0} /main:{1} {2}", queryAssembly.FullName, BctMethodNamer.CreateUniqueMethodName(query), corralArguments);
             var output = new StringBuilder();
 
             using (var corral = new Process())

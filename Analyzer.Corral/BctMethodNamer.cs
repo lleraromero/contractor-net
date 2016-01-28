@@ -7,7 +7,7 @@ namespace Analyzer.Corral
     /// <summary>
     ///     BCT-TranslationHelper.cs
     /// </summary>
-    internal class BctTranslator
+    internal class BctMethodNamer
     {
         public static string CreateUniqueMethodName(Query query)
         {
