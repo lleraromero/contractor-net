@@ -16099,6 +16099,10 @@
       <pure />
       <requires csharp="list != null" vb="list &lt;&gt; Nothing">list != null</requires>
     </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.HashtableUlong`1.KeyValuePair.ToString">
+      <ensures inheritedFrom="M:System.ValueType.ToString" inheritedFromTypeName="ValueType" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Object.ToString" inheritedFromTypeName="Object" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
     <member name="M:Microsoft.Cci.UtilityDataStructures.FList`1.PrivateGetEnumerable(Microsoft.Cci.UtilityDataStructures.FList{`0})">
       <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
@@ -16106,10 +16110,6 @@
       <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
       <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_CurrentIndex == -1" vb="result.get_CurrentIndex = -1">result.get_CurrentIndex == -1</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.UtilityDataStructures.HashtableUlong`1.KeyValuePair.ToString">
-      <ensures inheritedFrom="M:System.ValueType.ToString" inheritedFromTypeName="ValueType" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:System.Object.ToString" inheritedFromTypeName="Object" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.Immutable.PointerType.GetPointerType(Microsoft.Cci.ITypeReference,Microsoft.Cci.IInternFactory)">
       <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
@@ -16443,26 +16443,6 @@
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ISpecializedFieldReference.get_UnspecializedVersion" inheritedFromTypeName="ISpecializedFieldReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
         <ensures inheritedFrom="M:Microsoft.Cci.ISpecializedFieldReference.get_UnspecializedVersion" inheritedFromTypeName="ISpecializedFieldReference" csharp="!(result is Microsoft.Cci.ISpecializedFieldReference)" vb="Not result Is Microsoft.Cci.ISpecializedFieldReference">!(result is Microsoft.Cci.ISpecializedFieldReference)</ensures>
-      </getter>
-    </member>
-    <member name="M:Microsoft.Cci.Immutable.AggregatedNamespace`2.Microsoft#Cci#IContainer{Microsoft#Cci#INamespaceMember}#get_Members">
-      <ensures inheritedFrom="M:Microsoft.Cci.IContainer`1.get_Members" inheritedFromTypeName="IContainer" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.IContainer`1.get_Members" inheritedFromTypeName="IContainer" csharp="for all x in result (object)x != null" vb="for all x in result ((Object)x) &lt;&gt; Nothing">for all x in result (object)x != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.Immutable.AggregatedNamespace`2.Microsoft#Cci#INamespaceDefinition#get_Members">
-      <ensures inheritedFrom="M:Microsoft.Cci.INamespaceDefinition.get_Members" inheritedFromTypeName="INamespaceDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.INamespaceDefinition.get_Members" inheritedFromTypeName="INamespaceDefinition" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-    </member>
-    <member name="P:Microsoft.Cci.Immutable.AggregatedNamespace`2.Microsoft#Cci#IContainer{Microsoft#Cci#INamespaceMember}#Members">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IContainer`1.get_Members" inheritedFromTypeName="IContainer" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.IContainer`1.get_Members" inheritedFromTypeName="IContainer" csharp="for all x in result (object)x != null" vb="for all x in result ((Object)x) &lt;&gt; Nothing">for all x in result (object)x != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Immutable.AggregatedNamespace`2.Microsoft#Cci#INamespaceDefinition#Members">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.INamespaceDefinition.get_Members" inheritedFromTypeName="INamespaceDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.INamespaceDefinition.get_Members" inheritedFromTypeName="INamespaceDefinition" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
       </getter>
     </member>
     <member name="M:Microsoft.Cci.Immutable.ManagedPointerType.GetManagedPointerType(Microsoft.Cci.ITypeReference,Microsoft.Cci.IInternFactory)">
@@ -16942,10 +16922,6 @@
         <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
       </getter>
     </member>
-    <member name="M:Microsoft.Cci.Immutable.SpecializedGenericParameter`1.Microsoft#Cci#ITypeReference#get_ResolvedType">
-      <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_ResolvedType" inheritedFromTypeName="ITypeReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_ResolvedType" inheritedFromTypeName="ITypeReference" csharp="this is Microsoft.Cci.ITypeDefinition ⇒ result == this" vb="Me Is Microsoft.Cci.ITypeDefinition Implies result = Me">!(this is Microsoft.Cci.ITypeDefinition) || result == this</ensures>
-    </member>
     <member name="M:Microsoft.Cci.Immutable.NestedUnitSetNamespace.Microsoft#Cci#INamespaceMember#get_ContainingNamespace">
       <ensures inheritedFrom="M:Microsoft.Cci.INamespaceMember.get_ContainingNamespace" inheritedFromTypeName="INamespaceMember" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
@@ -16980,6 +16956,26 @@
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_Parameters" inheritedFromTypeName="ISignature" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
         <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_Parameters" inheritedFromTypeName="ISignature" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.Immutable.AggregatedNamespace`2.Microsoft#Cci#IContainer{Microsoft#Cci#INamespaceMember}#get_Members">
+      <ensures inheritedFrom="M:Microsoft.Cci.IContainer`1.get_Members" inheritedFromTypeName="IContainer" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.IContainer`1.get_Members" inheritedFromTypeName="IContainer" csharp="for all x in result (object)x != null" vb="for all x in result ((Object)x) &lt;&gt; Nothing">for all x in result (object)x != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.Immutable.AggregatedNamespace`2.Microsoft#Cci#INamespaceDefinition#get_Members">
+      <ensures inheritedFrom="M:Microsoft.Cci.INamespaceDefinition.get_Members" inheritedFromTypeName="INamespaceDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.INamespaceDefinition.get_Members" inheritedFromTypeName="INamespaceDefinition" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.Immutable.AggregatedNamespace`2.Microsoft#Cci#IContainer{Microsoft#Cci#INamespaceMember}#Members">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IContainer`1.get_Members" inheritedFromTypeName="IContainer" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IContainer`1.get_Members" inheritedFromTypeName="IContainer" csharp="for all x in result (object)x != null" vb="for all x in result ((Object)x) &lt;&gt; Nothing">for all x in result (object)x != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Immutable.AggregatedNamespace`2.Microsoft#Cci#INamespaceDefinition#Members">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.INamespaceDefinition.get_Members" inheritedFromTypeName="INamespaceDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.INamespaceDefinition.get_Members" inheritedFromTypeName="INamespaceDefinition" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
       </getter>
     </member>
     <member name="M:Microsoft.Cci.Immutable.Vector.GetVector(Microsoft.Cci.ITypeReference,Microsoft.Cci.IInternFactory)">
@@ -17199,6 +17195,10 @@
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.INamedTypeReference.get_ResolvedType" inheritedFromTypeName="INamedTypeReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
+    </member>
+    <member name="M:Microsoft.Cci.Immutable.SpecializedGenericParameter`1.Microsoft#Cci#ITypeReference#get_ResolvedType">
+      <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_ResolvedType" inheritedFromTypeName="ITypeReference" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.ITypeReference.get_ResolvedType" inheritedFromTypeName="ITypeReference" csharp="this is Microsoft.Cci.ITypeDefinition ⇒ result == this" vb="Me Is Microsoft.Cci.ITypeDefinition Implies result = Me">!(this is Microsoft.Cci.ITypeDefinition) || result == this</ensures>
     </member>
     <member name="M:Microsoft.Cci.Immutable.UnitSet.Microsoft#Cci#INamespaceRootOwner#get_NamespaceRoot">
       <ensures inheritedFrom="M:Microsoft.Cci.INamespaceRootOwner.get_NamespaceRoot" inheritedFromTypeName="INamespaceRootOwner" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
