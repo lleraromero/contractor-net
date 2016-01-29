@@ -44,7 +44,9 @@ namespace Contractor.Core
                 ISet<State> states;
                 lock (transitions)
                 {
-                    states = new HashSet<State>(transitions.Select(t => t.SourceState));
+                    states = new HashSet<State>();
+                    states.Add(new State(typeDefinition.Constructors(), new HashSet<Action>()));
+                    states.UnionWith(transitions.Select(t => t.SourceState));
                     states.UnionWith(transitions.Select(t => t.TargetState));
                 }
                 return states.ToList();
