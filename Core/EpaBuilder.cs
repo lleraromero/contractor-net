@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using Contractor.Core.Model;
 
@@ -12,6 +12,8 @@ namespace Contractor.Core
 
         public EpaBuilder(ITypeDefinition typeDefinition)
         {
+            Contract.Requires(typeDefinition != null);
+
             this.typeDefinition = typeDefinition;
             transitions = new HashSet<Transition>();
         }

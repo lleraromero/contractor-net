@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using Contractor.Core;
 using Contractor.Core.Model;
 using FakeItEasy;
@@ -74,6 +74,19 @@ namespace Core.Tests
             Assert.Contains(dummyStateDest, epaBuilder.States);
 
             Assert.Equal(dummyTypeDefinition, epaBuilder.Type);
+        }
+
+        [Fact]
+        public void Empty_Builder_Builds_Empty_Epa()
+        {
+            var dummyTypeDefinition = A.Dummy<ITypeDefinition>();
+            var epaBuilder = new EpaBuilder(dummyTypeDefinition);
+
+            var epa = epaBuilder.Build();
+            Assert.Equal(dummyTypeDefinition, epa.Type);
+
+            Assert.Equal(ImmutableHashSet<Transition>.Empty, epa.Transitions);
+            Assert.Equal(1, epa.States.Count);
         }
     }
 }
