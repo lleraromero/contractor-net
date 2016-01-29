@@ -18,7 +18,7 @@ namespace Analyzer.Corral
         protected CciQueryGenerator queryGenerator;
         protected CciAssembly inputAssembly;
         protected string inputFileName;
-        protected TypeDefinition typeToAnalyze;
+        protected ITypeDefinition typeToAnalyze;
         protected CancellationToken token;
         protected DirectoryInfo workingDir;
 
@@ -26,7 +26,7 @@ namespace Analyzer.Corral
         protected int unprovenQueriesCount;
 
         public CorralAnalyzer(string defaultArgs, DirectoryInfo workingDir, CciQueryGenerator queryGenerator, CciAssembly inputAssembly,
-            string inputFileName, TypeDefinition typeToAnalyze,
+            string inputFileName, ITypeDefinition typeToAnalyze,
             CancellationToken token)
         {
             this.defaultArgs = defaultArgs;

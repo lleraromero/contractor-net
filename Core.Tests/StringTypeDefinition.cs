@@ -4,10 +4,11 @@ using Contractor.Core.Model;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
 using Action = Contractor.Core.Model.Action;
+using ITypeDefinition = Contractor.Core.Model.ITypeDefinition;
 
 namespace Core.Tests
 {
-    internal class StringTypeDefinition : TypeDefinition
+    internal class StringTypeDefinition : ITypeDefinition
     {
         protected string name;
         protected ISet<Action> constructors;
@@ -20,22 +21,22 @@ namespace Core.Tests
             this.actions = actions;
         }
 
-        public override string Name
+        public string Name
         {
             get { return name; }
         }
 
-        public override ISet<Action> Constructors()
+        public ISet<Action> Constructors()
         {
             return constructors;
         }
 
-        public override ISet<Action> Actions()
+        public ISet<Action> Actions()
         {
             return actions;
         }
 
-        public override IMethodContract GetContractFor(IMethodDefinition method)
+        public IMethodContract GetContractFor(IMethodDefinition method)
         {
             throw new NotImplementedException();
         }

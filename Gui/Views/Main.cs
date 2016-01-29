@@ -16,7 +16,7 @@ namespace Contractor.Gui
         protected MethodFilterPresenter methodFilterPresenter;
         protected TypesViewerPresenter typesViewerPresenter;
         
-        protected TypeDefinition selectedType;
+        protected ITypeDefinition selectedType;
         private Options options;
 
         public Main()
@@ -118,13 +118,13 @@ namespace Contractor.Gui
             UpdateOutput(status);
         }
 
-        protected void TypesViewerPresenterOnStartAnalysis(object sender, TypeDefinition typeDefinition)
+        protected void TypesViewerPresenterOnStartAnalysis(object sender, ITypeDefinition typeDefinition)
         {
             selectedType = typeDefinition;
             OnStartAnalysis(sender, new EventArgs());
         }
 
-        protected void TypesViewerPresenterOnTypeSelected(object sender, TypeDefinition typeDefinition)
+        protected void TypesViewerPresenterOnTypeSelected(object sender, ITypeDefinition typeDefinition)
         {
             selectedType = typeDefinition;
             methodFilterPresenter.LoadMethods(typeDefinition);

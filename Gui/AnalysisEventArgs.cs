@@ -9,10 +9,10 @@ namespace Contractor.Gui
     internal class AnalysisEventArgs : EventArgs
     {
         protected IEnumerable<Action> selectedMethods;
-        protected TypeDefinition typeToAnalyze;
+        protected ITypeDefinition typeToAnalyze;
         protected string engine;
 
-        public AnalysisEventArgs(TypeDefinition typeDefinition, IEnumerable<Action> selectedMethods, string engine)
+        public AnalysisEventArgs(ITypeDefinition typeDefinition, IEnumerable<Action> selectedMethods, string engine)
         {
             Contract.Requires(typeDefinition != null);
             Contract.Requires(selectedMethods != null);
@@ -23,7 +23,7 @@ namespace Contractor.Gui
             this.engine = engine;
         }
 
-        public TypeDefinition TypeToAnalyze
+        public ITypeDefinition TypeToAnalyze
         {
             get { return typeToAnalyze; }
         }

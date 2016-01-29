@@ -7,10 +7,10 @@ namespace Contractor.Core
 {
     public class EpaBuilder : IEpaBuilder
     {
-        protected readonly TypeDefinition typeDefinition;
+        protected readonly ITypeDefinition typeDefinition;
         protected ISet<Transition> transitions;
 
-        public EpaBuilder(TypeDefinition typeDefinition)
+        public EpaBuilder(ITypeDefinition typeDefinition)
         {
             this.typeDefinition = typeDefinition;
             transitions = new HashSet<Transition>();
@@ -57,7 +57,7 @@ namespace Contractor.Core
             }
         }
 
-        public TypeDefinition Type
+        public ITypeDefinition Type
         {
             get { return typeDefinition; }
         }

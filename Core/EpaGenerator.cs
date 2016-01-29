@@ -17,7 +17,7 @@ namespace Contractor.Core
             this.analyzer = analyzer;
         }
 
-        public Task<TypeAnalysisResult> GenerateEpa(TypeDefinition typeToAnalyze, IEpaBuilder epaBuilder)
+        public Task<TypeAnalysisResult> GenerateEpa(ITypeDefinition typeToAnalyze, IEpaBuilder epaBuilder)
         {
             Contract.Requires(typeToAnalyze != null);
 
@@ -27,7 +27,7 @@ namespace Contractor.Core
             return GenerateEpaAndStatistics(constructors, actions, epaBuilder);
         }
 
-        public Task<TypeAnalysisResult> GenerateEpa(TypeDefinition typeToAnalyze, IEnumerable<string> selectedMethods, IEpaBuilder epaBuilder)
+        public Task<TypeAnalysisResult> GenerateEpa(ITypeDefinition typeToAnalyze, IEnumerable<string> selectedMethods, IEpaBuilder epaBuilder)
         {
             Contract.Requires(typeToAnalyze != null);
             Contract.Requires(selectedMethods != null);

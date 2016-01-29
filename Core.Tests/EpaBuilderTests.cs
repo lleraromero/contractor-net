@@ -13,7 +13,7 @@ namespace Core.Tests
         [Fact]
         public void Empty_Builder_Should_Not_Have_Any_States_Nor_Transitions()
         {
-            var dummyTypeDefinition = A.Dummy<TypeDefinition>();
+            var dummyTypeDefinition = A.Dummy<ITypeDefinition>();
             var epaBuilder = new EpaBuilder(dummyTypeDefinition);
 
             Assert.Equal(dummyTypeDefinition, epaBuilder.Type);
@@ -24,7 +24,7 @@ namespace Core.Tests
         [Fact]
         public void Add_Transition_With_One_State()
         {
-            var dummyTypeDefinition = A.Dummy<TypeDefinition>();
+            var dummyTypeDefinition = A.Dummy<ITypeDefinition>();
             var epaBuilder = new EpaBuilder(dummyTypeDefinition);
 
             var dummyState = A.Dummy<State>();
@@ -48,7 +48,7 @@ namespace Core.Tests
         [Fact]
         public void Add_Transition_With_Two_States()
         {
-            var dummyTypeDefinition = A.Dummy<TypeDefinition>();
+            var dummyTypeDefinition = A.Dummy<ITypeDefinition>();
             var epaBuilder = new EpaBuilder(dummyTypeDefinition);
 
             var action1 = A.Dummy<Action>();

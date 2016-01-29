@@ -106,7 +106,7 @@ namespace Contractor.Gui.Presenters
             screen.EnableInterfaceAfterAnalysis();
         }
 
-        protected void ShowAnalysisResult(TypeDefinition typeToAnalyze, TypeAnalysisResult analysisResult)
+        protected void ShowAnalysisResult(ITypeDefinition typeToAnalyze, TypeAnalysisResult analysisResult)
         {
             var totalTime = analysisResult.TotalTime;
             var statesCount = analysisResult.Epa.States.Count();

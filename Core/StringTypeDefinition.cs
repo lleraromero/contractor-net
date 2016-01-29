@@ -5,7 +5,7 @@ using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
-    class StringTypeDefinition : TypeDefinition
+    class StringTypeDefinition : ITypeDefinition
     {
         protected string name;
         protected ISet<Action> constructors;
@@ -18,22 +18,22 @@ namespace Contractor.Core
             this.actions = actions;
         }
 
-        public override string Name
+        public string Name
         {
             get { return name; }
         }
 
-        public override ISet<Action> Constructors()
+        public ISet<Action> Constructors()
         {
             return constructors;
         }
 
-        public override ISet<Action> Actions()
+        public ISet<Action> Actions()
         {
             return actions;
         }
 
-        public override Microsoft.Cci.Contracts.IMethodContract GetContractFor(Microsoft.Cci.IMethodDefinition method)
+        public Microsoft.Cci.Contracts.IMethodContract GetContractFor(Microsoft.Cci.IMethodDefinition method)
         {
             throw new NotImplementedException();
         }

@@ -9,12 +9,13 @@ using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableContracts;
+using ITypeDefinition = Contractor.Core.Model.ITypeDefinition;
 
 namespace Analysis.Cci
 {
     public class CciQueryAssembly : CciAssembly
     {
-        public CciQueryAssembly(CciAssembly inputAssembly, TypeDefinition typeToAnalyze, IEnumerable<Query> queries)
+        public CciQueryAssembly(CciAssembly inputAssembly, ITypeDefinition typeToAnalyze, IEnumerable<Query> queries)
             : base(inputAssembly)
         {
             var cciType = FindType(typeToAnalyze.Name);

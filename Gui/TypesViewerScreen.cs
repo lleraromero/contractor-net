@@ -8,8 +8,8 @@ namespace Contractor.Gui
     {
         TreeNode Root { set; }
         void Reset();
-        event EventHandler<TypeDefinition> TypeSelected;
-        event EventHandler<TypeDefinition> StartAnalysis;
+        event EventHandler<ITypeDefinition> TypeSelected;
+        event EventHandler<ITypeDefinition> StartAnalysis;
     }
 
     public partial class TypesViewerScreen : UserControl, ITypesViewerScreen
@@ -21,8 +21,8 @@ namespace Contractor.Gui
             trvTypes.Sorted = true;
         }
 
-        public event EventHandler<TypeDefinition> TypeSelected;
-        public event EventHandler<TypeDefinition> StartAnalysis;
+        public event EventHandler<ITypeDefinition> TypeSelected;
+        public event EventHandler<ITypeDefinition> StartAnalysis;
 
         public TreeNode Root
         {
@@ -43,7 +43,7 @@ namespace Contractor.Gui
 
         protected void trvTypes_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            var typeDefinition = e.Node.Tag as TypeDefinition;
+            var typeDefinition = e.Node.Tag as ITypeDefinition;
             if (typeDefinition != null && TypeSelected != null)
             {
                 TypeSelected(sender, typeDefinition);
@@ -52,7 +52,7 @@ namespace Contractor.Gui
 
         protected void trvTypes_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            var typeDefinition = e.Node.Tag as TypeDefinition;
+            var typeDefinition = e.Node.Tag as ITypeDefinition;
             if (typeDefinition != null && StartAnalysis != null)
             {
                 StartAnalysis(sender, typeDefinition);

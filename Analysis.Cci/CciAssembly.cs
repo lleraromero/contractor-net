@@ -12,6 +12,7 @@ using Microsoft.Cci.ILToCodeModel;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableCodeModel.Contracts;
 using IAssembly = Contractor.Core.Model.IAssembly;
+using ITypeDefinition = Contractor.Core.Model.ITypeDefinition;
 
 namespace Analysis.Cci
 {
@@ -41,14 +42,14 @@ namespace Analysis.Cci
 
         public IReadOnlyCollection<NamespaceDefinition> Namespaces()
         {
-            var namespaces = new Dictionary<string, List<TypeDefinition>>();
+            var namespaces = new Dictionary<string, List<ITypeDefinition>>();
             foreach (var type in decompiledModule.AllTypes)
             {
                 var typeNamespace = FindNamespace(type);
 
                 if (!namespaces.ContainsKey(typeNamespace))
                 {
-                    namespaces.Add(typeNamespace, new List<TypeDefinition>());
+                    namespaces.Add(typeNamespace, new List<ITypeDefinition>());
                 }
 
                 namespaces[typeNamespace].Add(new CciTypeDefinition(type, contractProvider));
@@ -57,11 +58,11 @@ namespace Analysis.Cci
             return new ReadOnlyCollection<NamespaceDefinition>(namespaces.Select(kvp => new NamespaceDefinition(kvp.Key, kvp.Value)).ToList());
         }
 
-        public IReadOnlyCollection<TypeDefinition> Types()
+        public IReadOnlyCollection<ITypeDefinition> Types()
         {
             return
-                new ReadOnlyCollection<TypeDefinition>(Namespaces()
-                    .Aggregate(new List<TypeDefinition>(), (l, n) => new List<TypeDefinition>(l.Union(n.Types()))));
+                new ReadOnlyCollection<ITypeDefinition>(Namespaces()
+                    .Aggregate(new List<ITypeDefinition>(), (l, n) => new List<ITypeDefinition>(l.Union(n.Types()))));
         }
 
         public IMethodContract GetContractFor(IMethodDefinition method)
@@ -74,7 +75,7 @@ namespace Analysis.Cci
         /// </remarks>
         protected string FindNamespace(INamedTypeDefinition typeDefinition)
         {
-            ITypeDefinition currentType = typeDefinition;
+            Microsoft.Cci.ITypeDefinition currentType = typeDefinition;
             while (currentType is INestedTypeDefinition)
             {
                 currentType = ((INestedTypeDefinition) typeDefinition).ContainingTypeDefinition;

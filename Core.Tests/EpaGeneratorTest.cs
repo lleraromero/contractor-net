@@ -11,7 +11,7 @@ namespace Core.Tests
         [Fact]
         public void GeneratesEmptyEpa()
         {
-            var emptyTypeDefinition = A.Fake<TypeDefinition>();
+            var emptyTypeDefinition = A.Fake<ITypeDefinition>();
             A.CallTo(() => emptyTypeDefinition.Constructors())
                 .Returns(A.Dummy<ISet<Action>>());
             A.CallTo(() => emptyTypeDefinition.Actions())

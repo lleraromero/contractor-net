@@ -7,10 +7,10 @@ namespace Contractor.Core.Model
 {
     public class Epa : IEquatable<Epa>
     {
-        protected readonly TypeDefinition type;
+        protected readonly ITypeDefinition type;
         protected Dictionary<State, ISet<Transition>> graph;
 
-        public Epa(TypeDefinition typeDefinition, IReadOnlyCollection<Transition> transitions)
+        public Epa(ITypeDefinition typeDefinition, IReadOnlyCollection<Transition> transitions)
         {
             type = typeDefinition;
             graph = new Dictionary<State, ISet<Transition>>();
@@ -25,7 +25,7 @@ namespace Contractor.Core.Model
             }
         }
 
-        public TypeDefinition Type
+        public ITypeDefinition Type
         {
             get { return type; }
         }

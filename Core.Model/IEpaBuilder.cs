@@ -9,7 +9,7 @@ namespace Contractor.Core.Model
     {
         IReadOnlyCollection<State> States { get; }
         IReadOnlyCollection<Transition> Transitions { get; }
-        TypeDefinition Type { get; }
+        ITypeDefinition Type { get; }
         void Add(Transition t);
         Epa Build();
     }
@@ -29,7 +29,7 @@ namespace Contractor.Core.Model
             get { throw new NotImplementedException(); }
         }
 
-        public TypeDefinition Type
+        public ITypeDefinition Type
         {
             get { throw new NotImplementedException(); }
         }

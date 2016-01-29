@@ -42,7 +42,7 @@ namespace Contractor.Core
         }
 
 
-        public TypeDefinition Type
+        public ITypeDefinition Type
         {
             get { return epaBuilder.Type; }
         }

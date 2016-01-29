@@ -13,7 +13,7 @@ namespace Contractor.Gui
             this.screen = screen;
         }
 
-        public void LoadMethods(TypeDefinition typeDefinition)
+        public void LoadMethods(ITypeDefinition typeDefinition)
         {
             var methods = typeDefinition.Constructors()
                 .Union(typeDefinition.Actions());

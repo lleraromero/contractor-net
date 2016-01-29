@@ -10,12 +10,13 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
+using ITypeDefinition = Contractor.Core.Model.ITypeDefinition;
 
 namespace Analyzer.Corral
 {
     class CciQueryAssembly : CciAssembly
     {
-        public CciQueryAssembly(CciAssembly inputAssembly, TypeDefinition typeToAnalyze, IEnumerable<Query> queries)
+        public CciQueryAssembly(CciAssembly inputAssembly, ITypeDefinition typeToAnalyze, IEnumerable<Query> queries)
             : base(inputAssembly)
         {
             var cciType = FindType(typeToAnalyze.Name);

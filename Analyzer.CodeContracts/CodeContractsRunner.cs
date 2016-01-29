@@ -16,9 +16,9 @@ namespace Analyzer.CodeContracts
         protected readonly DirectoryInfo workingDir;
         protected readonly string ccCheckDefaultArgs;
         protected readonly string libPaths;
-        protected readonly TypeDefinition typeToAnalyze;
+        protected readonly ITypeDefinition typeToAnalyze;
 
-        public CodeContractsRunner(DirectoryInfo workingDir, string ccCheckDefaultArgs, string libPaths, TypeDefinition typeToAnalyze)
+        public CodeContractsRunner(DirectoryInfo workingDir, string ccCheckDefaultArgs, string libPaths, ITypeDefinition typeToAnalyze)
         {
             this.workingDir = workingDir;
             this.ccCheckDefaultArgs = ccCheckDefaultArgs;

@@ -35,8 +35,8 @@ namespace Contractor.Gui
             };
         }
 
-        public event EventHandler<TypeDefinition> StartAnalysis;
-        public event EventHandler<TypeDefinition> TypeSelected;
+        public event EventHandler<ITypeDefinition> StartAnalysis;
+        public event EventHandler<ITypeDefinition> TypeSelected;
 
         public void ShowTypes(IAssembly assembly)
         {

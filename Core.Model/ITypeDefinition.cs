@@ -6,36 +6,38 @@ using Microsoft.Cci.Contracts;
 
 namespace Contractor.Core.Model
 {
-    [ContractClass(typeof (IAssemblyContracts))]
-    public interface IAssembly
+    [ContractClass(typeof (ITypeDefinitionContracts))]
+    public interface ITypeDefinition
     {
-        IReadOnlyCollection<NamespaceDefinition> Namespaces();
-        IReadOnlyCollection<ITypeDefinition> Types();
+        string Name { get; }
+        ISet<Action> Constructors();
+        ISet<Action> Actions();
         IMethodContract GetContractFor(IMethodDefinition method);
     }
 
-    #region IAssembly Contracts
+    #region ITypeDefinition Contracts
 
-    [ContractClassFor(typeof (IAssembly))]
-    internal abstract class IAssemblyContracts : IAssembly
+    [ContractClassFor(typeof (ITypeDefinition))]
+    public abstract class ITypeDefinitionContracts : ITypeDefinition
     {
-        [Pure]
-        public IReadOnlyCollection<NamespaceDefinition> Namespaces()
+        public string Name
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public ISet<Action> Constructors()
         {
             throw new NotImplementedException();
         }
 
-        [Pure]
-        public IReadOnlyCollection<ITypeDefinition> Types()
+        public ISet<Action> Actions()
         {
             throw new NotImplementedException();
         }
 
-        [Pure]
         public IMethodContract GetContractFor(IMethodDefinition method)
         {
             Contract.Requires(method != null);
-            Contract.Ensures(Contract.Result<IMethodContract>() != null);
             throw new NotImplementedException();
         }
     }

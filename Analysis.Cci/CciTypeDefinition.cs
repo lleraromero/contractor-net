@@ -5,15 +5,16 @@ using System.Text;
 using Contractor.Core.Model;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
+using ITypeDefinition = Contractor.Core.Model.ITypeDefinition;
 
 namespace Analysis.Cci
 {
-    internal class CciTypeDefinition : TypeDefinition
+    internal class CciTypeDefinition : ITypeDefinition
     {
         protected IContractProvider contractProvider;
-        protected ITypeDefinition typeDefinition;
+        protected Microsoft.Cci.ITypeDefinition typeDefinition;
 
-        public CciTypeDefinition(ITypeDefinition typeDefinition, IContractProvider contractProvider)
+        public CciTypeDefinition(Microsoft.Cci.ITypeDefinition typeDefinition, IContractProvider contractProvider)
         {
             Contract.Requires(typeDefinition != null);
             Contract.Requires(contractProvider != null);
@@ -22,19 +23,19 @@ namespace Analysis.Cci
             this.contractProvider = contractProvider;
         }
 
-        public override string Name
+        public string Name
         {
             get { return TypeHelper.GetTypeName(typeDefinition); }
         }
 
-        public override ISet<Action> Constructors()
+        public ISet<Action> Constructors()
         {
             return new HashSet<Action>(from m in typeDefinition.Methods
                 where m.IsConstructor
                 select new CciAction(m, contractProvider.GetMethodContractFor(m)));
         }
 
-        public override ISet<Action> Actions()
+        public ISet<Action> Actions()
         {
             return new HashSet<Action>(from m in typeDefinition.Methods
                 where !m.IsConstructor && m.Visibility == TypeMemberVisibility.Public &&
@@ -42,7 +43,7 @@ namespace Analysis.Cci
                 select new CciAction(m, contractProvider.GetMethodContractFor(m)));
         }
 
-        public override IMethodContract GetContractFor(IMethodDefinition method)
+        public IMethodContract GetContractFor(IMethodDefinition method)
         {
             return contractProvider.GetMethodContractFor(method);
         }

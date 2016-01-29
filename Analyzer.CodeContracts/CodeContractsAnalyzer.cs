@@ -17,7 +17,7 @@ namespace Analyzer.CodeContracts
         protected CciQueryGenerator queryGenerator;
         protected CciAssembly inputAssembly;
         protected string inputFileName;
-        protected TypeDefinition typeToAnalyze;
+        protected ITypeDefinition typeToAnalyze;
         protected CancellationToken token;
         protected DirectoryInfo workingDir;
         protected string ccCheckDefaultArgs;
@@ -27,7 +27,7 @@ namespace Analyzer.CodeContracts
         protected int unprovenQueriesCount;
 
         public CodeContractsAnalyzer(DirectoryInfo workingDir, string ccCheckDefaultArgs, string libPaths, CciQueryGenerator queryGenerator, CciAssembly inputAssembly,
-            string inputFileName, TypeDefinition typeToAnalyze, CancellationToken token)
+            string inputFileName, ITypeDefinition typeToAnalyze, CancellationToken token)
         {
             this.workingDir = workingDir;
             this.ccCheckDefaultArgs = ccCheckDefaultArgs;
