@@ -32,25 +32,18 @@ namespace Contractor.Core.Model
 
         public State Initial
         {
-            get
-            {
-                var transitions = Transitions;
-                var initialStates = transitions.Where(t => transitions.All(t2 => !t2.TargetState.Equals(t.SourceState))).ToList();
-                return !initialStates.Any() ? new State(new HashSet<Action>(), new HashSet<Action>()) : initialStates.First().SourceState;
-            }
+            get { return new State(type.Constructors(), new HashSet<Action>()); }
         }
 
         public IImmutableSet<State> States
         {
             get
             {
-                if (graph.Keys.Count == 0)
-                {
-                    var s = new State(new HashSet<Action>(), new HashSet<Action>());
-                    return new HashSet<State> {s}.ToImmutableHashSet();
-                }
-
                 var states = new HashSet<State>();
+
+                // The state with constructors is always available
+                states.Add(new State(type.Constructors(), new HashSet<Action>()));
+
                 foreach (var t in Transitions)
                 {
                     states.Add(t.SourceState);

@@ -60,8 +60,9 @@ namespace Contractor.Gui.Models
 
             var selectedMethods = from m in analysisEventArgs.SelectedMethods select m.ToString();
 
-            var epaBuilderObservable = new ObservableEpaBuilder(new EpaBuilder(analysisEventArgs.TypeToAnalyze));
-            epaBuilderObservable.StateAdded += OnStateAdded;
+            var epaBuilder = new EpaBuilder(analysisEventArgs.TypeToAnalyze);
+            OnInitialStateAdded(this, epaBuilder);
+            var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
             epaBuilderObservable.TransitionAdded += OnTransitionAdded;
 
             return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable);
@@ -79,10 +80,11 @@ namespace Contractor.Gui.Models
             inputAssembly = await Task.Run(() => decompiler.Decompile(inputFile.FullName, contractFile.FullName));
         }
 
-        protected void OnStateAdded(object sender, StateAddedEventArgs e)
+        protected void OnInitialStateAdded(object sender, IEpaBuilder epaBuilder)
         {
-            generatedEpa = e.EpaBuilder.Build();
-            StateAdded(sender, e);
+            generatedEpa = epaBuilder.Build();
+            var stateAddedEventArg = new StateAddedEventArgs(epaBuilder.Type, epaBuilder, generatedEpa.Initial);
+            StateAdded(sender, stateAddedEventArg);
         }
 
         protected void OnTransitionAdded(object sender, TransitionAddedEventArgs e)

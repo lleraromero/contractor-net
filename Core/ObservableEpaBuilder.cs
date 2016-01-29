@@ -14,7 +14,8 @@ namespace Contractor.Core
             Contract.Requires(epaBuilder != null);
 
             this.epaBuilder = epaBuilder;
-            StateAdded += (sender, args) => { };
+
+            // Null-Object pattern
             TransitionAdded += (sender, args) => { };
         }
 
@@ -41,21 +42,11 @@ namespace Contractor.Core
             return epaBuilder.Build();
         }
 
-
         public ITypeDefinition Type
         {
             get { return epaBuilder.Type; }
         }
 
-        public event EventHandler<StateAddedEventArgs> StateAdded;
         public event EventHandler<TransitionAddedEventArgs> TransitionAdded;
-
-        public void Add(State s)
-        {
-            Contract.Requires(s != null);
-            
-            Contract.Assert(StateAdded != null);
-            StateAdded(this, new StateAddedEventArgs(epaBuilder.Type, epaBuilder, s));
-        }
     }
 }

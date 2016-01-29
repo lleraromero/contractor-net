@@ -5,6 +5,9 @@ using Contractor.Core.Model;
 
 namespace Contractor.Core
 {
+    /// <summary>
+    /// Thread-safe EPA builder. This class is used to guarantee that EPAs are created properly. See: Builder pattern.
+    /// </summary>
     public class EpaBuilder : IEpaBuilder
     {
         protected readonly ITypeDefinition typeDefinition;
