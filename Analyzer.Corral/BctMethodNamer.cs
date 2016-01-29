@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Diagnostics.Contracts;
+using System.Text.RegularExpressions;
 using Contractor.Core;
 using Microsoft.Cci;
 
@@ -11,10 +12,12 @@ namespace Analyzer.Corral
     {
         public static string CreateUniqueMethodName(Query query)
         {
+            Contract.Requires(query != null);
+
             return CreateUniqueMethodName(query.Method.Method);
         }
 
-        public static string CreateUniqueMethodName(IMethodReference method)
+        protected static string CreateUniqueMethodName(IMethodReference method)
         {
             var containingTypeName = TypeHelper.GetTypeName(method.ContainingType, NameFormattingOptions.None);
             var s = MemberHelper.GetMethodSignature(method, NameFormattingOptions.DocumentationId);

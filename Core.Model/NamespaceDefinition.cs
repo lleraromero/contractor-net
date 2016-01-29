@@ -12,7 +12,7 @@ namespace Contractor.Core.Model
 
         public NamespaceDefinition(string name, IEnumerable<ITypeDefinition> types)
         {
-            Contract.Requires(!string.IsNullOrEmpty(name));
+            Contract.Requires(name != null);
             Contract.Requires(types.Any());
 
             this.name = name;

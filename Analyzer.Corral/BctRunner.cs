@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
-using System.Text;
 using Log;
 
 namespace Analyzer.Corral
@@ -11,10 +10,10 @@ namespace Analyzer.Corral
     {
         public void Run(string[] args)
         {
+            Contract.Requires(args.Length > 0);
+
             var tmpDir = Path.GetDirectoryName(args[0]);
             Contract.Assert(!string.IsNullOrEmpty(tmpDir) && Directory.Exists(tmpDir));
-
-            var output = new StringBuilder();
 
             using (var bct = new Process())
             {
@@ -30,13 +29,8 @@ namespace Analyzer.Corral
                     UseShellExecute = false
                 };
 
-                Logger.Log(LogLevel.Info, "=============== BCT ===============");
-                bct.OutputDataReceived += (sender, e) =>
-                {
-                    output.AppendLine(e.Data);
-                    Logger.Log(LogLevel.Debug, e.Data);
-                };
-                bct.ErrorDataReceived += (sender, e) => { Logger.Log(LogLevel.Fatal, e.Data); };
+                bct.OutputDataReceived += (sender, e) => { Logger.Log(LogLevel.Debug, "BCT: " + e.Data); };
+                bct.ErrorDataReceived += (sender, e) => { Logger.Log(LogLevel.Fatal, "BCT: " + e.Data); };
                 bct.Start();
                 bct.BeginErrorReadLine();
                 bct.BeginOutputReadLine();
@@ -44,9 +38,9 @@ namespace Analyzer.Corral
 
                 if (bct.ExitCode != 0)
                 {
-                    Logger.Log(LogLevel.Fatal, "Error translating the query assembly to boogie");
-                    Logger.Log(LogLevel.Info, string.Format("args: {0}, {1}", args));
-                    throw new Exception("Error translating the query assembly to boogie");
+                    Logger.Log(LogLevel.Fatal, "BCT: Error translating the query assembly to boogie");
+                    Logger.Log(LogLevel.Info, string.Format("BCT: args: {0}, {1}", args));
+                    throw new Exception("BCT: Error translating the query assembly to boogie");
                 }
             }
         }
