@@ -12,7 +12,8 @@ namespace Contractor.Core.Model
 
         public NamespaceDefinition(string name, IEnumerable<TypeDefinition> types)
         {
-            Contract.Requires(types != null && types.Any());
+            Contract.Requires(!string.IsNullOrEmpty(name));
+            Contract.Requires(types.Any());
 
             this.name = name;
             this.types = new ReadOnlyCollection<TypeDefinition>(types.ToList());
