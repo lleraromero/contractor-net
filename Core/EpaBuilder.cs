@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Contractor.Core.Model;
 
@@ -21,10 +22,6 @@ namespace Contractor.Core
             {
                 transitions.Add(t);
             }
-        }
-
-        public void Add(State s)
-        {
         }
 
         public Epa Build()

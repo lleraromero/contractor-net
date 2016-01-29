@@ -62,7 +62,8 @@ namespace Contractor.Core
             Contract.Requires(epaBuilder != null);
 
             var initialState = new State(constructors, new HashSet<Action>());
-            epaBuilder.Add(initialState);
+            // TODO: mostrar el estado en el epabuilder observable
+            //epaBuilder.Add(initialState);
 
             var statesToVisit = new Queue<State>();
             var visitedStates = new HashSet<State>();

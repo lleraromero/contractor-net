@@ -71,6 +71,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="EpaBuilderTests.cs" />
     <Compile Include="EpaGeneratorTest.cs" />
     <Compile Include="EpaXmlSerializerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

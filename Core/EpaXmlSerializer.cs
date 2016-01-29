@@ -135,7 +135,6 @@ namespace Contractor.Core
                     disabledActions.ExceptWith(enabledActions);
 
                     var s = new State(enabledActions, disabledActions);
-                    epaBuilder.Add(s);
 
                     var stateName = state.Key;
                     translator[stateName] = s;
