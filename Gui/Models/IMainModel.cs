@@ -9,7 +9,7 @@ namespace Contractor.Gui.Models
     internal interface IMainModel
     {
         Epa GeneratedEpa { get; }
-        IAssemblyXXX InputAssembly { get; }
+        IAssembly InputAssembly { get; }
         void Stop();
         Task<TypeAnalysisResult> Start(AnalysisEventArgs analysisEventArgs);
         Task LoadAssembly(FileInfo inputFile);

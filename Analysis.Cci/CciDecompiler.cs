@@ -14,7 +14,7 @@ namespace Analysis.Cci
             host = new CodeContractAwareHostEnvironment();
         }
 
-        public IAssemblyXXX Decompile(string inputFileName, string contractsFileName)
+        public IAssembly Decompile(string inputFileName, string contractsFileName)
         {
             Contract.Requires(!string.IsNullOrEmpty(inputFileName) && File.Exists(inputFileName));
 

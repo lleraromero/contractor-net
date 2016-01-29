@@ -91,7 +91,7 @@
   <ItemGroup>
     <Compile Include="Action.cs" />
     <Compile Include="Epa.cs" />
-    <Compile Include="IAssemblyXXX.cs" />
+    <Compile Include="IAssembly.cs" />
     <Compile Include="IEpaBuilder.cs" />
     <Compile Include="IEpaBuilderContracts.cs" />
     <Compile Include="NamespaceDefinition.cs" />

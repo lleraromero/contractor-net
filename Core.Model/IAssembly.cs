@@ -6,18 +6,18 @@ using Microsoft.Cci.Contracts;
 
 namespace Contractor.Core.Model
 {
-    [ContractClass(typeof (IAssemblyXXXContracts))]
-    public interface IAssemblyXXX
+    [ContractClass(typeof (IAssemblyContracts))]
+    public interface IAssembly
     {
         IReadOnlyCollection<NamespaceDefinition> Namespaces();
         IReadOnlyCollection<TypeDefinition> Types();
         IMethodContract GetContractFor(IMethodDefinition method);
     }
 
-    #region IAssemblyXXX Contracts
+    #region IAssembly Contracts
 
-    [ContractClassFor(typeof (IAssemblyXXX))]
-    internal abstract class IAssemblyXXXContracts : IAssemblyXXX
+    [ContractClassFor(typeof (IAssembly))]
+    internal abstract class IAssemblyContracts : IAssembly
     {
         [Pure]
         public IReadOnlyCollection<NamespaceDefinition> Namespaces()

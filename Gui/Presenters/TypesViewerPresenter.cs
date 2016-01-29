@@ -38,7 +38,7 @@ namespace Contractor.Gui
         public event EventHandler<TypeDefinition> StartAnalysis;
         public event EventHandler<TypeDefinition> TypeSelected;
 
-        public void ShowTypes(IAssemblyXXX assembly)
+        public void ShowTypes(IAssembly assembly)
         {
             var rootNode = typesViewer.GetTypesTreeRoot(assembly);
             syncContext.Post(param => { screen.Reset(); screen.Root = param as TreeNode; }, rootNode);

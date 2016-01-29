@@ -19,7 +19,7 @@ namespace Contractor.Gui.Models
     {
         protected FileInfo inputFile;
         protected FileInfo contractFile;
-        protected IAssemblyXXX inputAssembly;
+        protected IAssembly inputAssembly;
 
         protected CancellationTokenSource cancellationSource;
         protected CciDecompiler decompiler;
@@ -38,7 +38,7 @@ namespace Contractor.Gui.Models
             get { return generatedEpa; }
         }
 
-        public IAssemblyXXX InputAssembly
+        public IAssembly InputAssembly
         {
             get { return inputAssembly; }
         }

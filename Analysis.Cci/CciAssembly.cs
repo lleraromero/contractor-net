@@ -11,10 +11,11 @@ using Microsoft.Cci.Contracts;
 using Microsoft.Cci.ILToCodeModel;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableCodeModel.Contracts;
+using IAssembly = Contractor.Core.Model.IAssembly;
 
 namespace Analysis.Cci
 {
-    public class CciAssembly : IAssemblyXXX
+    public class CciAssembly : IAssembly
     {
         protected IContractProvider contractProvider;
         protected Module decompiledModule;

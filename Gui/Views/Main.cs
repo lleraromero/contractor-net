@@ -75,7 +75,7 @@ namespace Contractor.Gui
             UpdateProgress(e);
         }
 
-        public void ShowTypes(IAssemblyXXX inputAssembly)
+        public void ShowTypes(IAssembly inputAssembly)
         {
             typesViewerPresenter.ShowTypes(inputAssembly);
         }

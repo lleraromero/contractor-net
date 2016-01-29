@@ -6,12 +6,12 @@ namespace Contractor.Gui
 {
     internal interface ITypesViewer
     {
-        TreeNode GetTypesTreeRoot(IAssemblyXXX assembly);
+        TreeNode GetTypesTreeRoot(IAssembly assembly);
     }
 
     internal class TypesViewer : ITypesViewer
     {
-        public TreeNode GetTypesTreeRoot(IAssemblyXXX assembly)
+        public TreeNode GetTypesTreeRoot(IAssembly assembly)
         {
             var namespaces = new Dictionary<string, TreeNode>();
             var types = assembly.Types();

@@ -13,7 +13,7 @@ namespace Contractor.Gui
         void UpdateOutput(string msg);
         void StateAdded(StateAddedEventArgs e);
         void TransitionAdded(TransitionAddedEventArgs e);
-        void ShowTypes(IAssemblyXXX inputAssembly);
+        void ShowTypes(IAssembly inputAssembly);
         void DisableInterfaceWhileAnalyzing();
         void EnableInterfaceAfterAnalysis();
 

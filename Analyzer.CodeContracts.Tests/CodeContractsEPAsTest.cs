@@ -13,7 +13,7 @@ namespace Analyzer.CodeContracts.Tests
     public class CodeContractsEPAsTest
     {
         //private const string InputFilePath = @"..\..\..\Examples\obj\Debug\Decl\Examples.dll";
-        //protected static IAssemblyXXX inputAssembly;
+        //protected static IAssembly inputAssembly;
 
         //[ClassInitialize]
         //public static void GenerateEPAs(TestContext tc)
