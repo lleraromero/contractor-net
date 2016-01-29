@@ -10,6 +10,8 @@ namespace Contractor.Core
         protected string name;
         public StringAction(string name)
         {
+            System.Diagnostics.Contracts.Contract.Requires(!string.IsNullOrEmpty(name));
+
             this.name = name;
         }
         public override string Name

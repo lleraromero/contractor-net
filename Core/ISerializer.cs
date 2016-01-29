@@ -16,8 +16,8 @@ namespace Contractor.Core
     {
         public void Serialize(Stream stream, Epa epa)
         {
-            Contract.Requires(stream != null && stream.CanWrite);
-            Contract.Requires(epa != null && epa.Type != null);
+            Contract.Requires(stream.CanWrite);
+            Contract.Requires(epa != null);
 
             throw new NotImplementedException();
         }

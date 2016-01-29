@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using Contractor.Core.Model;
 using Action = Contractor.Core.Model.Action;
 
@@ -13,6 +14,10 @@ namespace Contractor.Core
 
         public StringTypeDefinition(string name, ISet<Action> constructors, ISet<Action> actions)
         {
+            Contract.Requires(!string.IsNullOrEmpty(name));
+            Contract.Requires(constructors != null);
+            Contract.Requires(actions != null);
+
             this.name = name;
             this.constructors = constructors;
             this.actions = actions;

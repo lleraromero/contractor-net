@@ -17,7 +17,7 @@ namespace Contractor.Core
         public QueryEvaluator(ISolver solver, FileInfo queryAssembly)
         {
             Contract.Requires(solver != null);
-            Contract.Requires(queryAssembly != null && queryAssembly.Exists);
+            Contract.Requires(queryAssembly.Exists);
 
             this.solver = solver;
             this.queryAssembly = queryAssembly;

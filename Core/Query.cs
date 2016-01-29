@@ -1,4 +1,5 @@
-﻿using Contractor.Core.Model;
+﻿using System.Diagnostics.Contracts;
+using Contractor.Core.Model;
 
 namespace Contractor.Core
 {
@@ -29,6 +30,11 @@ namespace Contractor.Core
 
         public TransitionQuery(Action queryMethod, State sourceState, Action action, State targetState)
         {
+            Contract.Requires(queryMethod != null);
+            Contract.Requires(sourceState != null);
+            Contract.Requires(action != null);
+            Contract.Requires(targetState != null);
+            
             this.queryMethod = queryMethod;
             this.sourceState = sourceState;
             this.action = action;
@@ -64,6 +70,9 @@ namespace Contractor.Core
 
         public ActionQuery(Action queryMethod, QueryType queryType, Action actionUnderTest)
         {
+            Contract.Requires(queryMethod != null);
+            Contract.Requires(actionUnderTest != null);
+
             this.queryMethod = queryMethod;
             this.queryType = queryType;
             this.actionUnderTest = actionUnderTest;
