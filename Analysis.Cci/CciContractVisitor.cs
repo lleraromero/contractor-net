@@ -50,7 +50,7 @@ namespace Analysis.Cci
         #region ICodeAndContractVisitor interface
         public void Visit(IContractElement contractElement)
         {
-            Contract.Requires(contractElement != null);
+            Contract.Assert(contractElement != null);
             Visit(contractElement.Condition);
             if (contractElement.Description != null)
             {
@@ -60,19 +60,19 @@ namespace Analysis.Cci
 
         public void Visit(ILoopInvariant loopInvariant)
         {
-            Contract.Requires(loopInvariant != null);
+            Contract.Assert(loopInvariant != null);
             Visit((IContractElement)loopInvariant);
         }
 
         public void Visit(IPostcondition postCondition)
         {
-            Contract.Requires(postCondition != null);
+            Contract.Assert(postCondition != null);
             Visit((IContractElement)postCondition);
         }
 
         public void Visit(IPrecondition precondition)
         {
-            Contract.Requires(precondition != null);
+            Contract.Assert(precondition != null);
             Visit((IContractElement)precondition);
             if (precondition.ExceptionToThrow != null)
             {
@@ -82,7 +82,7 @@ namespace Analysis.Cci
 
         public void Visit(ITypeInvariant typeInvariant)
         {
-            Contract.Requires(typeInvariant != null);
+            Contract.Assert(typeInvariant != null);
             Visit((IContractElement)typeInvariant);
         }
 
