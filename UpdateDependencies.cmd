@@ -5,7 +5,9 @@ set cci_path=D:\cciast\bin\Debug
 set dependency_path=.\Dependencies\CCI-AST
 
 set files=
+set files=%files% Microsoft.Cci.Analysis.AnalysisUtilities
 set files=%files% Microsoft.Cci.Analysis.ControlAndDataFlowGraph
+set files=%files% Microsoft.Cci.AstsProjectedAsCodeModel
 set files=%files% Microsoft.Cci.CodeModel
 set files=%files% Microsoft.Cci.CodeModelToIL
 set files=%files% Microsoft.Cci.ContractExtractor
@@ -20,6 +22,8 @@ set files=%files% Microsoft.Cci.PdbReader
 set files=%files% Microsoft.Cci.PdbWriter
 set files=%files% Microsoft.Cci.PeReader
 set files=%files% Microsoft.Cci.PeWriter
+set files=%files% Microsoft.Cci.ReflectionEmitter
+set files=%files% Microsoft.Cci.SourceEmitter
 set files=%files% Microsoft.Cci.SourceModel
 
 for %%f in (%files%) do call :copy "%cci_path%\%%f.*" "%%f"
