@@ -33,6 +33,7 @@ namespace Contractor.Core
         {
             lock (transitions)
             {
+                // TODO: Y si hay varias compoenentes conexas? Resolver.
                 return new Epa(typeDefinition, transitions.ToList());
             }
         }
