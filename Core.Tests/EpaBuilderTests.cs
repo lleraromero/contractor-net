@@ -1,24 +1,27 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Immutable;
 using Contractor.Core;
 using Contractor.Core.Model;
 using FakeItEasy;
 using Xunit;
-using Action = Contractor.Core.Model.Action;
 
 namespace Core.Tests
 {
+    //  TODO: arreglar nombres / resolver como crear los estados para los tests porque esta por default el estado de los constructores typedefinition
     public class EpaBuilderTests
     {
         [Fact]
-        public void Empty_Builder_Should_Not_Have_Any_States_Nor_Transitions()
+        public void Empty_Builder_Should_Have_An_Empty_State_And_No_Transitions()
         {
             var dummyTypeDefinition = A.Dummy<ITypeDefinition>();
             var epaBuilder = new EpaBuilder(dummyTypeDefinition);
 
             Assert.Equal(dummyTypeDefinition, epaBuilder.Type);
-            Assert.Equal(new List<State>(), epaBuilder.States);
-            Assert.Equal(new List<Transition>(), epaBuilder.Transitions);
+
+            var emptyState = CreateEmptyState();
+            Assert.Contains(emptyState, epaBuilder.States);
+            Assert.Equal(1, epaBuilder.States.Count);
+
+            Assert.Empty(epaBuilder.Transitions);
         }
 
         [Fact]
@@ -36,11 +39,12 @@ namespace Core.Tests
 
             epaBuilder.Add(fakeTransition);
 
-            Assert.Equal(1, epaBuilder.Transitions.Count);
             Assert.Contains(fakeTransition, epaBuilder.Transitions);
+            Assert.Equal(1, epaBuilder.Transitions.Count);
 
-            Assert.Equal(1, epaBuilder.States.Count);
             Assert.Contains(dummyState, epaBuilder.States);
+            Assert.Contains(CreateEmptyState(), epaBuilder.States);
+            Assert.Equal(2, epaBuilder.States.Count);
 
             Assert.Equal(dummyTypeDefinition, epaBuilder.Type);
         }
@@ -69,9 +73,10 @@ namespace Core.Tests
             Assert.Equal(1, epaBuilder.Transitions.Count);
             Assert.Contains(transition, epaBuilder.Transitions);
 
-            Assert.Equal(2, epaBuilder.States.Count);
             Assert.Contains(dummyStateSrc, epaBuilder.States);
             Assert.Contains(dummyStateDest, epaBuilder.States);
+            Assert.Contains(CreateEmptyState(), epaBuilder.States);
+            Assert.Equal(3, epaBuilder.States.Count);
 
             Assert.Equal(dummyTypeDefinition, epaBuilder.Type);
         }
@@ -85,8 +90,15 @@ namespace Core.Tests
             var epa = epaBuilder.Build();
             Assert.Equal(dummyTypeDefinition, epa.Type);
 
-            Assert.Equal(ImmutableHashSet<Transition>.Empty, epa.Transitions);
+            Assert.Empty(epa.Transitions);
+
+            Assert.Contains(CreateEmptyState(), epa.States);
             Assert.Equal(1, epa.States.Count);
+        }
+
+        protected State CreateEmptyState()
+        {
+            return new State(A.Dummy<ISet<Action>>(), A.Dummy<ISet<Action>>());
         }
     }
 }
