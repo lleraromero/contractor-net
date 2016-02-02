@@ -9,18 +9,12 @@ namespace Contractor.Core
     class StringTypeDefinition : ITypeDefinition
     {
         protected string name;
-        protected ISet<Action> constructors;
-        protected ISet<Action> actions;
 
-        public StringTypeDefinition(string name, ISet<Action> constructors, ISet<Action> actions)
+        public StringTypeDefinition(string name)
         {
             Contract.Requires(!string.IsNullOrEmpty(name));
-            Contract.Requires(constructors != null);
-            Contract.Requires(actions != null);
 
             this.name = name;
-            this.constructors = constructors;
-            this.actions = actions;
         }
 
         public string Name
@@ -30,17 +24,17 @@ namespace Contractor.Core
 
         public ISet<Action> Constructors()
         {
-            return constructors;
+            throw new NotSupportedException();
         }
 
         public ISet<Action> Actions()
         {
-            return actions;
+            throw new NotSupportedException();
         }
 
         public Microsoft.Cci.Contracts.IMethodContract GetContractFor(Microsoft.Cci.IMethodDefinition method)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
     }
 }

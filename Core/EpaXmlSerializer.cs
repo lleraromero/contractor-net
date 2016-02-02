@@ -13,6 +13,9 @@ namespace Contractor.Core
     {
         public void Serialize(Stream stream, Epa epa)
         {
+            Contract.Requires(stream.CanWrite);
+            Contract.Requires(epa != null);
+
             var settings = new XmlWriterSettings
             {
                 CloseOutput = false,
@@ -35,34 +38,36 @@ namespace Contractor.Core
             }
         }
 
-        private void SerializeActions(Epa epa, XmlWriter writer)
+        protected void SerializeActions(Epa epa, XmlWriter writer)
         {
             Contract.Requires(epa != null);
             Contract.Requires(writer != null);
 
-            var actions = new SortedSet<string>(from t in epa.Transitions select t.Action.ToString());
+            var actions = new HashSet<Action>(from t in epa.Transitions orderby t.Action.Name select t.Action);
             foreach (var a in actions)
             {
                 writer.WriteStartElement("label");
-                writer.WriteAttributeString("name", a);
+                writer.WriteAttributeString("name", a.Name);
                 writer.WriteEndElement();
             }
         }
 
-        private void SerializeStates(Epa epa, XmlWriter writer)
+        protected void SerializeStates(Epa epa, XmlWriter writer)
         {
             Contract.Requires(epa != null && epa.Type != null);
             Contract.Requires(writer != null);
 
-            foreach (var s in epa.States)
+            var states = new List<State>(from s in epa.States orderby s.Name select s);
+            foreach (var s in states)
             {
                 writer.WriteStartElement("state");
                 writer.WriteAttributeString("name", s.Name);
 
-                foreach (var a in s.EnabledActions)
+                var enabledActions = new List<Action>(from a in s.EnabledActions orderby a.Name select a);
+                foreach (var a in enabledActions)
                 {
                     writer.WriteStartElement("enabled_label");
-                    writer.WriteAttributeString("name", a.ToString());
+                    writer.WriteAttributeString("name", a.Name);
                     writer.WriteEndElement();
                 }
 
@@ -72,33 +77,22 @@ namespace Contractor.Core
             }
         }
 
-        private void SerializeTransitions(Epa epa, XmlWriter writer, State s)
+        protected void SerializeTransitions(Epa epa, XmlWriter writer, State s)
         {
             Contract.Requires(epa != null && epa.Type != null);
             Contract.Requires(writer != null);
             Contract.Requires(s != null);
 
-            var transitions = new SortedDictionary<string, List<Transition>>();
-            foreach (var t in epa.Transitions.Where(t => t.SourceState.Equals(s)))
+            var transitionsFromState = epa.Transitions.Where(t => t.SourceState.Equals(s));
+            var transitions = from t in transitionsFromState orderby t.TargetState.Name select t;
+            foreach (var t in transitions)
             {
-                if (!transitions.ContainsKey(t.TargetState.Name))
-                {
-                    transitions.Add(t.TargetState.Name, new List<Transition>());
-                }
-                transitions[t.TargetState.Name].Add(t);
-            }
-
-            foreach (var kvp in transitions)
-            {
-                foreach (var t in kvp.Value)
-                {
-                    writer.WriteStartElement("transition");
-                    writer.WriteAttributeString("destination", kvp.Key);
-                    writer.WriteAttributeString("label", t.Action.ToString());
-                    writer.WriteAttributeString("uncertain", t.IsUnproven.ToString().ToLower());
-                    writer.WriteAttributeString("violates_invariant", "false"); //Contractor.NET does not support this attribute
-                    writer.WriteEndElement();
-                }
+                writer.WriteStartElement("transition");
+                writer.WriteAttributeString("destination", t.TargetState.Name);
+                writer.WriteAttributeString("label", t.Action.Name);
+                writer.WriteAttributeString("uncertain", t.IsUnproven.ToString().ToLower());
+                writer.WriteAttributeString("violates_invariant", "false"); //Contractor.NET does not support this attribute
+                writer.WriteEndElement();
             }
         }
 
@@ -115,7 +109,7 @@ namespace Contractor.Core
                 reader.Read(); // Epa
 
                 var typename = reader.GetAttribute("name");
-                var typeDefinition = new StringTypeDefinition(typename, null, null);
+                var typeDefinition = new StringTypeDefinition(typename);
                 
                 var actions = DeserializeActions(reader);
                 var states = DeserializeStates(reader);
