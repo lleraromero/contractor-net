@@ -76,40 +76,39 @@ namespace Analysis.Cci
         {
             // TODO: fix the query assembly to include the class being analysed and all its dependencies
             queryAssembly = new AssemblyInfo(host, new MetadataDeepCopier(host).Copy(inputAssembly.DecompiledModule));
-            return;
 
-            var coreAssembly = host.LoadAssembly(host.CoreAssemblySymbolicIdentity);
+            //var coreAssembly = host.LoadAssembly(host.CoreAssemblySymbolicIdentity);
 
-            var assembly = new Assembly
-            {
-                Name = host.NameTable.GetNameFor("Query"),
-                ModuleName = host.NameTable.GetNameFor("query.dll"),
-                Kind = ModuleKind.DynamicallyLinkedLibrary,
-                TargetRuntimeVersion = coreAssembly.TargetRuntimeVersion
-            };
+            //var assembly = new Assembly
+            //{
+            //    Name = host.NameTable.GetNameFor("Query"),
+            //    ModuleName = host.NameTable.GetNameFor("query.dll"),
+            //    Kind = ModuleKind.DynamicallyLinkedLibrary,
+            //    TargetRuntimeVersion = coreAssembly.TargetRuntimeVersion
+            //};
 
-            assembly.AssemblyReferences.Add(coreAssembly);
+            //assembly.AssemblyReferences.Add(coreAssembly);
 
-            var rootUnitNamespace = new RootUnitNamespace();
-            assembly.UnitNamespaceRoot = rootUnitNamespace;
-            rootUnitNamespace.Unit = assembly;
+            //var rootUnitNamespace = new RootUnitNamespace();
+            //assembly.UnitNamespaceRoot = rootUnitNamespace;
+            //rootUnitNamespace.Unit = assembly;
 
-            var moduleClass = new NamespaceTypeDefinition
-            {
-                ContainingUnitNamespace = rootUnitNamespace,
-                InternFactory = host.InternFactory,
-                IsClass = true,
-                Name = host.NameTable.GetNameFor("<Module>")
-            };
+            //var moduleClass = new NamespaceTypeDefinition
+            //{
+            //    ContainingUnitNamespace = rootUnitNamespace,
+            //    InternFactory = host.InternFactory,
+            //    IsClass = true,
+            //    Name = host.NameTable.GetNameFor("<Module>")
+            //};
 
 
-            assembly.AllTypes.Add(moduleClass);
+            //assembly.AllTypes.Add(moduleClass);
 
-            var queryType = new MetadataDeepCopier(host).Copy(type);
-            rootUnitNamespace.Members.Add(queryType);
-            assembly.AllTypes.Add(queryType);
+            //var queryType = new MetadataDeepCopier(host).Copy(type);
+            //rootUnitNamespace.Members.Add(queryType);
+            //assembly.AllTypes.Add(queryType);
 
-            queryAssembly = new AssemblyInfo(host, assembly);
+            //queryAssembly = new AssemblyInfo(host, assembly);
         }
 
         public string GetQueryAssemblyPath()

@@ -172,14 +172,13 @@ namespace Analysis.Cci
 
             // TODO: agregar polimorfismo
             //if (Configuration.InlineMethodsBody)
-            if (true)
-            {
+            //{
                 block = InlineMethodBody(action);
-            }
-            else
-            {
-                block = CallMethod(action);
-            }
+            //}
+            //else
+            //{
+            //    block = CallMethod(action);
+            //}
 
             method.Body = new SourceMethodBody(host)
             {

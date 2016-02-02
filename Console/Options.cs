@@ -46,9 +46,6 @@ namespace Contractor.Console
             DefaultValue = "Corral")]
         public string Backend { get; set; }
 
-        [Option("xml", HelpText = "Generate an XML file as output ", DefaultValue = false)]
-        public bool XML { get; set; }
-
         [HelpOption]
         public string GetUsage()
         {
