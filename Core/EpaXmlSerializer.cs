@@ -82,9 +82,9 @@ namespace Contractor.Core
             Contract.Requires(epa != null && epa.Type != null);
             Contract.Requires(writer != null);
             Contract.Requires(s != null);
-
+            
             var transitionsFromState = epa.Transitions.Where(t => t.SourceState.Equals(s));
-            var transitions = from t in transitionsFromState orderby t.TargetState.Name select t;
+            var transitions = (from t in transitionsFromState select t).OrderBy(x => x.TargetState.Name).ThenByDescending(x => x.Action.Name);
             foreach (var t in transitions)
             {
                 writer.WriteStartElement("transition");
@@ -109,9 +109,14 @@ namespace Contractor.Core
                 reader.Read(); // Epa
 
                 var typename = reader.GetAttribute("name");
-                var typeDefinition = new StringTypeDefinition(typename);
-                
+
                 var actions = DeserializeActions(reader);
+
+                var constructorName = typename.Substring(typename.LastIndexOf('.')+1);
+
+                var constructors= GetConstructors(actions.Item2);
+                var typeDefinition = new StringTypeDefinition(typename,constructors,convert(actions.Item2));
+
                 var states = DeserializeStates(reader);
 
                 var translator = new Dictionary<string, State>();
@@ -125,10 +130,19 @@ namespace Contractor.Core
                     {
                         enabledActions.Add(t.Item2);
                     }
-                    var disabledActions = new HashSet<Action>(actions);
+                    var disabledActions = new HashSet<Action>(actions.Item1);
                     disabledActions.ExceptWith(enabledActions);
 
+                    //IF IT'S A CONSTRUCTOR METHOD SET DISABLEDACTIONS TO A EMPTY SET. 
+                    //BECAUSE CONSTRUCTOR IS NOT A NORMAL METHOD.
+                    if (state.Value[0].Item2.ToString().Contains("_ctor"))
+                    {
+                        disabledActions = new HashSet<Action>();
+                    }
+
                     var s = new State(enabledActions, disabledActions);
+
+                    //s.Name = state.Key;
 
                     var stateName = state.Key;
                     translator[stateName] = s;
@@ -146,15 +160,61 @@ namespace Contractor.Core
             return epaBuilder.Build();
         }
 
-        protected IReadOnlyCollection<Action> DeserializeActions(XmlTextReader reader)
+        protected ISet<Action> convert(IReadOnlyCollection<Action> actions)
+        {
+            var result = new HashSet<Action>();
+            foreach (var action in actions)
+            {
+                result.Add(action);
+            }
+            return result;
+        }
+
+        protected ISet<Action> GetConstructors(String typename, IReadOnlyCollection<Action> actions)
+        {
+            var constructors = new HashSet<Action>();
+            foreach (var action in actions)
+            {
+                if (action.Name.Equals(typename) || action.Name.Contains(typename + "("))
+                {
+                    constructors.Add(action);
+                }
+            }
+            return constructors;
+        }
+
+        protected ISet<Action> GetConstructors(IReadOnlyCollection<Action> actions)
+        {
+            var constructors = new HashSet<Action>();
+            foreach (var action in actions)
+            {
+                if (action.Name.Contains("_ctor"))
+                {
+                    constructors.Add(action);
+                }
+            }
+            return constructors;
+        }
+
+        protected Tuple<IReadOnlyCollection<Action>,IReadOnlyCollection<Action>> DeserializeActions(XmlTextReader reader)
         {
             var actions = new List<Action>();
+            var actionsNames = new List<Action>();
+
             while (reader.Name != "state")
             {
-                actions.Add(new StringAction(reader.Name));
-                reader.Read();
+                if(reader.Name == "")
+                    reader.Read();
+                if (reader.Name != "state")
+                {
+                    if (reader.Name == "label"){
+                        actions.Add(new StringAction(reader.Name));
+                        actionsNames.Add(new StringAction(reader.GetAttribute(0)));
+                    }
+                    reader.Read();
+                }
             }
-            return actions;
+            return new Tuple<IReadOnlyCollection<Action>, IReadOnlyCollection<Action>>(actions, actionsNames);
         }
 
         protected Dictionary<string, List<Tuple<string, Action, string, bool>>> DeserializeStates(XmlTextReader reader)
