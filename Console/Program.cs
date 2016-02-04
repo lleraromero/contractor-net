@@ -36,6 +36,7 @@ namespace Contractor.Console
             //    "--xml"
             //};
 #endif
+            //System.Diagnostics.Debugger.Break();
             var options = new Options();
             if (!Parser.Default.ParseArgumentsStrict(args, options))
             {
@@ -47,7 +48,7 @@ namespace Contractor.Console
             }
 
             System.Console.WriteLine(options.InputAssembly);
-            System.Diagnostics.Debugger.Break();
+            
 
             try
             {
@@ -74,8 +75,8 @@ namespace Contractor.Console
 
             System.Console.WriteLine("Done!");
 #if DEBUG
-            System.Console.WriteLine("Press any key to continue");
-            System.Console.ReadKey();
+            //System.Console.WriteLine("Press any key to continue");
+            //System.Console.ReadKey();
 #endif
             return 0;
         }
@@ -109,7 +110,7 @@ namespace Contractor.Console
                     throw new NotSupportedException();
             }
 
-            var generator = new EpaGenerator(analyzer);
+            var generator = new EpaGenerator(analyzer,options.Cutter);
 
             var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
             var epaBuilder = new EpaBuilder(typeDefinition);
@@ -149,7 +150,7 @@ namespace Contractor.Console
             Contract.Requires(outputDir != null);
 
             var typeName = epa.Type.ToString().Replace('.', '_');
-            using (var stream = File.Create(string.Format("{0}\\{1}.png", outputDir.FullName, typeName)))
+            using (var stream = File.Create(string.Format("{0}\\{1}.xml", outputDir.FullName, typeName)))
             {
                 new EpaXmlSerializer().Serialize(stream, epa);
             }

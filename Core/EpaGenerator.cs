@@ -10,11 +10,13 @@ namespace Contractor.Core
     public class EpaGenerator
     {
         protected IAnalyzer analyzer;
+        protected int cutter;
 
-        public EpaGenerator(IAnalyzer analyzer)
+        public EpaGenerator(IAnalyzer analyzer, int cutter)
         {
             Contract.Requires(analyzer != null);
             this.analyzer = analyzer;
+            this.cutter = cutter;
         }
 
         public Task<TypeAnalysisResult> GenerateEpa(ITypeDefinition typeToAnalyze, IEpaBuilder epaBuilder)
@@ -77,6 +79,12 @@ namespace Contractor.Core
                     Contract.Assert(!actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).Any(), "Results are consistent");
 
                     var possibleTargets = GeneratePossibleStates(actions, actionsResult);
+
+                    if (cutter > 0 && possibleTargets.Count > cutter)
+                    {
+                        throw new System.Exception("Number of states too big.");
+                    }
+
                     Contract.Assert(possibleTargets.Any(), "There is always at least one target to reach");
 
                     // Which states are reachable from the current state (aka source) using 'action'?

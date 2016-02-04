@@ -19,7 +19,7 @@ namespace Core.Tests
 
             var dummyAnalyzer = A.Dummy<IAnalyzer>();
 
-            var epaGenerator = new EpaGenerator(dummyAnalyzer);
+            var epaGenerator = new EpaGenerator(dummyAnalyzer,-1);
             var epaGenerationTask = epaGenerator.GenerateEpa(emptyTypeDefinition, A.Dummy<IEpaBuilder>());
 
             epaGenerationTask.Wait();

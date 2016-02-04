@@ -46,8 +46,14 @@ namespace Contractor.Console
             DefaultValue = "Corral")]
         public string Backend { get; set; }
 
-        [Option("xml", HelpText = "Generate an XML file as output ", DefaultValue = false)]
+        [Option("xml", HelpText = "Generate an XML file as output.", DefaultValue = false)]
         public bool XML { get; set; }
+
+        [Option("cutter", HelpText = "Stop EPA generation when the possible targets are greater than (Default is not cutting)", DefaultValue = -1)]
+        public int Cutter { get; set; }
+
+        [Option("wc", HelpText = "Transition with conditions.", DefaultValue = false)]
+        public bool TransitionsWithConditions { get; set; }
 
         [HelpOption]
         public string GetUsage()

@@ -31,6 +31,7 @@ namespace Contractor.Gui.Models
 
             StateAdded += (sender, args) => { };
             TransitionAdded += (sender, args) => { };
+
         }
 
         public Epa GeneratedEpa
@@ -56,7 +57,7 @@ namespace Contractor.Gui.Models
             cancellationSource = new CancellationTokenSource();
 
             var analyzer = GetAnalyzer(analysisEventArgs.TypeToAnalyze, analysisEventArgs.Engine, cancellationSource.Token);
-            var epaGenerator = new EpaGenerator(analyzer);
+            var epaGenerator = new EpaGenerator(analyzer, -1);
 
             var selectedMethods = from m in analysisEventArgs.SelectedMethods select m.ToString();
 
