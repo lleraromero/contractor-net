@@ -44,7 +44,7 @@ namespace Contractor.Core
             foreach (var a in actions)
             {
                 writer.WriteStartElement("label");
-                writer.WriteAttributeString("name", a.Name);
+                writer.WriteAttributeString("name", a.ToString());
                 writer.WriteEndElement();
             }
         }
@@ -64,7 +64,7 @@ namespace Contractor.Core
                 foreach (var a in enabledActions)
                 {
                     writer.WriteStartElement("enabled_label");
-                    writer.WriteAttributeString("name", a.Name);
+                    writer.WriteAttributeString("name", a.ToString());
                     writer.WriteEndElement();
                 }
 
@@ -86,7 +86,7 @@ namespace Contractor.Core
             {
                 writer.WriteStartElement("transition");
                 writer.WriteAttributeString("destination", t.TargetState.Name);
-                writer.WriteAttributeString("label", t.Action.Name);
+                writer.WriteAttributeString("label", t.Action.ToString());
                 writer.WriteAttributeString("uncertain", t.IsUnproven.ToString().ToLower());
                 //Contractor.NET does not support this attribute
                 writer.WriteAttributeString("violates_invariant", "false");
@@ -110,7 +110,7 @@ namespace Contractor.Core
 
                 var actions = DeserializeActions(reader);
                 // TODO: arreglar, ctor no garantiza que sea un constructor
-                var constructors = new HashSet<Action>(actions.Where(a => a.Name.Contains("ctor")));
+                var constructors = new HashSet<Action>(actions.Where(a => a.Name.Contains("MaquinaExpendedora")));
                 var typeDefinition = new StringTypeDefinition(typename, constructors, new HashSet<Action>(actions.Except(constructors)));
                 
                 var states = DeserializeStates(reader, actions);
@@ -174,7 +174,7 @@ namespace Contractor.Core
                     reader.Read();
                 }
 
-                var disabledActions = enabledActions.All(a => a.Name.Contains("ctor")) ? new HashSet<Action>(actions.Except(enabledActions)) : new HashSet<Action>();
+                var disabledActions = enabledActions.All(a => a.Name.Contains("MaquinaExpendedora")) ? new HashSet<Action>(actions.Except(enabledActions)) : new HashSet<Action>();
 
                 var state = new State(enabledActions, disabledActions);
                 
