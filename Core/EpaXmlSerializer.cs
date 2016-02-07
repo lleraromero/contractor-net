@@ -13,9 +13,6 @@ namespace Contractor.Core
     {
         public void Serialize(Stream stream, Epa epa)
         {
-            Contract.Requires(stream.CanWrite);
-            Contract.Requires(epa != null);
-
             var settings = new XmlWriterSettings
             {
                 CloseOutput = false,
