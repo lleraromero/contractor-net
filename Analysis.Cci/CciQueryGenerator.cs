@@ -102,7 +102,12 @@ namespace Analysis.Cci
                         {
                             Condition = pre.Condition,
                             OriginalSource = Helper.PrintExpression(pre.Condition),
-                            Description = new CompileTimeConstant { Value = "Conditions over parameters are assumed satisfiable", Type = host.PlatformType.SystemString }
+                            Description =
+                                new CompileTimeConstant
+                                {
+                                    Value = "Conditions over parameters are assumed satisfiable",
+                                    Type = host.PlatformType.SystemString
+                                }
                         };
                         contracts.Postconditions.Add(post);
                     }
@@ -170,10 +175,11 @@ namespace Analysis.Cci
 
             BlockStatement block = null;
 
-            // TODO: agregar polimorfismo
+            // TODO (lleraromero): Por el momento hacemos solo inlining porque sirve para CC / Corral. Realmente deberiamos tener un creador del cuerpo polimorfico
+
             //if (Configuration.InlineMethodsBody)
             //{
-                block = InlineMethodBody(action);
+            block = InlineMethodBody(action);
             //}
             //else
             //{

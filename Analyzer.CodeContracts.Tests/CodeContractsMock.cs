@@ -5,8 +5,7 @@ using Contractor.Core;
 
 namespace Analyzer.CodeContracts.Tests
 {
-    // TODO: hacer que devuelva true bug o equivalente solamente en las consultas que deberian dar true para que sea una 
-    // sobreaproximacion, para todas las demas dar false
+    // TODO: hacer que devuelva true bug o equivalente solamente en las consultas que deberian dar true para que sea una sobreaproximacion, para todas las demas dar false
     internal class CodeContractsMock : ISolver
     {
         #region VendingMachine Queries

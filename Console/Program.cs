@@ -97,6 +97,7 @@ namespace Contractor.Console
             switch (options.Backend)
             {
                 case "CodeContracts":
+                    // TODO: volver a habilitar CodeContracts
                     throw new NotImplementedException();
                 case "Corral":
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
@@ -147,7 +148,7 @@ namespace Contractor.Console
         protected static void SaveEpasAsXML(Epa epa, DirectoryInfo outputDir)
         {
             Contract.Requires(epa != null);
-            Contract.Requires(outputDir != null);
+            Contract.Requires(outputDir.Exists);
 
             var typeName = epa.Type.ToString().Replace('.', '_');
             using (var stream = File.Create(string.Format("{0}\\{1}.xml", outputDir.FullName, typeName)))
@@ -159,9 +160,11 @@ namespace Contractor.Console
         protected static void GenerateStrengthenedAssembly(Epa epa, FileInfo outputFile)
         {
             Contract.Requires(epa != null);
-            Contract.Requires(outputFile != null);
+            Contract.Requires(outputFile.Exists);
 
-            System.Console.WriteLine("Generating strengthened output assembly");
+            throw new NotSupportedException();
+            // TODO (lleraromero): Volver a habilitar el instrumenter
+            //System.Console.WriteLine("Generating strengthened output assembly");
             //new Instrumenter().GenerateOutputAssembly(options.output, analysisResult.EPA);
         }
     }
