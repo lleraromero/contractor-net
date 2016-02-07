@@ -21,7 +21,6 @@ namespace Analysis.Cci
             var cciType = FindType(typeToAnalyze.Name);
             cciType.Methods.AddRange(from a in queries select a.Method.Method);
 
-
             var newContractProvider = new ContractProvider(new ContractMethods(this.host), this.host.FindUnit(this.decompiledModule.UnitIdentity));
             newContractProvider.AssociateTypeWithContract(cciType, this.contractProvider.GetTypeContractFor(cciType));
             this.contractProvider = newContractProvider;

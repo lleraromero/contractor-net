@@ -73,7 +73,11 @@ namespace Analyzer.CodeContracts
                     output.AppendLine(e.Data);
                     Logger.Log(LogLevel.Debug, e.Data);
                 };
-                codeContracts.ErrorDataReceived += (sender, e) => { Logger.Log(LogLevel.Fatal, e.Data); };
+                codeContracts.ErrorDataReceived += (sender, e) =>
+                {
+                    output.AppendLine(e.Data);
+                    Logger.Log(LogLevel.Fatal, e.Data);
+                };
                 codeContracts.Start();
                 codeContracts.BeginErrorReadLine();
                 codeContracts.BeginOutputReadLine();
