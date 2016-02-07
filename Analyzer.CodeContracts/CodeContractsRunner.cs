@@ -47,7 +47,7 @@ namespace Analyzer.CodeContracts
             //    typeName = string.Format("{0}`{1}", typeName, this.typeToAnalyze.GenericParameterCount);
 
             var args = new StringBuilder(ccCheckDefaultArgs);
-            args.AppendFormat(" -typeNameSelect={0}", typeToAnalyze);
+            args.AppendFormat(" -typeNameSelect={0}", typeToAnalyze.Name);
             args.AppendFormat(" -libPaths:\"{0}\"", libPaths);
             args.AppendFormat(" \"{0}\"", queryAssembly.FullName);
 
@@ -101,7 +101,11 @@ namespace Analyzer.CodeContracts
                     //currentMethod = currentMethod.Replace("#", string.Empty);
 
                     var message = ccMessage.Substring(ccMessage.IndexOf(':') + 1).Trim();
-                    codeContractsConclusions.Add(ParseResultKind(message));
+                    var conclusion = ParseResultKind(message);
+                    if (!conclusion.Equals(ResultKind.None))
+                    {
+                        codeContractsConclusions.Add(conclusion);
+                    }
                 }
             }
 
