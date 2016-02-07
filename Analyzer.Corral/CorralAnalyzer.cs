@@ -81,7 +81,7 @@ namespace Analyzer.Corral
         {
             Contract.Requires(source != null);
             Contract.Requires(action != null);
-            Contract.Requires(actions != null && actions.Any());
+            Contract.Requires(actions.Any());
             Contract.Requires(corralRunner != null);
 
             var targetNegatedPreconditionQueries = queryGenerator.CreateNegativeQueries(source, action, actions);
@@ -97,7 +97,7 @@ namespace Analyzer.Corral
         {
             Contract.Requires(source != null);
             Contract.Requires(action != null);
-            Contract.Requires(actions != null && actions.Any());
+            Contract.Requires(actions.Any());
             Contract.Requires(corralRunner != null);
 
             var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(source, action, actions);
