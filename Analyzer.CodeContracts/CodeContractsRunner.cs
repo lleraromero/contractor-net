@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Contractor.Core;
 using Contractor.Core.Model;
@@ -9,10 +11,8 @@ using Log;
 
 namespace Analyzer.CodeContracts
 {
-    internal class CodeContractsRunner : ISolver
+    public class CodeContractsRunner
     {
-        protected enum ResultKind { None, UnsatisfiableRequires, FalseRequires, UnprovenEnsures, FalseEnsures }
-
         protected readonly DirectoryInfo workingDir;
         protected readonly string ccCheckDefaultArgs;
         protected readonly string libPaths;
@@ -26,7 +26,7 @@ namespace Analyzer.CodeContracts
             this.typeToAnalyze = typeToAnalyze;
         }
 
-        public QueryResult Execute(FileInfo queryAssembly, Query query)
+        public Dictionary<Query, QueryResult> Execute(FileInfo queryAssembly, IReadOnlyCollection<Query> queries)
         {
             var tmpDir = Path.Combine(workingDir.FullName, Guid.NewGuid().ToString());
             Directory.CreateDirectory(tmpDir);
@@ -40,11 +40,6 @@ namespace Analyzer.CodeContracts
 
             //var inputAssemblyPath = Path.GetDirectoryName(inputAssembly.FileName);
             //libPaths = string.Format("{0};{1}", libPaths, inputAssemblyPath);
-
-            //var typeName = this.typeToAnalyze.ToString();
-
-            //if (this.typeToAnalyze.IsGeneric)
-            //    typeName = string.Format("{0}`{1}", typeName, this.typeToAnalyze.GenericParameterCount);
 
             var args = new StringBuilder(ccCheckDefaultArgs);
             args.AppendFormat(" -typeNameSelect={0}", typeToAnalyze.Name);
@@ -67,17 +62,8 @@ namespace Analyzer.CodeContracts
                     UseShellExecute = false
                 };
 
-                Logger.Log(LogLevel.Info, "=============== Code Contracts ===============");
-                codeContracts.OutputDataReceived += (sender, e) =>
-                {
-                    output.AppendLine(e.Data);
-                    Logger.Log(LogLevel.Debug, e.Data);
-                };
-                codeContracts.ErrorDataReceived += (sender, e) =>
-                {
-                    output.AppendLine(e.Data);
-                    Logger.Log(LogLevel.Fatal, e.Data);
-                };
+                codeContracts.OutputDataReceived += (sender, e) => { output.AppendLine(e.Data); };
+                codeContracts.ErrorDataReceived += (sender, e) => { output.AppendLine(e.Data); };
                 codeContracts.Start();
                 codeContracts.BeginErrorReadLine();
                 codeContracts.BeginOutputReadLine();
@@ -87,39 +73,59 @@ namespace Analyzer.CodeContracts
                 {
                     throw new Exception("Error executing Code Contracts");
                 }
+
+                Logger.Log(LogLevel.Info, "=============== Code Contracts ===============");
+                Logger.Log(LogLevel.Debug, "Args: " + codeContracts.StartInfo.Arguments);
+                Logger.Log(LogLevel.Debug, output.ToString());
+                Contract.Assert(output.Length > 11, "It seems that Code Contracts didn't analyze any methods");
             }
 
             Directory.Delete(tmpDir, true);
 
-            var codeContractsConclusions = new HashSet<ResultKind>();
+            var codeContractsConclusions = new Dictionary<Query, HashSet<ResultKind>>();
             using (var reader = new StringReader(output.ToString()))
             {
                 for (var ccMessage = reader.ReadLine(); ccMessage != null; ccMessage = reader.ReadLine())
                 {
-                    //var currentMethod = ccMessage.Substring(0, ccMessage.IndexOf('['));
-                    ////Para el caso de .#ctor
-                    //currentMethod = currentMethod.Replace("#", string.Empty);
+                    var candidateQueries = queries.Where(q => ccMessage.Contains(q.Method.Method.Name.Value));
+                    if (!candidateQueries.Any())
+                    {
+                        continue;
+                    }
+                    var currentQuery =
+                        candidateQueries.First(
+                            q => candidateQueries.All(q2 => q2.Method.Method.Name.Value.Length <= q.Method.Method.Name.Value.Length));
 
                     var message = ccMessage.Substring(ccMessage.IndexOf(':') + 1).Trim();
                     var conclusion = ParseResultKind(message);
-                    if (!conclusion.Equals(ResultKind.None))
+
+                    if (!codeContractsConclusions.ContainsKey(currentQuery))
                     {
-                        codeContractsConclusions.Add(conclusion);
+                        codeContractsConclusions.Add(currentQuery, new HashSet<ResultKind>());
                     }
+
+                    codeContractsConclusions[currentQuery].Add(conclusion);
                 }
             }
 
-            if (codeContractsConclusions.Contains(ResultKind.FalseEnsures))
+            var queryResults = new Dictionary<Query, QueryResult>();
+            foreach (var query in queries)
             {
-                return QueryResult.Reachable;
+                if (codeContractsConclusions[query].Contains(ResultKind.FalseEnsures))
+                {
+                    queryResults.Add(query, QueryResult.Reachable);
+                }
+                else if (codeContractsConclusions[query].Contains(ResultKind.UnprovenEnsures))
+                {
+                    queryResults.Add(query, QueryResult.MaybeReachable);
+                }
+                else
+                {
+                    queryResults.Add(query, QueryResult.Unreachable);
+                }
             }
 
-            if (codeContractsConclusions.Contains(ResultKind.UnprovenEnsures))
-            {
-                return QueryResult.MaybeReachable;
-            }
-
-            return QueryResult.Unreachable;
+            return queryResults;
         }
 
         protected ResultKind ParseResultKind(string message)
@@ -155,6 +161,15 @@ namespace Analyzer.CodeContracts
             }
 
             return ResultKind.None;
+        }
+
+        protected enum ResultKind
+        {
+            None,
+            UnsatisfiableRequires,
+            FalseRequires,
+            UnprovenEnsures,
+            FalseEnsures
         }
     }
 }

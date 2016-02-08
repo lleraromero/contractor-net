@@ -27,8 +27,7 @@ namespace Analyzer.CodeContracts
         protected int unprovenQueriesCount;
 
         public CodeContractsAnalyzer(DirectoryInfo workingDir, string ccCheckDefaultArgs, string libPaths, CciQueryGenerator queryGenerator,
-            CciAssembly inputAssembly,
-            string inputFileName, ITypeDefinition typeToAnalyze, CancellationToken token)
+            CciAssembly inputAssembly, string inputFileName, ITypeDefinition typeToAnalyze, CancellationToken token)
         {
             this.workingDir = workingDir;
             this.ccCheckDefaultArgs = ccCheckDefaultArgs;
@@ -47,8 +46,8 @@ namespace Analyzer.CodeContracts
         {
             var codeContractsRunner = new CodeContractsRunner(workingDir, ccCheckDefaultArgs, libPaths, typeToAnalyze);
 
-            var enabledActions = GetMustBeEnabledActions(source, action, actions, codeContractsRunner);
-            var disabledActions = GetMustBeDisabledActions(source, action, actions, codeContractsRunner);
+            var enabledActions = ActionsThatAreAlwaysEnabled(source, action, actions, codeContractsRunner);
+            var disabledActions = ActionsThatAreAlwaysDisabled(source, action, actions, codeContractsRunner);
 
             Contract.Assert(!enabledActions.Intersect(disabledActions).Any(), "An action cannot be enabled and disabled at the same time");
 
@@ -80,33 +79,35 @@ namespace Analyzer.CodeContracts
             return statisticsBuilder.ToString();
         }
 
-        protected ISet<Action> GetMustBeDisabledActions(State source, Action action, IEnumerable<Action> actions, ISolver corralRunner)
+        protected ISet<Action> ActionsThatAreAlwaysDisabled(State source, Action action, IEnumerable<Action> actions,
+            CodeContractsRunner codeContractsRunner)
         {
             Contract.Requires(source != null);
             Contract.Requires(action != null);
             Contract.Requires(actions.Any());
-            Contract.Requires(corralRunner != null);
+            Contract.Requires(codeContractsRunner != null);
 
             var targetNegatedPreconditionQueries = queryGenerator.CreateNegativeQueries(source, action, actions);
             generatedQueriesCount += targetNegatedPreconditionQueries.Count;
             var queryAssembly = CreateQueryAssembly(targetNegatedPreconditionQueries);
-            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var evaluator = new QueryEvaluator(codeContractsRunner, queryAssembly);
             var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
             unprovenQueriesCount += evaluator.UnprovenQueries;
             return disabledActions;
         }
 
-        protected ISet<Action> GetMustBeEnabledActions(State source, Action action, IEnumerable<Action> actions, ISolver corralRunner)
+        protected ISet<Action> ActionsThatAreAlwaysEnabled(State source, Action action, IEnumerable<Action> actions,
+            CodeContractsRunner codeContractsRunner)
         {
             Contract.Requires(source != null);
             Contract.Requires(action != null);
             Contract.Requires(actions.Any());
-            Contract.Requires(corralRunner != null);
+            Contract.Requires(codeContractsRunner != null);
 
             var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(source, action, actions);
             generatedQueriesCount += targetPreconditionQueries.Count;
             var queryAssembly = CreateQueryAssembly(targetPreconditionQueries);
-            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var evaluator = new QueryEvaluator(codeContractsRunner, queryAssembly);
             var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
             unprovenQueriesCount += evaluator.UnprovenQueries;
             return enabledActions;

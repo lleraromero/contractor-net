@@ -55,7 +55,6 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="AnalyzerMock.cs" />
     <Compile Include="CodeContractsEPAsTest.cs" />
     <Compile Include="CodeContractsMock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
