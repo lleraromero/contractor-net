@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
+using Contractor.Core;
 using Contractor.Core.Model;
 using Action = Contractor.Core.Model.Action;
 
-namespace Contractor.Core
+namespace Analyzer.Corral
 {
     public class QueryEvaluator
     {
