@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Text;
 using Microsoft.Cci;
 
 namespace Analysis.Cci
@@ -13,10 +11,10 @@ namespace Analysis.Cci
             var uniqueName = MemberHelper.GetMethodSignature(method,
                 NameFormattingOptions.DocumentationId & ~NameFormattingOptions.DocumentationIdMemberKind);
             uniqueName = uniqueName.Replace("(", "")
-                                   .Replace(")", "")
-                                   .Replace(".", "_")
-                                   .Replace(",", "")
-                                   .Replace("#", "");
+                .Replace(")", "")
+                .Replace(".", "_")
+                .Replace(",", "")
+                .Replace("#", "");
             return uniqueName;
         }
 

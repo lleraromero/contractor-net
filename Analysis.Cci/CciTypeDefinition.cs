@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Text;
 using Contractor.Core.Model;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
@@ -25,7 +24,7 @@ namespace Analysis.Cci
 
         public string Name
         {
-            get { return TypeHelper.GetTypeName(typeDefinition); }
+            get { return TypeHelper.GetTypeName(typeDefinition, NameFormattingOptions.UseGenericTypeNameSuffix); }
         }
 
         public ISet<Action> Constructors()
@@ -50,18 +49,8 @@ namespace Analysis.Cci
 
         public override string ToString()
         {
-            var name =
-                new StringBuilder(TypeHelper.GetTypeName(typeDefinition, NameFormattingOptions.OmitContainingNamespace | NameFormattingOptions.None));
-
-            if (typeDefinition.IsGeneric)
-            {
-                var genericParameters = string.Join(",", typeDefinition.GenericParameters);
-                name.Append('<');
-                name.Append(genericParameters);
-                name.Append('>');
-            }
-
-            return name.ToString();
+            return TypeHelper.GetTypeName(typeDefinition,
+                NameFormattingOptions.OmitContainingNamespace | NameFormattingOptions.TypeParameters | NameFormattingOptions.None);
         }
     }
 }
