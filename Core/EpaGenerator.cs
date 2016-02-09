@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Threading.Tasks;
 using Contractor.Core.Model;
+using Log;
+using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
@@ -72,17 +75,27 @@ namespace Contractor.Core
             {
                 var source = statesToVisit.Dequeue();
                 visitedStates.Add(source);
-                foreach(var action in source.EnabledActions)
+                foreach (var action in source.EnabledActions)
                 {
                     // Which actions are enabled or disabled if 'action' is called from 'source'?
                     var actionsResult = analyzer.AnalyzeActions(source, action, actions);
-                    Contract.Assert(!actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).Any(), "Results are consistent");
+
+                    if (actionsResult.EnabledActions.Count.Equals(actions.Count) && actionsResult.DisabledActions.Count.Equals(actions.Count()))
+                    {
+                        Logger.Log(LogLevel.Warn,
+                            "Suspicious state! Only a state with a unsatisfiable invariant can lead to every action being enabled and disabled at the same time. It can also mean a bug in our code.");
+                        continue;
+                    }
+
+                    Contract.Assert(!actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).Any(), "Results should be consistent");
+                    Contract.Assert(!actionsResult.EnabledActions.Any() && !actionsResult.DisabledActions.Any(),
+                        "State explosion leads to a useless EPA");
 
                     var possibleTargets = GeneratePossibleStates(actions, actionsResult);
 
                     if (cutter > 0 && possibleTargets.Count > cutter)
                     {
-                        throw new System.Exception("Number of states too big.");
+                        throw new Exception("Number of states too big.");
                     }
 
                     Contract.Assert(possibleTargets.Any(), "There is always at least one target to reach");
