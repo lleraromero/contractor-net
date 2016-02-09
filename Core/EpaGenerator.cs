@@ -88,7 +88,7 @@ namespace Contractor.Core
                     }
 
                     Contract.Assert(!actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).Any(), "Results should be consistent");
-                    Contract.Assert(!actionsResult.EnabledActions.Any() && !actionsResult.DisabledActions.Any(),
+                    Contract.Assert(actionsResult.EnabledActions.Any() || actionsResult.DisabledActions.Any(),
                         "State explosion leads to a useless EPA");
 
                     var possibleTargets = GeneratePossibleStates(actions, actionsResult);
