@@ -8,6 +8,7 @@ using System.Threading;
 using Analysis.Cci;
 using Contractor.Core;
 using Contractor.Core.Model;
+using Log;
 using Action = Contractor.Core.Model.Action;
 
 namespace Analyzer.CodeContracts
@@ -49,7 +50,16 @@ namespace Analyzer.CodeContracts
             var enabledActions = ActionsThatAreAlwaysEnabled(source, action, actions, codeContractsRunner);
             var disabledActions = ActionsThatAreAlwaysDisabled(source, action, actions, codeContractsRunner);
 
-            Contract.Assert(!enabledActions.Intersect(disabledActions).Any(), "An action cannot be enabled and disabled at the same time");
+            if (enabledActions.Count.Equals(actions.Count()) && disabledActions.Count.Equals(actions.Count()))
+            {
+                // TODO (lleraromero): Definir que hacer si detectamos que un estado tiene un invariante UNSAT
+                Logger.Log(LogLevel.Warn,
+                    "Suspicious state! Only a state with a unsatisfiable invariant can lead to every action being enabled and disabled at the same time. It can also mean a bug in our code.");
+            }
+            else
+            {
+                Contract.Assert(!enabledActions.Intersect(disabledActions).Any(), "An action cannot be enabled and disabled at the same time");
+            }
 
             return new ActionAnalysisResults(enabledActions, disabledActions);
         }

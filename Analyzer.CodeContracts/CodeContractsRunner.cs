@@ -119,9 +119,13 @@ namespace Analyzer.CodeContracts
                 {
                     queryResults.Add(query, QueryResult.MaybeReachable);
                 }
-                else
+                else if (codeContractsConclusions[query].Contains(ResultKind.ValidEnsures))
                 {
                     queryResults.Add(query, QueryResult.Unreachable);
+                }
+                else
+                {
+                    throw new Exception("Code Contracs didn't provide a conclusion for this query");
                 }
             }
 
@@ -160,6 +164,11 @@ namespace Analyzer.CodeContracts
                 return ResultKind.FalseEnsures;
             }
 
+            if (message.Contains("ensures is valid"))
+            {
+                return ResultKind.ValidEnsures;
+            }
+
             return ResultKind.None;
         }
 
@@ -169,7 +178,8 @@ namespace Analyzer.CodeContracts
             UnsatisfiableRequires,
             FalseRequires,
             UnprovenEnsures,
-            FalseEnsures
+            FalseEnsures,
+            ValidEnsures
         }
     }
 }
