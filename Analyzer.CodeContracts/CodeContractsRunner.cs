@@ -119,13 +119,9 @@ namespace Analyzer.CodeContracts
                 {
                     queryResults.Add(query, QueryResult.MaybeReachable);
                 }
-                else if (codeContractsConclusions[query].Contains(ResultKind.ValidEnsures))
+                else 
                 {
                     queryResults.Add(query, QueryResult.Unreachable);
-                }
-                else
-                {
-                    throw new Exception("Code Contracs didn't provide a conclusion for this query");
                 }
             }
 
@@ -136,12 +132,14 @@ namespace Analyzer.CodeContracts
         {
             if (message.Contains("requires is false"))
             {
-                throw new InvalidProgramException("Requires must be true");
+                Logger.Log(LogLevel.Warn, "Code Contracts: Requires must be true");
+                return ResultKind.FalseRequires;
             }
 
             if (message.Contains("Requires (including invariants) are unsatisfiable"))
             {
-                throw new InvalidProgramException("Requires must be satisfiable");
+                Logger.Log(LogLevel.Warn, "Code Contracts: Requires (including invariants) are unsatisfiable");
+                return ResultKind.UnsatisfiableRequires;
             }
 
             if (message.Contains("ensures unproven"))
