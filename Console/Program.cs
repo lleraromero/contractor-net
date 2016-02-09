@@ -3,8 +3,10 @@ using System.Configuration;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using Analysis.Cci;
+using Analyzer.CodeContracts;
 using Analyzer.Corral;
 using CommandLine;
 using Contractor.Core;
@@ -93,18 +95,36 @@ namespace Contractor.Console
             var typeToAnalyze = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
             var cancellationSource = new CancellationTokenSource();
 
-            IAnalyzer analyzer = null;
+            var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
+            workingDir.Create();
+
+            var queryGenerator = decompiler.CreateQueryGenerator();
+
+            IAnalyzer analyzer;
             switch (options.Backend)
             {
                 case "CodeContracts":
-                    // TODO: volver a habilitar CodeContracts
-                    throw new NotImplementedException();
+                    var codeContracts = Environment.GetEnvironmentVariable("CodeContractsInstallDir");
+                    if (string.IsNullOrEmpty(codeContracts))
+                    {
+                        var msg = new StringBuilder();
+                        msg.AppendLine("The environment variable %CodeContractsInstallDir% does not exist.");
+                        msg.AppendLine("Please make sure that Code Contracts is installed correctly.");
+                        msg.AppendLine("This might be because the system was not restarted after Code Contracts installation.");
+
+                        throw new DirectoryNotFoundException(msg.ToString());
+                    }
+                    var cccheckArgs = ConfigurationManager.AppSettings["CccheckArgs"];
+                    Contract.Assert(cccheckArgs != null);
+                    var cccheck = new FileInfo(ConfigurationManager.AppSettings["CccheckFullName"]);
+                    Contract.Assert(cccheck.Exists);
+                    analyzer = new CodeContractsAnalyzer(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly as CciAssembly, options.InputAssembly,
+                        typeToAnalyze, cancellationSource.Token);
+                    break;
                 case "Corral":
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
-                    var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
-                    workingDir.Create();
-
-                    analyzer = new CorralAnalyzer(corralDefaultArgs, workingDir, decompiler.CreateQueryGenerator(), inputAssembly as CciAssembly,
+                    Contract.Assert(corralDefaultArgs != null);
+                    analyzer = new CorralAnalyzer(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly,
                         options.InputAssembly, typeToAnalyze, cancellationSource.Token);
                     break;
                 default:
