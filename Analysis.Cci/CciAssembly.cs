@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
-using Contractor.Core;
 using Contractor.Core.Model;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
@@ -43,9 +42,11 @@ namespace Analysis.Cci
         public IReadOnlyCollection<NamespaceDefinition> Namespaces()
         {
             var namespaces = new Dictionary<string, List<ITypeDefinition>>();
-            foreach (var type in decompiledModule.AllTypes)
+            var analyzableTypes = GetAnalyzableTypes(decompiledModule);
+            foreach (var type in analyzableTypes)
             {
-                var typeNamespace = FindNamespace(type);
+                var typeNamespace = TypeHelper.GetDefiningNamespace(type).Name.Value;
+                ;
 
                 if (!namespaces.ContainsKey(typeNamespace))
                 {
@@ -68,20 +69,6 @@ namespace Analysis.Cci
         public IMethodContract GetContractFor(IMethodDefinition method)
         {
             return contractProvider.GetMethodContractFor(method);
-        }
-
-        /// <remarks>
-        ///     There are only two kind of INamedTypeDefinitions: Namespace and Nested
-        /// </remarks>
-        protected string FindNamespace(INamedTypeDefinition typeDefinition)
-        {
-            Microsoft.Cci.ITypeDefinition currentType = typeDefinition;
-            while (currentType is INestedTypeDefinition)
-            {
-                currentType = ((INestedTypeDefinition) typeDefinition).ContainingTypeDefinition;
-            }
-
-            return ((INamespaceTypeDefinition) currentType).ContainingUnitNamespace.Name.Value;
         }
 
         protected Module DecompileModule(string filename)
@@ -122,6 +109,17 @@ namespace Analysis.Cci
                 }
             }
             return pdbReader;
+        }
+
+        protected IReadOnlyCollection<INamedTypeDefinition> GetAnalyzableTypes(IModule module)
+        {
+            var types = from t in module.GetAllTypes()
+                where (t.IsClass || t.IsStruct) &&
+                      !t.IsStatic &&
+                      !t.IsEnum &&
+                      !t.IsInterface
+                select t;
+            return new List<INamedTypeDefinition>(types);
         }
     }
 }

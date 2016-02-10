@@ -47,7 +47,7 @@ namespace Analysis.Cci
 
         protected NamespaceTypeDefinition FindType(string typeName)
         {
-            var types = decompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
+            var types = GetAnalyzableTypes(decompiledModule).Cast<NamespaceTypeDefinition>();
             var type = types.First(t => TypeHelper.GetTypeName(t, NameFormattingOptions.UseGenericTypeNameSuffix).Equals(typeName));
             return type;
         }
