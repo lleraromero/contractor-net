@@ -124,6 +124,7 @@
     <Compile Include="CorralAnalyzer.cs" />
     <Compile Include="CorralRunner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QueryEvaluator.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Analysis.Cci\Analysis.Cci.csproj">

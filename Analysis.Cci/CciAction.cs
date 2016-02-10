@@ -53,7 +53,7 @@ namespace Analysis.Cci
             var signature = MemberHelper.GetMethodSignature(method, NameFormattingOptions.Signature | NameFormattingOptions.OmitContainingNamespace | NameFormattingOptions.OmitContainingType);
             if (method.IsConstructor)
             {
-                return signature.Replace(".ctor", TypeHelper.GetTypeName(method.ContainingTypeDefinition, NameFormattingOptions.OmitContainingNamespace));
+                return signature.Replace(".ctor", TypeHelper.GetTypeName(method.ContainingTypeDefinition, NameFormattingOptions.OmitContainingNamespace | NameFormattingOptions.TypeParameters));
             }
 
             return signature;

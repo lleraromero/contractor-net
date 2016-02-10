@@ -207,7 +207,6 @@
     <Compile Include="ISerializer.cs" />
     <Compile Include="ObservableEpaBuilder.cs" />
     <Compile Include="Query.cs" />
-    <Compile Include="QueryEvaluator.cs" />
     <Compile Include="StringAction.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

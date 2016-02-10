@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
+using Contractor.Core;
 using Contractor.Core.Model;
 using Action = Contractor.Core.Model.Action;
 
-namespace Contractor.Core
+namespace Analyzer.CodeContracts
 {
     public class QueryEvaluator
     {
-        protected ISolver solver;
+        protected CodeContractsRunner solver;
         protected FileInfo queryAssembly;
         protected int unprovenQueries;
 
-        public QueryEvaluator(ISolver solver, FileInfo queryAssembly)
+        public QueryEvaluator(CodeContractsRunner solver, FileInfo queryAssembly)
         {
             Contract.Requires(solver != null);
             Contract.Requires(queryAssembly.Exists);
@@ -41,9 +42,11 @@ namespace Contractor.Core
         {
             var unreachableQueries = new List<ActionQuery>();
 
+            var results = solver.Execute(queryAssembly, actionQueries);
+
             foreach (var query in actionQueries)
             {
-                var result = solver.Execute(queryAssembly, query);
+                var result = results[query];
                 switch (result)
                 {
                     case QueryResult.Reachable:
@@ -58,6 +61,7 @@ namespace Contractor.Core
                         throw new NotSupportedException();
                 }
             }
+
             return unreachableQueries;
         }
 
@@ -75,9 +79,10 @@ namespace Contractor.Core
 
             var feasibleTransitions = new List<Transition>();
 
+            var results = solver.Execute(queryAssembly, transitionQueries);
             foreach (var query in transitionQueries)
             {
-                var result = solver.Execute(queryAssembly, query);
+                var result = results[query];
                 switch (result)
                 {
                     case QueryResult.Reachable:

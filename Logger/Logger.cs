@@ -1,9 +1,18 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
+using NLog;
 
 namespace Log
 {
-    public enum LogLevel { Fatal, Error, Warn, Info, Debug, Trace };
+    public enum LogLevel
+    {
+        Fatal,
+        Error,
+        Warn,
+        Info,
+        Debug,
+        Trace
+    }
 
     public class Logger
     {
@@ -11,7 +20,7 @@ namespace Log
         {
             Contract.Requires(ex != null);
 
-            NLog.LogManager.GetCurrentClassLogger().Log(ToLibraryLogLevel(level), ex);
+            LogManager.GetCurrentClassLogger().Log(ToLibraryLogLevel(level), ex);
         }
 
         public static void Log(LogLevel level, string message)
@@ -21,7 +30,7 @@ namespace Log
                 return;
             }
 
-            NLog.LogManager.GetCurrentClassLogger().Log(ToLibraryLogLevel(level), message);
+            LogManager.GetCurrentClassLogger().Log(ToLibraryLogLevel(level), message);
         }
 
         protected static NLog.LogLevel ToLibraryLogLevel(LogLevel level)

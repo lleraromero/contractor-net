@@ -3,8 +3,6 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using Contractor.Core;
-using Contractor.Core.Model;
-using Contractor.Utils;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;
@@ -21,16 +19,15 @@ namespace Analysis.Cci
             var cciType = FindType(typeToAnalyze.Name);
             cciType.Methods.AddRange(from a in queries select a.Method.Method);
 
-
-            var newContractProvider = new ContractProvider(new ContractMethods(this.host), this.host.FindUnit(this.decompiledModule.UnitIdentity));
-            newContractProvider.AssociateTypeWithContract(cciType, this.contractProvider.GetTypeContractFor(cciType));
-            this.contractProvider = newContractProvider;
+            var newContractProvider = new ContractProvider(new ContractMethods(host), host.FindUnit(decompiledModule.UnitIdentity));
+            newContractProvider.AssociateTypeWithContract(cciType, contractProvider.GetTypeContractFor(cciType));
+            contractProvider = newContractProvider;
 
             foreach (var query in queries)
             {
                 var method = cciType.Methods.Find(m => m.GetUniqueName() == query.Method.Name) as MethodDefinition;
                 method.ContainingTypeDefinition = cciType;
-                ((ContractProvider)this.contractProvider).AssociateMethodWithContract(query.Method.Method, query.Method.Contract);
+                ((ContractProvider) contractProvider).AssociateMethodWithContract(query.Method.Method, query.Method.Contract);
             }
         }
 
@@ -38,20 +35,20 @@ namespace Analysis.Cci
         {
             Contract.Requires(!string.IsNullOrEmpty(path) && !File.Exists(path));
 
-            ISourceLocationProvider sourceLocationProvider = GetPdbReader(this.decompiledModule);            
-            ContractHelper.InjectContractCalls(this.host, this.decompiledModule, (ContractProvider) this.contractProvider, sourceLocationProvider);
+            ISourceLocationProvider sourceLocationProvider = GetPdbReader(decompiledModule);
+            ContractHelper.InjectContractCalls(host, decompiledModule, (ContractProvider) contractProvider, sourceLocationProvider);
 
             // Save the query assembly to run Corral
             using (var peStream = File.Create(path))
             {
-                PeWriter.WritePeToStream(this.decompiledModule, this.host, peStream);
+                PeWriter.WritePeToStream(decompiledModule, host, peStream);
             }
         }
 
         protected NamespaceTypeDefinition FindType(string typeName)
         {
-            var types = this.decompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
-            var type = types.First(t => TypeHelper.GetTypeName(t, NameFormattingOptions.None).Equals(typeName));
+            var types = decompiledModule.GetAnalyzableTypes().Cast<NamespaceTypeDefinition>();
+            var type = types.First(t => TypeHelper.GetTypeName(t, NameFormattingOptions.UseGenericTypeNameSuffix).Equals(typeName));
             return type;
         }
     }
