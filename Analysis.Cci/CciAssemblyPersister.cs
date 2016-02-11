@@ -5,11 +5,11 @@ using Microsoft.Cci.MutableContracts;
 
 namespace Analysis.Cci
 {
-    public class CciDecompiler
+    public class CciAssemblyPersister
     {
         protected CodeContractAwareHostEnvironment host;
 
-        public CciDecompiler()
+        public CciAssemblyPersister()
         {
             host = new CodeContractAwareHostEnvironment();
         }

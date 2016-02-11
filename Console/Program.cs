@@ -90,7 +90,7 @@ namespace Contractor.Console
 
             System.Console.WriteLine("Starting analysis for type {0}", options.TypeToAnalyze);
 
-            var decompiler = new CciDecompiler();
+            var decompiler = new CciAssemblyPersister();
             var inputAssembly = decompiler.Decompile(options.InputAssembly, null);
             var typeToAnalyze = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
             var cancellationSource = new CancellationTokenSource();

@@ -22,12 +22,12 @@ namespace Contractor.Gui.Models
         protected IAssembly inputAssembly;
 
         protected CancellationTokenSource cancellationSource;
-        protected CciDecompiler decompiler;
+        protected CciAssemblyPersister assemblyPersister;
         protected Epa generatedEpa;
 
         public MainModel()
         {
-            decompiler = new CciDecompiler();
+            assemblyPersister = new CciAssemblyPersister();
 
             StateAdded += (sender, args) => { };
             TransitionAdded += (sender, args) => { };
@@ -72,13 +72,13 @@ namespace Contractor.Gui.Models
         public async Task LoadAssembly(FileInfo inputFileInfo)
         {
             inputFile = inputFileInfo;
-            inputAssembly = await Task.Run(() => decompiler.Decompile(inputFile.FullName, null));
+            inputAssembly = await Task.Run(() => assemblyPersister.Decompile(inputFile.FullName, null));
         }
 
         public async Task LoadContracts(FileInfo contractFileInfo)
         {
             contractFile = contractFileInfo;
-            inputAssembly = await Task.Run(() => decompiler.Decompile(inputFile.FullName, contractFile.FullName));
+            inputAssembly = await Task.Run(() => assemblyPersister.Decompile(inputFile.FullName, contractFile.FullName));
         }
 
         protected void OnInitialStateAdded(object sender, IEpaBuilder epaBuilder)
@@ -99,7 +99,7 @@ namespace Contractor.Gui.Models
             var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
             workingDir.Create();
 
-            var queryGenerator = decompiler.CreateQueryGenerator();
+            var queryGenerator = assemblyPersister.CreateQueryGenerator();
 
             IAnalyzer analyzer;
             switch (engine)

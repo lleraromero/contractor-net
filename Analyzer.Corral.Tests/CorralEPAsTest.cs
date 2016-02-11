@@ -30,7 +30,7 @@ namespace Analyzer.Corral.Tests
         protected ITypeDefinition FindTypeDefinitionInAssemblyWithName(string typeName)
         {
             var examplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\Examples\obj\Debug\Decl\Examples.dll"));
-            var inputAssembly = new CciDecompiler().Decompile(examplesPath, null);
+            var inputAssembly = new CciAssemblyPersister().Decompile(examplesPath, null);
 
             return inputAssembly.Types().First(t => t.Name.Equals(typeName));
         }

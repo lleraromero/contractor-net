@@ -20,7 +20,7 @@ namespace Analyzer.CodeContracts.Tests
         //{
         //    var ExamplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, InputFilePath));
 
-        //    inputAssembly = new CciDecompiler().Decompile(ExamplesPath, null);
+        //    inputAssembly = new CciAssemblyPersister().Decompile(ExamplesPath, null);
         //}
 
         //[TestMethod]

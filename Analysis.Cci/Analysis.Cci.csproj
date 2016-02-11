@@ -172,7 +172,7 @@
     <Compile Include="CciAttributeAdder.cs" />
     <Compile Include="CciContractDependenciesAnalyzer.cs" />
     <Compile Include="CciContractVisitor.cs" />
-    <Compile Include="CciDecompiler.cs" />
+    <Compile Include="CciAssemblyPersister.cs" />
     <Compile Include="CciNegativeActionQueryGenerator.cs" />
     <Compile Include="CciPositiveActionQueryGenerator.cs" />
     <Compile Include="CciQueryAssembly.cs" />
