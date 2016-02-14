@@ -34,7 +34,7 @@ namespace Analysis.Cci
         public void Save(CciAssembly assembly, string path)
         {
             Contract.Requires(assembly != null);
-            Contract.Requires(!string.IsNullOrEmpty(path) && !File.Exists(path));
+            Contract.Requires(!File.Exists(path));
 
             var sourceLocationProvider = GetPdbReader(assembly.Module);
             ContractHelper.InjectContractCalls(host, assembly.Module, assembly.ContractProvider, sourceLocationProvider);

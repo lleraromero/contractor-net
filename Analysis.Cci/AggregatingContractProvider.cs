@@ -1,73 +1,70 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Cci.MutableContracts;
-using Microsoft.Cci.Contracts;
+﻿using System.Collections.Generic;
 using Microsoft.Cci;
+using Microsoft.Cci.Contracts;
+using Microsoft.Cci.MutableContracts;
 
 namespace Analysis.Cci
 {
-	class AggregatingContractProvider : ContractProvider
-	{
-		private IContractExtractor underlyingContractExtractor;
+    public class AggregatingContractProvider : ContractProvider
+    {
+        protected readonly IContractExtractor underlyingContractExtractor;
 
-		public AggregatingContractProvider(IContractExtractor contractExtractor)
-			: base(contractExtractor.ContractMethods, contractExtractor.Unit)
-		{
-			underlyingContractExtractor = contractExtractor;
-		}
+        public AggregatingContractProvider(IContractExtractor contractExtractor)
+            : base(contractExtractor.ContractMethods, contractExtractor.Unit)
+        {
+            underlyingContractExtractor = contractExtractor;
+        }
 
-		public override ILoopContract GetLoopContractFor(object loop)
-		{
-			var loopContract = base.GetLoopContractFor(loop);
+        public override ILoopContract GetLoopContractFor(object loop)
+        {
+            var loopContract = base.GetLoopContractFor(loop);
 
-			if (loopContract == null)
-			{
-				loopContract = underlyingContractExtractor.GetLoopContractFor(loop);
-				base.AssociateLoopWithContract(loop, loopContract);
-			}
+            if (loopContract == null)
+            {
+                loopContract = underlyingContractExtractor.GetLoopContractFor(loop);
+                AssociateLoopWithContract(loop, loopContract);
+            }
 
-			return loopContract;
-		}
+            return loopContract;
+        }
 
-		public override IMethodContract GetMethodContractFor(object method)
-		{
-			var methodContract = base.GetMethodContractFor(method);
+        public override IMethodContract GetMethodContractFor(object method)
+        {
+            var methodContract = base.GetMethodContractFor(method);
 
-			if (methodContract == null)
-			{
-				methodContract = underlyingContractExtractor.GetMethodContractFor(method);
-				base.AssociateMethodWithContract(method, methodContract);
-			}
+            if (methodContract == null)
+            {
+                methodContract = underlyingContractExtractor.GetMethodContractFor(method);
+                AssociateMethodWithContract(method, methodContract);
+            }
 
-			return methodContract;
-		}
+            return methodContract;
+        }
 
-		public override IEnumerable<IEnumerable<IExpression>> GetTriggersFor(object quantifier)
-		{
-			var triggers = base.GetTriggersFor(quantifier);
+        public override IEnumerable<IEnumerable<IExpression>> GetTriggersFor(object quantifier)
+        {
+            var triggers = base.GetTriggersFor(quantifier);
 
-			if (triggers == null)
-			{
-				triggers = underlyingContractExtractor.GetTriggersFor(quantifier);
-				base.AssociateTriggersWithQuantifier(quantifier, triggers);
-			}
+            if (triggers == null)
+            {
+                triggers = underlyingContractExtractor.GetTriggersFor(quantifier);
+                AssociateTriggersWithQuantifier(quantifier, triggers);
+            }
 
-			return triggers;
-		}
+            return triggers;
+        }
 
-		public override ITypeContract GetTypeContractFor(object type)
-		{
-			var typeContract = base.GetTypeContractFor(type);
+        public override ITypeContract GetTypeContractFor(object type)
+        {
+            var typeContract = base.GetTypeContractFor(type);
 
-			if (typeContract == null)
-			{
-				typeContract = underlyingContractExtractor.GetTypeContractFor(type);
-				base.AssociateTypeWithContract(type, typeContract);
-			}
+            if (typeContract == null)
+            {
+                typeContract = underlyingContractExtractor.GetTypeContractFor(type);
+                AssociateTypeWithContract(type, typeContract);
+            }
 
-			return typeContract;
-		}
-	}
+            return typeContract;
+        }
+    }
 }

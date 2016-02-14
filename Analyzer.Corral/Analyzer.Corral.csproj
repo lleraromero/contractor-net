@@ -120,6 +120,7 @@
   <ItemGroup>
     <Compile Include="BctRunner.cs" />
     <Compile Include="BctMethodNamer.cs" />
+    <Compile Include="CciContractRewriter.cs" />
     <Compile Include="CciQueryAssembly.cs" />
     <Compile Include="CorralAnalyzer.cs" />
     <Compile Include="CorralRunner.cs" />

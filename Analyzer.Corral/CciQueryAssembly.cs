@@ -6,7 +6,6 @@ using Analysis.Cci;
 using Contractor.Core;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
-using Microsoft.Cci.ILToCodeModel;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableCodeModel.Contracts;
 using Microsoft.Cci.MutableContracts;
@@ -19,6 +18,7 @@ namespace Analyzer.Corral
         protected CodeContractAwareHostEnvironment host;
         protected Module module;
         protected ContractProvider contractProvider;
+
         public CciQueryAssembly(CciAssembly inputAssembly, ITypeDefinition typeToAnalyze, IEnumerable<Query> queries)
         {
             Contract.Requires(inputAssembly != null);
@@ -56,30 +56,10 @@ namespace Analyzer.Corral
         {
             Contract.Requires(!string.IsNullOrEmpty(path) && !File.Exists(path));
 
-            var pdbReader = GetPdbReader(module);
-            // I need to replace Pre/Post with Assume/Assert
-            ILocalScopeProvider localScopeProvider = new Decompiler.LocalScopeProvider(pdbReader);
-            ISourceLocationProvider sourceLocationProvider = pdbReader;
-            var trans = new ContractRewriter(host, (ContractProvider) contractProvider, sourceLocationProvider);
-            module = trans.Rewrite(module) as Module;
-
-            pdbReader = GetPdbReader(module);
-            // Save the query assembly to run Corral
-            using (var peStream = File.Create(path))
-            {
-                if (GetPdbReader(module) == null)
-                {
-                    PeWriter.WritePeToStream(module, host, peStream);
-                }
-                else
-                {
-                    var pdbName = Path.ChangeExtension(path, "pdb");
-                    using (var pdbWriter = new PdbWriter(pdbName, pdbReader))
-                    {
-                        PeWriter.WritePeToStream(module, host, peStream, pdbReader, pdbReader, pdbWriter);
-                    }
-                }
-            }
+            var persister = new CciAssemblyPersister();
+            var currentAssembly = new CciAssembly(module, contractProvider);
+            new CciContractRewriter().Rewrite(currentAssembly);
+            persister.Save(currentAssembly, path);
         }
 
         protected NamespaceTypeDefinition FindType(Module module, string typeName)
@@ -108,11 +88,11 @@ namespace Analyzer.Corral
         protected IReadOnlyCollection<INamedTypeDefinition> GetAnalyzableTypes(IModule module)
         {
             var types = from t in module.GetAllTypes()
-                        where (t.IsClass || t.IsStruct) &&
-                              !t.IsStatic &&
-                              !t.IsEnum &&
-                              !t.IsInterface
-                        select t;
+                where (t.IsClass || t.IsStruct) &&
+                      !t.IsStatic &&
+                      !t.IsEnum &&
+                      !t.IsInterface
+                select t;
             return new List<INamedTypeDefinition>(types);
         }
     }
