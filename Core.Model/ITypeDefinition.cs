@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
 
 namespace Contractor.Core.Model
@@ -12,7 +11,7 @@ namespace Contractor.Core.Model
         string Name { get; }
         ISet<Action> Constructors();
         ISet<Action> Actions();
-        IMethodContract GetContractFor(IMethodDefinition method);
+        ITypeContract TypeContract();
     }
 
     #region ITypeDefinition Contracts
@@ -35,9 +34,8 @@ namespace Contractor.Core.Model
             throw new NotImplementedException();
         }
 
-        public IMethodContract GetContractFor(IMethodDefinition method)
+        public ITypeContract TypeContract()
         {
-            Contract.Requires(method != null);
             throw new NotImplementedException();
         }
     }

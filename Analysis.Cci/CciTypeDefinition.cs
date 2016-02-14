@@ -42,9 +42,9 @@ namespace Analysis.Cci
                 select new CciAction(m, contractProvider.GetMethodContractFor(m)));
         }
 
-        public IMethodContract GetContractFor(IMethodDefinition method)
+        public ITypeContract TypeContract()
         {
-            return contractProvider.GetMethodContractFor(method);
+            return contractProvider.GetTypeContractFor(typeDefinition);
         }
 
         public override string ToString()

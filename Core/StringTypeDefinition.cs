@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using Contractor.Core.Model;
+using Microsoft.Cci.Contracts;
 using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
-    class StringTypeDefinition : ITypeDefinition
+    internal class StringTypeDefinition : ITypeDefinition
     {
         protected string name;
         protected ISet<Action> constructors;
@@ -36,7 +37,7 @@ namespace Contractor.Core
             return actions;
         }
 
-        public Microsoft.Cci.Contracts.IMethodContract GetContractFor(Microsoft.Cci.IMethodDefinition method)
+        public ITypeContract TypeContract()
         {
             throw new NotSupportedException();
         }

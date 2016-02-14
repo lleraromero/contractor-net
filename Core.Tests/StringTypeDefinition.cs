@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Contractor.Core.Model;
-using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
 using Action = Contractor.Core.Model.Action;
-using ITypeDefinition = Contractor.Core.Model.ITypeDefinition;
 
 namespace Core.Tests
 {
@@ -36,7 +34,7 @@ namespace Core.Tests
             return actions;
         }
 
-        public IMethodContract GetContractFor(IMethodDefinition method)
+        public ITypeContract TypeContract()
         {
             throw new NotImplementedException();
         }
