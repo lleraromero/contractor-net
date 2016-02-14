@@ -171,6 +171,7 @@
     <Compile Include="CciContractDependenciesAnalyzer.cs" />
     <Compile Include="CciContractVisitor.cs" />
     <Compile Include="CciAssemblyPersister.cs" />
+    <Compile Include="CciExpressionPrettyPrinter.cs" />
     <Compile Include="CciHostEnvironment.cs" />
     <Compile Include="CciNegativeActionQueryGenerator.cs" />
     <Compile Include="CciPositiveActionQueryGenerator.cs" />

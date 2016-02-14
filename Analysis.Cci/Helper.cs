@@ -10,14 +10,6 @@ namespace Contractor.Utils
 {
     public static class Helper
     {
-        public static string PrintExpression(IExpression expression)
-        {
-            var sourceEmitterOutput = new SourceEmitterOutputString();
-            var CSSourceEmitter = new SourceEmitter(sourceEmitterOutput);
-            CSSourceEmitter.Traverse(expression);
-            return sourceEmitterOutput.Data;
-        }
-
         // A && B = A ? B : false
         public static IExpression JoinWithLogicalAnd(IMetadataHost host, List<IExpression> expressions, bool defaultValue)
         {
