@@ -62,11 +62,12 @@ namespace Analyzer.Corral
             persister.Save(currentAssembly, path);
         }
 
-        protected NamespaceTypeDefinition FindType(Module module, string typeName)
+        protected NamedTypeDefinition FindType(Module module, string typeName)
         {
-            var types = GetAnalyzableTypes(module).Cast<NamespaceTypeDefinition>();
+            Contract.Ensures(Contract.Result<NamedTypeDefinition>() != null);
+            var types = GetAnalyzableTypes(module);
             var type = types.First(t => TypeHelper.GetTypeName(t, NameFormattingOptions.UseGenericTypeNameSuffix).Equals(typeName));
-            return type;
+            return type as NamedTypeDefinition;
         }
 
         protected PdbReader GetPdbReader(IModule module)
