@@ -19,9 +19,9 @@ namespace Analysis.Cci
 
         protected IContractAwareHost host;
 
-        public CciQueryGenerator(IContractAwareHost host)
+        public CciQueryGenerator()
         {
-            this.host = host;
+            host = CciHostEnvironment.GetInstance();
         }
 
         public IReadOnlyCollection<ActionQuery> CreatePositiveQueries(State state, Action action, IEnumerable<Action> actions)

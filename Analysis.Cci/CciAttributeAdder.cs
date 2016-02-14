@@ -27,7 +27,7 @@ namespace Analysis.Cci
             Contract.Requires(typeToAnalyze != null);
             Contract.Requires(queries.Any());
 
-            var cciType = FindType(typeToAnalyze.Name);
+            var cciType = FindType(module, typeToAnalyze.Name);
             foreach (var m in cciType.Methods)
             {
                 if (m.Visibility != TypeMemberVisibility.Public || queries.Any(query => query.Method.Method.Equals(m)))

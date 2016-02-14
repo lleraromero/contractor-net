@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.Contracts;
-using System.IO;
 using System.Linq;
 using Contractor.Core.Model;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
-using Microsoft.Cci.ILToCodeModel;
 using Microsoft.Cci.MutableCodeModel;
-using Microsoft.Cci.MutableCodeModel.Contracts;
+using Microsoft.Cci.MutableContracts;
 using IAssembly = Contractor.Core.Model.IAssembly;
 using ITypeDefinition = Contractor.Core.Model.ITypeDefinition;
 
@@ -17,36 +14,35 @@ namespace Analysis.Cci
 {
     public class CciAssembly : IAssembly
     {
-        protected IContractProvider contractProvider;
-        protected Module decompiledModule;
-        protected IContractAwareHost host;
+        protected Module module;
+        protected ContractProvider contractProvider;
 
-        public CciAssembly(string fileName, string contractsFileName, IContractAwareHost host)
+        public CciAssembly(Module module, ContractProvider contractProvider)
         {
-            Contract.Requires(!string.IsNullOrEmpty(fileName) && File.Exists(fileName));
+            Contract.Requires(module != null);
+            Contract.Requires(contractProvider != null);
 
-            this.host = host;
-            decompiledModule = new CodeAndContractDeepCopier(this.host).Copy(DecompileModule(fileName));
-            var contractExtractor = this.host.GetContractExtractor(decompiledModule.UnitIdentity);
-            contractProvider = new AggregatingContractProvider(contractExtractor);
+            this.module = module;
+            this.contractProvider = contractProvider;
         }
 
-        protected CciAssembly(CciAssembly anotherAssembly)
+        public Module Module
         {
-            host = anotherAssembly.host;
-            decompiledModule = new CodeAndContractDeepCopier(host).Copy(anotherAssembly.decompiledModule);
-            var contractExtractor = host.GetContractExtractor(decompiledModule.UnitIdentity);
-            contractProvider = new AggregatingContractProvider(contractExtractor);
+            get { return module; }
+        }
+
+        public ContractProvider ContractProvider
+        {
+            get { return contractProvider; }
         }
 
         public IReadOnlyCollection<NamespaceDefinition> Namespaces()
         {
             var namespaces = new Dictionary<string, List<ITypeDefinition>>();
-            var analyzableTypes = GetAnalyzableTypes(decompiledModule);
+            var analyzableTypes = GetAnalyzableTypes(module);
             foreach (var type in analyzableTypes)
             {
                 var typeNamespace = TypeHelper.GetDefiningNamespace(type).Name.Value;
-                ;
 
                 if (!namespaces.ContainsKey(typeNamespace))
                 {
@@ -71,54 +67,14 @@ namespace Analysis.Cci
             return contractProvider.GetMethodContractFor(method);
         }
 
-        protected Module DecompileModule(string filename)
-        {
-            Contract.Requires(!string.IsNullOrEmpty(filename) && File.Exists(filename));
-
-            var module = LoadModule(filename);
-
-            using (var pdbReader = GetPdbReader(module))
-            {
-                return Decompiler.GetCodeModelFromMetadataModel(host, module, pdbReader);
-            }
-        }
-
-        protected IModule LoadModule(string filename)
-        {
-            Contract.Requires(!string.IsNullOrEmpty(filename) && File.Exists(filename));
-
-            var module = host.LoadUnitFrom(filename) as IModule;
-            if (module == null || module is Dummy || module == Dummy.Assembly)
-            {
-                throw new Exception(string.Concat(filename, " is not a PE file containing a CLR module or assembly."));
-            }
-            return module;
-        }
-
-        protected PdbReader GetPdbReader(IModule module)
-        {
-            Contract.Requires(module != null);
-
-            PdbReader pdbReader = null;
-            var pdbFile = Path.ChangeExtension(module.Location, "pdb");
-            if (File.Exists(pdbFile))
-            {
-                using (var pdbStream = File.OpenRead(pdbFile))
-                {
-                    pdbReader = new PdbReader(pdbStream, host);
-                }
-            }
-            return pdbReader;
-        }
-
         protected IReadOnlyCollection<INamedTypeDefinition> GetAnalyzableTypes(IModule module)
         {
             var types = from t in module.GetAllTypes()
-                where (t.IsClass || t.IsStruct) &&
-                      !t.IsStatic &&
-                      !t.IsEnum &&
-                      !t.IsInterface
-                select t;
+                        where (t.IsClass || t.IsStruct) &&
+                              !t.IsStatic &&
+                              !t.IsEnum &&
+                              !t.IsInterface
+                        select t;
             return new List<INamedTypeDefinition>(types);
         }
     }

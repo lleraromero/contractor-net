@@ -1,6 +1,10 @@
-﻿using System.Diagnostics.Contracts;
+﻿using System;
+using System.Diagnostics.Contracts;
 using System.IO;
-using Contractor.Core.Model;
+using Microsoft.Cci;
+using Microsoft.Cci.ILToCodeModel;
+using Microsoft.Cci.MutableCodeModel;
+using Microsoft.Cci.MutableCodeModel.Contracts;
 using Microsoft.Cci.MutableContracts;
 
 namespace Analysis.Cci
@@ -11,19 +15,80 @@ namespace Analysis.Cci
 
         public CciAssemblyPersister()
         {
-            host = new CodeContractAwareHostEnvironment();
+            host = CciHostEnvironment.GetInstance();
         }
 
-        public IAssembly Decompile(string inputFileName, string contractsFileName)
+        public CciAssembly Load(string inputFileName, string contractsFileName)
         {
-            Contract.Requires(!string.IsNullOrEmpty(inputFileName) && File.Exists(inputFileName));
+            Contract.Requires(File.Exists(inputFileName));
 
-            return new CciAssembly(inputFileName, contractsFileName, host);
+            var module = GetMutableModule(inputFileName, contractsFileName);
+            module = new CodeAndContractDeepCopier(host).Copy(module);
+
+            var contractExtractor = host.GetContractExtractor(module.UnitIdentity);
+            var contractProvider = new AggregatingContractProvider(contractExtractor);
+
+            return new CciAssembly(module, contractProvider);
         }
 
-        public CciQueryGenerator CreateQueryGenerator()
+        public void Save(CciAssembly assembly, string path)
         {
-            return new CciQueryGenerator(host);
+            Contract.Requires(assembly != null);
+            Contract.Requires(!string.IsNullOrEmpty(path) && !File.Exists(path));
+
+            var sourceLocationProvider = GetPdbReader(assembly.Module);
+            ContractHelper.InjectContractCalls(host, assembly.Module, assembly.ContractProvider, sourceLocationProvider);
+
+            using (var peStream = File.Create(path))
+            {
+                PeWriter.WritePeToStream(assembly.Module, host, peStream);
+            }
+        }
+
+        protected Module GetMutableModule(string inputFileName, string contractsFileName)
+        {
+            Contract.Requires(File.Exists(inputFileName));
+
+            var module = LoadModuleInHost(new FileInfo(inputFileName));
+
+            if (File.Exists(contractsFileName))
+            {
+                // Registers the contracts for the input file. It isn't neccesary to get the result 
+                LoadModuleInHost(new FileInfo(contractsFileName));
+            }
+
+            using (var pdbReader = GetPdbReader(module))
+            {
+                return Decompiler.GetCodeModelFromMetadataModel(host, module, pdbReader);
+            }
+        }
+
+        protected IModule LoadModuleInHost(FileInfo inputFile)
+        {
+            Contract.Requires(inputFile.Exists);
+
+            var module = host.LoadUnitFrom(inputFile.FullName) as IModule;
+            if (module == null || module is Dummy || module == Dummy.Assembly)
+            {
+                throw new Exception(string.Format("{0} is not a PE file containing a CLR module or assembly.", inputFile.FullName));
+            }
+            return module;
+        }
+
+        protected PdbReader GetPdbReader(IModule module)
+        {
+            Contract.Requires(module != null);
+
+            PdbReader pdbReader = null;
+            var pdbFile = Path.ChangeExtension(module.Location, "pdb");
+            if (File.Exists(pdbFile))
+            {
+                using (var pdbStream = File.OpenRead(pdbFile))
+                {
+                    pdbReader = new PdbReader(pdbStream, host);
+                }
+            }
+            return pdbReader;
         }
     }
 }

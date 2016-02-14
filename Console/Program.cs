@@ -91,14 +91,14 @@ namespace Contractor.Console
             System.Console.WriteLine("Starting analysis for type {0}", options.TypeToAnalyze);
 
             var decompiler = new CciAssemblyPersister();
-            var inputAssembly = decompiler.Decompile(options.InputAssembly, null);
+            var inputAssembly = decompiler.Load(options.InputAssembly, null);
             var typeToAnalyze = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
             var cancellationSource = new CancellationTokenSource();
 
             var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
             workingDir.Create();
 
-            var queryGenerator = decompiler.CreateQueryGenerator();
+            var queryGenerator = new CciQueryGenerator();
 
             IAnalyzer analyzer;
             switch (options.Backend)

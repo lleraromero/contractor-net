@@ -57,7 +57,7 @@ namespace Analysis.Cci
 
             this.token = token;
 
-            queryGenerator = new CciQueryGenerator(this.host);
+            queryGenerator = new CciQueryGenerator();
         }
 
         ~Analyzer()
