@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using Microsoft.Cci;
-using Microsoft.Cci.Contracts;
 
 namespace Contractor.Core.Model
 {
@@ -11,7 +9,6 @@ namespace Contractor.Core.Model
     {
         IReadOnlyCollection<NamespaceDefinition> Namespaces();
         IReadOnlyCollection<ITypeDefinition> Types();
-        IMethodContract GetContractFor(IMethodDefinition method);
     }
 
     #region IAssembly Contracts
@@ -28,14 +25,6 @@ namespace Contractor.Core.Model
         [Pure]
         public IReadOnlyCollection<ITypeDefinition> Types()
         {
-            throw new NotImplementedException();
-        }
-
-        [Pure]
-        public IMethodContract GetContractFor(IMethodDefinition method)
-        {
-            Contract.Requires(method != null);
-            Contract.Ensures(Contract.Result<IMethodContract>() != null);
             throw new NotImplementedException();
         }
     }

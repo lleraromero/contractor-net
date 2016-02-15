@@ -4,7 +4,6 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using Contractor.Core.Model;
 using Microsoft.Cci;
-using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableContracts;
 using IAssembly = Contractor.Core.Model.IAssembly;
@@ -62,19 +61,14 @@ namespace Analysis.Cci
                     .Aggregate(new List<ITypeDefinition>(), (l, n) => new List<ITypeDefinition>(l.Union(n.Types()))));
         }
 
-        public IMethodContract GetContractFor(IMethodDefinition method)
-        {
-            return contractProvider.GetMethodContractFor(method);
-        }
-
         protected IReadOnlyCollection<INamedTypeDefinition> GetAnalyzableTypes(IModule module)
         {
             var types = from t in module.GetAllTypes()
-                        where (t.IsClass || t.IsStruct) &&
-                              !t.IsStatic &&
-                              !t.IsEnum &&
-                              !t.IsInterface
-                        select t;
+                where (t.IsClass || t.IsStruct) &&
+                      !t.IsStatic &&
+                      !t.IsEnum &&
+                      !t.IsInterface
+                select t;
             return new List<INamedTypeDefinition>(types);
         }
     }
