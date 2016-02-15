@@ -75,7 +75,9 @@ namespace Contractor.Core
             {
                 var source = statesToVisit.Dequeue();
                 visitedStates.Add(source);
-                foreach (var action in source.EnabledActions)
+
+                // Change ParallelOptions.MaxDegreeOfParallelism to 1 to make the loop sequential.
+                Parallel.ForEach(source.EnabledActions, new ParallelOptions(), action =>
                 {
                     ActionAnalysisResults actionsResult;
                     lock (analyzer)
@@ -88,7 +90,7 @@ namespace Contractor.Core
                     {
                         Logger.Log(LogLevel.Warn,
                             "Suspicious state! Only a state with a unsatisfiable invariant can lead to every action being enabled and disabled at the same time. It can also mean a bug in our code.");
-                        continue;
+                        return;
                     }
 
                     Contract.Assert(!actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).Any(), "Results should be consistent");
@@ -128,7 +130,7 @@ namespace Contractor.Core
                         }
                         epaBuilder.Add(transition);
                     }
-                }
+                });
             }
 
             return epaBuilder.Build();
