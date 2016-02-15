@@ -78,7 +78,7 @@ namespace Analysis.Cci
                 select new Precondition
                 {
                     Condition = condition,
-                    OriginalSource = CciExpressionPrettyPrinter.PrintExpression(condition),
+                    OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(condition),
                     Description = new CompileTimeConstant { Value = "Source state invariant", Type = host.PlatformType.SystemString }
                 };
             contracts.Preconditions.AddRange(preconditions);
@@ -101,7 +101,7 @@ namespace Analysis.Cci
                         var post = new Postcondition
                         {
                             Condition = pre.Condition,
-                            OriginalSource = CciExpressionPrettyPrinter.PrintExpression(pre.Condition),
+                            OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(pre.Condition),
                             Description =
                                 new CompileTimeConstant
                                 {
@@ -126,7 +126,7 @@ namespace Analysis.Cci
             var postcondition = new Postcondition
             {
                 Condition = joinedTargetInv,
-                OriginalSource = CciExpressionPrettyPrinter.PrintExpression(joinedTargetInv),
+                OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(joinedTargetInv),
                 Description = new CompileTimeConstant { Value = "Negated target state invariant", Type = host.PlatformType.SystemString }
             };
             contracts.Postconditions.Add(postcondition);

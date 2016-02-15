@@ -49,7 +49,7 @@ namespace Analysis.Cci
                             Value = string.Format("Enabled action ({0})", a.Name),
                             Type = host.PlatformType.SystemString
                         },
-                        OriginalSource = CciExpressionPrettyPrinter.PrintExpression(p.Condition)
+                        OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(p.Condition)
                     };
                 queryContract.Preconditions.AddRange(preconditions);
             }
@@ -77,7 +77,7 @@ namespace Analysis.Cci
                         Type = host.PlatformType.SystemString
                     },
                     // Add the string-ified version of the condition to help debugging
-                    OriginalSource = CciExpressionPrettyPrinter.PrintExpression(joinedPreconditions)
+                    OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(joinedPreconditions)
                 };
                 queryContract.Preconditions.Add(compactPrecondition);
             }
@@ -89,7 +89,7 @@ namespace Analysis.Cci
                     select new Postcondition
                     {
                         Condition = pre.Condition,
-                        OriginalSource = CciExpressionPrettyPrinter.PrintExpression(pre.Condition),
+                        OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(pre.Condition),
                         Description = new CompileTimeConstant { Value = "Target precondition", Type = host.PlatformType.SystemString }
                     };
                 queryContract.Postconditions.AddRange(targetPreconditions);
