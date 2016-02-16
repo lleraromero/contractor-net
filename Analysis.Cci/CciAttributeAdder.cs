@@ -9,10 +9,10 @@ using MethodReference = Microsoft.Cci.MethodReference;
 
 namespace Analysis.Cci
 {
-    // TODO (lleraromero): Sacar la herencia (poner una interfaz?). Reestructurar los QueryAssemblies.
+    // TODO (lleraromero): Sacar la herencia (poner una interfaz?).
     public class CciAttributeAdder : CciQueryAssembly
     {
-        public CciAttributeAdder(CciAssembly inputAssembly, ITypeDefinition typeToAnalyze, IEnumerable<Query> queries)
+        public CciAttributeAdder(CciAssembly inputAssembly, ITypeDefinition typeToAnalyze, IReadOnlyCollection<Query> queries)
             : base(inputAssembly, typeToAnalyze, queries)
         {
             Contract.Requires(inputAssembly != null);
@@ -22,7 +22,7 @@ namespace Analysis.Cci
             AddVerifierAttribute(typeToAnalyze, queries);
         }
 
-        protected void AddVerifierAttribute(ITypeDefinition typeToAnalyze, IEnumerable<Query> queries)
+        protected void AddVerifierAttribute(ITypeDefinition typeToAnalyze, IReadOnlyCollection<Query> queries)
         {
             Contract.Requires(typeToAnalyze != null);
             Contract.Requires(queries.Any());
@@ -50,6 +50,7 @@ namespace Analysis.Cci
 
         protected CustomAttribute DisableVerifier()
         {
+            var host = CciHostEnvironment.GetInstance();
             var disableVerifier = new CustomAttribute
             {
                 Arguments = new List<IMetadataExpression> { new MetadataConstant { Value = false, Type = host.PlatformType.SystemBoolean } },

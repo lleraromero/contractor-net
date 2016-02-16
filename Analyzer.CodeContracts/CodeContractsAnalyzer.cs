@@ -132,7 +132,7 @@ namespace Analyzer.CodeContracts
 
             var queryFilePath = Path.Combine(workingDir.FullName, Guid.NewGuid().ToString(), Path.GetFileName(inputFileName));
             Directory.CreateDirectory(Path.GetDirectoryName(queryFilePath));
-            queryAssembly.Save(queryFilePath);
+            new CciAssemblyPersister().Save(queryAssembly, queryFilePath);
 
             return new FileInfo(queryFilePath);
         }

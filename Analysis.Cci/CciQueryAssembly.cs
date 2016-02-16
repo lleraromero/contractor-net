@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.IO;
 using System.Linq;
 using Contractor.Core;
 using Microsoft.Cci;
@@ -12,52 +11,44 @@ using ITypeDefinition = Contractor.Core.Model.ITypeDefinition;
 
 namespace Analysis.Cci
 {
-    public class CciQueryAssembly
+    public class CciQueryAssembly : CciAssembly
     {
-        protected CodeContractAwareHostEnvironment host;
-        protected Module module;
-        protected ContractProvider contractProvider;
-
-        public CciQueryAssembly(CciAssembly inputAssembly, ITypeDefinition typeToAnalyze, IEnumerable<Query> queries)
+        public CciQueryAssembly(CciAssembly inputAssembly, ITypeDefinition typeToAnalyze, IReadOnlyCollection<Query> queries)
+            : base(inputAssembly.Module, inputAssembly.ContractProvider)
         {
             Contract.Requires(inputAssembly != null);
             Contract.Requires(typeToAnalyze != null);
             Contract.Requires(queries.Any());
-            host = CciHostEnvironment.GetInstance();
 
-            var cciInputType = FindType(inputAssembly.Module, typeToAnalyze.Name) as NamedTypeDefinition;
+            // Clone module
+            var host = CciHostEnvironment.GetInstance();
+            module = new CodeAndContractDeepCopier(host).Copy(inputAssembly.Module);
+            var cciQueryType = FindType(module, typeToAnalyze.Name);
+            Contract.Assert(cciQueryType != null);
+
+            // Create contract provider for the cloned module
+            contractProvider = new ContractProvider(new ContractMethods(host), host.FindUnit(module.UnitIdentity));
+
+            var cciInputType = FindType(inputAssembly.Module, typeToAnalyze.Name);
             Contract.Assert(cciInputType != null);
             var queryTypeContract = inputAssembly.ContractProvider.GetTypeContractFor(cciInputType);
 
-            var module = new CodeAndContractDeepCopier(host).Copy(inputAssembly.Module);
-            var cciQueryType = FindType(module, typeToAnalyze.Name) as NamedTypeDefinition;
-            Contract.Assert(cciQueryType != null);
+            contractProvider.AssociateTypeWithContract(cciQueryType, queryTypeContract);
 
+            // Add queries
             cciQueryType.Methods.AddRange(from a in queries select a.Method.Method);
-
-            var queryContractProvider = new ContractProvider(new ContractMethods(host), host.FindUnit(module.UnitIdentity));
-            queryContractProvider.AssociateTypeWithContract(cciQueryType, queryTypeContract);
 
             foreach (var query in queries)
             {
+                // Find the query in the query assembly
                 var method = cciQueryType.Methods.Find(m => m.GetUniqueName().Equals(query.Method.Name)) as MethodDefinition;
                 Contract.Assert(method != null);
 
                 method.ContainingTypeDefinition = cciQueryType;
-                queryContractProvider.AssociateMethodWithContract(query.Method.Method, query.Method.Contract);
+
+                // Asociate query with its contract
+                contractProvider.AssociateMethodWithContract(query.Method.Method, query.Method.Contract);
             }
-
-            this.module = module;
-            contractProvider = queryContractProvider;
-        }
-
-        public void Save(string path)
-        {
-            Contract.Requires(!string.IsNullOrEmpty(path) && !File.Exists(path));
-
-            var persister = new CciAssemblyPersister();
-            var currentAssembly = new CciAssembly(module, contractProvider);
-            persister.Save(currentAssembly, path);
         }
 
         protected NamedTypeDefinition FindType(Module module, string typeName)
@@ -66,33 +57,6 @@ namespace Analysis.Cci
             var types = GetAnalyzableTypes(module);
             var type = types.First(t => TypeHelper.GetTypeName(t, NameFormattingOptions.UseGenericTypeNameSuffix).Equals(typeName));
             return type as NamedTypeDefinition;
-        }
-
-        protected PdbReader GetPdbReader(IModule module)
-        {
-            Contract.Requires(module != null);
-
-            PdbReader pdbReader = null;
-            var pdbFile = Path.ChangeExtension(module.Location, "pdb");
-            if (File.Exists(pdbFile))
-            {
-                using (var pdbStream = File.OpenRead(pdbFile))
-                {
-                    pdbReader = new PdbReader(pdbStream, host);
-                }
-            }
-            return pdbReader;
-        }
-
-        protected IReadOnlyCollection<INamedTypeDefinition> GetAnalyzableTypes(IModule module)
-        {
-            var types = from t in module.GetAllTypes()
-                where (t.IsClass || t.IsStruct) &&
-                      !t.IsStatic &&
-                      !t.IsEnum &&
-                      !t.IsInterface
-                select t;
-            return new List<INamedTypeDefinition>(types);
         }
     }
 }

@@ -111,13 +111,16 @@ namespace Analyzer.Corral
 
         protected FileInfo CreateBoogieQueryAssembly(IReadOnlyCollection<Query> queries)
         {
-            Contract.Requires(queries != null && queries.Any());
+            Contract.Requires(queries.Any());
 
             var queryAssembly = new CciQueryAssembly(inputAssembly, typeToAnalyze, queries);
 
             var queryFilePath = Path.Combine(workingDir.FullName, Guid.NewGuid().ToString(), Path.GetFileName(inputFileName));
+            Contract.Assert(!Directory.Exists(Path.GetDirectoryName(queryFilePath)));
             Directory.CreateDirectory(Path.GetDirectoryName(queryFilePath));
-            queryAssembly.Save(queryFilePath);
+
+            new CciContractRewriter().Rewrite(queryAssembly);
+            new CciAssemblyPersister().Save(queryAssembly, queryFilePath);
 
             return TranslateCSharpToBoogie(queryFilePath);
         }
