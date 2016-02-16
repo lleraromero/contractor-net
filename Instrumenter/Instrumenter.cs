@@ -2,6 +2,7 @@
 //using System.Collections.Generic;
 //using System.Diagnostics.Contracts;
 //using System.Linq;
+//using Analysis.Cci;
 //using Contractor.Core.Model;
 //using Contractor.Utils;
 //using Microsoft.Cci;
@@ -9,6 +10,7 @@
 //using Microsoft.Cci.MutableCodeModel;
 //using Microsoft.Cci.MutableContracts;
 
+// TODO (lleraromero): arreglar
 //namespace Instrumenter
 //{
 //    public class Instrumenter
@@ -27,33 +29,32 @@
 //            this.host = host;
 //            this.cp = cp;
 //        }
+
 //        public void GenerateOutputAssembly(string outputFileName, Epa epa)
 //        {
-//            // TODO: arreglar
-//            throw new NotSupportedException();
-//            //Contract.Requires(!string.IsNullOrEmpty(outputFileName));
+//            Contract.Requires(!string.IsNullOrEmpty(outputFileName));
 
-//            //var contractProvider = inputAssembly.ExtractContracts();
-//            //var instrumenter = new Instrumenter(host, contractProvider);
+//            var contractProvider = inputAssembly.ExtractContracts();
+//            var instrumenter = new Instrumenter(host, contractProvider);
 
-//            //foreach (var typeUniqueName in epas.Keys)
-//            //{
-//            //    var typeAnalysis = epas[typeUniqueName];
+//            foreach (var typeUniqueName in epas.Keys)
+//            {
+//                var typeAnalysis = epas[typeUniqueName];
 
-//            //    if (!instrumentedEpas.Contains(typeUniqueName))
-//            //    {
-//            //        var type = (from t in inputAssembly.DecompiledModule.AllTypes
-//            //                    where typeUniqueName == t.GetUniqueName()
-//            //                    select t as NamespaceTypeDefinition)
-//            //                    .First();
+//                if (!instrumentedEpas.Contains(typeUniqueName))
+//                {
+//                    var type = (from t in inputAssembly.DecompiledModule.AllTypes
+//                                where typeUniqueName == t.GetUniqueName()
+//                                select t as NamespaceTypeDefinition)
+//                                .First();
 
-//            //        instrumenter.InstrumentType(type, typeAnalysis.EPA);
-//            //        instrumentedEpas.Add(typeUniqueName);
-//            //    }
-//            //}
+//                    instrumenter.InstrumentType(type, typeAnalysis.EPA);
+//                    instrumentedEpas.Add(typeUniqueName);
+//                }
+//            }
 
-//            //inputAssembly.InjectContracts(contractProvider);
-//            //inputAssembly.Save(outputFileName);
+//            inputAssembly.InjectContracts(contractProvider);
+//            inputAssembly.Save(outputFileName);
 //        }
 //        public void InstrumentType(NamespaceTypeDefinition type, Epa epa)
 //        {
@@ -157,14 +158,14 @@
 //                // en los requires de los constructores
 //                if (!action.Method.IsConstructor)
 //                {
-//                    var pre = generatePrecondition(field, transitions.Keys);
+//                    var pre = new PreconditionGenerator().GeneratePrecondition(field, transitions.Keys);
 //                    mc.Preconditions.Add(pre);
 //                }
 
-//                var posts = generatePostconditions(field, transitions);
+//                var posts = new PostconditionGenerator().GeneratePostconditions(field, transitions);
 //                mc.Postconditions.AddRange(posts);
 
-//                var stmt = generateSwitch(field, transitions);
+//                var stmt = new SwitchGenerator(this).GenerateSwitch(field, transitions);
 
 //                // Se actualiza el $state en un finally porque los if de adentro
 //                // del switch tienen que ser ejecutados despues del cuerpo de este metodo 
@@ -190,228 +191,6 @@
 //            preconditions.Clear();
 //            this.type = null;
 //            this.epa = null;
-//        }
-
-//        private Precondition generatePrecondition(FieldDefinition field, IEnumerable<string> from)
-//        {
-//            var conditions = new List<IExpression>();
-
-//            foreach (var fromId in from)
-//            {
-//                var cond = new Equality()
-//                {
-//                    Type = host.PlatformType.SystemBoolean,
-//                    LeftOperand = new BoundExpression()
-//                    {
-//                        Definition = field,
-//                        Instance = new ThisReference(),
-//                        Type = field.Type
-//                    },
-//                    RightOperand = new CompileTimeConstant()
-//                    {
-//                        Type = field.Type,
-//                        Value = fromId
-//                    }
-//                };
-
-//                conditions.Add(cond);
-//            }
-
-//            return new Precondition()
-//            {
-//                Condition = Helper.JoinWithLogicalOr(host, conditions, false),
-//                OriginalSource = Helper.PrintExpression(Helper.JoinWithLogicalOr(host, conditions, false))
-//            };
-//        }
-
-//        private List<Postcondition> generatePostconditions(FieldDefinition field, Dictionary<string, List<string>> transitions)
-//        {
-//            var posts = new List<Postcondition>();
-
-//            foreach (var t in transitions)
-//            {
-//                var post = generatePostcondition(field, t.Key, t.Value);
-//                posts.Add(post);
-//            }
-
-//            return posts;
-//        }
-
-//        private Postcondition generatePostcondition(FieldDefinition field, string fromId, IEnumerable<string> to)
-//        {
-//            IExpression conditional;
-
-//            if (this.epa.Initial.Name == fromId)
-//            {
-//                //Initial state
-//                conditional = generateConditionPartTo(field, to);
-//            }
-//            else
-//            {
-//                conditional = new Conditional()
-//                {
-//                    Type = host.PlatformType.SystemBoolean,
-//                    Condition = generateConditionPartFrom(field, fromId),
-//                    ResultIfTrue = generateConditionPartTo(field, to),
-//                    ResultIfFalse = new CompileTimeConstant()
-//                    {
-//                        Type = host.PlatformType.SystemBoolean,
-//                        Value = true
-//                    }
-//                };
-//            }
-
-//            return new Postcondition()
-//            {
-//                Condition = conditional,
-//                OriginalSource = Helper.PrintExpression(conditional)
-//            };
-//        }
-
-//        private IExpression generateConditionPartFrom(FieldDefinition field, string fromId)
-//        {
-//            return new Equality()
-//            {
-//                Type = host.PlatformType.SystemBoolean,
-//                LeftOperand = new OldValue()
-//                {
-//                    Type = field.Type,
-//                    Expression = new BoundExpression()
-//                    {
-//                        Definition = field,
-//                        Instance = new ThisReference(),
-//                        Type = field.Type
-//                    }
-//                },
-//                RightOperand = new CompileTimeConstant()
-//                {
-//                    Type = field.Type,
-//                    Value = fromId
-//                }
-//            };
-//        }
-
-//        private IExpression generateConditionPartTo(FieldDefinition field, IEnumerable<string> to)
-//        {
-//            var conditions = new List<IExpression>();
-
-//            foreach (var toId in to)
-//            {
-//                var cond = new Equality()
-//                {
-//                    Type = host.PlatformType.SystemBoolean,
-//                    LeftOperand = new BoundExpression()
-//                    {
-//                        Definition = field,
-//                        Instance = new ThisReference(),
-//                        Type = field.Type
-//                    },
-//                    RightOperand = new CompileTimeConstant()
-//                    {
-//                        Type = field.Type,
-//                        Value = toId
-//                    }
-//                };
-
-//                conditions.Add(cond);
-//            }
-
-//            return Helper.JoinWithLogicalOr(host, conditions, false);
-//        }
-
-//        private IStatement generateSwitch(FieldDefinition field, Dictionary<string, List<string>> transitions)
-//        {
-//            var switchStmt = new SwitchStatement()
-//            {
-//                Expression = new BoundExpression()
-//                {
-//                    Definition = field,
-//                    Instance = new ThisReference(),
-//                    Type = field.Type,
-//                }
-//            };
-
-//            foreach (var t in transitions)
-//            {
-//                //Estado deadlock o trampa
-//                if (t.Value.Count == 0) continue;
-//                var caseStmt = generateSwitchCase(field, t.Key, t.Value);
-//                switchStmt.Cases.Add(caseStmt);
-//            }
-
-//            return switchStmt;
-//        }
-
-//        private ISwitchCase generateSwitchCase(FieldDefinition field, string fromId, List<string> to)
-//        {
-//            Contract.Requires(field != null && to != null && to.Count > 0);
-
-//            var caseStmt = new SwitchCase()
-//            {
-//                Expression = new CompileTimeConstant()
-//                {
-//                    Type = field.Type,
-//                    Value = fromId
-//                }
-//            };
-
-//            IStatement stmt = null;
-
-//            //Determinismo y no determinismo
-//            if (to.Count == 1)
-//                stmt = generateAssign(field, to.First());
-//            else
-//                stmt = generateIf(field, to);
-
-//            caseStmt.Body.Add(stmt);
-//            caseStmt.Body.Add(new BreakStatement());
-//            return caseStmt;
-//        }
-
-//        private IStatement generateIf(FieldDefinition field, List<string> to)
-//        {
-//            Contract.Requires(field != null && to != null && to.Count > 0);
-
-//            var toStates = from id in to
-//                           join state in epa.States on id equals state.Name
-//                           select state;
-//            var conditions = Helper.GenerateStatesConditions(host, preconditions, toStates);
-
-//            IStatement stmt = generateAssign(field, to[0]);
-
-//            for (int i = 1; i < to.Count; ++i)
-//                stmt = new ConditionalStatement()
-//                {
-//                    Condition = conditions[i],
-//                    TrueBranch = generateAssign(field, to[i]),
-//                    FalseBranch = stmt
-//                };
-
-//            return stmt;
-//        }
-
-//        private IStatement generateAssign(FieldDefinition field, string toId)
-//        {
-//            var assignStmt = new ExpressionStatement()
-//            {
-//                Expression = new Assignment()
-//                {
-//                    Type = field.Type,
-//                    Target = new TargetExpression()
-//                    {
-//                        Definition = field,
-//                        Instance = new ThisReference(),
-//                        Type = field.Type
-//                    },
-//                    Source = new CompileTimeConstant()
-//                    {
-//                        Type = field.Type,
-//                        Value = toId
-//                    }
-//                }
-//            };
-
-//            return assignStmt;
 //        }
 //    }
 //}

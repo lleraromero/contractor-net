@@ -99,8 +99,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssignmentGenerator.cs" />
+    <Compile Include="IfGenerator.cs" />
     <Compile Include="Instrumenter.cs" />
+    <Compile Include="PostconditionGenerator.cs" />
+    <Compile Include="PreconditionGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SwitchGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Analysis.Cci\Analysis.Cci.csproj">
