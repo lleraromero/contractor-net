@@ -195,7 +195,6 @@
   <ItemGroup>
     <Compile Include="CodeContractsAnalyzer.cs" />
     <Compile Include="CodeContractsRunner.cs" />
-    <Compile Include="Instrumenter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryEvaluator.cs" />
   </ItemGroup>

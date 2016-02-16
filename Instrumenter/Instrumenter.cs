@@ -1,15 +1,15 @@
-﻿//using Contractor.Core.Model;
+﻿//using System;
+//using System.Collections.Generic;
+//using System.Diagnostics.Contracts;
+//using System.Linq;
+//using Contractor.Core.Model;
 //using Contractor.Utils;
 //using Microsoft.Cci;
 //using Microsoft.Cci.Contracts;
 //using Microsoft.Cci.MutableCodeModel;
 //using Microsoft.Cci.MutableContracts;
-//using System;
-//using System.Collections.Generic;
-//using System.Diagnostics.Contracts;
-//using System.Linq;
 
-//namespace Contractor.Core
+//namespace Instrumenter
 //{
 //    public class Instrumenter
 //    {
@@ -109,7 +109,7 @@
 //            {
 //                Condition = new GreaterThanOrEqual()
 //                {
-//                    LeftOperand = new BoundExpression() { Definition = field, Instance = new ThisReference(), Type = field.Type},
+//                    LeftOperand = new BoundExpression() { Definition = field, Instance = new ThisReference(), Type = field.Type },
 //                    RightOperand = new CompileTimeConstant() { Type = host.PlatformType.SystemInt32, Value = 0 }
 //                },
 //            });
