@@ -96,6 +96,7 @@
     <Compile Include="GenericStack.cs" />
     <Compile Include="GenericStackSetFields.cs" />
     <Compile Include="GenericStackSet.cs" />
+    <Compile Include="Test.cs" />
     <Compile Include="VendingMachine.cs" />
   </ItemGroup>
   <ItemGroup>
