@@ -58,6 +58,104 @@ namespace Examples
         }
     }
 
+    class TestCorral
+    {
+        public int Estado;
+
+        public TestCorral()
+        {
+            Estado = 0;
+        }
+
+        /// <summary>
+        /// Deberia llevarme solamente al TestigoEstado50, ya que siempre parte de 0 y llega a 50 con el loop.
+        /// </summary>
+        public void CicloMasLargoQueRecursionBound()
+        {
+            Contract.Requires(Estado == 0);
+
+            for (int i = 0; i < 50; i++)
+            {
+                Estado++;
+            }
+        }
+
+        public void CicloMasChicoQueRecursionBound()
+        {
+            Contract.Requires(Estado == 0);
+            for (int i = 0; i < 1; i++)
+            {
+                Estado++;
+            }
+        }
+
+        public void TestigoEstado1()
+        {
+            Contract.Requires(Estado == 1);
+        }
+
+        public void TestigoEstado50()
+        {
+            Contract.Requires(Estado == 50);
+        }
+
+        public void CicloBasadoEnParam(int cota)
+        {
+            Contract.Requires(Estado == 0);
+
+            for (int i = 0; i < cota; i++)
+            {
+                Estado++;
+            }
+        }
+
+        public void CicloDeberiaIrA50()
+        {
+            Contract.Requires(Estado == 0);
+
+            for (int i = 0; i < 30; i++)
+            {
+                Estado++;
+            }
+            Estado = 50;
+        }
+
+        public void CicloNoDeberiaIrA50()
+        {
+            Contract.Requires(Estado == 0);
+
+            for (int i = 0; i < 30; i++)
+            {
+                return;
+            }
+            Estado = 50;
+        }
+
+        public void CicloDeberiaIrA50ConIf()
+        {
+            Contract.Requires(Estado == 0);
+
+            for (int i = 0; i < 30; i++)
+            {
+                Estado++;
+            }
+            if (Estado == 30)
+                Estado = 50;
+        }
+
+        public void CicloNoDeberiaIrA50ConIf()
+        {
+            Contract.Requires(Estado == 0);
+
+            for (int i = 0; i < 30; i++)
+            {
+                if (i == 10)
+                    return;
+            }
+            Estado = 50;
+        }
+    }
+
     class Test
     {
         public bool Pepe;
