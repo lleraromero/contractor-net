@@ -12,6 +12,8 @@ namespace Analysis.Cci
     public class CciAssemblyPersister
     {
         protected CodeContractAwareHostEnvironment host;
+        // Object used to provide a managed mutex to avoid race-conditions in CCI static classes
+        public static object turnstile = new object();
 
         public CciAssemblyPersister()
         {
@@ -37,11 +39,16 @@ namespace Analysis.Cci
             Contract.Requires(!File.Exists(path));
 
             var sourceLocationProvider = GetPdbReader(assembly.Module);
-            ContractHelper.InjectContractCalls(host, assembly.Module, assembly.ContractProvider, sourceLocationProvider);
-
+            lock (turnstile)
+            {
+                ContractHelper.InjectContractCalls(host, assembly.Module, assembly.ContractProvider, sourceLocationProvider);
+            }
             using (var peStream = File.Create(path))
             {
-                PeWriter.WritePeToStream(assembly.Module, host, peStream);
+                lock (turnstile)
+                {
+                    PeWriter.WritePeToStream(assembly.Module, host, peStream);
+                }
             }
         }
 

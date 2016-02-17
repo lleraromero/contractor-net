@@ -119,7 +119,11 @@ namespace Analyzer.Corral
             Contract.Assert(!Directory.Exists(Path.GetDirectoryName(queryFilePath)));
             Directory.CreateDirectory(Path.GetDirectoryName(queryFilePath));
 
-            new CciContractRewriter().Rewrite(queryAssembly);
+            // Mutex to avoid race-conditions in CCI static classes
+            lock (CciAssemblyPersister.turnstile)
+            {
+                new CciContractRewriter().Rewrite(queryAssembly);    
+            }
             new CciAssemblyPersister().Save(queryAssembly, queryFilePath);
 
             return TranslateCSharpToBoogie(queryFilePath);
