@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Contractor.Core;
 using Contractor.Core.Model;
-using Contractor.Utils;
 using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;

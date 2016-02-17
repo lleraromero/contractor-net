@@ -1,196 +1,198 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Diagnostics.Contracts;
-//using System.Linq;
-//using Analysis.Cci;
-//using Contractor.Core.Model;
-//using Contractor.Utils;
-//using Microsoft.Cci;
-//using Microsoft.Cci.Contracts;
-//using Microsoft.Cci.MutableCodeModel;
-//using Microsoft.Cci.MutableContracts;
+﻿using System.Collections.Generic;
+using System.Diagnostics.Contracts;
+using System.Linq;
+using Analysis.Cci;
+using Contractor.Core.Model;
+using Microsoft.Cci;
+using Microsoft.Cci.Contracts;
+using Microsoft.Cci.MutableCodeModel;
+using Microsoft.Cci.MutableCodeModel.Contracts;
+using Microsoft.Cci.MutableContracts;
+using IAssembly = Contractor.Core.Model.IAssembly;
+using ITypeDefinition = Contractor.Core.Model.ITypeDefinition;
+using SourceMethodBody = Microsoft.Cci.ILToCodeModel.SourceMethodBody;
 
-// TODO (lleraromero): arreglar
-//namespace Instrumenter
-//{
-//    public class Instrumenter
-//    {
-//        private IContractAwareHost host;
-//        private ContractProvider cp;
-//        private NamespaceTypeDefinition type;
-//        private Dictionary<string, List<IPrecondition>> preconditions;
-//        private Epa epa;
+//TODO (lleraromero): testear
 
-//        public Instrumenter(IContractAwareHost host, ContractProvider cp)
-//        {
-//            Contract.Requires(host != null && cp != null);
+namespace Instrumenter
+{
+    public class Instrumenter
+    {
+        public IAssembly InstrumentType(CciAssembly assembly, Epa epa)
+        {
+            Contract.Requires(assembly != null);
+            Contract.Requires(epa != null);
+            Contract.Requires(assembly.Types().Contains(epa.Type));
 
-//            preconditions = new Dictionary<string, List<IPrecondition>>();
-//            this.host = host;
-//            this.cp = cp;
-//        }
+            // Clone assembly
+            var host = CciHostEnvironment.GetInstance();
+            var module = new CodeAndContractDeepCopier(host).Copy(assembly.Module);
 
-//        public void GenerateOutputAssembly(string outputFileName, Epa epa)
-//        {
-//            Contract.Requires(!string.IsNullOrEmpty(outputFileName));
+            var contractExtractor = host.GetContractExtractor(module.UnitIdentity);
+            var contractProvider = new AggregatingContractProvider(contractExtractor);
 
-//            var contractProvider = inputAssembly.ExtractContracts();
-//            var instrumenter = new Instrumenter(host, contractProvider);
+            var preconditions = new Dictionary<string, List<IPrecondition>>();
 
-//            foreach (var typeUniqueName in epas.Keys)
-//            {
-//                var typeAnalysis = epas[typeUniqueName];
+            var actions = new List<Action>(from transition in epa.Transitions.GroupBy(t => t.Action) select transition.Key);
+            Contract.Assert(actions.Any());
 
-//                if (!instrumentedEpas.Contains(typeUniqueName))
-//                {
-//                    var type = (from t in inputAssembly.DecompiledModule.AllTypes
-//                                where typeUniqueName == t.GetUniqueName()
-//                                select t as NamespaceTypeDefinition)
-//                                .First();
+            foreach (var action in actions)
+            {
+                // TODO (lleraromero): Es necesario? NullObject Pattern?
+                var mc = action.Contract as MethodContract;
+                if (mc == null) continue;
 
-//                    instrumenter.InstrumentType(type, typeAnalysis.EPA);
-//                    instrumentedEpas.Add(typeUniqueName);
-//                }
-//            }
+                preconditions.Add(action.Name, action.Contract.Preconditions.ToList());
+            }
 
-//            inputAssembly.InjectContracts(contractProvider);
-//            inputAssembly.Save(outputFileName);
-//        }
-//        public void InstrumentType(NamespaceTypeDefinition type, Epa epa)
-//        {
-//            Contract.Requires(type != null && epa != null);
-//            Contract.Requires(epa.Type == type.GetUniqueName());
+            var typeDefinition = epa.Type;
+            var cciTypeDefinition =
+                assembly.Module.AllTypes.First(
+                    t => TypeHelper.GetTypeName(t, NameFormattingOptions.UseGenericTypeNameSuffix).Equals(typeDefinition.Name)) as NamedTypeDefinition;
+            Contract.Assert(cciTypeDefinition != null);
 
-//            this.type = type;
-//            this.epa = epa;
+            var typeContract = RemoveInvariantMethods(typeDefinition, cciTypeDefinition);
 
-//            var actions = from transition in epa.Transitions.GroupBy(t => (t as Transition).Action) select transition.Key;
+            // Add a field to represent the state
+            var field = CreateStateField(cciTypeDefinition, typeContract);
+            cciTypeDefinition.Fields.Add(field);
 
-//            foreach (var action in actions)
-//            {
-//                var mc = cp.GetMethodContractFor(action) as MethodContract;
-//                if (mc == null) continue;
+            // Associate type contract to the contract provider
+            contractProvider.AssociateTypeWithContract(cciTypeDefinition, typeContract);
 
-//                var actionUniqueName = action.Name;
-//                preconditions.Add(actionUniqueName, mc.Preconditions.ToList());
-//            }
+            // Create Ids
+            var stateNumberMap = new Dictionary<State, int>();
+            foreach (var state in epa.States)
+            {
+                stateNumberMap.Add(state, stateNumberMap.Keys.Count);
+            }
 
-//            //Borramos los metodos que continen los invariantes de tipo
-//            var tc = cp.GetTypeContractFor(type) as TypeContract;
+            foreach (var action in actions)
+            {
+                // voy a agrupar las transiciones que usan esta accion por sourceState.Id
+                // transitions = Dicc<int, List<int>> o sea: "Dicc<from, List<to>>"
+                var transitionsUsingAction = new List<Transition>(from t in epa.Transitions where t.Action.Equals(action) select t);
+                var transitionsSourceIds = new HashSet<int>(from t in transitionsUsingAction select stateNumberMap[t.SourceState]).Distinct();
 
-//            if (tc != null)
-//            {
-//                tc.Invariants.Clear();
-//                var methods = ContractHelper.GetInvariantMethods(type).ToList();
+                var transitions = new Dictionary<int, List<int>>();
+                foreach (var t in transitionsUsingAction)
+                {
+                    var sourceStateId = stateNumberMap[t.SourceState];
+                    if (!transitions.ContainsKey(sourceStateId))
+                    {
+                        transitions.Add(sourceStateId, new List<int>());
+                    }
 
-//                foreach (var m in methods)
-//                    type.Methods.Remove(m);
-//            }
+                    var targetStateId = stateNumberMap[t.TargetState];
+                    transitions[sourceStateId].Add(targetStateId);
+                }
 
-//            //Agregamos un nuevo campo privado para codificar el estado
-//            var field = new FieldDefinition()
-//            {
-//                Name = host.NameTable.GetNameFor("$state"),
-//                Type = host.PlatformType.SystemInt32,
-//                Visibility = TypeMemberVisibility.Private,
-//                ContainingTypeDefinition = type,
-//                InternFactory = type.InternFactory,
-//                CompileTimeValue = new CompileTimeConstant()
-//                {
-//                    Type = host.PlatformType.SystemInt32,
-//                    Value = 0
-//                }
-//            };
+                var methodContract = action.Contract as MethodContract ?? new MethodContract();
 
-//            type.Fields.Add(field);
+                BlockStatement actionBodyBlock = null;
+                if (action.Method.Body is SourceMethodBody)
+                {
+                    var actionBody = (SourceMethodBody) action.Method.Body;
+                    actionBodyBlock = actionBody.Block as BlockStatement;
+                }
+                else if (action.Method.Body is Microsoft.Cci.MutableCodeModel.SourceMethodBody)
+                {
+                    var actionBody = (Microsoft.Cci.MutableCodeModel.SourceMethodBody) action.Method.Body;
+                    actionBodyBlock = actionBody.Block as BlockStatement;
+                }
+                Contract.Assert(actionBodyBlock != null);
 
-//            // Como el $state es int, necesito el invariante ya que no puede ser negativo.
-//            // Se usa int en vez de uint, para que no haya problemas con la traduccion de BCT
-//            tc.Invariants.Add(new TypeInvariant()
-//            {
-//                Condition = new GreaterThanOrEqual()
-//                {
-//                    LeftOperand = new BoundExpression() { Definition = field, Instance = new ThisReference(), Type = field.Type },
-//                    RightOperand = new CompileTimeConstant() { Type = host.PlatformType.SystemInt32, Value = 0 }
-//                },
-//            });
+                //Por tratarse de un constructor insertamos en 1 porque en 0 esta base..ctor()
+                var insertAtIndex = action.Method.IsConstructor ? 1 : 0;
 
-//            foreach (var action in actions)
-//            {
-//                var actionUniqueName = action.Name;
-//                // voy a agrupar las transiciones que usan esta accion por sourceState.Id
-//                // transitions = Dicc<uint, List<uint>> o sea: "Dicc<from, List<to>>"
-//                var transUsingAction = from t in epa.Transitions where ((Transition)t).Action.Equals(action) select t as Transition;
-//                var transSourceIds = (from t in transUsingAction select t.SourceState.Name).Distinct();
-//                var transitions = transUsingAction.GroupBy(t => t.SourceState.Name).ToDictionary(t => t.Key, t => (from tran in t select tran.TargetState.Name).ToList());
+                // CodeContracts no permite utilizar 'this' en los requires de los constructores
+                if (!action.Method.IsConstructor)
+                {
+                    var pre = new PreconditionGenerator().GeneratePrecondition(field, transitions.Keys.ToList());
+                    methodContract.Preconditions.Add(pre);
+                }
 
-//                var mc = cp.GetMethodContractFor(action) as MethodContract;
+                var posts = new PostconditionGenerator(stateNumberMap[epa.Initial]).GeneratePostconditions(field, transitions);
+                methodContract.Postconditions.AddRange(posts);
 
-//                if (mc == null)
-//                {
-//                    mc = new MethodContract();
-//                    cp.AssociateMethodWithContract(action, mc);
-//                }
-//                else
-//                {
-//                    mc.Preconditions.Clear();
-//                    mc.Postconditions.Clear();
-//                }
+                // Associate contract
+                contractProvider.AssociateMethodWithContract(action, methodContract);
 
-//                BlockStatement actionBodyBlock = null;
+                var stmt = new SwitchGenerator(epa, stateNumberMap).GenerateSwitch(field, transitions);
 
-//                if (action.Method.Body is Microsoft.Cci.ILToCodeModel.SourceMethodBody)
-//                {
-//                    var actionBody = action.Method.Body as Microsoft.Cci.ILToCodeModel.SourceMethodBody;
-//                    actionBodyBlock = actionBody.Block as BlockStatement;
-//                }
-//                else if (action.Method.Body is SourceMethodBody)
-//                {
-//                    var actionBody = action.Method.Body as SourceMethodBody;
-//                    actionBodyBlock = actionBody.Block as BlockStatement;
-//                }
+                // Se actualiza el $state en un finally porque los if de adentro del switch tienen que ser ejecutados despues del cuerpo de este metodo 
+                var stmtsCount = actionBodyBlock.Statements.Count - insertAtIndex;
+                var tryBlock = new BlockStatement();
+                var bodyStmts = new List<IStatement>(actionBodyBlock.Statements.GetRange(insertAtIndex, stmtsCount));
+                tryBlock.Statements.AddRange(bodyStmts);
 
-//                //Por tratarse de un constructor insertamos
-//                //en 1 porque en 0 esta base..ctor();
-//                var insertAtIndex = (action.Method.IsConstructor ? 1 : 0);
+                var finallyBlock = new BlockStatement();
+                finallyBlock.Statements.Add(stmt);
 
-//                // CodeContracts no permite utilizar this
-//                // en los requires de los constructores
-//                if (!action.Method.IsConstructor)
-//                {
-//                    var pre = new PreconditionGenerator().GeneratePrecondition(field, transitions.Keys);
-//                    mc.Preconditions.Add(pre);
-//                }
+                var tryStmt = new TryCatchFinallyStatement
+                {
+                    TryBody = tryBlock,
+                    FinallyBody = finallyBlock
+                };
 
-//                var posts = new PostconditionGenerator().GeneratePostconditions(field, transitions);
-//                mc.Postconditions.AddRange(posts);
+                actionBodyBlock.Statements.RemoveRange(insertAtIndex, stmtsCount);
+                actionBodyBlock.Statements.Insert(insertAtIndex, tryStmt);
+            }
 
-//                var stmt = new SwitchGenerator(this).GenerateSwitch(field, transitions);
+            return new CciAssembly(module, contractProvider);
+        }
 
-//                // Se actualiza el $state en un finally porque los if de adentro
-//                // del switch tienen que ser ejecutados despues del cuerpo de este metodo 
+        protected FieldDefinition CreateStateField(NamedTypeDefinition typeDefinition, TypeContract typeContract)
+        {
+            var host = CciHostEnvironment.GetInstance();
 
-//                var stmtsCount = actionBodyBlock.Statements.Count - insertAtIndex;
-//                var tryBlock = new BlockStatement();
-//                var bodyStmts = new List<IStatement>(actionBodyBlock.Statements.GetRange(insertAtIndex, stmtsCount));
-//                tryBlock.Statements.AddRange(bodyStmts);
+            var field = new FieldDefinition
+            {
+                Name = host.NameTable.GetNameFor("$state"),
+                Type = host.PlatformType.SystemInt32,
+                Visibility = TypeMemberVisibility.Private,
+                ContainingTypeDefinition = typeDefinition,
+                InternFactory = typeDefinition.InternFactory,
+                CompileTimeValue = new CompileTimeConstant
+                {
+                    Type = host.PlatformType.SystemInt32,
+                    Value = 0
+                }
+            };
 
-//                var finallyBlock = new BlockStatement();
-//                finallyBlock.Statements.Add(stmt);
+            // Como el $state es int, necesito el invariante ya que no puede ser negativo.
+            // Se usa int en vez de uint, para que no haya problemas con la traduccion de BCT
+            if (typeContract == null)
+            {
+                typeContract = new TypeContract();
+            }
 
-//                var tryStmt = new TryCatchFinallyStatement()
-//                {
-//                    TryBody = tryBlock,
-//                    FinallyBody = finallyBlock
-//                };
+            typeContract.Invariants.Add(new TypeInvariant
+            {
+                Condition = new GreaterThanOrEqual
+                {
+                    LeftOperand = new BoundExpression { Definition = field, Instance = new ThisReference(), Type = field.Type },
+                    RightOperand = new CompileTimeConstant { Type = host.PlatformType.SystemInt32, Value = 0 }
+                }
+            });
 
-//                actionBodyBlock.Statements.RemoveRange(insertAtIndex, stmtsCount);
-//                actionBodyBlock.Statements.Insert(insertAtIndex, tryStmt);
-//            }
+            return field;
+        }
 
-//            preconditions.Clear();
-//            this.type = null;
-//            this.epa = null;
-//        }
-//    }
-//}
+        protected TypeContract RemoveInvariantMethods(ITypeDefinition typeDefinition, NamedTypeDefinition cciTypeDefinition)
+        {
+            var tc = typeDefinition.TypeContract() as TypeContract;
+            if (tc != null)
+            {
+                tc.Invariants.Clear();
+                var methods = ContractHelper.GetInvariantMethods(cciTypeDefinition).ToList();
+
+                foreach (var m in methods)
+                {
+                    cciTypeDefinition.Methods.Remove(m);
+                }
+            }
+            return tc;
+        }
+    }
+}

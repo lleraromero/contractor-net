@@ -1,7 +1,6 @@
 using System.Linq;
 using Contractor.Core;
 using Contractor.Core.Model;
-using Contractor.Utils;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableContracts;

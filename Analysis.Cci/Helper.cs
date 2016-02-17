@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Contractor.Core.Model;
-using CSharpSourceEmitter;
 using Microsoft.Cci;
 using Microsoft.Cci.MutableCodeModel;
-using SourceEmitter = CSharpSourceEmitter.SourceEmitter;
 
-namespace Contractor.Utils
+namespace Analysis.Cci
 {
     public static class Helper
     {
@@ -34,6 +32,36 @@ namespace Contractor.Utils
                         Type = host.PlatformType.SystemBoolean,
                         Value = false
                     }
+                };
+            }
+
+            return result;
+        }
+
+        // A || B = A ? true : B
+        public static IExpression JoinWithLogicalOr(IMetadataHost host, List<IExpression> expressions, bool defaultValue)
+        {
+            if (expressions.Count == 0)
+                return new CompileTimeConstant
+                {
+                    Type = host.PlatformType.SystemBoolean,
+                    Value = defaultValue
+                };
+
+            var result = expressions[0];
+
+            for (var i = 1; i < expressions.Count; ++i)
+            {
+                result = new Conditional
+                {
+                    Type = host.PlatformType.SystemBoolean,
+                    Condition = result,
+                    ResultIfTrue = new CompileTimeConstant
+                    {
+                        Type = host.PlatformType.SystemBoolean,
+                        Value = true
+                    },
+                    ResultIfFalse = expressions[i]
                 };
             }
 
