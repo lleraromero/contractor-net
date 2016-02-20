@@ -77,9 +77,12 @@ namespace Contractor.Core
                 visitedStates.Add(source);
                 foreach (var action in source.EnabledActions)
                 {
-                    // Which actions are enabled or disabled if 'action' is called from 'source'?
-                    var actionsResult = analyzer.AnalyzeActions(source, action, actions);
-
+                    ActionAnalysisResults actionsResult;
+                    lock (analyzer)
+                    {
+                        // Which actions are enabled or disabled if 'action' is called from 'source'?
+                        actionsResult = analyzer.AnalyzeActions(source, action, actions);
+                    }
                     if (actionsResult.EnabledActions.Count.Equals(actions.Count) && actionsResult.DisabledActions.Count.Equals(actions.Count()))
                     {
                         Logger.Log(LogLevel.Warn,
@@ -100,8 +103,12 @@ namespace Contractor.Core
 
                     Contract.Assert(possibleTargets.Any(), "There is always at least one target to reach");
 
-                    // Which states are reachable from the current state (aka source) using 'action'?
-                    var transitionsResults = analyzer.AnalyzeTransitions(source, action, possibleTargets);
+                    IReadOnlyCollection<Transition> transitionsResults;
+                    lock (analyzer)
+                    {
+                        // Which states are reachable from the current state (aka source) using 'action'?
+                        transitionsResults = analyzer.AnalyzeTransitions(source, action, possibleTargets);
+                    }
                     Contract.Assert(transitionsResults.Count > 0, "There is always at least one transition to traverse");
 
                     foreach (var transition in transitionsResults)
