@@ -148,6 +148,7 @@ namespace Examples.ICSE2011
                 throw new ConcurrentModificationException();
         }
 
+        [Pure]
         public bool hasNext()
         {
             return cursor != array.size;
@@ -203,6 +204,7 @@ namespace Examples.ICSE2011
         }
         /* Itr */
 
+        [Pure]
         public bool hasPrevious()
         {
             return cursor != 0;
@@ -230,11 +232,13 @@ namespace Examples.ICSE2011
             return (Object)elementData[lastRet = i];
         }
 
+        [Pure]
         public int nextIndex()
         {
             return cursor;
         }
 
+        [Pure]
         public int previousIndex()
         {
             return cursor - 1;

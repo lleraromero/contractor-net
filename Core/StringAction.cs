@@ -29,6 +29,11 @@ namespace Contractor.Core
             get { throw new NotImplementedException(); }
         }
 
+        public override bool IsPure
+        {
+            get { throw new NotImplementedException(); }
+        }
+
         #region IEquatable
         public override bool Equals(Action other)
         {

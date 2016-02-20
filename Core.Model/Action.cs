@@ -9,6 +9,8 @@ namespace Contractor.Core.Model
         public abstract string Name { get; }
         public abstract IMethodDefinition Method { get; }
         public abstract IMethodContract Contract { get; }
+        public abstract bool IsPure { get; }
+
         #region IEquatable
         public override bool Equals(object obj)
         {

@@ -29,6 +29,11 @@ namespace Core.Tests
             get { throw new NotImplementedException(); }
         }
 
+        public override bool IsPure
+        {
+            get { throw new NotImplementedException(); }
+        }
+
         public override string ToString()
         {
             return name;

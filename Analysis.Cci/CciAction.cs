@@ -1,5 +1,6 @@
 ﻿using Microsoft.Cci;
 using Microsoft.Cci.Contracts;
+using Microsoft.Cci.MutableContracts;
 using Action = Contractor.Core.Model.Action;
 
 namespace Analysis.Cci
@@ -21,6 +22,11 @@ namespace Analysis.Cci
         public override IMethodContract Contract
         {
             get { return contract; }
+        }
+
+        public override bool IsPure
+        {
+            get { return ContractHelper.IsPure(CciHostEnvironment.GetInstance(), method); }
         }
 
         public CciAction(IMethodDefinition method, IMethodContract contract)
