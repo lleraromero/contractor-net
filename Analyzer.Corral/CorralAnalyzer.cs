@@ -45,6 +45,11 @@ namespace Analyzer.Corral
         {
             ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
 
+            if (action.IsPure)
+            {
+                return new ActionAnalysisResults(new HashSet<Action>(source.EnabledActions), new HashSet<Action>(source.DisabledActions));
+            }
+
             var enabledActions = GetMustBeEnabledActions(source, action, actions, corralRunner);
             var disabledActions = GetMustBeDisabledActions(source, action, actions, corralRunner);
 
@@ -122,7 +127,7 @@ namespace Analyzer.Corral
             // Mutex to avoid race-conditions in CCI static classes
             lock (CciAssemblyPersister.turnstile)
             {
-                new CciContractRewriter().Rewrite(queryAssembly);    
+                new CciContractRewriter().Rewrite(queryAssembly);
             }
             new CciAssemblyPersister().Save(queryAssembly, queryFilePath);
 
@@ -134,7 +139,7 @@ namespace Analyzer.Corral
             Contract.Requires(!string.IsNullOrEmpty(queryAssemblyPath));
 
             var bctRunner = new BctRunner();
-            var args = new[] {queryAssemblyPath, "/lib:" + Path.GetDirectoryName(inputFileName)};
+            var args = new[] { queryAssemblyPath, "/lib:" + Path.GetDirectoryName(inputFileName) };
 
             token.ThrowIfCancellationRequested();
             bctRunner.Run(args);

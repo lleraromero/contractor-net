@@ -47,6 +47,11 @@ namespace Analyzer.CodeContracts
         {
             var codeContractsRunner = new CodeContractsRunner(workingDir, ccCheckDefaultArgs, libPaths, typeToAnalyze);
 
+            if (action.IsPure)
+            {
+                return new ActionAnalysisResults(new HashSet<Action>(source.EnabledActions), new HashSet<Action>(source.DisabledActions));
+            }
+
             var enabledActions = ActionsThatAreAlwaysEnabled(source, action, actions, codeContractsRunner);
             var disabledActions = ActionsThatAreAlwaysDisabled(source, action, actions, codeContractsRunner);
 
