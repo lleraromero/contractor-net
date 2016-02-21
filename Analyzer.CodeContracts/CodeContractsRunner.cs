@@ -71,12 +71,12 @@ namespace Analyzer.CodeContracts
 
                 if (codeContracts.ExitCode != 0)
                 {
+                    Logger.Log(LogLevel.Info, "=============== Code Contracts ===============");
+                    Logger.Log(LogLevel.Debug, "Args: " + codeContracts.StartInfo.Arguments);
+                    Logger.Log(LogLevel.Debug, output.ToString());
                     throw new Exception("Error executing Code Contracts");
                 }
 
-                Logger.Log(LogLevel.Info, "=============== Code Contracts ===============");
-                Logger.Log(LogLevel.Debug, "Args: " + codeContracts.StartInfo.Arguments);
-                Logger.Log(LogLevel.Debug, output.ToString());
                 Contract.Assert(output.Length > 11, "It seems that Code Contracts didn't analyze any methods");
             }
 
@@ -92,6 +92,7 @@ namespace Analyzer.CodeContracts
                     {
                         continue;
                     }
+                    // In order to avoid problems with methods that have a prefix in common we find the longest string that matches
                     var currentQuery =
                         candidateQueries.First(
                             q => candidateQueries.All(q2 => q2.Method.Method.Name.Value.Length <= q.Method.Method.Name.Value.Length));
@@ -111,7 +112,15 @@ namespace Analyzer.CodeContracts
             var queryResults = new Dictionary<Query, QueryResult>();
             foreach (var query in queries)
             {
-                if (codeContractsConclusions[query].Contains(ResultKind.FalseEnsures))
+                if (codeContractsConclusions[query].Contains(ResultKind.FalseRequires))
+                {
+                    queryResults.Add(query, QueryResult.Unreachable);
+                }
+                else if (codeContractsConclusions[query].Contains(ResultKind.UnsatisfiableRequires))
+                {
+                    queryResults.Add(query, QueryResult.Unreachable);
+                }
+                else if (codeContractsConclusions[query].Contains(ResultKind.FalseEnsures))
                 {
                     queryResults.Add(query, QueryResult.Reachable);
                 }
