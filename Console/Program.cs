@@ -20,7 +20,7 @@ namespace Contractor.Console
         {
 #if DEBUG
             //var tempPath = ConfigurationManager.AppSettings["WorkingDir"];
-            //var graphPath = Path.Combine(tempPath, "Graph");
+            //var graphPath = @"D:\tesis-experiments\EPAs";
             //if (!Directory.Exists(graphPath))
             //{
             //    Directory.CreateDirectory(graphPath);
@@ -33,25 +33,27 @@ namespace Contractor.Console
             //    "-i", examplesPath,
             //    "-g", graphPath,
             //    "--tmp", tempPath,
-            //    "-t", "Examples.ICSE2011.ListItr",
-            //    "-b", "Corral",
-            //    "--xml"
+            //    "-t", "Examples.VendingMachine",
+            //    "-b", "Corral"
             //};
 #endif
-            //System.Diagnostics.Debugger.Break();
             var options = new Options();
             if (!Parser.Default.ParseArgumentsStrict(args, options))
             {
                 System.Console.WriteLine("Args parsing error!");
 #if DEBUG
-                System.Console.ReadKey();
+                //System.Console.ReadKey();
 #endif
                 return -1;
             }
 
+            System.Console.WriteLine(options.InputAssembly);
+
             try
             {
                 var analysisResult = GenerateEpa(options);
+
+                System.Console.WriteLine(analysisResult.ToString());
 
                 var epa = analysisResult.Epa;
 
@@ -70,13 +72,11 @@ namespace Contractor.Console
             catch (Exception ex)
             {
                 System.Console.WriteLine("Error: {0}", ex.Message);
+                return -1;
             }
 
             System.Console.WriteLine("Done!");
-#if DEBUG
-            //System.Console.WriteLine("Press any key to continue");
-            //System.Console.ReadKey();
-#endif
+            //System.Console.ReadLine();
             return 0;
         }
 
@@ -118,6 +118,7 @@ namespace Contractor.Console
                     analyzer = new CodeContractsAnalyzer(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly as CciAssembly, options.InputAssembly,
                         typeToAnalyze, cancellationSource.Token);
                     break;
+
                 case "Corral":
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
                     Contract.Assert(corralDefaultArgs != null);
@@ -133,29 +134,23 @@ namespace Contractor.Console
             var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
             var epaBuilder = new EpaBuilder(typeDefinition);
 
-            //OnInitialStateAdded(this, epaBuilder);
-            var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
-            epaBuilderObservable.TransitionAdded += OnTransitionAdded;
-            TypeAnalysisResult analysisResult;
-            if (!options.Methods.Equals("All"))
-            {
-                var selectedMethods = options.Methods.Split(';');
-                analysisResult = generator.GenerateEpa(typeDefinition, selectedMethods,epaBuilderObservable).Result;
-            }
-            else
-            {
-                analysisResult = generator.GenerateEpa(typeDefinition, epaBuilderObservable).Result;
-            }
-            return analysisResult;
-        }
+            ////OnInitialStateAdded(this, epaBuilder);
+            //var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
+            //epaBuilderObservable.TransitionAdded += OnTransitionAdded;
+            //TypeAnalysisResult analysisResult;
+            //if (!options.Methods.Equals("All"))
+            //{
+            //    var selectedMethods = options.Methods.Split(';');
+            //    analysisResult = generator.GenerateEpa(typeDefinition, selectedMethods,epaBuilderObservable).Result;
+            //}
+            //else
+            //{
+            //    analysisResult = generator.GenerateEpa(typeDefinition, epaBuilderObservable).Result;
+            //}
 
-        private static void OnTransitionAdded(object sender, TransitionAddedEventArgs e)
-        {
-            System.Console.WriteLine("======================================================");
-            System.Console.WriteLine("States number:" + e.EpaBuilder.States.Count);
-            System.Console.WriteLine("Transitions number:" + e.EpaBuilder.Transitions.Count);
-            System.Console.WriteLine("New transition:");
-            System.Console.WriteLine(e.Transition);
+            var analysisResult = generator.GenerateEpa(typeDefinition, epaBuilder).Result;
+
+            return analysisResult;
         }
 
         protected static void SaveEpasAsImages(Epa epa, DirectoryInfo outputDir)
@@ -181,8 +176,6 @@ namespace Contractor.Console
                 new EpaXmlSerializer().Serialize(stream, epa);
             }
         }
-
-
 
         protected static void GenerateStrengthenedAssembly(Epa epa, FileInfo outputFile)
         {
