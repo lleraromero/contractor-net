@@ -123,6 +123,13 @@ namespace Contractor.Console
                     Contract.Assert(corralDefaultArgs != null);
                     analyzer = new CorralAnalyzer(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly,
                         options.InputAssembly, typeToAnalyze, cancellationSource.Token);
+                    
+                    //CS ----
+                    cccheckArgs = ConfigurationManager.AppSettings["CccheckArgs"];
+                    var csChecker = new CodeContractsAnalyzer(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly as CciAssembly, options.InputAssembly,
+                        typeToAnalyze, cancellationSource.Token);
+                    var csGenerator = CSGenerator.Intance(csChecker);
+                    //---
                     break;
                 default:
                     throw new NotSupportedException();
