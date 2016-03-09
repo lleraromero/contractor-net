@@ -29,7 +29,7 @@ namespace Contractor.Core
         public abstract TransitionAnalysisResult AnalyzeTransitions(State source, IMethodDefinition action, List<State> targets);
 
         #endregion IAnalyzer interface
-
+        
         protected readonly IContractAwareHost host;
         protected readonly AssemblyInfo inputAssembly;
         protected readonly ContractProvider inputContractProvider;

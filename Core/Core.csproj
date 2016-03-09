@@ -198,6 +198,7 @@
     <Compile Include="AnalysisResults.cs" />
     <Compile Include="Analyzer.cs" />
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="CSGenerator.cs" />
     <Compile Include="CodeContractsAnalyzer.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="ContractRewriter.cs" />

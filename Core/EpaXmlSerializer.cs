@@ -102,6 +102,7 @@ namespace Contractor.Core
                     writer.WriteStartElement("transition");
                     writer.WriteAttributeString("destination", kvp.Key.ToString());
                     writer.WriteAttributeString("label", t.Action);
+                    writer.WriteAttributeString("condition", t.Condition);//************************************
                     writer.WriteAttributeString("uncertain", t.IsUnproven.ToString().ToLower());
                     writer.WriteAttributeString("violates_invariant", "false"); //Contractor.NET does not support this attribute
                     writer.WriteEndElement();
@@ -210,7 +211,9 @@ namespace Contractor.Core
                                 var sourceState = s;
                                 var targetState = new State() { Id = uint.Parse(reader.GetAttribute("destination").Replace("S", "")) };
                                 var isUnproven = bool.Parse(reader.GetAttribute("uncertain"));
-                                var t = new Transition(method, sourceState, targetState, isUnproven);
+                                //**************************************************
+                                var condition = reader.GetAttribute("condition");
+                                var t = new Transition(method, sourceState, targetState, isUnproven,condition);
                                 epaStructure[s.Id].Add(t);
                                 break;
                             default:
@@ -237,7 +240,8 @@ namespace Contractor.Core
                 foreach (var t in kvp.Value)
                 {
                     var targetState = epa.States.First(state => state.Id == t.TargetState.Id) as State;
-                    var newTrans = new Transition(t.Action, t.SourceState, targetState, t.IsUnproven);
+                    //**************************************************
+                    var newTrans = new Transition(t.Action, t.SourceState, targetState, t.IsUnproven,t.Condition);
                     epa.AddTransition(newTrans);
                 }
             }

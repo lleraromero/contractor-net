@@ -11,6 +11,8 @@ namespace Contractor.Core
         IState SourceState { get; }
         IState TargetState { get; }
         bool IsUnproven { get; }
+
+        string Condition { get; }
     }
 
     public class Transition : ITransition, IEquatable<Transition>
@@ -19,18 +21,20 @@ namespace Contractor.Core
         public State SourceState { get; private set; }
         public State TargetState { get; private set; }
         public bool IsUnproven { get; private set; }
+        public string Condition { get; private set; }
 
-        public Transition(IMethodDefinition action, State source, State target, bool isUnproven)
+        public Transition(IMethodDefinition action, State source, State target, bool isUnproven, string condition)
         {
             this.Action = action;
             this.SourceState = source;
             this.TargetState = target;
             this.IsUnproven = isUnproven;
+            this.Condition = condition;
         }
 
         public override string ToString()
         {
-            return string.Format("{0} -- {1} --> {2}", this.SourceState, Utils.Extensions.GetDisplayName(this.Action), this.TargetState);
+            return string.Format("{0} -- {1}cs:{3} --> {2}", this.SourceState, Utils.Extensions.GetDisplayName(this.Action), this.TargetState,this.Condition);
         }
 
         #region ITransition members

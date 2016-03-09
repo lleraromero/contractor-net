@@ -17,6 +17,7 @@ namespace Contractor.Core
         public static string CheckerArguments;
         public static string CorralArguments;
         public static bool InlineMethodsBody;
+        public static bool TransitionsWithConditions;
 
         private static string windows;
         private static string programFiles;
@@ -31,6 +32,8 @@ namespace Contractor.Core
                 programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
 
             InlineMethodsBody = true;
+            //TODO: ask for check box value
+            TransitionsWithConditions = true;
             CheckerFileName = ExpandVariables(Resources.CheckerFileName);
             CheckerArguments = Resources.CheckerArguments;
             var dependenciesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\Dependencies"));

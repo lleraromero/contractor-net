@@ -46,5 +46,8 @@ namespace Contractor.Console
 
         [OptionDescription("Backend used to analyze the assembly (CodeContracts / Corral) ", ShortForm = "b")]
         public string backend = "CodeContracts";
+
+        [OptionDescription("Generate an XML file as output ", ShortForm = "xml")]
+        public bool xml = false;
 	}
 }

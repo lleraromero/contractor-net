@@ -246,8 +246,18 @@ namespace Contractor.Gui
                 this.BeginInvoke(new EventHandler<TransitionAddedEventArgs>(this.OnTransitionAdded), sender, e);
                 return;
             }
-
-            var label = e.Transition.Action;
+            string cs = e.Transition.Condition;
+            if (cs.Equals(""))
+            {
+                cs = " CS: #ERROR#";
+            }
+            else if(cs.Equals("True"))
+            {
+                cs = "";
+            }else{
+                cs = " CS: " + cs;
+            }
+            var label = e.Transition.Action+cs;
             var createEdge = true;
             Style lineStyle = e.Transition.IsUnproven ? Style.Dashed : Style.Solid;
 
@@ -665,8 +675,23 @@ namespace Contractor.Gui
                 var text = string.Join<string>(@" \par ", state.DisabledActions);
                 info.Append(text);
             }
-
+            //************************************
+            //info.Append(@" \fs8\par\par\fs18 \b STATE INVARIANT \b0 \par ");
+            //if (state.EnabledActions.Any())
+            //{
+            //    var text = string.Join<string>(@" \par ", state.EnabledActions);
+            //    info.Append(text);
+            //}
+            //if (state.DisabledActions.Any())
+            //{
+            //    var text = string.Join<string>(@" \par ", state.DisabledActions);
+            //    info.Append(text);
+            //}
+            //ContractProvider contractProvider = _AssemblyInfo.ExtractContracts();
+            //var m= _AnalizedType.Methods;
+            //var mc = inputContractProvider.GetMethodContractFor(action);
             info.Append(@"}");
+            
             return info.ToString();
         }
 

@@ -223,9 +223,12 @@ namespace Contractor.Core
             {
                 case Backend.CodeContracts:
                     checker = new CodeContractsAnalyzer(host, inputAssembly, type, token);
+                    
                     break;
                 case Backend.Corral:
                     checker = new CorralAnalyzer(host, inputAssembly.Module, type, token);
+                    var cschecker = new CodeContractsAnalyzer(host, inputAssembly, type, token);
+                    var csgenerator = CSGenerator.Instance(cschecker);
                     break;
                 default:
                     throw new NotImplementedException("Unknown backend");

@@ -74,9 +74,25 @@ namespace Contractor.Console
                 foreach (var result in epas)
                 {
                     var typeName = result.Key.Replace('.', '_');
-                    using (var stream = File.Create(string.Format("{0}\\{1}.png", GraphPath, typeName)))
+                    using (var stream = File.Create(string.Format("{0}\\{1}.png", options.graph, typeName)))
                     {
                         (new EpaBinarySerializer()).Serialize(stream, result.Value.EPA);
+                    }
+                }
+
+                if (options.xml)
+                {
+                    // Save each EPA as an xml file in the Graph folder
+                    foreach (var result in epas)
+                    {
+                        var typeName = result.Key.Replace('.', '_');
+                        typeName = string.Format("{0}.xml", typeName);
+
+                        using (var stream = File.Create(Path.Combine(options.graph, typeName)))
+                        {
+                            var serializer = new EpaXmlSerializer();
+                            serializer.Serialize(stream, result.Value.EPA);
+                        }
                     }
                 }
 #if !DEBUG

@@ -186,6 +186,8 @@ namespace Contractor.Core
         private void AddTransition(ITransition t, Graph graph)
         {
             var label = t.Action;
+            //**************************
+            var condition = t.Condition;
             var createEdge = true;
             Style lineStyle = t.IsUnproven ? Style.Dashed : Style.Solid;
 
@@ -206,7 +208,8 @@ namespace Contractor.Core
                 {
                     if (ed.Target == t.TargetState.Id.ToString() && ed.Attr.Styles.Contains(lineStyle))
                     {
-                        ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
+                        //**************************************************
+                        ed.LabelText = string.Format("{0}{1}{2}{3}", ed.LabelText, Environment.NewLine, label,condition);
                         createEdge = false;
                         break;
                     }
@@ -219,6 +222,7 @@ namespace Contractor.Core
 
                 edge.Label.FontName = "Cambria";
                 edge.Label.FontSize = 6;
+                
                 edge.Attr.AddStyle(lineStyle);
             }
         }
