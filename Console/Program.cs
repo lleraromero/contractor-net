@@ -49,9 +49,6 @@ namespace Contractor.Console
                 return -1;
             }
 
-            System.Console.WriteLine(options.InputAssembly);
-            
-
             try
             {
                 var analysisResult = GenerateEpa(options);
@@ -139,8 +136,16 @@ namespace Contractor.Console
             //OnInitialStateAdded(this, epaBuilder);
             var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
             epaBuilderObservable.TransitionAdded += OnTransitionAdded;
-
-            var analysisResult = generator.GenerateEpa(typeDefinition, epaBuilderObservable).Result;
+            TypeAnalysisResult analysisResult;
+            if (!options.Methods.Equals("All"))
+            {
+                var selectedMethods = options.Methods.Split(';');
+                analysisResult = generator.GenerateEpa(typeDefinition, selectedMethods,epaBuilderObservable).Result;
+            }
+            else
+            {
+                analysisResult = generator.GenerateEpa(typeDefinition, epaBuilderObservable).Result;
+            }
             return analysisResult;
         }
 
@@ -176,6 +181,8 @@ namespace Contractor.Console
                 new EpaXmlSerializer().Serialize(stream, epa);
             }
         }
+
+
 
         protected static void GenerateStrengthenedAssembly(Epa epa, FileInfo outputFile)
         {
