@@ -68,13 +68,13 @@ namespace Examples
         }
 
         /// <summary>
-        /// Deberia llevarme solamente al TestigoEstado50, ya que siempre parte de 0 y llega a 50 con el loop.
+        /// Deberia llevarme solamente al TestigoEstado10, ya que siempre parte de 0 y llega a 10 con el loop.
         /// </summary>
         public void CicloMasLargoQueRecursionBound()
         {
             Contract.Requires(Estado == 0);
 
-            for (int i = 0; i < 50; i++)
+            for (int i = 0; i < 10; i++)
             {
                 Estado++;
             }
@@ -94,9 +94,9 @@ namespace Examples
             Contract.Requires(Estado == 1);
         }
 
-        public void TestigoEstado50()
+        public void TestigoEstado10()
         {
-            Contract.Requires(Estado == 50);
+            Contract.Requires(Estado == 10);
         }
 
         public void CicloBasadoEnParam(int cota)
@@ -109,7 +109,7 @@ namespace Examples
             }
         }
 
-        public void CicloDeberiaIrA50()
+        public void CicloDeberiaIrA10()
         {
             Contract.Requires(Estado == 0);
 
@@ -117,10 +117,10 @@ namespace Examples
             {
                 Estado++;
             }
-            Estado = 50;
+            Estado = 10;
         }
 
-        public void CicloNoDeberiaIrA50()
+        public void CicloNoDeberiaIrA10()
         {
             Contract.Requires(Estado == 0);
 
@@ -128,10 +128,10 @@ namespace Examples
             {
                 return;
             }
-            Estado = 50;
+            Estado = 10;
         }
 
-        public void CicloDeberiaIrA50ConIf()
+        public void CicloDeberiaIrA10ConIf()
         {
             Contract.Requires(Estado == 0);
 
@@ -140,10 +140,10 @@ namespace Examples
                 Estado++;
             }
             if (Estado == 30)
-                Estado = 50;
+                Estado = 10;
         }
 
-        public void CicloNoDeberiaIrA50ConIf()
+        public void CicloNoDeberiaIrA10ConIf()
         {
             Contract.Requires(Estado == 0);
 
@@ -152,7 +152,7 @@ namespace Examples
                 if (i == 10)
                     return;
             }
-            Estado = 50;
+            Estado = 10;
         }
     }
 
