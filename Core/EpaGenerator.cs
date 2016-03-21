@@ -83,6 +83,7 @@ namespace Contractor.Core
                         // Which actions are enabled or disabled if 'action' is called from 'source'?
                         actionsResult = analyzer.AnalyzeActions(source, action, actions);
                     }
+
                     if (actionsResult.EnabledActions.Count.Equals(actions.Count) && actionsResult.DisabledActions.Count.Equals(actions.Count()))
                     {
                         Logger.Log(LogLevel.Warn,
@@ -91,8 +92,10 @@ namespace Contractor.Core
                     }
 
                     Contract.Assert(!actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).Any(), "Results should be consistent");
-                    Contract.Assert(actionsResult.EnabledActions.Any() || actionsResult.DisabledActions.Any(),
-                        "State explosion leads to a useless EPA");
+                    if (!actionsResult.EnabledActions.Any() && !actionsResult.DisabledActions.Any())
+                    {
+                        Logger.Log(LogLevel.Warn, "State explosion!");
+                    }
 
                     var possibleTargets = GeneratePossibleStates(actions, actionsResult);
 
@@ -109,7 +112,11 @@ namespace Contractor.Core
                         // Which states are reachable from the current state (aka source) using 'action'?
                         transitionsResults = analyzer.AnalyzeTransitions(source, action, possibleTargets);
                     }
-                    Contract.Assert(transitionsResults.Count > 0, "There is always at least one transition to traverse");
+
+                    if (!transitionsResults.Any())
+                    {
+                        Logger.Log(LogLevel.Warn, "No states are reachable.");
+                    }
 
                     foreach (var transition in transitionsResults)
                     {
