@@ -10,15 +10,19 @@ using Action = Contractor.Core.Model.Action;
 
 namespace Contractor.Core
 {
+    /*TODO (lleraromero): me parece que vale la pena separar EpaGenerator de un potencial TypeAnalyzer.
+    Estamos mezclando la parte de las estadisticas del analisis con la creacion de la EPA.
+     */
+
     public class EpaGenerator
     {
-        protected IAnalyzer analyzer;
+        protected IAnalyzerFactory analyzerFactory;
         protected int cutter;
 
-        public EpaGenerator(IAnalyzer analyzer, int cutter)
+        public EpaGenerator(IAnalyzerFactory analyzerFactory, int cutter)
         {
-            Contract.Requires(analyzer != null);
-            this.analyzer = analyzer;
+            Contract.Requires(analyzerFactory != null);
+            this.analyzerFactory = analyzerFactory;
             this.cutter = cutter;
         }
 
@@ -51,7 +55,8 @@ namespace Contractor.Core
 
             analysisTimer.Stop();
 
-            var analysisResult = new TypeAnalysisResult(epaBuilder.Build(), analysisTimer.Elapsed, analyzer.GetUsageStatistics());
+            var analysisResult = new TypeAnalysisResult(epaBuilder.Build(), analysisTimer.Elapsed, analyzerFactory.GeneratedQueriesCount,
+                analyzerFactory.UnprovenQueriesCount);
 
             return analysisResult;
         }
@@ -79,14 +84,11 @@ namespace Contractor.Core
                 // Change ParallelOptions.MaxDegreeOfParallelism to 1 to make the loop sequential.
                 Parallel.ForEach(source.EnabledActions, new ParallelOptions(), action =>
                 {
-                    ActionAnalysisResults actionsResult;
-                    lock (analyzer)
-                    {
-                        // Which actions are enabled or disabled if 'action' is called from 'source'?
-                        actionsResult = analyzer.AnalyzeActions(source, action, actions);
-                    }
+                    var analyzer = analyzerFactory.CreateAnalyzer();
 
-                    if (actionsResult.EnabledActions.Count.Equals(actions.Count) && actionsResult.DisabledActions.Count.Equals(actions.Count()))
+                    // Which actions are enabled or disabled if 'action' is called from 'source'?
+                    var actionsResult = analyzer.AnalyzeActions(source, action, actions);
+                    if (actionsResult.EnabledActions.Count.Equals(actions.Count) && actionsResult.DisabledActions.Count.Equals(actions.Count))
                     {
                         Logger.Log(LogLevel.Warn,
                             "Suspicious state! Only a state with a unsatisfiable invariant can lead to every action being enabled and disabled at the same time. It can also mean a bug in our code.");
@@ -108,12 +110,8 @@ namespace Contractor.Core
 
                     Contract.Assert(possibleTargets.Any(), "There is always at least one target to reach");
 
-                    IReadOnlyCollection<Transition> transitionsResults;
-                    lock (analyzer)
-                    {
-                        // Which states are reachable from the current state (aka source) using 'action'?
-                        transitionsResults = analyzer.AnalyzeTransitions(source, action, possibleTargets);
-                    }
+                    // Which states are reachable from the current state (aka source) using 'action'?
+                    var transitionsResults = analyzer.AnalyzeTransitions(source, action, possibleTargets);
 
                     if (!transitionsResults.Any())
                     {
@@ -130,6 +128,9 @@ namespace Contractor.Core
                         }
                         epaBuilder.Add(transition);
                     }
+
+                    analyzerFactory.GeneratedQueriesCount += analyzer.GeneratedQueriesCount();
+                    analyzerFactory.UnprovenQueriesCount += analyzer.UnprovenQueriesCount();
                 });
             }
 

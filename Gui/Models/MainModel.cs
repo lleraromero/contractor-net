@@ -56,7 +56,7 @@ namespace Contractor.Gui.Models
         {
             cancellationSource = new CancellationTokenSource();
 
-            var analyzer = GetAnalyzer(analysisEventArgs.TypeToAnalyze, analysisEventArgs.Engine, cancellationSource.Token);
+            var analyzer = GetAnalyzerFactory(analysisEventArgs.TypeToAnalyze, analysisEventArgs.Engine, cancellationSource.Token);
             var epaGenerator = new EpaGenerator(analyzer, -1);
 
             var selectedMethods = from m in analysisEventArgs.SelectedMethods select m.ToString();
@@ -94,14 +94,14 @@ namespace Contractor.Gui.Models
             TransitionAdded(sender, e);
         }
 
-        protected IAnalyzer GetAnalyzer(ITypeDefinition typeToAnalyze, string engine, CancellationToken cancellationToken)
+        protected IAnalyzerFactory GetAnalyzerFactory(ITypeDefinition typeToAnalyze, string engine, CancellationToken cancellationToken)
         {
             var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
             workingDir.Create();
 
             var queryGenerator = new CciQueryGenerator();
 
-            IAnalyzer analyzer;
+            IAnalyzerFactory analyzerFactory;
             switch (engine)
             {
                 case "CodeContracts":
@@ -119,19 +119,19 @@ namespace Contractor.Gui.Models
                     Contract.Assert(cccheckArgs != null);
                     var cccheck = new FileInfo(ConfigurationManager.AppSettings["CccheckFullName"]);
                     Contract.Assert(cccheck.Exists);
-                    analyzer = new CodeContractsAnalyzer(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly as CciAssembly, inputFile.FullName,
+                    analyzerFactory = new CodeContractsAnalyzerFactory(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly as CciAssembly, inputFile.FullName,
                         typeToAnalyze, cancellationToken);
                     break;
                 case "Corral":
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];        
-                    analyzer = new CorralAnalyzer(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly, inputFile.FullName,
+                    analyzerFactory = new CorralAnalyzerFactory(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly, inputFile.FullName,
                         typeToAnalyze, cancellationToken);
                     break;
                 default:
                     throw new NotSupportedException();
             }
 
-            return analyzer;
+            return analyzerFactory;
         }
     }
 }

@@ -126,6 +126,7 @@
     <Compile Include="BctMethodNamer.cs" />
     <Compile Include="CciContractRewriter.cs" />
     <Compile Include="CorralAnalyzer.cs" />
+    <Compile Include="CorralAnalyzerFactory.cs" />
     <Compile Include="CorralRunner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryEvaluator.cs" />

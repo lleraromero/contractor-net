@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using Analysis.Cci;
 using Contractor.Core;
@@ -70,16 +69,14 @@ namespace Analyzer.Corral
             return feasibleTransitions;
         }
 
-        public string GetUsageStatistics()
+        public int GeneratedQueriesCount()
         {
-            var statisticsBuilder = new StringBuilder();
+            return generatedQueriesCount;
+        }
 
-            statisticsBuilder.AppendFormat(@"Generated queries: {0} ({1} unproven)", generatedQueriesCount, unprovenQueriesCount).AppendLine();
-
-            var precision = 100 - Math.Ceiling((double) unprovenQueriesCount*100/generatedQueriesCount);
-            statisticsBuilder.AppendFormat(@"Analysis precision: {0}%", precision).AppendLine();
-
-            return statisticsBuilder.ToString();
+        public int UnprovenQueriesCount()
+        {
+            return unprovenQueriesCount;
         }
 
         protected ISet<Action> GetMustBeDisabledActions(State source, Action action, IEnumerable<Action> actions, ISolver corralRunner)

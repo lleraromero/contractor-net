@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using Analysis.Cci;
 using Contractor.Core;
@@ -55,15 +54,12 @@ namespace Analyzer.CodeContracts
             var enabledActions = ActionsThatAreAlwaysEnabled(source, action, actions, codeContractsRunner);
             var disabledActions = ActionsThatAreAlwaysDisabled(source, action, actions, codeContractsRunner);
 
-            if (enabledActions.Count.Equals(actions.Count()) && disabledActions.Count.Equals(actions.Count()))
+            if (enabledActions.Intersect(disabledActions).Any())
             {
                 // TODO (lleraromero): Definir que hacer si detectamos que un estado tiene un invariante UNSAT
                 Logger.Log(LogLevel.Warn,
-                    "Suspicious state! Only a state with a unsatisfiable invariant can lead to every action being enabled and disabled at the same time. It can also mean a bug in our code.");
-            }
-            else
-            {
-                Contract.Assert(!enabledActions.Intersect(disabledActions).Any(), "An action cannot be enabled and disabled at the same time");
+                    "Suspicious state! Only a state with a unsatisfiable invariant can lead to actions being enabled and disabled at the same time. It can also mean a bug in our code.");
+                return new ActionAnalysisResults(new HashSet<Action>(source.EnabledActions), new HashSet<Action>(source.DisabledActions));
             }
 
             return new ActionAnalysisResults(enabledActions, disabledActions);
@@ -82,16 +78,14 @@ namespace Analyzer.CodeContracts
             return feasibleTransitions;
         }
 
-        public string GetUsageStatistics()
+        public int GeneratedQueriesCount()
         {
-            var statisticsBuilder = new StringBuilder();
+            return generatedQueriesCount;
+        }
 
-            statisticsBuilder.AppendFormat(@"Generated queries: {0} ({1} unproven)", generatedQueriesCount, unprovenQueriesCount).AppendLine();
-
-            var precision = 100 - Math.Ceiling((double) unprovenQueriesCount*100/generatedQueriesCount);
-            statisticsBuilder.AppendFormat(@"Analysis precision: {0}%", precision).AppendLine();
-
-            return statisticsBuilder.ToString();
+        public int UnprovenQueriesCount()
+        {
+            return unprovenQueriesCount;
         }
 
         protected ISet<Action> ActionsThatAreAlwaysDisabled(State source, Action action, IEnumerable<Action> actions,
