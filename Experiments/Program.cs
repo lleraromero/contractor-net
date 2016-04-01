@@ -10,7 +10,7 @@ namespace Experiments
         private static void Main(string[] args)
         {
             var tempPath = @"C:\Users\lean\AppData\Local\Temp\Contractor";
-            var graphPath = @"D:\tesis-experiments\EPAs";
+            var graphPath = @"D:\experimentos-tesis\EPAs";
             if (!Directory.Exists(graphPath))
             {
                 Directory.CreateDirectory(graphPath);
@@ -27,8 +27,7 @@ namespace Experiments
                 "Examples.ATM",
 
                 "Examples.ICSE2011.LinkedList",
-                "Examples.ICSE2011.ListItr",
-                "Examples.ICSE2011.PipedOutputStream"
+                "Examples.ICSE2011.ListItr"
             };
 
             var backend = new[] { "Corral", "CodeContracts" };

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics.Contracts;
 using System.IO;
@@ -61,7 +62,7 @@ namespace Contractor.Console
 
                 if (options.XML)
                 {
-                    SaveEpasAsXML(epa, new DirectoryInfo(options.GraphDirectory));
+                    SaveEpasAsXml(epa, new DirectoryInfo(options.GraphDirectory));
                 }
 
                 if (options.GenerateStrengthenedAssembly)
@@ -115,42 +116,48 @@ namespace Contractor.Console
                     Contract.Assert(cccheckArgs != null);
                     var cccheck = new FileInfo(ConfigurationManager.AppSettings["CccheckFullName"]);
                     Contract.Assert(cccheck.Exists);
-                    analyzerFactory = new CodeContractsAnalyzerFactory(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly as CciAssembly, options.InputAssembly,
+                    analyzerFactory = new CodeContractsAnalyzerFactory(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly,
+                        options.InputAssembly,
                         typeToAnalyze, cancellationSource.Token);
                     break;
 
                 case "Corral":
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
                     Contract.Assert(corralDefaultArgs != null);
-                    analyzerFactory = new CorralAnalyzerFactory(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly,
+                    analyzerFactory = new CorralAnalyzerFactory(corralDefaultArgs, workingDir, queryGenerator, inputAssembly,
                         options.InputAssembly, typeToAnalyze, cancellationSource.Token);
                     break;
                 default:
                     throw new NotSupportedException();
             }
 
-            var generator = new EpaGenerator(analyzerFactory,options.Cutter);
+            var generator = new EpaGenerator(analyzerFactory, options.Cutter);
 
             var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
             var epaBuilder = new EpaBuilder(typeDefinition);
 
-            ////OnInitialStateAdded(this, epaBuilder);
-            //var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
-            //epaBuilderObservable.TransitionAdded += OnTransitionAdded;
-            //TypeAnalysisResult analysisResult;
-            //if (!options.Methods.Equals("All"))
-            //{
-            //    var selectedMethods = options.Methods.Split(';');
-            //    analysisResult = generator.GenerateEpa(typeDefinition, selectedMethods,epaBuilderObservable).Result;
-            //}
-            //else
-            //{
-            //    analysisResult = generator.GenerateEpa(typeDefinition, epaBuilderObservable).Result;
-            //}
-
-            var analysisResult = generator.GenerateEpa(typeDefinition, epaBuilder).Result;
+            var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
+            epaBuilderObservable.TransitionAdded += OnTransitionAdded;
+            TypeAnalysisResult analysisResult;
+            if (!options.Methods.Equals("All"))
+            {
+                var selectedMethods = options.Methods.Split(';');
+                analysisResult = generator.GenerateEpa(typeDefinition, selectedMethods, epaBuilderObservable).Result;
+            }
+            else
+            {
+                analysisResult = generator.GenerateEpa(typeDefinition, epaBuilderObservable).Result;
+            }
 
             return analysisResult;
+        }
+
+        protected static void OnTransitionAdded(object sender, TransitionAddedEventArgs e)
+        {
+            System.Console.WriteLine("======================================================");
+            System.Console.WriteLine("States number:" + e.EpaBuilder.States.Count);
+            System.Console.WriteLine("Transitions number:" + e.EpaBuilder.Transitions.Count);
+            System.Console.WriteLine("New transition:" + e.Transition);
         }
 
         protected static void SaveEpasAsImages(Epa epa, DirectoryInfo outputDir)
@@ -158,22 +165,24 @@ namespace Contractor.Console
             Contract.Requires(epa != null);
             Contract.Requires(outputDir != null);
 
-            var typeName = epa.Type.ToString().Replace('.', '_');
-            using (var stream = File.Create(string.Format("{0}\\{1}.png", outputDir.FullName, typeName)))
-            {
-                new EpaBinarySerializer().Serialize(stream, epa);
-            }
+            SaveEpaAs<EpaBinarySerializer>(epa, outputDir, "png");
         }
 
-        protected static void SaveEpasAsXML(Epa epa, DirectoryInfo outputDir)
+        protected static void SaveEpasAsXml(Epa epa, DirectoryInfo outputDir)
         {
             Contract.Requires(epa != null);
             Contract.Requires(outputDir.Exists);
 
+            SaveEpaAs<EpaXmlSerializer>(epa, outputDir, "xml");
+        }
+
+        protected static void SaveEpaAs<T>(Epa epa, DirectoryInfo outputDir, string fileNameExtension) where T : ISerializer, new()
+        {
             var typeName = epa.Type.ToString().Replace('.', '_');
-            using (var stream = File.Create(string.Format("{0}\\{1}.xml", outputDir.FullName, typeName)))
+            var safeFileName = GetSafeFilename(string.Format("{0}\\{1}.{2}", outputDir.FullName, typeName, fileNameExtension));
+            using (var stream = File.Create(safeFileName))
             {
-                new EpaXmlSerializer().Serialize(stream, epa);
+                new T().Serialize(stream, epa);
             }
         }
 
@@ -186,6 +195,19 @@ namespace Contractor.Console
             // TODO (lleraromero): Volver a habilitar el instrumenter
             //System.Console.WriteLine("Generating strengthened output assembly");
             //new Instrumenter().GenerateOutputAssembly(options.output, analysisResult.EPA);
+        }
+
+        protected static string GetSafeFilename(string filename)
+        {
+            Contract.Requires(!string.IsNullOrEmpty(filename));
+            var safeFileName = RemoveCharsFrom(filename, Path.GetInvalidFileNameChars());
+            safeFileName = RemoveCharsFrom(safeFileName, Path.GetInvalidPathChars());
+            return safeFileName;
+        }
+
+        protected static string RemoveCharsFrom(string fileName, IEnumerable<char> charsToRemove)
+        {
+            return charsToRemove.Aggregate(fileName, (current, c) => current.Replace(c.ToString(), ""));
         }
     }
 }
