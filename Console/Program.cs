@@ -97,7 +97,7 @@ namespace Contractor.Console
 
             var queryGenerator = new CciQueryGenerator();
 
-            IAnalyzer analyzer;
+            IAnalyzerFactory analyzerFactory;
             switch (options.Backend)
             {
                 case "CodeContracts":
@@ -115,21 +115,21 @@ namespace Contractor.Console
                     Contract.Assert(cccheckArgs != null);
                     var cccheck = new FileInfo(ConfigurationManager.AppSettings["CccheckFullName"]);
                     Contract.Assert(cccheck.Exists);
-                    analyzer = new CodeContractsAnalyzer(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly as CciAssembly, options.InputAssembly,
+                    analyzerFactory = new CodeContractsAnalyzerFactory(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly as CciAssembly, options.InputAssembly,
                         typeToAnalyze, cancellationSource.Token);
                     break;
 
                 case "Corral":
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
                     Contract.Assert(corralDefaultArgs != null);
-                    analyzer = new CorralAnalyzer(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly,
+                    analyzerFactory = new CorralAnalyzerFactory(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly,
                         options.InputAssembly, typeToAnalyze, cancellationSource.Token);
                     break;
                 default:
                     throw new NotSupportedException();
             }
 
-            var generator = new EpaGenerator(analyzer,options.Cutter);
+            var generator = new EpaGenerator(analyzerFactory,options.Cutter);
 
             var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
             var epaBuilder = new EpaBuilder(typeDefinition);

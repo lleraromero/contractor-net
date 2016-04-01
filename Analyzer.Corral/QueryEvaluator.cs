@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Contractor.Core;
 using Contractor.Core.Model;
 using Action = Contractor.Core.Model.Action;
@@ -42,7 +43,9 @@ namespace Analyzer.Corral
         {
             var unreachableQueries = new List<ActionQuery>();
 
-            foreach (var query in actionQueries)
+            // TODO: Make ParallelOptions a singleton?
+            // Change ParallelOptions.MaxDegreeOfParallelism to 1 to make the loop sequential.
+            Parallel.ForEach(actionQueries, new ParallelOptions(), query =>
             {
                 var result = solver.Execute(queryAssembly, query);
                 switch (result)
@@ -58,7 +61,7 @@ namespace Analyzer.Corral
                     default:
                         throw new NotSupportedException();
                 }
-            }
+            });
             return unreachableQueries;
         }
 
@@ -76,7 +79,8 @@ namespace Analyzer.Corral
 
             var feasibleTransitions = new List<Transition>();
 
-            foreach (var query in transitionQueries)
+            // Change ParallelOptions.MaxDegreeOfParallelism to 1 to make the loop sequential.
+            Parallel.ForEach(transitionQueries, new ParallelOptions(), query =>
             {
                 var result = solver.Execute(queryAssembly, query);
                 switch (result)
@@ -93,7 +97,7 @@ namespace Analyzer.Corral
                     default:
                         throw new NotSupportedException();
                 }
-            }
+            });
 
             return feasibleTransitions;
         }

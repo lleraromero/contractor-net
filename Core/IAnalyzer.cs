@@ -12,7 +12,8 @@ namespace Contractor.Core
     {
         ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions);
         IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets);
-        string GetUsageStatistics();
+        int GeneratedQueriesCount();
+        int UnprovenQueriesCount();
     }
 
     #region IAnalyzer Contracts
@@ -38,7 +39,12 @@ namespace Contractor.Core
             throw new NotImplementedException();
         }
 
-        public string GetUsageStatistics()
+        public int GeneratedQueriesCount()
+        {
+            throw new NotImplementedException();
+        }
+
+        public int UnprovenQueriesCount()
         {
             throw new NotImplementedException();
         }

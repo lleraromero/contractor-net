@@ -17,7 +17,7 @@ namespace Core.Tests
             A.CallTo(() => emptyTypeDefinition.Actions())
                 .Returns(A.Dummy<ISet<Action>>());
 
-            var dummyAnalyzer = A.Dummy<IAnalyzer>();
+            var dummyAnalyzer = A.Dummy<IAnalyzerFactory>();
 
             var epaGenerator = new EpaGenerator(dummyAnalyzer,-1);
             var epaGenerationTask = epaGenerator.GenerateEpa(emptyTypeDefinition, A.Dummy<IEpaBuilder>());

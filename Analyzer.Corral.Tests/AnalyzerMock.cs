@@ -17,9 +17,14 @@ namespace Analyzer.Corral.Tests
         protected const string notPrefix = "_Not_";
         protected const string methodNameDelimiter = "~";
 
-        public string GetUsageStatistics()
+        public int GeneratedQueriesCount()
         {
-            return string.Empty;
+            return 0;
+        }
+
+        public int UnprovenQueriesCount()
+        {
+            return 0;
         }
 
         public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
