@@ -122,6 +122,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnalyzerWithCondition.cs" />
     <Compile Include="BctRunner.cs" />
     <Compile Include="BctMethodNamer.cs" />
     <Compile Include="CciContractRewriter.cs" />
@@ -134,6 +135,10 @@
     <ProjectReference Include="..\Analysis.Cci\Analysis.Cci.csproj">
       <Project>{9a922e63-a371-4aa3-8026-edb091fef659}</Project>
       <Name>Analysis.Cci</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Analyzer.CodeContracts\Analyzer.CodeContracts.csproj">
+      <Project>{d0af37f6-01ae-4aa0-afa7-1fb91d226c8f}</Project>
+      <Name>Analyzer.CodeContracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\Core.Model\Core.Model.csproj">
       <Project>{c172f5cc-8814-46df-b25d-2994e524e1d5}</Project>

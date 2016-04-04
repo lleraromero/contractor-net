@@ -67,6 +67,21 @@ namespace Contractor.Gui
                 label = string.Format("{0}?", label);
             }
 
+            string cs = transition.Condition;
+            if (cs.Equals(""))
+            {
+                cs = " CS: #ERROR#";
+            }
+            else if (cs.Equals("True"))
+            {
+                cs = "";
+            }
+            else
+            {
+                cs = " CS: " + cs;
+            }
+            label = label + cs;
+
             var edges = n.OutEdges.Union(n.SelfEdges);
 
             foreach (var ed in edges)

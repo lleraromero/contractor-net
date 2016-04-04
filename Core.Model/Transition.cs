@@ -9,13 +9,14 @@ namespace Contractor.Core.Model
         protected State sourceState;
         protected State targetState;
         protected bool isUnproven;
-
+        protected string condition;
         public Action Action { get { return action; } }
         public State SourceState { get { return sourceState; } }
         public State TargetState { get { return targetState; } }
         public bool IsUnproven { get { return isUnproven; } }
 
-        public Transition(Action action, State source, State target, bool isUnproven)
+        public string Condition { get { return condition; } }
+        public Transition(Action action, State source, State target, bool isUnproven, string condition)
         {
             Contract.Requires(action != null);
             Contract.Requires(source != null);
@@ -25,6 +26,7 @@ namespace Contractor.Core.Model
             this.sourceState = source;
             this.targetState = target;
             this.isUnproven = isUnproven;
+            this.condition = condition;
         }
 
         #region IEquatable
@@ -52,7 +54,7 @@ namespace Contractor.Core.Model
 
         public override string ToString()
         {
-            return string.Format("{0} -- {1} --> {2}", this.sourceState, this.action, this.targetState);
+            return string.Format("{0} -- {1}cs: {3} --> {2}", this.sourceState, this.action, this.targetState, this.condition);
         }
     }
 }

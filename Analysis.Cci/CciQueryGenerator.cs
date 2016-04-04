@@ -308,5 +308,95 @@ namespace Analysis.Cci
 
             return block;
         }
+
+        public IReadOnlyCollection<TransitionQuery> CreateTransitionQueries(IReadOnlyCollection<Transition> transitions)
+        {
+            HashSet<TransitionQuery> result = new HashSet<TransitionQuery>();
+            foreach (Transition transition in transitions)
+            {
+                result.Add(new TransitionQuery(GenerateQueryCS(transition.SourceState,transition.Action,transition.TargetState),transition.SourceState,transition.Action,transition.TargetState));
+            }
+            return result.ToList();
+        }
+        private Action GenerateQueryCS(State state, Action action, State target)
+        {
+            var actionName = action.Name;
+            var stateName = state.Name;
+            var targetName = target.Name;
+            var methodName = string.Format("{1}{0}{2}{0}{3}", MethodNameDelimiter, stateName, actionName, targetName);
+
+            var method = CreateQueryMethod(state, methodName, action, target);
+            var queryContract = CreateQueryContractCS(state, target);
+
+            return new CciAction(method, queryContract);
+        }
+        private MethodContract CreateQueryContractCS(State state, State target)
+        {
+            var contracts = new MethodContract();
+
+            // Source state invariant as a precondition
+            var stateInv = Helper.GenerateStateInvariant(host, state);
+
+            var preconditions = from condition in stateInv
+                                select new Precondition
+                                {
+                                    Condition = condition,
+                                    OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(condition),
+                                    Description = new CompileTimeConstant { Value = "Source state invariant", Type = host.PlatformType.SystemString }
+                                };
+            contracts.Preconditions.AddRange(preconditions);
+
+            // Add a redundant postcondition for only those conditions that predicate ONLY about parameters and not the instance. 
+            // These postconditions will be translated as assumes in the ContractRewriter.cs
+            var contractDependencyAnalyzer = new CciContractDependenciesAnalyzer(new ContractProvider(new ContractMethods(host), null));
+            foreach (var action in target.EnabledActions.Union(target.DisabledActions))
+            {
+                if (action.Contract != null)
+                {
+                    foreach (var pre in action.Contract.Preconditions)
+                    {
+                        if (contractDependencyAnalyzer.PredicatesAboutInstance(pre) ||
+                            !contractDependencyAnalyzer.PredicatesAboutParameter(pre))
+                        {
+                            continue;
+                        }
+
+                        var post = new Postcondition
+                        {
+                            Condition = pre.Condition,
+                            OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(pre.Condition),
+                            Description =
+                                new CompileTimeConstant
+                                {
+                                    Value = "Conditions over parameters are assumed satisfiable",
+                                    Type = host.PlatformType.SystemString
+                                }
+                        };
+                        contracts.Postconditions.Add(post);
+                    }
+                }
+            }
+
+            // Negated target state invariant as a postcondition
+            var targetInv = Helper.GenerateStateInvariant(host, target);
+
+            IExpression joinedTargetInv = Helper.JoinWithLogicalAnd(host, targetInv, true);
+            /*IExpression joinedTargetInv = new LogicalNot
+            {
+                Type = host.PlatformType.SystemBoolean,
+                Operand = Helper.JoinWithLogicalAnd(host, targetInv, true)
+            };*/
+
+            var postcondition = new Postcondition
+            {
+                Condition = joinedTargetInv,
+                OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(joinedTargetInv),
+                Description = new CompileTimeConstant { Value = "Target state invariant", Type = host.PlatformType.SystemString }
+            };
+            contracts.Postconditions.Add(postcondition);
+
+            return contracts;
+        }
+        
     }
 }

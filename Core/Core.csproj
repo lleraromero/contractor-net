@@ -197,7 +197,6 @@
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AnalysisResults.cs" />
-    <Compile Include="CSGenerator.cs" />
     <Compile Include="EpaBinarySerializer.cs" />
     <Compile Include="EpaBuilder.cs" />
     <Compile Include="EpaGenerator.cs" />

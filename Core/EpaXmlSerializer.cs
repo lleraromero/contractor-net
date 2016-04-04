@@ -149,7 +149,7 @@ namespace Contractor.Core
                 {
                     foreach (var transition in state.Value)
                     {
-                        epaBuilder.Add(new Transition(transition.Item2, translator[transition.Item1], translator[transition.Item3], transition.Item4));
+                        epaBuilder.Add(new Transition(transition.Item2, translator[transition.Item1], translator[transition.Item3], transition.Item4,"True"));
                     }
                 }
             }

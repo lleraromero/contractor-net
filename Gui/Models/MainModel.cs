@@ -119,13 +119,48 @@ namespace Contractor.Gui.Models
                     Contract.Assert(cccheckArgs != null);
                     var cccheck = new FileInfo(ConfigurationManager.AppSettings["CccheckFullName"]);
                     Contract.Assert(cccheck.Exists);
-                    analyzer = new CodeContractsAnalyzer(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly as CciAssembly, inputFile.FullName,
+                    if (/*!options.TransitionsWithConditions*/true)
+                    {
+                        analyzer = new CodeContractsAnalyzer(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly as CciAssembly, inputFile.FullName,
                         typeToAnalyze, cancellationToken);
+                    }
+                    else
+                    {
+                        analyzer = new Analyzer.CodeContracts.AnalyzerWithCondition(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly as CciAssembly, inputFile.FullName,
+                        typeToAnalyze, cancellationToken);
+                    }
                     break;
                 case "Corral":
-                    var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];        
-                    analyzer = new CorralAnalyzer(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly, inputFile.FullName,
+                    var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
+                    if (/*!options.TransitionsWithConditions*/false)
+                    {
+                        analyzer = new CorralAnalyzer(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly, inputFile.FullName,
                         typeToAnalyze, cancellationToken);
+                    }
+                    else
+                    {
+                        analyzer = new Analyzer.Corral.AnalyzerWithCondition(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly, inputFile.FullName,
+                        typeToAnalyze, cancellationToken);
+                        //CS ----
+                        cccheckArgs = ConfigurationManager.AppSettings["CccheckArgs"];
+                        
+                        var ass=inputAssembly as CciAssembly;
+                        string libPaths = "C:\\Program Files (x86)\\Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.0\\;C:\\Program Files (x86)\\Reference Assemblies\\Microsoft\\Framework\\.NETFramework\\v4.0\\CodeContracts;C:\\Program Files (x86)\\Microsoft\\Contracts\\Contracts\\.NETFramework\\v4.0;";
+                        /*
+                        if (ass.Module.TargetRuntimeVersion.StartsWith("v4.0"))
+                            libPaths = Configuration.ExpandVariables(Resources.Netv40);
+                        else
+                            libPaths = Configuration.ExpandVariables(Resources.Netv35);
+                        */
+                        var inputAssemblyPath = Path.GetDirectoryName(inputFile.FullName);
+                        
+                        libPaths = string.Format("{0};{1}", libPaths, inputAssemblyPath);
+                        libPaths = String.Empty;
+                        var csChecker = new Analyzer.CodeContracts.AnalyzerWithCondition(workingDir, cccheckArgs, libPaths, queryGenerator, inputAssembly as CciAssembly, inputFile.FullName,
+                        typeToAnalyze, cancellationToken);
+                        var csGenerator = CSGenerator.Instance(csChecker);
+                        //---
+                    }
                     break;
                 default:
                     throw new NotSupportedException();

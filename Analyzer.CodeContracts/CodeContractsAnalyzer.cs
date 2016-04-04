@@ -43,7 +43,7 @@ namespace Analyzer.CodeContracts
             unprovenQueriesCount = 0;
         }
 
-        public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
+        public virtual ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
         {
             var codeContractsRunner = new CodeContractsRunner(workingDir, ccCheckDefaultArgs, libPaths, typeToAnalyze);
 
@@ -69,7 +69,7 @@ namespace Analyzer.CodeContracts
             return new ActionAnalysisResults(enabledActions, disabledActions);
         }
 
-        public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
+        public virtual IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
             var codeContractsRunner = new CodeContractsRunner(workingDir, ccCheckDefaultArgs, libPaths, typeToAnalyze);
 

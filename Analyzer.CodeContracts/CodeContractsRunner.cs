@@ -47,7 +47,7 @@ namespace Analyzer.CodeContracts
             args.AppendFormat(" \"{0}\"", queryAssembly.FullName);
 
             var output = new StringBuilder();
-
+            var errors = new StringBuilder();
             using (var codeContracts = new Process())
             {
                 codeContracts.StartInfo = new ProcessStartInfo
@@ -63,7 +63,7 @@ namespace Analyzer.CodeContracts
                 };
 
                 codeContracts.OutputDataReceived += (sender, e) => { output.AppendLine(e.Data); };
-                codeContracts.ErrorDataReceived += (sender, e) => { output.AppendLine(e.Data); };
+                codeContracts.ErrorDataReceived += (sender, e) => { errors.AppendLine(e.Data); };
                 codeContracts.Start();
                 codeContracts.BeginErrorReadLine();
                 codeContracts.BeginOutputReadLine();
@@ -176,6 +176,16 @@ namespace Analyzer.CodeContracts
                 return ResultKind.ValidEnsures;
             }
 
+            if (message.Contains("Suggested requires: "))
+            {
+                return ResultKind.SuggestedRequires;
+            }
+
+            if (message.Contains("Missing precondition in an externally visible method"))
+            {
+                return ResultKind.MissingRequires;
+            }
+
             return ResultKind.None;
         }
 
@@ -186,7 +196,100 @@ namespace Analyzer.CodeContracts
             FalseRequires,
             UnprovenEnsures,
             FalseEnsures,
-            ValidEnsures
+            ValidEnsures,
+            SuggestedRequires,
+            MissingRequires
         }
+
+        internal Dictionary<Query, List<string>> ExecuteWithConditions(FileInfo queryAssembly, IReadOnlyCollection<TransitionQuery> queries)
+        {
+            var tmpDir = Path.Combine(workingDir.FullName, Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tmpDir);
+
+            //string libPaths;
+
+            //if (inputAssembly.Module.TargetRuntimeVersion.StartsWith("v4.0"))
+            //    libPaths = Configuration.ExpandVariables(Resources.Netv40);
+            //else
+            //    libPaths = Configuration.ExpandVariables(Resources.Netv35);
+
+            //var inputAssemblyPath = Path.GetDirectoryName(inputAssembly.FileName);
+            //libPaths = string.Format("{0};{1}", libPaths, inputAssemblyPath);
+
+            var args = new StringBuilder(ccCheckDefaultArgs);
+            args.AppendFormat(" -typeNameSelect={0}", typeToAnalyze.Name);
+            args.AppendFormat(" -libPaths:\"{0}\"", libPaths);
+            args.AppendFormat(" \"{0}\"", queryAssembly.FullName);
+            args.Append(" -nobox -nologo -nopex -remote  -suggest=!! -premode combined -suggest codefixes -warninglevel full -framework:v4.0 -maxwarnings 100000 -nonnull -bounds: -arrays -wp=true -bounds:type=subpolyhedra,reduction=simplex,diseq=false  -arrays -adaptive -arithmetic -enum -check assumptions -suggest asserttocontracts -check conditionsvalidity -missingPublicRequiresAreErrors -missingPublicEnsuresAreErrors  -suggest calleeassumes -suggest assumes -suggest requires -infer autopropertiesensures -suggest necessaryensures -suggest objectinvariants -suggest readonlyfields  -infer requires -infer methodensures -infer objectinvariants");
+            
+            var output = new StringBuilder();
+
+            using (var codeContracts = new Process())
+            {
+                codeContracts.StartInfo = new ProcessStartInfo
+                {
+                    FileName = @"C:\Program Files (x86)\Microsoft\Contracts\Bin\cccheck.exe",
+                    Arguments = args.ToString(),
+                    WorkingDirectory = tmpDir,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false
+                };
+
+                codeContracts.OutputDataReceived += (sender, e) => { output.AppendLine(e.Data); };
+                codeContracts.ErrorDataReceived += (sender, e) => { output.AppendLine(e.Data); };
+                codeContracts.Start();
+                codeContracts.BeginErrorReadLine();
+                codeContracts.BeginOutputReadLine();
+                codeContracts.WaitForExit();
+
+                if (codeContracts.ExitCode != 0)
+                {
+                    Logger.Log(LogLevel.Info, "=============== Code Contracts ===============");
+                    Logger.Log(LogLevel.Debug, "Args: " + codeContracts.StartInfo.Arguments);
+                    Logger.Log(LogLevel.Debug, output.ToString());
+                    throw new Exception("Error executing Code Contracts");
+                }
+                
+                Contract.Assert(output.Length > 11, "It seems that Code Contracts didn't analyze any methods");
+            }
+
+            Directory.Delete(tmpDir, true);
+
+            //var codeContractsConclusions = new Dictionary<Query, HashSet<ResultKind>>();
+            var result = new Dictionary<Query, List<string>>();
+
+            using (var reader = new StringReader(output.ToString()))
+            {
+                for (var ccMessage = reader.ReadLine(); ccMessage != null; ccMessage = reader.ReadLine())
+                {
+                    var candidateQueries = queries.Where(q => ccMessage.Contains(q.Method.Method.Name.Value));
+                    if (!candidateQueries.Any())
+                    {
+                        continue;
+                    }
+                    // In order to avoid problems with methods that have a prefix in common we find the longest string that matches
+                    var currentQuery =
+                        candidateQueries.First(
+                            q => candidateQueries.All(q2 => q2.Method.Method.Name.Value.Length <= q.Method.Method.Name.Value.Length));
+
+                    var message = ccMessage.Substring(ccMessage.IndexOf(':') + 1).Trim();
+                    var conclusion = ParseResultKind(message);
+
+                    if (conclusion == ResultKind.SuggestedRequires || conclusion == ResultKind.MissingRequires)
+                    {
+                        if (!result.ContainsKey(currentQuery))
+                            result.Add(currentQuery, new List<string>());
+                        var condition = CSGenerator.parseCondition(message);
+                        result[currentQuery].Add(condition);
+                    }
+                }
+            }
+
+            return result;
+
+            }
     }
 }

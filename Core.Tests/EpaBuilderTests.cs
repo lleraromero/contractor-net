@@ -35,7 +35,7 @@ namespace Core.Tests
             A.CallTo(() => dummyAction.Equals(dummyAction)).Returns(true);
 
             var fakeTransition =
-                A.Fake<Transition>(x => x.WithArgumentsForConstructor(() => new Transition(dummyAction, dummyState, dummyState, false)));
+                A.Fake<Transition>(x => x.WithArgumentsForConstructor(() => new Transition(dummyAction, dummyState, dummyState, false, "True")));
 
             epaBuilder.Add(fakeTransition);
 
@@ -66,7 +66,7 @@ namespace Core.Tests
                 A.Fake<State>(x => x.WithArgumentsForConstructor(() => new State(new HashSet<Action> { action2 }, A.Dummy<ISet<Action>>())));
 
             var transition =
-                A.Fake<Transition>(x => x.WithArgumentsForConstructor(() => new Transition(action1, dummyStateSrc, dummyStateDest, false)));
+                A.Fake<Transition>(x => x.WithArgumentsForConstructor(() => new Transition(action1, dummyStateSrc, dummyStateDest, false, "True")));
 
             epaBuilder.Add(transition);
 

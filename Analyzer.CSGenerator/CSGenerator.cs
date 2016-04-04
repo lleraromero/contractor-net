@@ -3,28 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Contractor.Utils;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using Microsoft.Cci;
-using Microsoft.Cci.Contracts;
-using Microsoft.Cci.MutableCodeModel;
-using Microsoft.Cci.MutableContracts;
 using System.Threading;
 using System.IO;
 using Contractor.Core.Properties;
-using Microsoft.Research.CodeAnalysis;
-using System.Compiler.Analysis;
 using System.Collections;
 
-namespace Contractor.Core
+using Contractor.Core;
+using Analyzer.CodeContracts;
+namespace A
 {
     class CSGenerator
     {
         private static CSGenerator instance;
-        private CodeContractsAnalyzer checker;
+        private AnalyzerWithConditions checker;
 
-        private CSGenerator(CodeContractsAnalyzer checker)
+        private CSGenerator(AnalyzerWithConditions checker)
         {
             this.checker = checker;
             //checker = new CodeContractsAnalyzer(host, inputAssembly, type, token);
@@ -44,7 +39,7 @@ namespace Contractor.Core
 
         public Dictionary<string, List<string>> executeCheckerConditions(string queryAssemblyName)
         {
-            return checker.executeCheckerConditions(queryAssemblyName);
+            return checker.executeWithConditions(queryAssemblyName);
         }
 
         

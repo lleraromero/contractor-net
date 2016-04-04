@@ -41,7 +41,7 @@ namespace Analyzer.Corral
             unprovenQueriesCount = 0;
         }
 
-        public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
+        public virtual ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
         {
             ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
 
@@ -58,7 +58,7 @@ namespace Analyzer.Corral
             return new ActionAnalysisResults(enabledActions, disabledActions);
         }
 
-        public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
+        public virtual IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
             ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
             var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets);

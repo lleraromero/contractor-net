@@ -30,7 +30,7 @@ namespace Core.Tests
             var s1 = new State(constructors, new HashSet<Action>());
             var s2 = new State(new HashSet<Action>(), new HashSet<Action>());
 
-            transitions.Add(new Transition(constructor, s1, s2, false));
+            transitions.Add(new Transition(constructor, s1, s2, false, "True"));
 
             return new Epa(typeDefinition, transitions.ToList());
         }

@@ -115,21 +115,36 @@ namespace Contractor.Console
                     Contract.Assert(cccheckArgs != null);
                     var cccheck = new FileInfo(ConfigurationManager.AppSettings["CccheckFullName"]);
                     Contract.Assert(cccheck.Exists);
-                    analyzer = new CodeContractsAnalyzer(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly as CciAssembly, options.InputAssembly,
+                    if (!options.TransitionsWithConditions)
+                    {
+                        analyzer = new CodeContractsAnalyzer(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly as CciAssembly, options.InputAssembly,
                         typeToAnalyze, cancellationSource.Token);
+                    }
+                    else
+                    {
+                        analyzer = new Analyzer.CodeContracts.AnalyzerWithCondition(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly as CciAssembly, options.InputAssembly,
+                        typeToAnalyze, cancellationSource.Token);
+                    }
                     break;
                 case "Corral":
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
                     Contract.Assert(corralDefaultArgs != null);
-                    analyzer = new CorralAnalyzer(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly,
-                        options.InputAssembly, typeToAnalyze, cancellationSource.Token);
-                    
-                    //CS ----
-                    cccheckArgs = ConfigurationManager.AppSettings["CccheckArgs"];
-                    var csChecker = new CodeContractsAnalyzer(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly as CciAssembly, options.InputAssembly,
-                        typeToAnalyze, cancellationSource.Token);
-                    var csGenerator = CSGenerator.Intance(csChecker);
-                    //---
+                    if (!options.TransitionsWithConditions)
+                    {
+                        analyzer = new CorralAnalyzer(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly,
+                            options.InputAssembly, typeToAnalyze, cancellationSource.Token);
+                    }
+                    else
+                    {
+                        analyzer = new Analyzer.Corral.AnalyzerWithCondition(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly,
+                            options.InputAssembly, typeToAnalyze, cancellationSource.Token);
+                        //CS ----
+                        cccheckArgs = ConfigurationManager.AppSettings["CccheckArgs"];
+                        var csChecker = new Analyzer.CodeContracts.AnalyzerWithCondition(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly as CciAssembly, options.InputAssembly,
+                            typeToAnalyze, cancellationSource.Token);
+                        var csGenerator = CSGenerator.Instance(csChecker);
+                        //---
+                    }
                     break;
                 default:
                     throw new NotSupportedException();

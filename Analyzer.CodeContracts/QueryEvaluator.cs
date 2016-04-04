@@ -86,10 +86,10 @@ namespace Analyzer.CodeContracts
                 switch (result)
                 {
                     case QueryResult.Reachable:
-                        feasibleTransitions.Add(new Transition(query.Action, query.SourceState, query.TargetState, false));
+                        feasibleTransitions.Add(new Transition(query.Action, query.SourceState, query.TargetState, false,"True"));
                         break;
                     case QueryResult.MaybeReachable:
-                        feasibleTransitions.Add(new Transition(query.Action, query.SourceState, query.TargetState, true));
+                        feasibleTransitions.Add(new Transition(query.Action, query.SourceState, query.TargetState, true, "True"));
                         unprovenQueries++;
                         break;
                     case QueryResult.Unreachable:
