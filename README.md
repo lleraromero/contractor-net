@@ -9,3 +9,5 @@ It features a two step process: first, a class source code is analyzed to extrac
 The inferred typestates are enabledness preserving: a level of abstraction that has been successfully used to validate software artifacts, assisting in the detection of a number of concerns in various case studies including specifications of Microsoft Server protocols.
 
 Contractor.NET is based on [Contractor](http://lafhis.dc.uba.ar/misc/contractor/Welcome.html), a previous work by the same authors.
+
+Slides: [ACorralando EPAs: acercando el modelo mental al computacional](https://speakerdeck.com/lleraromero/acorralando-epas-acercando-el-modelo-mental-al-computacional)
