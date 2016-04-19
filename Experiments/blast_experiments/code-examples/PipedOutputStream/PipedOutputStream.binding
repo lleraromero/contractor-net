@@ -1,0 +1,21 @@
+<!-- PipedOutputStream: JDK 1.4 Output endpoint of a pipe -->
+<code-binding name="PipedOutputStream" language="c" file="PipedOutputStream.c" inv="return invariant();" >
+	
+	<initializer name="PipedOutputStream" pre="return sys_pre_PipedOutputStream();" params_pre="return par_pre_PipedOutputStream();" />
+	
+	<!-- 1 -->
+	<function name="connect" pre="return sys_pre_connect();" params_pre="return par_pre_connect();" />
+
+	<!-- 2 -->
+	<function name="write" pre="return sys_pre_write();" params_pre="return par_pre_write(b);" >
+		<parameter type="int" name="b" />
+	</function>
+
+	<!-- 3 -->
+	<function name="flush" pre="return sys_pre_flush();" params_pre="return par_pre_flush();" />
+
+	<!-- 4 -->
+	<function name="close" pre="return sys_pre_close();" params_pre="return par_pre_close();" />
+
+</code-binding>
+

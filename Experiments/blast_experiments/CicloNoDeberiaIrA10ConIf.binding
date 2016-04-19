@@ -1,0 +1,10 @@
+<!-- List: a single-linked list implementation -->
+<code-binding name="Tests" language="c" file="Tests.c" inv="return invariant();" >
+	
+	<initializer name="Tests" pre="return sys_pre_Tests();" params_pre="return par_pre_Tests();" />
+	
+	<function name="TestigoEstado1" pre="return sys_pre_TestigoEstado1();" params_pre="return par_pre_TestigoEstado1();" />
+	<function name="TestigoEstado10" pre="return sys_pre_TestigoEstado10();" params_pre="return par_pre_TestigoEstado10();" />
+	<function name="CicloNoDeberiaIrA10ConIf" pre="return sys_pre_CicloNoDeberiaIrA10ConIf();" params_pre="return par_pre_CicloNoDeberiaIrA10ConIf();" />
+</code-binding>
+

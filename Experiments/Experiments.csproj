@@ -51,13 +51,38 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <Content Include="blast_experiments\code-examples\PCCRR\pccrr_client.c" />
+    <Content Include="blast_experiments\code-examples\PipedOutputStream\PipedOutputStream.c" />
+    <Content Include="blast_experiments\code-examples\Signature\Signature.c" />
+    <Content Include="blast_experiments\code-examples\SMTPProtocol\SMTPProtocol.c" />
+    <Content Include="blast_experiments\List.c" />
+    <Content Include="blast_experiments\ListItr.c" />
+    <Content Include="blast_experiments\Tests.c" />
     <Content Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="blast_experiments\blast_safety_experiment.sh" />
+    <None Include="blast_experiments\CicloBasadoEnParam.binding" />
+    <None Include="blast_experiments\CicloDeberiaIrA10.binding" />
+    <None Include="blast_experiments\CicloDeberiaIrA10ConIf.binding" />
+    <None Include="blast_experiments\CicloMasChicoQueRecursionBound.binding" />
+    <None Include="blast_experiments\CicloMasLargoQueRecursionBound.binding" />
+    <None Include="blast_experiments\CicloNoDeberiaIrA10.binding" />
+    <None Include="blast_experiments\CicloNoDeberiaIrA10ConIf.binding" />
+    <None Include="blast_experiments\code-examples\PCCRR\pccrr_client.binding" />
+    <None Include="blast_experiments\code-examples\PipedOutputStream\PipedOutputStream.binding" />
+    <None Include="blast_experiments\code-examples\Signature\Signature.binding" />
+    <None Include="blast_experiments\code-examples\SMTPProtocol\SMTPProtocol.binding" />
+    <None Include="blast_experiments\List.binding" />
+    <None Include="blast_experiments\ListItr.binding" />
     <None Include="NLog.xsd">
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="blast_experiments\blast-2.5\" />
+    <Folder Include="blast_experiments\contractor_0.41\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

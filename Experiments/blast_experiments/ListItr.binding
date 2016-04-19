@@ -1,0 +1,51 @@
+<!-- ListItr: JDK 1.4 List iterator (over AbstractList implementation) -->
+<code-binding name="ListItr" language="c" file="ListItr.c" inv="return invariant();" >
+	
+	<initializer name="ListItr" pre="return system_pre_ListItr();" params_pre="return par_pre_ListItr(index, modCount, elementData_length, size);" >
+		<parameter type="int" name="index" />
+		<parameter type="int" name="modCount" />
+		<parameter type="int" name="elementData_length" />
+		<parameter type="int" name="size" />
+	</initializer>
+	
+	<!-- 1 -->
+	<!--	
+	<function name="LI_hasNext" pre="return system_pre_LI_hasNext();" params_pre="return par_pre_LI_hasNext();" />
+	-->
+
+	<!-- 2 -->	
+	<function name="LI_next" pre="return system_pre_LI_next();" params_pre="return par_pre_LI_next();" />
+
+	<!-- 3 -->	
+	<function name="LI_remove" pre="return system_pre_LI_remove();" params_pre="return par_pre_LI_remove();" />
+
+	<!-- 4 -->
+	<!--	
+	<function name="LI_hasPrevious" pre="return system_pre_LI_hasPrevious();" params_pre="return par_pre_LI_hasPrevious();" />
+	-->
+
+	<!-- 5 -->	
+	<function name="LI_previous" pre="return system_pre_LI_previous();" params_pre="return par_pre_LI_previous();" />
+
+	<!-- 6 -->
+	<!--	
+	<function name="LI_nextIndex" pre="return system_pre_LI_nextIndex();" params_pre="return par_pre_LI_nextIndex();" />
+	-->
+
+	<!-- 7 -->
+	<!--	
+	<function name="LI_previousIndex" pre="return system_pre_LI_previousIndex();" params_pre="return par_pre_LI_previousIndex();" />
+	-->
+
+	<!-- 8 -->	
+	<function name="LI_set" pre="return system_pre_LI_set();" params_pre="return par_pre_LI_set(o);" >
+		<parameter type="Object" name="o" />
+	</function>
+
+	<!-- 9 -->	
+	<function name="LI_add" pre="return system_pre_LI_add();" params_pre="return par_pre_LI_add(o);" >
+		<parameter type="Object" name="o" />
+	</function>
+
+</code-binding>
+
