@@ -97,6 +97,10 @@ namespace Contractor.Gui.Models
         protected IAnalyzerFactory GetAnalyzerFactory(ITypeDefinition typeToAnalyze, string engine, CancellationToken cancellationToken)
         {
             var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
+            if (workingDir.Exists && workingDir.CreationTimeUtc < DateTime.UtcNow.AddDays(-3))
+            {
+                workingDir.Delete(true);
+            }
             workingDir.Create();
 
             var queryGenerator = new CciQueryGenerator();

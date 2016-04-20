@@ -94,6 +94,10 @@ namespace Contractor.Console
             var cancellationSource = new CancellationTokenSource();
 
             var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
+            if (workingDir.Exists && workingDir.CreationTimeUtc < DateTime.UtcNow.AddDays(-3))
+            {
+                workingDir.Delete(true);
+            }
             workingDir.Create();
 
             var queryGenerator = new CciQueryGenerator();
