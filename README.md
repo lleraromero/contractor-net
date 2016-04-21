@@ -28,9 +28,46 @@ To access the source code, use the bitbucket repository:
 
 ```git clone https://lleraromero@bitbucket.org/lleraromero/contractor-net.git```
 
+By default, the application should work properly using the compiled Corral version included in this repository. It is currently Z3 x86 v4.3.1.
 
-# Building Contractor.NET
+To use Code Contracts as a backend, we have tested it with version 1.9.10714.2.
 
+
+# Dependencies 
+In order to build Contractor.NET a few dependencies are needed. Some of them come as NuGet packages and the rest are available in this repository.
+
+However, if you need to debug the code you should grab the source code for this dependencies:
+
+* Corral
+```
+git clone https://github.com/boogie-org/corral.git
+git checkout 0a37e8f
+```
+
+* Boogie
+```
+git clone https://github.com/boogie-org/boogie.git
+git checkout 5bb7ad4
+```
+
+* Z3
+```
+git clone https://github.com/Z3Prover/z3.git
+git checkout 89c1785
+```
+
+* Bytecode Translator
+```
+git clone https://github.com/lleraromero/bytecodetranslator.git
+git checkout c397a3e
+```
+Eventually, this should be merged with the official repository.
+
+* CCI AST
+Download from: [http://cciast.codeplex.com/](http://cciast.codeplex.com/) (Some changes weren't uploaded yet, since we are waiting for a git repository)
+
+* Code Contracts
+```git clone https://github.com/Microsoft/CodeContracts.git```
 
 # More Information
 Website: http://lafhis.dc.uba.ar/contractor/contractor.net-web/
