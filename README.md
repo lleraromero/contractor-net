@@ -12,12 +12,9 @@ The inferred typestates are enabledness preserving: a level of abstraction that 
 Contractor.NET is based on [Contractor](http://lafhis.dc.uba.ar/misc/contractor/Welcome.html), a previous work by the same authors.
 
 # Using Contractor.NET
+In order to use the tool to analyse a class the tool needs the assembly which contains the type. Apart from that, contracts anotations are required to get meaningful information about the type invariant and the preconditions of each method.
 
-There are different ways to use Contractor.NET:
-
-### Contractor.NET on the command line
-
-### Contractor.NET GUI
+Right now, we resort to contracts provided by the Diagnostics.Contracts namespace included in the .NET framework. Since Code Contracts puts those contracts in a separate file both assemblies are required to create the EPA. However, before removing the contracts a copy of the original is stored in the "$(PROJECTDIR)\obj\Debug\Decl" directory. It's recommended to use this assembly to avoid using two assemblies :).
 
 # Getting Contractor.NET
 
