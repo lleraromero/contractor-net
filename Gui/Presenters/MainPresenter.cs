@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Analysis.Cci;
-using Analyzer.Corral;
 using Contractor.Core;
 using Contractor.Core.Model;
 using Contractor.Gui.Models;
@@ -29,7 +28,7 @@ namespace Contractor.Gui.Presenters
             this.model.TransitionAdded += OnTransitionAdded;
 
             this.screen = screen;
-            this.screen.LoadAssembly += ScreenOnLoadAssembly; 
+            this.screen.LoadAssembly += ScreenOnLoadAssembly;
             this.screen.LoadContracts += ScreenOnLoadContracts;
             this.screen.StartAnalysis += async (sender, analysisEventArgs) => await StartAnalisis(analysisEventArgs);
             this.screen.StopAnalysis += (sender, args) => this.model.Stop();
@@ -52,7 +51,7 @@ namespace Contractor.Gui.Presenters
                     throw new NotSupportedException("Unexpected file type");
             }
 
-            ExportGraph(outputFileInfo, this.model.GeneratedEpa, serializer);
+            ExportGraph(outputFileInfo, model.GeneratedEpa, serializer);
         }
 
         protected void OnStateAdded(object sender, StateAddedEventArgs e)
@@ -102,7 +101,7 @@ namespace Contractor.Gui.Presenters
                 HandleException(ex);
             }
 
-            
+
             screen.EnableInterfaceAfterAnalysis();
         }
 
@@ -112,7 +111,8 @@ namespace Contractor.Gui.Presenters
             var statesCount = analysisResult.Epa.States.Count();
             var transitionsCount = analysisResult.Epa.Transitions.Count();
 
-            UpdateStatus("Analysis for {0} done in {1:%m} minutes {1:%s} seconds ({2} states, {3} transitions)", typeToAnalyze.Name, totalTime, statesCount,
+            UpdateStatus("Analysis for {0} done in {1:%m} minutes {1:%s} seconds ({2} states, {3} transitions)", typeToAnalyze.Name, totalTime,
+                statesCount,
                 transitionsCount);
 
             UpdateOutput(analysisResult.ToString());
@@ -142,20 +142,21 @@ namespace Contractor.Gui.Presenters
             screen.UpdateOutput(string.Format(format, args));
         }
 
-        private void GenerateAssembly(FileInfo outputFile, Epa epa)
+        protected void GenerateAssembly(FileInfo outputFile, Epa epa)
         {
-            UpdateStatus("Generating assembly {0}...", outputFile);
+            UpdateStatus("Generating strengthened output assembly {0}...", outputFile);
 
             try
             {
-                throw new NotSupportedException();
-                //_EpaGenerator.GenerateOutputAssembly(fileName);
-                //new Instrumenter().GenerateOutputAssembly(fileName, epa);
+                var instrumenter = new Instrumenter.Instrumenter();
+                var strengthenedAssembly = instrumenter.InstrumentType(model.InputAssembly as CciAssembly, epa) as CciAssembly;
+                new CciAssemblyPersister().Save(strengthenedAssembly, outputFile.FullName);
             }
             catch (Exception ex)
             {
                 HandleException(ex);
             }
+            UpdateStatus("Done!", outputFile);
         }
 
         protected void ExportGraph(FileInfo outputFile, Epa epa, ISerializer serializer)

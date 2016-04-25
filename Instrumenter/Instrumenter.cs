@@ -12,8 +12,6 @@ using IAssembly = Contractor.Core.Model.IAssembly;
 using ITypeDefinition = Contractor.Core.Model.ITypeDefinition;
 using SourceMethodBody = Microsoft.Cci.ILToCodeModel.SourceMethodBody;
 
-//TODO (lleraromero): testear
-
 namespace Instrumenter
 {
     public class Instrumenter
@@ -47,7 +45,7 @@ namespace Instrumenter
 
             var typeDefinition = epa.Type;
             var cciTypeDefinition =
-                assembly.Module.AllTypes.First(
+                module.AllTypes.First(
                     t => TypeHelper.GetTypeName(t, NameFormattingOptions.UseGenericTypeNameSuffix).Equals(typeDefinition.Name)) as NamedTypeDefinition;
             Contract.Assert(cciTypeDefinition != null);
 
@@ -88,25 +86,26 @@ namespace Instrumenter
                 }
 
                 var methodContract = action.Contract as MethodContract ?? new MethodContract();
+                var methodDefinition = cciTypeDefinition.Methods.First(m => m.GetUniqueName().Equals(action.Method.GetUniqueName()));
 
                 BlockStatement actionBodyBlock = null;
-                if (action.Method.Body is SourceMethodBody)
+                if (methodDefinition.Body is SourceMethodBody)
                 {
-                    var actionBody = (SourceMethodBody) action.Method.Body;
+                    var actionBody = (SourceMethodBody) methodDefinition.Body;
                     actionBodyBlock = actionBody.Block as BlockStatement;
                 }
-                else if (action.Method.Body is Microsoft.Cci.MutableCodeModel.SourceMethodBody)
+                else if (methodDefinition.Body is Microsoft.Cci.MutableCodeModel.SourceMethodBody)
                 {
-                    var actionBody = (Microsoft.Cci.MutableCodeModel.SourceMethodBody) action.Method.Body;
+                    var actionBody = (Microsoft.Cci.MutableCodeModel.SourceMethodBody) methodDefinition.Body;
                     actionBodyBlock = actionBody.Block as BlockStatement;
                 }
                 Contract.Assert(actionBodyBlock != null);
 
                 //Por tratarse de un constructor insertamos en 1 porque en 0 esta base..ctor()
-                var insertAtIndex = action.Method.IsConstructor ? 1 : 0;
+                var insertAtIndex = methodDefinition.IsConstructor ? 1 : 0;
 
                 // CodeContracts no permite utilizar 'this' en los requires de los constructores
-                if (!action.Method.IsConstructor)
+                if (!methodDefinition.IsConstructor)
                 {
                     var pre = new PreconditionGenerator().GeneratePrecondition(field, transitions.Keys.ToList());
                     methodContract.Preconditions.Add(pre);
@@ -116,7 +115,7 @@ namespace Instrumenter
                 methodContract.Postconditions.AddRange(posts);
 
                 // Associate contract
-                contractProvider.AssociateMethodWithContract(action, methodContract);
+                contractProvider.AssociateMethodWithContract(methodDefinition, methodContract);
 
                 var stmt = new SwitchGenerator(epa, stateNumberMap).GenerateSwitch(field, transitions);
 

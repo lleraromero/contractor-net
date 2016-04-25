@@ -20,85 +20,69 @@ namespace Contractor.Console
         public static int Main(string[] args)
         {
 #if DEBUG
-            //var tempPath = ConfigurationManager.AppSettings["WorkingDir"];
-            //var graphPath = @"D:\tesis-experiments\EPAs";
-            //if (!Directory.Exists(graphPath))
-            //{
-            //    Directory.CreateDirectory(graphPath);
-            //}
+            var tempPath = ConfigurationManager.AppSettings["WorkingDir"];
+            var graphPath = @"C:\Users\lean\Desktop\EPAs";
+            if (!Directory.Exists(graphPath))
+            {
+                Directory.CreateDirectory(graphPath);
+            }
 
-            //var examplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\Examples\obj\Debug\Decl\Examples.dll"));
+            var examplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\Examples\obj\Debug\Decl\Examples.dll"));
 
-            //args = new[]
-            //{
-            //    "-i", examplesPath,
-            //    "-g", graphPath,
-            //    "--tmp", tempPath,
-            //    "-t", "Examples.VendingMachine",
-            //    "-b", "Corral"
-            //};
+            args = new[]
+            {
+                "-i", examplesPath,
+                "-g", graphPath,
+                "--tmp", tempPath,
+                "-t", "Examples.Door",
+                "-b", "Corral",
+                "--ga",
+                "-o", @"C:\Users\lean\Desktop\EPAs\strengthenedAssembly.dll",
+            };
 #endif
             var options = new Options();
             if (!Parser.Default.ParseArgumentsStrict(args, options))
             {
-                System.Console.WriteLine("Args parsing error!");
-#if DEBUG
-                //System.Console.ReadKey();
-#endif
-                return -1;
+                throw new FormatException("Args parsing error!");
             }
 
             System.Console.WriteLine(options.InputAssembly);
 
-            try
-            {
-                var analysisResult = GenerateEpa(options);
-
-                System.Console.WriteLine(analysisResult.ToString());
-
-                var epa = analysisResult.Epa;
-
-                SaveEpasAsImages(epa, new DirectoryInfo(options.GraphDirectory));
-
-                if (options.XML)
-                {
-                    SaveEpasAsXml(epa, new DirectoryInfo(options.GraphDirectory));
-                }
-
-                if (options.GenerateStrengthenedAssembly)
-                {
-                    GenerateStrengthenedAssembly(epa, new FileInfo(options.OutputAssembly));
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Console.WriteLine("Error: {0}", ex.Message);
-                return -1;
-            }
-
-            System.Console.WriteLine("Done!");
-            //System.Console.ReadLine();
-            return 0;
-        }
-
-        protected static TypeAnalysisResult GenerateEpa(Options options)
-        {
-            Contract.Requires(!string.IsNullOrEmpty(options.TypeToAnalyze));
-            Contract.Requires(!string.IsNullOrEmpty(options.InputAssembly) && File.Exists(options.InputAssembly));
-
-            System.Console.WriteLine("Starting analysis for type {0}", options.TypeToAnalyze);
-
             var decompiler = new CciAssemblyPersister();
             var inputAssembly = decompiler.Load(options.InputAssembly, null);
             var typeToAnalyze = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
+
+            var analysisResult = GenerateEpa(inputAssembly, typeToAnalyze, options);
+
+            System.Console.WriteLine(analysisResult.ToString());
+
+            var epa = analysisResult.Epa;
+
+            SaveEpasAsImages(epa, new DirectoryInfo(options.GraphDirectory));
+
+            if (options.XML)
+            {
+                SaveEpasAsXml(epa, new DirectoryInfo(options.GraphDirectory));
+            }
+
+            if (options.GenerateStrengthenedAssembly)
+            {
+                var strengthenedAssembly = GenerateStrengthenedAssembly(epa, inputAssembly) as CciAssembly;
+                decompiler.Save(strengthenedAssembly, options.OutputAssembly);
+            }
+            
+            System.Console.WriteLine("Done!");
+            System.Console.ReadLine();
+            return 0;
+        }
+
+        protected static TypeAnalysisResult GenerateEpa(CciAssembly inputAssembly, ITypeDefinition typeToAnalyze, Options options)
+        {
+            System.Console.WriteLine("Starting analysis for type {0}", typeToAnalyze);
+
             var cancellationSource = new CancellationTokenSource();
 
-            var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
-            if (workingDir.Exists && workingDir.CreationTimeUtc < DateTime.UtcNow.AddDays(-3))
-            {
-                workingDir.Delete(true);
-            }
-            workingDir.Create();
+            var workingDir = CreateOrCleanupWorkingDirectory();
 
             var queryGenerator = new CciQueryGenerator();
 
@@ -137,8 +121,7 @@ namespace Contractor.Console
 
             var generator = new EpaGenerator(analyzerFactory, options.Cutter);
 
-            var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
-            var epaBuilder = new EpaBuilder(typeDefinition);
+            var epaBuilder = new EpaBuilder(typeToAnalyze);
 
             var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
             epaBuilderObservable.TransitionAdded += OnTransitionAdded;
@@ -146,14 +129,25 @@ namespace Contractor.Console
             if (!options.Methods.Equals("All"))
             {
                 var selectedMethods = options.Methods.Split(';');
-                analysisResult = generator.GenerateEpa(typeDefinition, selectedMethods, epaBuilderObservable).Result;
+                analysisResult = generator.GenerateEpa(typeToAnalyze, selectedMethods, epaBuilderObservable).Result;
             }
             else
             {
-                analysisResult = generator.GenerateEpa(typeDefinition, epaBuilderObservable).Result;
+                analysisResult = generator.GenerateEpa(typeToAnalyze, epaBuilderObservable).Result;
             }
 
             return analysisResult;
+        }
+
+        protected static DirectoryInfo CreateOrCleanupWorkingDirectory()
+        {
+            var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
+            if (workingDir.Exists && workingDir.CreationTimeUtc < DateTime.UtcNow.AddDays(-3))
+            {
+                workingDir.Delete(true);
+            }
+            workingDir.Create();
+            return workingDir;
         }
 
         protected static void OnTransitionAdded(object sender, TransitionAddedEventArgs e)
@@ -190,15 +184,14 @@ namespace Contractor.Console
             }
         }
 
-        protected static void GenerateStrengthenedAssembly(Epa epa, FileInfo outputFile)
+        protected static IAssembly GenerateStrengthenedAssembly(Epa epa, CciAssembly assembly)
         {
             Contract.Requires(epa != null);
-            Contract.Requires(outputFile.Exists);
+            Contract.Requires(assembly != null);
 
-            throw new NotSupportedException();
-            // TODO (lleraromero): Volver a habilitar el instrumenter
-            //System.Console.WriteLine("Generating strengthened output assembly");
-            //new Instrumenter().GenerateOutputAssembly(options.output, analysisResult.EPA);
+            System.Console.WriteLine("Generating strengthened output assembly");
+            var instrumenter = new Instrumenter.Instrumenter();
+            return instrumenter.InstrumentType(assembly, epa);
         }
 
         protected static string GetSafeFilename(string filename)

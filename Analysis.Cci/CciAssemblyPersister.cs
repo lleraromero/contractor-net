@@ -11,9 +11,9 @@ namespace Analysis.Cci
 {
     public class CciAssemblyPersister
     {
-        protected CodeContractAwareHostEnvironment host;
         // Object used to provide a managed mutex to avoid race-conditions in CCI static classes
         public static object turnstile = new object();
+        protected CodeContractAwareHostEnvironment host;
 
         public CciAssemblyPersister()
         {
@@ -36,7 +36,7 @@ namespace Analysis.Cci
         public void Save(CciAssembly assembly, string path)
         {
             Contract.Requires(assembly != null);
-            Contract.Requires(!File.Exists(path));
+            Contract.Requires(!string.IsNullOrEmpty(path));
 
             var sourceLocationProvider = GetPdbReader(assembly.Module);
             lock (turnstile)
