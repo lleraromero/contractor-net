@@ -56,7 +56,6 @@ namespace Analyzer.CodeContracts
 
             if (enabledActions.Intersect(disabledActions).Any())
             {
-                // TODO (lleraromero): Definir que hacer si detectamos que un estado tiene un invariante UNSAT
                 Logger.Log(LogLevel.Warn,
                     "Suspicious state! Only a state with a unsatisfiable invariant can lead to actions being enabled and disabled at the same time. It can also mean a bug in our code.");
                 return new ActionAnalysisResults(new HashSet<Action>(source.EnabledActions), new HashSet<Action>(source.DisabledActions));
