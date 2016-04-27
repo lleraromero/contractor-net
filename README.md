@@ -38,13 +38,13 @@ However, if you need to debug the code you should grab the source code for this 
 * Corral
 ```
 git clone https://github.com/boogie-org/corral.git
-git checkout 0a37e8f
+git checkout 6f63184
 ```
 
 * Boogie
 ```
 git clone https://github.com/boogie-org/boogie.git
-git checkout 5bb7ad4
+git checkout 87e1e7b
 ```
 
 * Z3

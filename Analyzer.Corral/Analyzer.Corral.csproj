@@ -78,9 +78,6 @@
     <Reference Include="BytecodeTranslator">
       <HintPath>..\Dependencies\BCT\BytecodeTranslator.dll</HintPath>
     </Reference>
-    <Reference Include="corral">
-      <HintPath>..\Dependencies\Corral\corral.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Cci.CodeModel">
       <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.CodeModel.dll</HintPath>
     </Reference>
