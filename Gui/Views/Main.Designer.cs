@@ -35,7 +35,7 @@
             this.generateOutputDialog = new System.Windows.Forms.SaveFileDialog();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.statusLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.progressBar = new System.Windows.Forms.ToolStripProgressBar();
+            this.pgrAnalizando = new System.Windows.Forms.ToolStripProgressBar();
             this.toolStrip = new System.Windows.Forms.ToolStrip();
             this.buttonOptions = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
@@ -110,7 +110,7 @@
             // 
             this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statusLabel,
-            this.progressBar});
+            this.pgrAnalizando});
             this.statusStrip.Location = new System.Drawing.Point(0, 431);
             this.statusStrip.Name = "statusStrip";
             this.statusStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.ManagerRenderMode;
@@ -121,17 +121,18 @@
             // statusLabel
             // 
             this.statusLabel.Name = "statusLabel";
-            this.statusLabel.Size = new System.Drawing.Size(760, 17);
+            this.statusLabel.Size = new System.Drawing.Size(577, 17);
             this.statusLabel.Spring = true;
             this.statusLabel.Text = "Ready";
             this.statusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // progressBar
+            // pgrAnalizando
             // 
-            this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(150, 16);
-            this.progressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
-            this.progressBar.Visible = false;
+            this.pgrAnalizando.MarqueeAnimationSpeed = 10;
+            this.pgrAnalizando.Name = "pgrAnalizando";
+            this.pgrAnalizando.Size = new System.Drawing.Size(150, 16);
+            this.pgrAnalizando.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            this.pgrAnalizando.Visible = false;
             // 
             // toolStrip
             // 
@@ -504,7 +505,7 @@
 		private System.Windows.Forms.ToolStripMenuItem menuitemHelp;
         private System.Windows.Forms.ToolStripMenuItem menuitemAbout;
 		private System.Windows.Forms.ToolStripStatusLabel statusLabel;
-		private System.Windows.Forms.ToolStripProgressBar progressBar;
+		private System.Windows.Forms.ToolStripProgressBar pgrAnalizando;
 		private System.Windows.Forms.ToolStripButton buttonStopAnalysis;
 		private System.Windows.Forms.ToolStripButton buttonExportGraph;
         private System.Windows.Forms.ToolStripButton buttonGenerateAssembly;

@@ -93,6 +93,7 @@ namespace Contractor.Gui
             methodFilter.Enabled = false;
 
             buttonStopAnalysis.Enabled = true;
+            pgrAnalizando.Visible = true;
         }
 
         public void EnableInterfaceAfterAnalysis()
@@ -108,6 +109,7 @@ namespace Contractor.Gui
             methodFilter.Enabled = true;
 
             buttonStopAnalysis.Enabled = false;
+            pgrAnalizando.Visible = false;
         }
 
         protected void UpdateProgress(TypeEventArgs e)
