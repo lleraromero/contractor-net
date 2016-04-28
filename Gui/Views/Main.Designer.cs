@@ -1,4 +1,6 @@
-﻿namespace Contractor.Gui
+﻿using Contractor.Gui.Views;
+
+namespace Contractor.Gui
 {
 	partial class Main
 	{
@@ -57,14 +59,14 @@
             this.textboxOutput = new System.Windows.Forms.TextBox();
             this.splitcontainerV = new System.Windows.Forms.SplitContainer();
             this.splitcontainerH = new System.Windows.Forms.SplitContainer();
+            this.richtextboxInformation = new System.Windows.Forms.RichTextBox();
+            this.splitcontainerOutput = new System.Windows.Forms.SplitContainer();
+            this.loadContractsDialog = new System.Windows.Forms.OpenFileDialog();
             this.typesViewer = new Contractor.Gui.TypesViewerScreen();
             this.methodFilter = new Contractor.Gui.MethodFilterScreen();
-            this.richtextboxInformation = new System.Windows.Forms.RichTextBox();
             this.titlebarProperties = new Contractor.Gui.TitleBar();
-            this.splitcontainerOutput = new System.Windows.Forms.SplitContainer();
-            this.epaViewer = new Contractor.Gui.EpaViewerScreen();
+            this.epaViewer = new Contractor.Gui.Views.EpaViewerScreen();
             this.titlebarOutput = new Contractor.Gui.TitleBar();
-            this.loadContractsDialog = new System.Windows.Forms.OpenFileDialog();
             this.statusStrip.SuspendLayout();
             this.toolStrip.SuspendLayout();
             this.menuStrip.SuspendLayout();
@@ -121,7 +123,7 @@
             // statusLabel
             // 
             this.statusLabel.Name = "statusLabel";
-            this.statusLabel.Size = new System.Drawing.Size(577, 17);
+            this.statusLabel.Size = new System.Drawing.Size(760, 17);
             this.statusLabel.Spring = true;
             this.statusLabel.Text = "Ready";
             this.statusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -354,57 +356,25 @@
             this.splitcontainerH.Panel2.Controls.Add(this.richtextboxInformation);
             this.splitcontainerH.Panel2.Controls.Add(this.titlebarProperties);
             this.splitcontainerH.Size = new System.Drawing.Size(286, 382);
-            this.splitcontainerH.SplitterDistance = 191;
+            this.splitcontainerH.SplitterDistance = 129;
             this.splitcontainerH.TabIndex = 0;
             this.splitcontainerH.TabStop = false;
-            // 
-            // typesViewer
-            // 
-            this.typesViewer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.typesViewer.Location = new System.Drawing.Point(0, 0);
-            this.typesViewer.Name = "typesViewer";
-            this.typesViewer.Size = new System.Drawing.Size(284, 189);
-            this.typesViewer.TabIndex = 1;
-            // 
-            // methodFilter
-            // 
-            this.methodFilter.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.methodFilter.Location = new System.Drawing.Point(0, 19);
-            this.methodFilter.Name = "methodFilter";
-            this.methodFilter.Size = new System.Drawing.Size(284, 166);
-            this.methodFilter.TabIndex = 4;
             // 
             // richtextboxInformation
             // 
             this.richtextboxInformation.BackColor = System.Drawing.SystemColors.Info;
             this.richtextboxInformation.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.richtextboxInformation.DetectUrls = false;
-            this.richtextboxInformation.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.richtextboxInformation.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.richtextboxInformation.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.richtextboxInformation.Location = new System.Drawing.Point(0, 19);
+            this.richtextboxInformation.Location = new System.Drawing.Point(0, 141);
             this.richtextboxInformation.Name = "richtextboxInformation";
             this.richtextboxInformation.ReadOnly = true;
             this.richtextboxInformation.ShowSelectionMargin = true;
-            this.richtextboxInformation.Size = new System.Drawing.Size(284, 166);
+            this.richtextboxInformation.Size = new System.Drawing.Size(284, 106);
             this.richtextboxInformation.TabIndex = 1;
             this.richtextboxInformation.TabStop = false;
             this.richtextboxInformation.Text = "";
-            // 
-            // titlebarProperties
-            // 
-            this.titlebarProperties.BackColor = System.Drawing.SystemColors.ActiveBorder;
-            this.titlebarProperties.BackColorStyle = Contractor.Gui.BackColorStyle.Gradient;
-            this.titlebarProperties.DarkBackColor = System.Drawing.SystemColors.ActiveCaption;
-            this.titlebarProperties.Dock = System.Windows.Forms.DockStyle.Top;
-            this.titlebarProperties.LightBackColor = System.Drawing.SystemColors.GradientInactiveCaption;
-            this.titlebarProperties.Location = new System.Drawing.Point(0, 0);
-            this.titlebarProperties.Name = "titlebarProperties";
-            this.titlebarProperties.ShowBottomBorder = true;
-            this.titlebarProperties.ShowCloseButton = false;
-            this.titlebarProperties.Size = new System.Drawing.Size(284, 19);
-            this.titlebarProperties.TabIndex = 0;
-            this.titlebarProperties.TabStop = false;
-            this.titlebarProperties.Text = "Methods";
             // 
             // splitcontainerOutput
             // 
@@ -426,6 +396,44 @@
             this.splitcontainerOutput.SplitterDistance = 191;
             this.splitcontainerOutput.TabIndex = 0;
             this.splitcontainerOutput.TabStop = false;
+            // 
+            // loadContractsDialog
+            // 
+            this.loadContractsDialog.DefaultExt = "dll";
+            this.loadContractsDialog.Filter = "Dynamic Link Libraries (*.dll)|*.dll|Executable Files (*.exe)|*.exe";
+            this.loadContractsDialog.Title = "Load Contract Reference Assembly...";
+            // 
+            // typesViewer
+            // 
+            this.typesViewer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.typesViewer.Location = new System.Drawing.Point(0, 0);
+            this.typesViewer.Name = "typesViewer";
+            this.typesViewer.Size = new System.Drawing.Size(284, 127);
+            this.typesViewer.TabIndex = 1;
+            // 
+            // methodFilter
+            // 
+            this.methodFilter.Dock = System.Windows.Forms.DockStyle.Top;
+            this.methodFilter.Location = new System.Drawing.Point(0, 19);
+            this.methodFilter.Name = "methodFilter";
+            this.methodFilter.Size = new System.Drawing.Size(284, 116);
+            this.methodFilter.TabIndex = 4;
+            // 
+            // titlebarProperties
+            // 
+            this.titlebarProperties.BackColor = System.Drawing.SystemColors.ActiveBorder;
+            this.titlebarProperties.BackColorStyle = Contractor.Gui.BackColorStyle.Gradient;
+            this.titlebarProperties.DarkBackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.titlebarProperties.Dock = System.Windows.Forms.DockStyle.Top;
+            this.titlebarProperties.LightBackColor = System.Drawing.SystemColors.GradientInactiveCaption;
+            this.titlebarProperties.Location = new System.Drawing.Point(0, 0);
+            this.titlebarProperties.Name = "titlebarProperties";
+            this.titlebarProperties.ShowBottomBorder = true;
+            this.titlebarProperties.ShowCloseButton = false;
+            this.titlebarProperties.Size = new System.Drawing.Size(284, 19);
+            this.titlebarProperties.TabIndex = 0;
+            this.titlebarProperties.TabStop = false;
+            this.titlebarProperties.Text = "Methods";
             // 
             // epaViewer
             // 
@@ -450,12 +458,6 @@
             this.titlebarOutput.TabIndex = 0;
             this.titlebarOutput.Text = "Output";
             this.titlebarOutput.Close += new System.EventHandler(this.OnOutputClose);
-            // 
-            // loadContractsDialog
-            // 
-            this.loadContractsDialog.DefaultExt = "dll";
-            this.loadContractsDialog.Filter = "Dynamic Link Libraries (*.dll)|*.dll|Executable Files (*.exe)|*.exe";
-            this.loadContractsDialog.Title = "Load Contract Reference Assembly...";
             // 
             // Main
             // 

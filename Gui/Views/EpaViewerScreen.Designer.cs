@@ -1,4 +1,4 @@
-﻿namespace Contractor.Gui
+﻿namespace Contractor.Gui.Views
 {
     partial class EpaViewerScreen
     {

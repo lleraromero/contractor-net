@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Contractor.Core;
@@ -31,6 +33,7 @@ namespace Contractor.Gui
             cmbBackend.SelectedIndex = 1;
 
             epaViewerPresenter = new EpaViewerPresenter(epaViewer, new EpaViewer(), SynchronizationContext.Current);
+            epaViewerPresenter.StateSelected2 += ShowStateInformation;
             typesViewerPresenter = new TypesViewerPresenter(typesViewer, new TypesViewer(), SynchronizationContext.Current);
             typesViewerPresenter.TypeSelected += TypesViewerPresenterOnTypeSelected;
             typesViewerPresenter.StartAnalysis += TypesViewerPresenterOnStartAnalysis;
@@ -38,6 +41,30 @@ namespace Contractor.Gui
 
             options = new Options();
             mainPresenter = new MainPresenter(SynchronizationContext.Current, this, new MainModel());
+        }
+
+        private void ShowStateInformation(object sender, State e)
+        {
+            var info = new StringBuilder();
+            info.Append(@"{\rtf1\ansi\fs8\par\fs18");
+
+            if (e.EnabledActions.Any())
+            {
+                info.Append(@" \b Enabled Actions \b0 \par ");
+                var text = string.Join(@" \par ", e.EnabledActions);
+                info.Append(text);
+            }
+
+            if (e.DisabledActions.Any())
+            {
+                info.Append(@" \fs8\par\par\fs18 \b Disabled Actions \b0 \par ");
+                var text = string.Join(@" \par ", e.DisabledActions);
+                info.Append(text);
+            }
+
+            info.Append(@"}");
+
+            richtextboxInformation.Rtf = info.ToString();
         }
 
         public string Engine
