@@ -2,7 +2,7 @@
 using System.Windows.Forms;
 using Contractor.Core.Model;
 
-namespace Contractor.Gui
+namespace Contractor.Gui.Models
 {
     internal interface ITypesViewer
     {

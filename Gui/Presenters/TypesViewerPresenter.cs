@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading;
 using System.Windows.Forms;
-using Contractor.Core;
 using Contractor.Core.Model;
+using Contractor.Gui.Models;
 
-namespace Contractor.Gui
+namespace Contractor.Gui.Presenters
 {
     internal class TypesViewerPresenter
     {
@@ -41,7 +41,11 @@ namespace Contractor.Gui
         public void ShowTypes(IAssembly assembly)
         {
             var rootNode = typesViewer.GetTypesTreeRoot(assembly);
-            syncContext.Post(param => { screen.Reset(); screen.Root = param as TreeNode; }, rootNode);
+            syncContext.Post(param =>
+            {
+                screen.Reset();
+                screen.Root = param as TreeNode;
+            }, rootNode);
         }
     }
 }

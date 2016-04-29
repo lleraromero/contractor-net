@@ -3,7 +3,7 @@ using System.IO;
 using Contractor.Core;
 using Contractor.Core.Model;
 
-namespace Contractor.Gui
+namespace Contractor.Gui.Views
 {
     internal interface IMainScreen
     {

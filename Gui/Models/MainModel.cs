@@ -12,7 +12,6 @@ using Analyzer.Corral;
 using Contractor.Core;
 using Contractor.Core.Model;
 
-
 namespace Contractor.Gui.Models
 {
     internal class MainModel : IMainModel
@@ -31,7 +30,6 @@ namespace Contractor.Gui.Models
 
             StateAdded += (sender, args) => { };
             TransitionAdded += (sender, args) => { };
-
         }
 
         public Epa GeneratedEpa
@@ -123,12 +121,14 @@ namespace Contractor.Gui.Models
                     Contract.Assert(cccheckArgs != null);
                     var cccheck = new FileInfo(ConfigurationManager.AppSettings["CccheckFullName"]);
                     Contract.Assert(cccheck.Exists);
-                    analyzerFactory = new CodeContractsAnalyzerFactory(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly as CciAssembly, inputFile.FullName,
+                    analyzerFactory = new CodeContractsAnalyzerFactory(workingDir, cccheckArgs, string.Empty, queryGenerator,
+                        inputAssembly as CciAssembly, inputFile.FullName,
                         typeToAnalyze, cancellationToken);
                     break;
                 case "Corral":
-                    var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];        
-                    analyzerFactory = new CorralAnalyzerFactory(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly, inputFile.FullName,
+                    var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
+                    analyzerFactory = new CorralAnalyzerFactory(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly,
+                        inputFile.FullName,
                         typeToAnalyze, cancellationToken);
                     break;
                 default:

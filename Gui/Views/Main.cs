@@ -9,7 +9,7 @@ using Contractor.Core.Model;
 using Contractor.Gui.Models;
 using Contractor.Gui.Presenters;
 
-namespace Contractor.Gui
+namespace Contractor.Gui.Views
 {
     internal partial class Main : Form, IMainScreen
     {
@@ -17,7 +17,7 @@ namespace Contractor.Gui
         protected EpaViewerPresenter epaViewerPresenter;
         protected MethodFilterPresenter methodFilterPresenter;
         protected TypesViewerPresenter typesViewerPresenter;
-        
+
         protected ITypeDefinition selectedType;
         private Options options;
 
@@ -41,30 +41,6 @@ namespace Contractor.Gui
 
             options = new Options();
             mainPresenter = new MainPresenter(SynchronizationContext.Current, this, new MainModel());
-        }
-
-        private void ShowStateInformation(object sender, State e)
-        {
-            var info = new StringBuilder();
-            info.Append(@"{\rtf1\ansi\fs8\par\fs18");
-
-            if (e.EnabledActions.Any())
-            {
-                info.Append(@" \b Enabled Actions \b0 \par ");
-                var text = string.Join(@" \par ", e.EnabledActions);
-                info.Append(text);
-            }
-
-            if (e.DisabledActions.Any())
-            {
-                info.Append(@" \fs8\par\par\fs18 \b Disabled Actions \b0 \par ");
-                var text = string.Join(@" \par ", e.DisabledActions);
-                info.Append(text);
-            }
-
-            info.Append(@"}");
-
-            richtextboxInformation.Rtf = info.ToString();
         }
 
         public string Engine
@@ -137,6 +113,30 @@ namespace Contractor.Gui
 
             buttonStopAnalysis.Enabled = false;
             pgrAnalizando.Visible = false;
+        }
+
+        private void ShowStateInformation(object sender, State e)
+        {
+            var info = new StringBuilder();
+            info.Append(@"{\rtf1\ansi\fs8\par\fs18");
+
+            if (e.EnabledActions.Any())
+            {
+                info.Append(@" \b Enabled Actions \b0 \par ");
+                var text = string.Join(@" \par ", e.EnabledActions);
+                info.Append(text);
+            }
+
+            if (e.DisabledActions.Any())
+            {
+                info.Append(@" \fs8\par\par\fs18 \b Disabled Actions \b0 \par ");
+                var text = string.Join(@" \par ", e.DisabledActions);
+                info.Append(text);
+            }
+
+            info.Append(@"}");
+
+            richtextboxInformation.Rtf = info.ToString();
         }
 
         protected void UpdateProgress(TypeEventArgs e)

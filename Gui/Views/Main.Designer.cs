@@ -1,6 +1,4 @@
-﻿using Contractor.Gui.Views;
-
-namespace Contractor.Gui
+﻿namespace Contractor.Gui.Views
 {
 	partial class Main
 	{
@@ -60,14 +58,14 @@ namespace Contractor.Gui
             this.splitcontainerV = new System.Windows.Forms.SplitContainer();
             this.splitcontainerH = new System.Windows.Forms.SplitContainer();
             this.typesViewer = new Contractor.Gui.TypesViewerScreen();
-            this.methodFilter = new Contractor.Gui.MethodFilterScreen();
-            this.richtextboxInformation = new System.Windows.Forms.RichTextBox();
+            this.splitContainerMethodsInformation = new System.Windows.Forms.SplitContainer();
+            this.methodFilter = new Contractor.Gui.Views.MethodFilterScreen();
             this.titlebarProperties = new Contractor.Gui.TitleBar();
+            this.richtextboxInformation = new System.Windows.Forms.RichTextBox();
             this.splitcontainerOutput = new System.Windows.Forms.SplitContainer();
             this.epaViewer = new Contractor.Gui.Views.EpaViewerScreen();
             this.titlebarOutput = new Contractor.Gui.TitleBar();
             this.loadContractsDialog = new System.Windows.Forms.OpenFileDialog();
-            this.splitContainerMethodsInformation = new System.Windows.Forms.SplitContainer();
             this.statusStrip.SuspendLayout();
             this.toolStrip.SuspendLayout();
             this.menuStrip.SuspendLayout();
@@ -79,14 +77,14 @@ namespace Contractor.Gui
             this.splitcontainerH.Panel1.SuspendLayout();
             this.splitcontainerH.Panel2.SuspendLayout();
             this.splitcontainerH.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.splitcontainerOutput)).BeginInit();
-            this.splitcontainerOutput.Panel1.SuspendLayout();
-            this.splitcontainerOutput.Panel2.SuspendLayout();
-            this.splitcontainerOutput.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerMethodsInformation)).BeginInit();
             this.splitContainerMethodsInformation.Panel1.SuspendLayout();
             this.splitContainerMethodsInformation.Panel2.SuspendLayout();
             this.splitContainerMethodsInformation.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitcontainerOutput)).BeginInit();
+            this.splitcontainerOutput.Panel1.SuspendLayout();
+            this.splitcontainerOutput.Panel2.SuspendLayout();
+            this.splitcontainerOutput.SuspendLayout();
             this.SuspendLayout();
             // 
             // imagelist
@@ -371,29 +369,33 @@ namespace Contractor.Gui
             this.typesViewer.Size = new System.Drawing.Size(284, 127);
             this.typesViewer.TabIndex = 1;
             // 
+            // splitContainerMethodsInformation
+            // 
+            this.splitContainerMethodsInformation.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.splitContainerMethodsInformation.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainerMethodsInformation.Location = new System.Drawing.Point(0, 0);
+            this.splitContainerMethodsInformation.Name = "splitContainerMethodsInformation";
+            this.splitContainerMethodsInformation.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainerMethodsInformation.Panel1
+            // 
+            this.splitContainerMethodsInformation.Panel1.Controls.Add(this.methodFilter);
+            this.splitContainerMethodsInformation.Panel1.Controls.Add(this.titlebarProperties);
+            // 
+            // splitContainerMethodsInformation.Panel2
+            // 
+            this.splitContainerMethodsInformation.Panel2.Controls.Add(this.richtextboxInformation);
+            this.splitContainerMethodsInformation.Size = new System.Drawing.Size(286, 249);
+            this.splitContainerMethodsInformation.SplitterDistance = 154;
+            this.splitContainerMethodsInformation.TabIndex = 5;
+            // 
             // methodFilter
             // 
             this.methodFilter.Dock = System.Windows.Forms.DockStyle.Fill;
             this.methodFilter.Location = new System.Drawing.Point(0, 19);
             this.methodFilter.Name = "methodFilter";
-            this.methodFilter.Size = new System.Drawing.Size(284, 134);
+            this.methodFilter.Size = new System.Drawing.Size(284, 133);
             this.methodFilter.TabIndex = 4;
-            // 
-            // richtextboxInformation
-            // 
-            this.richtextboxInformation.BackColor = System.Drawing.SystemColors.Info;
-            this.richtextboxInformation.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.richtextboxInformation.DetectUrls = false;
-            this.richtextboxInformation.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.richtextboxInformation.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.richtextboxInformation.Location = new System.Drawing.Point(0, 0);
-            this.richtextboxInformation.Name = "richtextboxInformation";
-            this.richtextboxInformation.ReadOnly = true;
-            this.richtextboxInformation.ShowSelectionMargin = true;
-            this.richtextboxInformation.Size = new System.Drawing.Size(284, 90);
-            this.richtextboxInformation.TabIndex = 1;
-            this.richtextboxInformation.TabStop = false;
-            this.richtextboxInformation.Text = "";
             // 
             // titlebarProperties
             // 
@@ -410,6 +412,22 @@ namespace Contractor.Gui
             this.titlebarProperties.TabIndex = 0;
             this.titlebarProperties.TabStop = false;
             this.titlebarProperties.Text = "Methods";
+            // 
+            // richtextboxInformation
+            // 
+            this.richtextboxInformation.BackColor = System.Drawing.SystemColors.Info;
+            this.richtextboxInformation.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.richtextboxInformation.DetectUrls = false;
+            this.richtextboxInformation.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.richtextboxInformation.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.richtextboxInformation.Location = new System.Drawing.Point(0, 0);
+            this.richtextboxInformation.Name = "richtextboxInformation";
+            this.richtextboxInformation.ReadOnly = true;
+            this.richtextboxInformation.ShowSelectionMargin = true;
+            this.richtextboxInformation.Size = new System.Drawing.Size(284, 89);
+            this.richtextboxInformation.TabIndex = 1;
+            this.richtextboxInformation.TabStop = false;
+            this.richtextboxInformation.Text = "";
             // 
             // splitcontainerOutput
             // 
@@ -462,25 +480,6 @@ namespace Contractor.Gui
             this.loadContractsDialog.Filter = "Dynamic Link Libraries (*.dll)|*.dll|Executable Files (*.exe)|*.exe";
             this.loadContractsDialog.Title = "Load Contract Reference Assembly...";
             // 
-            // splitContainerMethodsInformation
-            // 
-            this.splitContainerMethodsInformation.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainerMethodsInformation.Location = new System.Drawing.Point(0, 0);
-            this.splitContainerMethodsInformation.Name = "splitContainerMethodsInformation";
-            this.splitContainerMethodsInformation.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            // 
-            // splitContainerMethodsInformation.Panel1
-            // 
-            this.splitContainerMethodsInformation.Panel1.Controls.Add(this.methodFilter);
-            this.splitContainerMethodsInformation.Panel1.Controls.Add(this.titlebarProperties);
-            // 
-            // splitContainerMethodsInformation.Panel2
-            // 
-            this.splitContainerMethodsInformation.Panel2.Controls.Add(this.richtextboxInformation);
-            this.splitContainerMethodsInformation.Size = new System.Drawing.Size(284, 247);
-            this.splitContainerMethodsInformation.SplitterDistance = 153;
-            this.splitContainerMethodsInformation.TabIndex = 5;
-            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -509,15 +508,15 @@ namespace Contractor.Gui
             this.splitcontainerH.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitcontainerH)).EndInit();
             this.splitcontainerH.ResumeLayout(false);
+            this.splitContainerMethodsInformation.Panel1.ResumeLayout(false);
+            this.splitContainerMethodsInformation.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainerMethodsInformation)).EndInit();
+            this.splitContainerMethodsInformation.ResumeLayout(false);
             this.splitcontainerOutput.Panel1.ResumeLayout(false);
             this.splitcontainerOutput.Panel2.ResumeLayout(false);
             this.splitcontainerOutput.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitcontainerOutput)).EndInit();
             this.splitcontainerOutput.ResumeLayout(false);
-            this.splitContainerMethodsInformation.Panel1.ResumeLayout(false);
-            this.splitContainerMethodsInformation.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainerMethodsInformation)).EndInit();
-            this.splitContainerMethodsInformation.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 

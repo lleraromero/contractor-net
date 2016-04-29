@@ -7,7 +7,7 @@ using Contractor.Core.Model;
 using Microsoft.Msagl.Drawing;
 using Color = System.Drawing.Color;
 
-namespace Contractor.Gui
+namespace Contractor.Gui.Models
 {
     internal interface IEpaViewer
     {

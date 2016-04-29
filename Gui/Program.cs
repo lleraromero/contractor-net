@@ -3,6 +3,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Contractor.Gui.Models;
 using Contractor.Gui.Presenters;
+using Contractor.Gui.Views;
 
 namespace Contractor.Gui
 {

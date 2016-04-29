@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Threading;
 using Contractor.Core.Model;
+using Contractor.Gui.Models;
 using Contractor.Gui.Views;
 
-namespace Contractor.Gui
+namespace Contractor.Gui.Presenters
 {
     internal class EpaViewerPresenter
     {
         protected readonly IEpaViewerScreen screen;
         protected IEpaViewer epaViewer;
         protected SynchronizationContext syncContext;
-        public event EventHandler<State> StateSelected2;
 
         public EpaViewerPresenter(IEpaViewerScreen screen, IEpaViewer epaViewer, SynchronizationContext syncContext)
         {
@@ -23,6 +23,8 @@ namespace Contractor.Gui
             StateSelected2 += (sender, args) => { };
             this.screen.StateSelected += (sender, args) => { StateSelected2(sender, args); };
         }
+
+        public event EventHandler<State> StateSelected2;
 
         public void Reset()
         {

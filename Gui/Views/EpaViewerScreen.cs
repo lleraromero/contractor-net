@@ -44,6 +44,8 @@ namespace Contractor.Gui.Views
 
         public event EventHandler<State> StateSelected;
 
+        public event EventHandler Reset;
+
         protected void OnNodeMarkedForDragging(object sender, EventArgs e)
         {
             var state = (sender as IViewerNode).Node.UserData as State;
@@ -72,7 +74,6 @@ namespace Contractor.Gui.Views
             graphViewer.ZoomF = 1.0;
         }
 
-        public event EventHandler Reset;
         private void btnReset_Click(object sender, EventArgs e)
         {
             Contract.Requires(Reset != null);

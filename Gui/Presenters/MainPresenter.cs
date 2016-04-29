@@ -9,6 +9,7 @@ using Analysis.Cci;
 using Contractor.Core;
 using Contractor.Core.Model;
 using Contractor.Gui.Models;
+using Contractor.Gui.Views;
 
 namespace Contractor.Gui.Presenters
 {

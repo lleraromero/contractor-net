@@ -4,7 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Action = Contractor.Core.Model.Action;
 
-namespace Contractor.Gui
+namespace Contractor.Gui.Views
 {
     internal interface IMethodFilterScreen
     {
