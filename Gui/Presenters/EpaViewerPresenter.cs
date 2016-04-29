@@ -20,11 +20,11 @@ namespace Contractor.Gui.Presenters
 
             this.screen.Graph = this.epaViewer.Graph;
             this.screen.Reset += (sender, args) => { RefreshScreen(); };
-            StateSelected2 += (sender, args) => { };
-            this.screen.StateSelected += (sender, args) => { StateSelected2(sender, args); };
+            StateSelected += (sender, args) => { };
+            this.screen.StateSelected += (sender, args) => { StateSelected(sender, args); };
         }
 
-        public event EventHandler<State> StateSelected2;
+        public event EventHandler<State> StateSelected;
 
         public void Reset()
         {

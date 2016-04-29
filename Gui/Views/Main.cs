@@ -33,7 +33,7 @@ namespace Contractor.Gui.Views
             cmbBackend.SelectedIndex = 1;
 
             epaViewerPresenter = new EpaViewerPresenter(epaViewer, new EpaViewer(), SynchronizationContext.Current);
-            epaViewerPresenter.StateSelected2 += ShowStateInformation;
+            epaViewerPresenter.StateSelected += ShowStateInformation;
             typesViewerPresenter = new TypesViewerPresenter(typesViewer, new TypesViewer(), SynchronizationContext.Current);
             typesViewerPresenter.TypeSelected += TypesViewerPresenterOnTypeSelected;
             typesViewerPresenter.StartAnalysis += TypesViewerPresenterOnStartAnalysis;
