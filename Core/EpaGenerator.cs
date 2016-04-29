@@ -81,57 +81,70 @@ namespace Contractor.Core
                 var source = statesToVisit.Dequeue();
                 visitedStates.Add(source);
 
-                // Change ParallelOptions.MaxDegreeOfParallelism to 1 to make the loop sequential.
-                Parallel.ForEach(source.EnabledActions, new ParallelOptions(), action =>
+                try
                 {
-                    var analyzer = analyzerFactory.CreateAnalyzer();
-
-                    // Which actions are enabled or disabled if 'action' is called from 'source'?
-                    var actionsResult = analyzer.AnalyzeActions(source, action, actions);
-                    if (actionsResult.EnabledActions.Count.Equals(actions.Count) && actionsResult.DisabledActions.Count.Equals(actions.Count))
+                    // Change ParallelOptions.MaxDegreeOfParallelism to 1 to make the loop sequential.
+                    Parallel.ForEach(source.EnabledActions, new ParallelOptions(), action =>
                     {
-                        Logger.Log(LogLevel.Warn,
-                            "Suspicious state! Only a state with a unsatisfiable invariant can lead to every action being enabled and disabled at the same time. It can also mean a bug in our code.");
-                        return;
-                    }
+                        var analyzer = analyzerFactory.CreateAnalyzer();
 
-                    Contract.Assert(!actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).Any(), "Results should be consistent");
-                    if (!actionsResult.EnabledActions.Any() && !actionsResult.DisabledActions.Any())
-                    {
-                        Logger.Log(LogLevel.Warn, "State explosion!");
-                    }
-
-                    var possibleTargets = GeneratePossibleStates(actions, actionsResult);
-
-                    if (cutter > 0 && possibleTargets.Count > cutter)
-                    {
-                        throw new Exception("Number of states too big.");
-                    }
-
-                    Contract.Assert(possibleTargets.Any(), "There is always at least one target to reach");
-
-                    // Which states are reachable from the current state (aka source) using 'action'?
-                    var transitionsResults = analyzer.AnalyzeTransitions(source, action, possibleTargets);
-
-                    if (!transitionsResults.Any())
-                    {
-                        Logger.Log(LogLevel.Warn, "No states are reachable.");
-                    }
-
-                    foreach (var transition in transitionsResults)
-                    {
-                        var target = transition.TargetState;
-                        // Do I have to add a new state to the EPA?
-                        if (!visitedStates.Contains(target) && !statesToVisit.Contains(target))
+                        // Which actions are enabled or disabled if 'action' is called from 'source'?
+                        var actionsResult = analyzer.AnalyzeActions(source, action, actions);
+                        if (actionsResult.EnabledActions.Count.Equals(actions.Count) && actionsResult.DisabledActions.Count.Equals(actions.Count))
                         {
-                            statesToVisit.Enqueue(target);
+                            Logger.Log(LogLevel.Warn,
+                                "Suspicious state! Only a state with a unsatisfiable invariant can lead to every action being enabled and disabled at the same time. It can also mean a bug in our code.");
+                            return;
                         }
-                        epaBuilder.Add(transition);
-                    }
 
-                    analyzerFactory.GeneratedQueriesCount += analyzer.GeneratedQueriesCount();
-                    analyzerFactory.UnprovenQueriesCount += analyzer.UnprovenQueriesCount();
-                });
+                        Contract.Assert(!actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).Any(), "Results should be consistent");
+                        if (!actionsResult.EnabledActions.Any() && !actionsResult.DisabledActions.Any())
+                        {
+                            Logger.Log(LogLevel.Warn, "State explosion!");
+                        }
+
+                        var possibleTargets = GeneratePossibleStates(actions, actionsResult);
+
+                        if (cutter > 0 && possibleTargets.Count > cutter)
+                        {
+                            throw new Exception("Number of states too big.");
+                        }
+
+                        Contract.Assert(possibleTargets.Any(), "There is always at least one target to reach");
+
+                        // Which states are reachable from the current state (aka source) using 'action'?
+                        var transitionsResults = analyzer.AnalyzeTransitions(source, action, possibleTargets);
+
+                        if (!transitionsResults.Any())
+                        {
+                            Logger.Log(LogLevel.Warn, "No states are reachable.");
+                        }
+
+                        foreach (var transition in transitionsResults)
+                        {
+                            var target = transition.TargetState;
+                            // Do I have to add a new state to the EPA?
+                            if (!visitedStates.Contains(target) && !statesToVisit.Contains(target))
+                            {
+                                statesToVisit.Enqueue(target);
+                            }
+                            epaBuilder.Add(transition);
+                        }
+
+                        analyzerFactory.GeneratedQueriesCount += analyzer.GeneratedQueriesCount();
+                        analyzerFactory.UnprovenQueriesCount += analyzer.UnprovenQueriesCount();
+                    });
+                }
+                catch (AggregateException e)
+                {
+                    foreach (var ex in e.InnerExceptions)
+                    {
+                        if (ex.GetType() == typeof (OperationCanceledException))
+                        {
+                            throw ex;
+                        }
+                    }
+                }
             }
 
             return epaBuilder.Build();

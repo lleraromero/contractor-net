@@ -233,6 +233,9 @@ namespace Contractor.Gui.Views
         {
             if (StopAnalysis != null)
             {
+                var msg = "Stopping analysis...";
+                UpdateStatus(msg);
+                UpdateOutput(msg);
                 StopAnalysis(sender, e);
             }
         }
