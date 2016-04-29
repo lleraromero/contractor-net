@@ -76,6 +76,7 @@
     <CodeContractsRuntimeCheckingLevel>Full</CodeContractsRuntimeCheckingLevel>
     <CodeContractsReferenceAssembly>%28none%29</CodeContractsReferenceAssembly>
     <CodeContractsAnalysisWarningLevel>0</CodeContractsAnalysisWarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
@@ -93,25 +94,13 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Cci.MetadataHelper, Version=1.0.13.0, Culture=neutral, PublicKeyToken=736440c9b414ea16, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\CCI-AST\Microsoft.Cci.MetadataHelper.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Msagl, Version=2.0.1.0, Culture=neutral, PublicKeyToken=7f84f738e1fc245c, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Msagl\Microsoft.Msagl.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Msagl.Drawing, Version=2.0.1.0, Culture=neutral, PublicKeyToken=8a3d7c21d5fa1306, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Msagl\Microsoft.Msagl.Drawing.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Msagl.GraphViewerGdi, Version=2.0.1.0, Culture=neutral, PublicKeyToken=fffc27ea4058b3a1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Msagl\Microsoft.Msagl.GraphViewerGdi.dll</HintPath>
+    <Reference Include="CommandLine, Version=1.9.71.2, Culture=neutral, PublicKeyToken=de6f01bd326f8c32, processorArchitecture=MSIL">
+      <HintPath>..\packages\CommandLineParser.1.9.71\lib\net45\CommandLine.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\GlobalAssemblyInfo.cs">
@@ -122,13 +111,34 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Analysis.Cci\Analysis.Cci.csproj">
+      <Project>{9a922e63-a371-4aa3-8026-edb091fef659}</Project>
+      <Name>Analysis.Cci</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Analyzer.CodeContracts\Analyzer.CodeContracts.csproj">
+      <Project>{d0af37f6-01ae-4aa0-afa7-1fb91d226c8f}</Project>
+      <Name>Analyzer.CodeContracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Analyzer.Corral\Analyzer.Corral.csproj">
+      <Project>{62808611-4211-4c87-9628-c237900a581a}</Project>
+      <Name>Analyzer.Corral</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Core.Model\Core.Model.csproj">
+      <Project>{c172f5cc-8814-46df-b25d-2994e524e1d5}</Project>
+      <Name>Core.Model</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Core\Core.csproj">
       <Project>{EBEDD305-0975-416B-A4E5-4C8F5EADB304}</Project>
       <Name>Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Instrumenter\Instrumenter.csproj">
+      <Project>{86c9fa05-49e9-462d-b719-1456a7e542e8}</Project>
+      <Name>Instrumenter</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

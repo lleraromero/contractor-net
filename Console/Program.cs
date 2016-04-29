@@ -1,152 +1,210 @@
-﻿using Contractor.Core;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
+using Analysis.Cci;
+using Analyzer.CodeContracts;
+using Analyzer.Corral;
+using CommandLine;
+using Contractor.Core;
+using Contractor.Core.Model;
 
 namespace Contractor.Console
 {
-    class Program
+    internal class Program
     {
-        private Options options;
-
         public static int Main(string[] args)
         {
 #if DEBUG
-            var TempPath = Path.Combine(Directory.GetCurrentDirectory(), "Temp");
-            if (!Directory.Exists(TempPath))
-                Directory.CreateDirectory(TempPath);
-            var GraphPath = Path.Combine(@"R:\", "Graph");
-            if (!Directory.Exists(GraphPath))
-                Directory.CreateDirectory(GraphPath);
-
-            var ExamplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\Examples\obj\Debug\Decl\Examples.dll"));
-
-            args = new string[]
+            var tempPath = ConfigurationManager.AppSettings["WorkingDir"];
+            var graphPath = @"C:\Users\lean\Desktop\EPAs";
+            if (!Directory.Exists(graphPath))
             {
-                "-i", ExamplesPath,
-                "-g", GraphPath,
-                "-tmp", TempPath,
-                "-il=true",
-                "-t", "Examples.Linear",
-                "-b", "Corral"
+                Directory.CreateDirectory(graphPath);
+            }
+
+            var examplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\Examples\obj\Debug\Decl\Examples.dll"));
+
+            args = new[]
+            {
+                "-i", examplesPath,
+                "-g", graphPath,
+                "--tmp", tempPath,
+                "-t", "Examples.Door",
+                "-b", "Corral",
+                "--ga",
+                "-o", @"C:\Users\lean\Desktop\EPAs\strengthenedAssembly.dll",
             };
 #endif
-            var assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName();
             var options = new Options();
-
-            System.Console.WriteLine();
-            System.Console.WriteLine("Contractor.NET Version {0}", assemblyName.Version);
-            System.Console.WriteLine("Copyright (C) LaFHIS - UBA. All rights reserved.");
-            System.Console.WriteLine();
-
-            args = args ?? new string[] { };
-            options.Parse(args);
-
-            if (!args.Any() || options.HelpRequested)
+            if (!Parser.Default.ParseArgumentsStrict(args, options))
             {
-                System.Console.WriteLine("usage: <general-option>*");
-                System.Console.WriteLine();
-                System.Console.WriteLine("where <general-option> is one of");
-                options.PrintOptions(string.Empty);
-                return -1;
-            }
-            else if (options.HasErrors)
-            {
-                options.PrintErrorsAndExit(System.Console.Error);
+                throw new FormatException("Args parsing error!");
             }
 
-            try
+            System.Console.WriteLine(options.InputAssembly);
+
+            var decompiler = new CciAssemblyPersister();
+            var inputAssembly = decompiler.Load(options.InputAssembly, null);
+            var typeToAnalyze = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
+
+            var analysisResult = GenerateEpa(inputAssembly, typeToAnalyze, options);
+
+            System.Console.WriteLine(analysisResult.ToString());
+
+            var epa = analysisResult.Epa;
+
+            SaveEpasAsImages(epa, new DirectoryInfo(options.GraphDirectory));
+
+            if (options.XML)
             {
-                var program = new Program(options);
-
-                EpaGenerator.Backend backend = EpaGenerator.Backend.Corral;
-                if (program.options.backend.Equals("CodeContracts", StringComparison.InvariantCultureIgnoreCase))
-                    backend = EpaGenerator.Backend.CodeContracts;
-
-                // epas is a mapping between Typename and the result of the analysis.
-                Dictionary<string, TypeAnalysisResult> epas = program.Execute(backend);
-
-                // Save each EPA as an image in the Graph folder
-                foreach (var result in epas)
-                {
-                    var typeName = result.Key.Replace('.', '_');
-                    using (var stream = File.Create(string.Format("{0}\\{1}.png", GraphPath, typeName)))
-                    {
-                        (new EpaBinarySerializer()).Serialize(stream, result.Value.EPA);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Console.WriteLine("Error: {0}", ex.Message);
+                SaveEpasAsXml(epa, new DirectoryInfo(options.GraphDirectory));
             }
 
+            if (options.GenerateStrengthenedAssembly)
+            {
+                var strengthenedAssembly = GenerateStrengthenedAssembly(epa, inputAssembly) as CciAssembly;
+                decompiler.Save(strengthenedAssembly, options.OutputAssembly);
+            }
+            
             System.Console.WriteLine("Done!");
-#if DEBUG
-            System.Console.WriteLine("Press any key to continue");
-            System.Console.ReadKey();
-#endif
+            System.Console.ReadLine();
             return 0;
         }
 
-        public Program(Options options)
+        protected static TypeAnalysisResult GenerateEpa(CciAssembly inputAssembly, ITypeDefinition typeToAnalyze, Options options)
         {
-            Contract.Requires(options != null);
+            System.Console.WriteLine("Starting analysis for type {0}", typeToAnalyze);
 
-            this.options = options;
+            var cancellationSource = new CancellationTokenSource();
 
-            var wrkdir = Directory.GetCurrentDirectory();
-            Configuration.Initialize();
+            var workingDir = CreateOrCleanupWorkingDirectory();
 
-            if (string.IsNullOrEmpty(options.output))
-                options.output = Path.Combine(wrkdir, "Output");
+            var queryGenerator = new CciQueryGenerator();
 
-            if (string.IsNullOrEmpty(options.graph))
-                options.graph = Path.Combine(wrkdir, "Graph");
+            IAnalyzerFactory analyzerFactory;
+            switch (options.Backend)
+            {
+                case "CodeContracts":
+                    var codeContracts = Environment.GetEnvironmentVariable("CodeContractsInstallDir");
+                    if (string.IsNullOrEmpty(codeContracts))
+                    {
+                        var msg = new StringBuilder();
+                        msg.AppendLine("The environment variable %CodeContractsInstallDir% does not exist.");
+                        msg.AppendLine("Please make sure that Code Contracts is installed correctly.");
+                        msg.AppendLine("This might be because the system was not restarted after Code Contracts installation.");
 
-            if (!string.IsNullOrEmpty(options.temp))
-                Configuration.TempPath = options.temp;
+                        throw new DirectoryNotFoundException(msg.ToString());
+                    }
+                    var cccheckArgs = ConfigurationManager.AppSettings["CccheckArgs"];
+                    Contract.Assert(cccheckArgs != null);
+                    var cccheck = new FileInfo(ConfigurationManager.AppSettings["CccheckFullName"]);
+                    Contract.Assert(cccheck.Exists);
+                    analyzerFactory = new CodeContractsAnalyzerFactory(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly,
+                        options.InputAssembly,
+                        typeToAnalyze, cancellationSource.Token);
+                    break;
 
-            if (!string.IsNullOrEmpty(options.cccheck))
-                Configuration.CheckerFileName = options.cccheck;
+                case "Corral":
+                    var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
+                    Contract.Assert(corralDefaultArgs != null);
+                    analyzerFactory = new CorralAnalyzerFactory(corralDefaultArgs, workingDir, queryGenerator, inputAssembly,
+                        options.InputAssembly, typeToAnalyze, cancellationSource.Token);
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
 
-            if (!string.IsNullOrEmpty(options.cccheckArgs))
-                Configuration.CheckerArguments = options.cccheckArgs;
+            var generator = new EpaGenerator(analyzerFactory, options.Cutter);
 
-            Configuration.InlineMethodsBody = options.inline;
+            var epaBuilder = new EpaBuilder(typeToAnalyze);
 
-            if (!Directory.Exists(options.graph))
-                Directory.CreateDirectory(options.graph);
+            var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
+            epaBuilderObservable.TransitionAdded += OnTransitionAdded;
+            TypeAnalysisResult analysisResult;
+            if (!options.Methods.Equals("All"))
+            {
+                var selectedMethods = options.Methods.Split(';');
+                analysisResult = generator.GenerateEpa(typeToAnalyze, selectedMethods, epaBuilderObservable).Result;
+            }
+            else
+            {
+                analysisResult = generator.GenerateEpa(typeToAnalyze, epaBuilderObservable).Result;
+            }
 
-            if (!Directory.Exists(Configuration.TempPath))
-                Directory.CreateDirectory(Configuration.TempPath);
+            return analysisResult;
         }
 
-        public Dictionary<string, TypeAnalysisResult> Execute(EpaGenerator.Backend backend)
+        protected static DirectoryInfo CreateOrCleanupWorkingDirectory()
         {
-            var epas = new Dictionary<string, TypeAnalysisResult>();
-            using (var generator = new EpaGenerator(backend))
+            var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
+            if (workingDir.Exists && workingDir.CreationTimeUtc < DateTime.UtcNow.AddDays(-3))
             {
-                generator.LoadAssembly(options.input);
-                generator.TypeAnalysisStarted += (sender, e) => { System.Console.WriteLine("Starting analysis for type {0}", e.TypeFullName); };
-                generator.TypeAnalysisDone += (sender, e) => { System.Console.WriteLine(e.AnalysisResult.ToString()); };
-
-                var cancellationSource = new CancellationTokenSource();
-                if (string.IsNullOrEmpty(options.type))
-                    epas = generator.GenerateEpas(cancellationSource.Token);
-                else
-                    epas = new Dictionary<string, TypeAnalysisResult>() { { options.type, generator.GenerateEpa(options.type, cancellationSource.Token) } };
-
-                if (options.generateAssembly)
-                {
-                    System.Console.WriteLine("Generating strengthened output assembly");
-                    generator.GenerateOutputAssembly(options.output);
-                }
+                workingDir.Delete(true);
             }
-            return epas;
+            workingDir.Create();
+            return workingDir;
+        }
+
+        protected static void OnTransitionAdded(object sender, TransitionAddedEventArgs e)
+        {
+            System.Console.WriteLine("======================================================");
+            System.Console.WriteLine("States number:" + e.EpaBuilder.States.Count);
+            System.Console.WriteLine("Transitions number:" + e.EpaBuilder.Transitions.Count);
+            System.Console.WriteLine("New transition:" + e.Transition);
+        }
+
+        protected static void SaveEpasAsImages(Epa epa, DirectoryInfo outputDir)
+        {
+            Contract.Requires(epa != null);
+            Contract.Requires(outputDir != null);
+
+            SaveEpaAs<EpaBinarySerializer>(epa, outputDir, "png");
+        }
+
+        protected static void SaveEpasAsXml(Epa epa, DirectoryInfo outputDir)
+        {
+            Contract.Requires(epa != null);
+            Contract.Requires(outputDir.Exists);
+
+            SaveEpaAs<EpaXmlSerializer>(epa, outputDir, "xml");
+        }
+
+        protected static void SaveEpaAs<T>(Epa epa, DirectoryInfo outputDir, string fileNameExtension) where T : ISerializer, new()
+        {
+            var typeName = epa.Type.ToString().Replace('.', '_');
+            var safeFileName = GetSafeFilename(string.Format("{0}\\{1}.{2}", outputDir.FullName, typeName, fileNameExtension));
+            using (var stream = File.Create(safeFileName))
+            {
+                new T().Serialize(stream, epa);
+            }
+        }
+
+        protected static IAssembly GenerateStrengthenedAssembly(Epa epa, CciAssembly assembly)
+        {
+            Contract.Requires(epa != null);
+            Contract.Requires(assembly != null);
+
+            System.Console.WriteLine("Generating strengthened output assembly");
+            var instrumenter = new Instrumenter.Instrumenter();
+            return instrumenter.InstrumentType(assembly, epa);
+        }
+
+        protected static string GetSafeFilename(string filename)
+        {
+            Contract.Requires(!string.IsNullOrEmpty(filename));
+            var safeFileName = RemoveCharsFrom(filename, Path.GetInvalidFileNameChars());
+            safeFileName = RemoveCharsFrom(safeFileName, Path.GetInvalidPathChars());
+            return safeFileName;
+        }
+
+        protected static string RemoveCharsFrom(string fileName, IEnumerable<char> charsToRemove)
+        {
+            return charsToRemove.Aggregate(fileName, (current, c) => current.Replace(c.ToString(), ""));
         }
     }
 }

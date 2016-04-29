@@ -1,0 +1,90 @@
+<!-- SMTPProtocol -->
+<code-binding name="SMTPProtocol" language="c" file="SMTPProtocol.c" inv="return state >= 0 &amp;&amp; 2 >= state;" >
+	
+	<initializer name="SMTPProtocol" pre="return 1;" params_pre="return 1;" >
+		<parameter type="char*" name="host_p" />
+		<parameter type="int" name="port_p" />
+	</initializer>
+	
+	<!-- 1 -->
+	<function name="openPort" pre="return 1;" params_pre="return *EXCEPTION==EXC_NO;" >
+		<parameter type="exception*" name="EXCEPTION" />
+	</function>
+
+	<!-- 2 -->
+	<function name="startTLS" pre="return 1;" params_pre="return *EXCEPTION==EXC_NO;" >
+		<parameter type="exception*" name="EXCEPTION" />
+	</function>
+
+	<!-- 3 -->
+	<function name="ehlo" pre="return spre_ehlo();" params_pre="return *EXCEPTION==EXC_NO;" >
+		<parameter type="exception*" name="EXCEPTION" />
+	</function>
+
+	<!-- 4 -->
+	<function name="helo" pre="return spre_helo();" params_pre="return *EXCEPTION==EXC_NO;" >
+		<parameter type="exception*" name="EXCEPTION" />
+	</function>
+
+	<!-- 5 -->
+	<function name="auth" pre="return spre_auth();" params_pre="return *EXCEPTION==EXC_NO;" >
+		<parameter type="exception*" name="EXCEPTION" />
+	</function>
+
+	<!-- 6 -->
+	<function name="mail" pre="return spre_mail();" params_pre="return *EXCEPTION==EXC_NO;" >
+		<parameter type="exception*" name="EXCEPTION" />
+	</function>
+	
+	<!-- 7 -->
+	<function name="rcpt" pre="return 1;" params_pre="return *EXCEPTION==EXC_NO;" >
+		<parameter type="exception*" name="EXCEPTION" />
+	</function>
+	
+	<!-- 8 -->
+	<function name="data" pre="return spre_data();" params_pre="return *EXCEPTION==EXC_NO;" >
+		<parameter type="exception*" name="EXCEPTION" />
+	</function>
+	
+	<!-- 9 -->
+	<function name="quit" pre="return 1;" params_pre="return *EXCEPTION==EXC_NO;" >
+		<parameter type="exception*" name="EXCEPTION" />
+	</function>
+	
+	<!-- 10 -->
+	<function name="reset" pre="return 1;" params_pre="return *EXCEPTION==EXC_NO;" >
+		<parameter type="exception*" name="EXCEPTION" />
+	</function>
+	
+	<!-- 11 -->
+	<function name="verify" pre="return 1;" params_pre="return *EXCEPTION==EXC_NO;" >
+		<parameter type="exception*" name="EXCEPTION" />
+	</function>
+	
+	<!-- 12 -->
+	<function name="expand" pre="return spre_expand();" params_pre="return *EXCEPTION==EXC_NO;" >
+		<parameter type="exception*" name="EXCEPTION" />
+	</function>
+	
+	<!-- 13 -->
+	<function name="noop" pre="return spre_noop();" params_pre="return *EXCEPTION==EXC_NO;" >
+		<parameter type="exception*" name="EXCEPTION" />
+	</function>
+	
+	<!-- 14 -->
+	<function name="authReceive" pre="return 1;" params_pre="return *EXCEPTION==EXC_NO;" >
+		<parameter type="exception*" name="EXCEPTION" />
+	</function>
+	
+	<!-- 15 -->
+	<function name="authSend" pre="return 1;" params_pre="return *EXCEPTION==EXC_NO;" >
+		<parameter type="exception*" name="EXCEPTION" />
+	</function>
+	
+	<!-- 16 -->
+	<function name="dropConnection" pre="return 1;" params_pre="return *EXCEPTION==EXC_NO;" >
+		<parameter type="exception*" name="EXCEPTION" />
+	</function>
+
+</code-binding>
+

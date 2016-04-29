@@ -1,0 +1,74 @@
+<!-- [MS-PCCRR]: Peer Content Caching and Retrieval: Retrieval specification (http://msdn.microsoft.com/en-us/library/dd340715%28PROT.10%29.aspx) -->
+<code-binding name="pccrr_client" language="c" file="pccrr_client.c" inv="return invariant();">
+	
+	<initializer name="init" pre="return 1;" />
+	
+	<!-- 1 -->	
+	<function name="GetSutClientPlatform" pre="return statepre_GetSutClientPlatform();" params_pre="return parampre_GetSutClientPlatform(sutPlatform);">
+		<parameter type="SutPlatform" name="sutPlatform" />
+	</function>
+	
+	<!-- 2 -->	
+	<function name="InitSutClient" pre="return statepre_InitSutClient();" params_pre="return parampre_InitSutClient(isTestingNegotiation);" >
+		<parameter type="bool" name="isTestingNegotiation" />
+	</function>
+	
+	<!-- 3 -->	
+	<function name="ReceiveMsgNegoReq" pre="return statepre_ReceiveMsgNegoReq();" params_pre="return parampre_ReceiveMsgNegoReq();" >
+	</function>
+	
+	<!-- 4 -->	
+	<function name="SendMsgNegoResp" pre="return statepre_SendMsgNegoResp();" params_pre="return parampre_SendMsgNegoResp();" >
+	</function>
+	
+	<!-- 5 -->	
+	<function name="TriggerSutClientDownload" pre="return statepre_TriggerSutClientDownload();" params_pre="return parampre_TriggerSutClientDownload(cType);" >
+		<parameter type="ContentType" name="cType" />
+	</function>
+	
+	<!-- 6 -->	
+	<function name="ReceiveMsgGetBlkList" pre="return statepre_ReceiveMsgGetBlkList();" params_pre="return parampre_ReceiveMsgGetBlkList();" >
+	</function>
+	
+	<!-- 7 -->	
+	<function name="SendMsgBlkListNormal" pre="return statepre_SendMsgBlkListNormal();" params_pre="return parampre_SendMsgBlkListNormal(isTimerExpire, isSameSegment, isWellFormed, isOverlap);" >
+		<parameter type="bool" name="isTimerExpire" />
+		<parameter type="bool" name="isSameSegment" />
+		<parameter type="bool" name="isWellFormed" />
+		<parameter type="bool" name="isOverlap" />
+	</function>
+	
+	<!-- 8 -->	
+	<function name="SendMsgBlkListAbnormal" pre="return statepre_SendMsgBlkListAbnormal();" params_pre="return parampre_SendMsgBlkListAbnormal(isTimerExpire, isSameSegment, isWellFormed, isOverlap);" >
+		<parameter type="bool" name="isTimerExpire" />
+		<parameter type="bool" name="isSameSegment" />
+		<parameter type="bool" name="isWellFormed" />
+		<parameter type="bool" name="isOverlap" />
+	</function>
+	
+	<!-- 9 -->	
+	<function name="ReceiveMsgGetBlk" pre="return statepre_ReceiveMsgGetBlk();" params_pre="return parampre_ReceiveMsgGetBlk(index);" >
+		<parameter type="uint" name="index" />
+	</function>
+	
+	<!-- 10 -->	
+	<function name="SendMsgBlk" pre="return statepre_SendMsgBlk();" params_pre="return parampre_SendMsgBlk(cType, isTimerExpire, isSameSegment, isWellFormed, index);" >
+		<parameter type="ContentType" name="cType" />
+		<parameter type="bool" name="isTimerExpire" />
+		<parameter type="bool" name="isSameSegment" />
+		<parameter type="bool" name="isWellFormed" />
+		<parameter type="uint" name="index" />
+	</function>
+	
+	<!-- 11 -->	
+	<function name="SutClientReceivingTimeOut" pre="return statepre_SutClientReceivingTimeOut();" params_pre="return parampre_SutClientReceivingTimeOut();" >
+	</function>
+
+	<!-- 12 -->	
+	<function name="SutClientVerifyBlockContent" pre="return statepre_SutClientVerifyBlockContent();" params_pre="return parampre_SutClientVerifyBlockContent(cType, index);" >
+		<parameter type="ContentType" name="cType" />
+		<parameter type="uint" name="index" />
+	</function>
+	
+</code-binding>
+

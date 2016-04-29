@@ -1,0 +1,30 @@
+<!-- Signature: JDK 1.4 Signature producer and verifier (fragment) -->
+<code-binding name="Signature" language="c" file="Signature.c" inv="return invariant();">
+	
+	<initializer name="Signature" pre="return sys_pre_Signature();" param_pre="return par_pre_Signature();" />
+	
+	<!-- 1 -->	
+	<function name="initVerify" pre="return sys_pre_initVerify();" params_pre="return par_pre_initVerify(publicKey);" >
+		<parameter type="PublicKey" name="publicKey" />
+	</function>
+
+	<!-- 2 -->	
+	<function name="initSign" pre="return sys_pre_initSign();" params_pre="return par_pre_initSign(privateKey);" >
+		<parameter type="PrivateKey" name="privateKey" />
+	</function>
+
+	<!-- 3 -->	
+	<function name="sign" pre="return sys_pre_sign();" params_pre="return par_pre_sign();" />
+
+	<!-- 4 -->	
+	<function name="verify" pre="return sys_pre_verify();" params_pre="return par_pre_verify(signature);" >
+		<parameter type="byte*" name="signature" />
+	</function>
+
+	<!-- 5 -->	
+	<function name="update" pre="return sys_pre_update();" params_pre="return par_pre_update(b);" >
+		<parameter type="byte" name="b" />
+	</function>
+
+</code-binding>
+

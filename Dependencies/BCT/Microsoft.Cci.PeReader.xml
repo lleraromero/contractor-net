@@ -995,34 +995,6 @@
             Windows.UI.Xaml.Media.Media3D.Matrix3D
             </summary>
     </member>
-    <member name="M:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.GetEnumerator">
-      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.System#Collections#IEnumerable#GetEnumerator">
-      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
-      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_CurrentIndex == -1" vb="result.get_CurrentIndex = -1">result.get_CurrentIndex == -1</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.MemoryBlockEnumerator.System#Collections#IEnumerator#get_Current">
-      <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.MemoryBlockEnumerator.MoveNext">
-      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_Model == old(this.get_Model)" vb="Me.get_Model = old(Me.get_Model)">this.get_Model == old(this.get_Model)</ensures>
-      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex &lt; this.get_Model.Length" vb="Me.get_CurrentIndex &lt; Me.get_Model.Length">this.get_CurrentIndex &lt; this.get_Model.Length</ensures>
-      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex &gt;= 0" vb="Me.get_CurrentIndex &gt;= 0">this.get_CurrentIndex &gt;= 0</ensures>
-      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex == old(this.get_CurrentIndex) + 1" vb="Me.get_CurrentIndex = old(Me.get_CurrentIndex) + 1">this.get_CurrentIndex == old(this.get_CurrentIndex) + 1</ensures>
-    </member>
-    <member name="P:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.MemoryBlockEnumerator.Current">
-      <getter>
-        <ensures inheritedFrom="M:System.Collections.Generic.IEnumerator`1.get_Current" inheritedFromTypeName="IEnumerator" csharp="(object)result == this.get_Model[this.get_CurrentIndex]" vb="((Object)result) = Me.get_Model(Me.get_CurrentIndex)">(object)result == this.get_Model[this.get_CurrentIndex]</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.MemoryBlockEnumerator.System#Collections#IEnumerator#Current">
-      <getter>
-        <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
-      </getter>
-    </member>
     <member name="M:Microsoft.Cci.UtilityDataStructures.EnumerableArrayWrapper`2.GetEnumerator">
       <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
@@ -1047,6 +1019,34 @@
       </getter>
     </member>
     <member name="P:Microsoft.Cci.UtilityDataStructures.EnumerableArrayWrapper`2.ArrayEnumerator.System#Collections#IEnumerator#Current">
+      <getter>
+        <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.GetEnumerator">
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.System#Collections#IEnumerable#GetEnumerator">
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_CurrentIndex == -1" vb="result.get_CurrentIndex = -1">result.get_CurrentIndex == -1</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.MemoryBlockEnumerator.System#Collections#IEnumerator#get_Current">
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.MemoryBlockEnumerator.MoveNext">
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_Model == old(this.get_Model)" vb="Me.get_Model = old(Me.get_Model)">this.get_Model == old(this.get_Model)</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex &lt; this.get_Model.Length" vb="Me.get_CurrentIndex &lt; Me.get_Model.Length">this.get_CurrentIndex &lt; this.get_Model.Length</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex &gt;= 0" vb="Me.get_CurrentIndex &gt;= 0">this.get_CurrentIndex &gt;= 0</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex == old(this.get_CurrentIndex) + 1" vb="Me.get_CurrentIndex = old(Me.get_CurrentIndex) + 1">this.get_CurrentIndex == old(this.get_CurrentIndex) + 1</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.MemoryBlockEnumerator.Current">
+      <getter>
+        <ensures inheritedFrom="M:System.Collections.Generic.IEnumerator`1.get_Current" inheritedFromTypeName="IEnumerator" csharp="(object)result == this.get_Model[this.get_CurrentIndex]" vb="((Object)result) = Me.get_Model(Me.get_CurrentIndex)">(object)result == this.get_Model[this.get_CurrentIndex]</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.UtilityDataStructures.EnumerableMemoryBlockWrapper.MemoryBlockEnumerator.System#Collections#IEnumerator#Current">
       <getter>
         <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
       </getter>

@@ -26,7 +26,7 @@
     <CodeContractsRuntimeThrowOnFailure>True</CodeContractsRuntimeThrowOnFailure>
     <CodeContractsRuntimeCallSiteRequires>False</CodeContractsRuntimeCallSiteRequires>
     <CodeContractsRuntimeSkipQuantifiers>False</CodeContractsRuntimeSkipQuantifiers>
-    <CodeContractsRunCodeAnalysis>True</CodeContractsRunCodeAnalysis>
+    <CodeContractsRunCodeAnalysis>False</CodeContractsRunCodeAnalysis>
     <CodeContractsNonNullObligations>True</CodeContractsNonNullObligations>
     <CodeContractsBoundsObligations>True</CodeContractsBoundsObligations>
     <CodeContractsArithmeticObligations>True</CodeContractsArithmeticObligations>
@@ -64,6 +64,7 @@
     <CodeContractsNecessaryEnsures>True</CodeContractsNecessaryEnsures>
     <CodeContractsSkipAnalysisIfCannotConnectToCache>False</CodeContractsSkipAnalysisIfCannotConnectToCache>
     <CodeContractsInferEnsuresAutoProperties>True</CodeContractsInferEnsuresAutoProperties>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -83,10 +84,11 @@
     </Compile>
     <Compile Include="ATM.cs" />
     <Compile Include="Door.cs" />
-    <Compile Include="DoorPost.cs" />
     <Compile Include="FiniteStack.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ICSE2011\ListItr.cs" />
+    <Compile Include="ICSE2011\PipedOutputStream.cs" />
     <Compile Include="Linear.cs" />
     <Compile Include="ICSE2011\LinkedList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -96,7 +98,9 @@
     <Compile Include="GenericStackSet.cs" />
     <Compile Include="VendingMachine.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="ICSE2011\ListItr.c" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

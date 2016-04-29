@@ -1,0 +1,17 @@
+<!-- List: a single-linked list implementation -->
+<code-binding name="List" language="c" file="List.c" inv="return invariant();" >
+	
+	<initializer name="List" pre="return 1;" params_pre="return 1;" />
+	
+	<!-- 1 -->
+	<function name="add" pre="return add_req();" params_pre="return par_pre_add();" >
+		<parameter type="int" name="data" />
+	</function>
+	
+	<function name="remove" pre="return remove_req();" params_pre="return 1;" />
+
+	<!-- 2 -->	
+	<function name="destroy" pre="return destroy_req();" params_pre="return 1;" />
+
+</code-binding>
+

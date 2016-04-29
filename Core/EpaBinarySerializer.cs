@@ -1,26 +1,34 @@
-﻿using Microsoft.Msagl.Drawing;
-using Microsoft.Msagl.GraphViewerGdi;
-using System;
+﻿using System;
+using System.Diagnostics.Contracts;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.IO;
 using System.Linq;
+using Contractor.Core.Model;
+using Microsoft.Msagl.Drawing;
+using Microsoft.Msagl.GraphViewerGdi;
+using Color = System.Drawing.Color;
 
 namespace Contractor.Core
 {
-    public class EpaBinarySerializer
+    public class EpaBinarySerializer : ISerializer
     {
-        public EpaBinarySerializer()
-        {
-        }
+        protected Epa epa;
 
         public void Serialize(Stream stream, Epa epa)
         {
-            Graph graph = new Graph();
-            graph.Attr.OptimizeLabelPositions = true;
-            graph.Attr.LayerDirection = LayerDirection.LR;
+            this.epa = epa;
+
+            var graph = new Graph
+            {
+                Attr =
+                {
+                    OptimizeLabelPositions = true,
+                    LayerDirection = LayerDirection.LR
+                }
+            };
 
             foreach (var s in epa.States)
             {
@@ -32,12 +40,17 @@ namespace Contractor.Core
                 AddTransition(t, graph);
             }
 
-            GraphRenderer renderer = new GraphRenderer(graph);
-            renderer.CalculateLayout();            
+            RenderGraph(stream, graph);
+        }
 
-            var scale = 6.0f;
-            var w = (int)(graph.Width * scale);
-            var h = (int)(graph.Height * scale);
+        private void RenderGraph(Stream stream, Graph graph)
+        {
+            var renderer = new GraphRenderer(graph);
+            renderer.CalculateLayout();
+
+            const float scale = 6.0f;
+            var w = (int) (graph.Width*scale);
+            var h = (int) (graph.Height*scale);
 
             using (var img = new Bitmap(w, h, PixelFormat.Format32bppPArgb))
             using (var g = Graphics.FromImage(img))
@@ -47,17 +60,17 @@ namespace Contractor.Core
                 g.CompositingQuality = CompositingQuality.HighQuality;
                 g.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
-                this.DrawGraph(g, w, h, scale, graph, renderer);
+                DrawGraph(g, w, h, scale, graph, renderer);
 
                 renderer.Render(img);
-                img.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                img.Save(stream, ImageFormat.Png);
             }
         }
 
         private void DrawGraph(Graphics g, int w, int h, float scale, Graph graph, GraphRenderer renderer)
         {
-            var num1 = (float)((0.5 * w) - (scale * (graph.Left + (0.5 * graph.Width))));
-            var num2 = (float)((0.5 * h) + (scale * (graph.Bottom + (0.5 * graph.Height))));
+            var num1 = (float) (0.5*w - scale*(graph.Left + 0.5*graph.Width));
+            var num2 = (float) (0.5*h + scale*(graph.Bottom + 0.5*graph.Height));
 
             using (var brush = new SolidBrush(Draw.MsaglColorToDrawingColor(graph.Attr.BackgroundColor)))
                 g.FillRectangle(brush, 0, 0, w, h);
@@ -69,26 +82,17 @@ namespace Contractor.Core
             }
         }
 
-        private void AddState(IState s, Graph graph)
+        private void AddState(State s, Graph graph)
         {
             var n = graph.AddNode(s.Name);
 
             n.UserData = s;
-            n.DrawNodeDelegate += this.OnDrawNode;
+            n.DrawNodeDelegate += OnDrawNode;
             n.Attr.Shape = Shape.Circle;
             n.Attr.LabelMargin = 7;
             n.Label.FontName = "Cambria";
             n.Label.FontSize = 6;
-
-            // TODO: Permitir elegir la descripcion
-            //if (_Options.StateDescription)
-            //{
-                n.LabelText = string.Join(Environment.NewLine, s.EnabledActions);
-            //}
-            //else
-            //{
-            //    n.LabelText = string.Format("S{0}", graph.NodeCount);
-            //}
+            n.LabelText = s.ToString();
         }
 
         private bool OnDrawNode(Node node, object graphics)
@@ -96,30 +100,30 @@ namespace Contractor.Core
             var g = graphics as Graphics;
             var w = node.Attr.Width;
             var h = node.Attr.Height;
-            var x = node.Attr.Pos.X - (w / 2.0);
-            var y = node.Attr.Pos.Y - (h / 2.0);
+            var x = node.Attr.Pos.X - w/2.0;
+            var y = node.Attr.Pos.Y - h/2.0;
 
-            g.FillEllipse(Brushes.AliceBlue, (float)x, (float)y, (float)w, (float)h);
+            g.FillEllipse(Brushes.AliceBlue, (float) x, (float) y, (float) w, (float) h);
 
             var penWidth = /*(_SelectedGraphNode != null && _SelectedGraphNode.Node == node ? 2f : 1f);*/ 1f;
-            using (var pen = new Pen(System.Drawing.Color.Black, penWidth))
-                g.DrawEllipse(pen, (float)x, (float)y, (float)w, (float)h);
+            using (var pen = new Pen(Color.Black, penWidth))
+                g.DrawEllipse(pen, (float) x, (float) y, (float) w, (float) h);
 
-            if ((node.UserData as IState).IsInitial)
+            if ((node.UserData as State).Equals(epa.Initial))
             {
                 const double offset = 3.1;
-                x += offset / 2.0;
-                y += offset / 2.0;
+                x += offset/2.0;
+                y += offset/2.0;
                 w -= offset;
                 h -= offset;
 
-                g.DrawEllipse(Pens.Black, (float)x, (float)y, (float)w, (float)h);
+                g.DrawEllipse(Pens.Black, (float) x, (float) y, (float) w, (float) h);
             }
 
             using (var m = g.Transform)
             using (var saveM = m.Clone())
             {
-                var c = (float)(2.0 * node.Label.Center.Y);
+                var c = (float) (2.0*node.Label.Center.Y);
                 x = node.Label.Center.X;
                 y = node.Label.Center.Y;
 
@@ -134,7 +138,7 @@ namespace Contractor.Core
                     format.Alignment = StringAlignment.Center;
                     format.LineAlignment = StringAlignment.Center;
 
-                    g.DrawString(node.LabelText, font, Brushes.Black, (float)x, (float)y, format);
+                    g.DrawString(node.LabelText, font, Brushes.Black, (float) x, (float) y, format);
                 }
 
                 g.Transform = saveM;
@@ -143,34 +147,29 @@ namespace Contractor.Core
             return true;
         }
 
-        private void AddTransition(ITransition t, Graph graph)
+        private void AddTransition(Transition t, Graph graph)
         {
-            var label = t.Action;
+            var label = t.Action.ToString();
             var createEdge = true;
-            Style lineStyle = t.IsUnproven ? Style.Dashed : Style.Solid;
+            var lineStyle = t.IsUnproven ? Style.Dashed : Style.Solid;
 
-            // TODO: Permitir elegir
-            if (/*_Options.CollapseTransitions*/ true)
+            var n = graph.FindNode(t.SourceState.Name);
+            Contract.Assert(n != null);
+
+            if (t.IsUnproven)
             {
-                var n = graph.FindNode(t.SourceState.Name);
+                label = string.Format("{0}?", label);
+            }
 
-                // TODO: Permitir elegir
-                if (/*_Options.UnprovenTransitions &&*/ t.IsUnproven)
-                    label = string.Format("{0}?", label);
+            var edges = n.OutEdges.Union(n.SelfEdges);
 
-                if (n != null)
+            foreach (var ed in edges)
+            {
+                if (ed.Target == t.TargetState.Name && ed.Attr.Styles.Contains(lineStyle))
                 {
-                    var edges = n.OutEdges.Union(n.SelfEdges);
-
-                    foreach (var ed in edges)
-                    {
-                        if (ed.Target == t.TargetState.Name && ed.Attr.Styles.Contains(lineStyle))
-                        {
-                            ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
-                            createEdge = false;
-                            break;
-                        }
-                    }
+                    ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
+                    createEdge = false;
+                    break;
                 }
             }
 

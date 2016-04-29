@@ -12,12 +12,9 @@ The inferred typestates are enabledness preserving: a level of abstraction that 
 Contractor.NET is based on [Contractor](http://lafhis.dc.uba.ar/misc/contractor/Welcome.html), a previous work by the same authors.
 
 # Using Contractor.NET
+In order to use the tool to analyse a class the tool needs the assembly which contains the type. Apart from that, contracts anotations are required to get meaningful information about the type invariant and the preconditions of each method.
 
-There are different ways to use Contractor.NET:
-
-### Contractor.NET on the command line
-
-### Contractor.NET GUI
+Right now, we resort to contracts provided by the Diagnostics.Contracts namespace included in the .NET framework. Since Code Contracts puts those contracts in a separate file both assemblies are required to create the EPA. However, before removing the contracts a copy of the original is stored in the "$(PROJECTDIR)\obj\Debug\Decl" directory. It's recommended to use this assembly to avoid using two assemblies :).
 
 # Getting Contractor.NET
 
@@ -28,9 +25,46 @@ To access the source code, use the bitbucket repository:
 
 ```git clone https://lleraromero@bitbucket.org/lleraromero/contractor-net.git```
 
+By default, the application should work properly using the compiled Corral version included in this repository. It is currently Z3 x86 v4.3.1.
 
-# Building Contractor.NET
+To use Code Contracts as a backend, we have tested it with version 1.9.10714.2.
 
+
+# Dependencies 
+In order to build Contractor.NET a few dependencies are needed. Some of them come as NuGet packages and the rest are available in this repository.
+
+However, if you need to debug the code you should grab the source code for this dependencies:
+
+* Corral
+```
+git clone https://github.com/boogie-org/corral.git
+git checkout 6f63184
+```
+
+* Boogie
+```
+git clone https://github.com/boogie-org/boogie.git
+git checkout 87e1e7b
+```
+
+* Z3
+```
+git clone https://github.com/Z3Prover/z3.git
+git checkout 89c1785
+```
+
+* Bytecode Translator
+```
+git clone https://github.com/lleraromero/bytecodetranslator.git
+git checkout c397a3e
+```
+Eventually, this should be merged with the official repository.
+
+* CCI AST
+Download from: [http://cciast.codeplex.com/](http://cciast.codeplex.com/) (Some changes weren't uploaded yet, since we are waiting for a git repository)
+
+* Code Contracts
+```git clone https://github.com/Microsoft/CodeContracts.git```
 
 # More Information
 Website: http://lafhis.dc.uba.ar/contractor/contractor.net-web/
