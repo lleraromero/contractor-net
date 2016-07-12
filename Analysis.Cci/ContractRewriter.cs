@@ -14,7 +14,7 @@ namespace Analysis.Cci
     {
         protected readonly ITypeReference systemVoid;
         protected readonly ISourceLocationProvider sourceLocationProvider;
-
+        //public string expectedExitCode;
         public ContractRewriter(IMetadataHost host, ContractProvider contractProvider, ISourceLocationProvider sourceLocationProvider)
             : base(host, contractProvider)
         {
@@ -165,6 +165,29 @@ namespace Analysis.Cci
 
             var newStatements = new List<IStatement>();
 
+            // add the preconditions as assumes
+            foreach (var precondition in methodContract.Preconditions)
+            {
+                var methodCall = new MethodCall
+                {
+                    Arguments =
+                        new List<IExpression>
+                        {
+                            Rewrite(precondition.Condition),
+                            precondition.Description ?? new CompileTimeConstant { Type = host.PlatformType.SystemString, Value = "Precondition" }
+                        },
+                    IsStaticCall = true,
+                    MethodToCall = AssumeReference,
+                    Type = systemVoid,
+                    Locations = new List<ILocation>(precondition.Locations)
+                };
+                var es = new ExpressionStatement
+                {
+                    Expression = methodCall
+                };
+                newStatements.Add(es);
+            }
+
             var existingStatements = new List<IStatement>(sourceMethodBody.Block.Statements);
             existingStatements = Rewrite(existingStatements);
 
@@ -195,29 +218,6 @@ namespace Analysis.Cci
                     InitialValue = new CompileTimeConstant { Type = methodDefinition.Type, Value = null }
                 };
                 newStatements.Add(retLocal);
-            }
-
-            // add the preconditions as assumes
-            foreach (var precondition in methodContract.Preconditions)
-            {
-                var methodCall = new MethodCall
-                {
-                    Arguments =
-                        new List<IExpression>
-                        {
-                            Rewrite(precondition.Condition),
-                            precondition.Description ?? new CompileTimeConstant { Type = host.PlatformType.SystemString, Value = "Precondition" }
-                        },
-                    IsStaticCall = true,
-                    MethodToCall = AssumeReference,
-                    Type = systemVoid,
-                    Locations = new List<ILocation>(precondition.Locations)
-                };
-                var es = new ExpressionStatement
-                {
-                    Expression = methodCall
-                };
-                newStatements.Add(es);
             }
 
             // Add the invariant as a precondition as well
@@ -255,12 +255,17 @@ namespace Analysis.Cci
             };
 
             var retRewriter = new ReturnRewriter(host, dummyPostconditionStatement, retLocal);
+            //retRewriter.expectedExitCode = expectedExitCode;
 
             //replace (nested) ReturnStatements with the GoTo to a single return at the end
             newStatements.AddRange(existingStatements.Select(stmt => retRewriter.Rewrite(stmt)));
 
             // now, that all the existing statements were added it is time for the postcondition block
             newStatements.Add(dummyPostconditionStatement);
+            //newStatements.Insert(newStatements.Count - 1,dummyPostconditionStatement);
+
+
+            
 
             // Add assume statements for each postcondition that predicates ONLY about parameters (ie. not about the instance)
             var contractDependencyAnalyzer = new CciContractDependenciesAnalyzer(contractProvider);

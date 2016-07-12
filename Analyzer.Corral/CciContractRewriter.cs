@@ -13,7 +13,7 @@ namespace Analyzer.Corral
     internal class CciContractRewriter
     {
         protected readonly CodeContractAwareHostEnvironment host;
-
+        //public string expectedExitCode;
         public CciContractRewriter()
         {
             host = CciHostEnvironment.GetInstance();
@@ -23,6 +23,7 @@ namespace Analyzer.Corral
         {
             ISourceLocationProvider sourceLocationProvider = GetPdbReader(assembly.Module);
             var trans = new ContractRewriter(host, assembly.ContractProvider, sourceLocationProvider);
+            //trans.expectedExitCode = expectedExitCode;
             var newModule = trans.Rewrite(assembly.Module) as Module;
             return new CciAssembly(newModule, assembly.ContractProvider);
         }

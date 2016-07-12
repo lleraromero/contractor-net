@@ -13,6 +13,10 @@ namespace Contractor.Core
         ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions);
         IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets);
         string GetUsageStatistics();
+
+        ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions, string exitCode);
+
+        IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string exitCode);
     }
 
     #region IAnalyzer Contracts
@@ -29,6 +33,16 @@ namespace Contractor.Core
             throw new NotImplementedException();
         }
 
+        public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions, string exitCode)
+        {
+            Contract.Requires(source != null);
+            Contract.Requires(action != null);
+            Contract.Requires(exitCode != null);
+            Contract.Requires(actions.Any());
+            Contract.Ensures(Contract.Result<ActionAnalysisResults>() != null);
+            throw new NotImplementedException();
+        }
+
         public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
             Contract.Requires(source != null);
@@ -38,6 +52,14 @@ namespace Contractor.Core
             throw new NotImplementedException();
         }
 
+        public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string exitCode)
+        {
+            Contract.Requires(source != null);
+            Contract.Requires(action != null);
+            Contract.Requires(targets.Any());
+            Contract.Ensures(Contract.Result<IReadOnlyCollection<Transition>>().Any());
+            throw new NotImplementedException();
+        }
         public string GetUsageStatistics()
         {
             throw new NotImplementedException();

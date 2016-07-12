@@ -7,8 +7,8 @@ namespace Contractor.Core.Model
     public abstract class Action : IEquatable<Action>
     {
         public abstract string Name { get; }
-        public abstract IMethodDefinition Method { get; }
-        public abstract IMethodContract Contract { get; }
+        public abstract IMethodDefinition Method { get; set; }
+        public abstract IMethodContract Contract { get; set; }
         public abstract bool IsPure { get; }
 
         #region IEquatable

@@ -12,7 +12,7 @@ namespace Analysis.Cci
     public abstract class CciActionQueryGenerator
     {
         protected IContractAwareHost host;
-
+        public IExpression exitCode_eq_expected;
         protected CciActionQueryGenerator(IContractAwareHost host)
         {
             this.host = host;
@@ -128,13 +128,18 @@ namespace Analysis.Cci
                         Description = new CompileTimeConstant { Value = "Inlined method postcondition", Type = host.PlatformType.SystemString }
                     };
                 //Ponemos los assume antes del return
+                var assume = assumes.ElementAt(0);
+                this.exitCode_eq_expected = assume.Condition;
+                List<AssumeStatement> finalAssumes = new List<AssumeStatement>(assumes);
+                finalAssumes.RemoveAt(0);
+
                 if (block.Statements.Count > 0 && block.Statements.Last() is IReturnStatement)
                 {
-                    block.Statements.InsertRange(block.Statements.Count - 1, assumes);
+                    block.Statements.InsertRange(block.Statements.Count - 1, finalAssumes);
                 }
                 else
                 {
-                    block.Statements.AddRange(assumes);
+                    block.Statements.AddRange(finalAssumes);
                 }
             }
 

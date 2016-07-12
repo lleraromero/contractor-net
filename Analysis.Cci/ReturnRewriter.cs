@@ -8,6 +8,7 @@ namespace Analysis.Cci
     {
         protected readonly ILabeledStatement target;
         protected readonly ILocalDeclarationStatement local;
+        //public string expectedExitCode;
 
         public ReturnRewriter(IMetadataHost host, ILabeledStatement target, ILocalDeclarationStatement local)
             : base(host)
@@ -17,6 +18,22 @@ namespace Analysis.Cci
             this.local = local;
         }
 
+        /*
+         * public override Microsoft.Cci.IExpression Rewrite(Microsoft.Cci.IAssignment assignment)
+        {
+            var newAssignment = (Microsoft.Cci.IAssignment)base.Rewrite(assignment);
+            if (newAssignment.Target.Definition.ToString().Contains("expectedExitCode") && this.expectedExitCode!=null)
+            {
+                Assignment ass = new Assignment(newAssignment);
+                CompileTimeConstant con = new CompileTimeConstant((ICompileTimeConstant)ass.Source);
+                con.Value = this.expectedExitCode;
+                ass.Source = con;
+                newAssignment = ass;
+            }
+            return newAssignment;
+        }
+         * */
+                
         /// <summary>
         ///     Rewrites the return statement.
         /// </summary>

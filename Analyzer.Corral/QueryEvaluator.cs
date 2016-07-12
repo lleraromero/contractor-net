@@ -70,7 +70,7 @@ namespace Analyzer.Corral
             return unreachableQueries.Select(query => query.ActionUnderTest).ToList();
         }
 
-        public IReadOnlyCollection<Transition> GetFeasibleTransitions(IReadOnlyCollection<TransitionQuery> transitionQueries)
+        public IReadOnlyCollection<Transition> GetFeasibleTransitions(IReadOnlyCollection<TransitionQuery> transitionQueries,string exitCode="Ok")
         {
             Contract.Requires(transitionQueries != null);
 
@@ -82,10 +82,10 @@ namespace Analyzer.Corral
                 switch (result)
                 {
                     case QueryResult.Reachable:
-                        feasibleTransitions.Add(new Transition(query.Action, query.SourceState, query.TargetState, false));
+                        feasibleTransitions.Add(new Transition(query.Action, query.SourceState, query.TargetState, false,exitCode,"NOSE"));
                         break;
                     case QueryResult.MaybeReachable:
-                        feasibleTransitions.Add(new Transition(query.Action, query.SourceState, query.TargetState, true));
+                        feasibleTransitions.Add(new Transition(query.Action, query.SourceState, query.TargetState, true, exitCode,"NOSE"));
                         unprovenQueries++;
                         break;
                     case QueryResult.Unreachable:

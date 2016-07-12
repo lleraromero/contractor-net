@@ -199,6 +199,7 @@
     <Compile Include="AnalysisResults.cs" />
     <Compile Include="EpaBinarySerializer.cs" />
     <Compile Include="EpaBuilder.cs" />
+    <Compile Include="EpaOGenerator.cs" />
     <Compile Include="EpaGenerator.cs" />
     <Compile Include="EpaXmlSerializer.cs" />
     <Compile Include="EventArgs.cs" />
@@ -231,6 +232,10 @@
     <ProjectReference Include="..\Core.Model\Core.Model.csproj">
       <Project>{c172f5cc-8814-46df-b25d-2994e524e1d5}</Project>
       <Name>Core.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ErrorInstrumentator\ErrorInstrumentator.csproj">
+      <Project>{b3247fa5-373e-46fa-8931-c189c522ca58}</Project>
+      <Name>ErrorInstrumentator</Name>
     </ProjectReference>
     <ProjectReference Include="..\Logger\Log.csproj">
       <Project>{c60da473-d2f6-4650-ada9-ff5aa1c7b75c}</Project>

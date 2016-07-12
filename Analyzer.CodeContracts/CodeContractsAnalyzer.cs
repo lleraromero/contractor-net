@@ -68,7 +68,31 @@ namespace Analyzer.CodeContracts
 
             return new ActionAnalysisResults(enabledActions, disabledActions);
         }
+        public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions, string exitCode)
+        {
+            var codeContractsRunner = new CodeContractsRunner(workingDir, ccCheckDefaultArgs, libPaths, typeToAnalyze);
 
+            if (action.IsPure)
+            {
+                return new ActionAnalysisResults(new HashSet<Action>(source.EnabledActions), new HashSet<Action>(source.DisabledActions));
+            }
+
+            var enabledActions = ActionsThatAreAlwaysEnabled(source, action, actions, codeContractsRunner);
+            var disabledActions = ActionsThatAreAlwaysDisabled(source, action, actions, codeContractsRunner);
+
+            if (enabledActions.Count.Equals(actions.Count()) && disabledActions.Count.Equals(actions.Count()))
+            {
+                // TODO (lleraromero): Definir que hacer si detectamos que un estado tiene un invariante UNSAT
+                Logger.Log(LogLevel.Warn,
+                    "Suspicious state! Only a state with a unsatisfiable invariant can lead to every action being enabled and disabled at the same time. It can also mean a bug in our code.");
+            }
+            else
+            {
+                Contract.Assert(!enabledActions.Intersect(disabledActions).Any(), "An action cannot be enabled and disabled at the same time");
+            }
+
+            return new ActionAnalysisResults(enabledActions, disabledActions);
+        }
         public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
             var codeContractsRunner = new CodeContractsRunner(workingDir, ccCheckDefaultArgs, libPaths, typeToAnalyze);
@@ -81,7 +105,18 @@ namespace Analyzer.CodeContracts
 
             return feasibleTransitions;
         }
+        public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string exitCode)
+        {
+            var codeContractsRunner = new CodeContractsRunner(workingDir, ccCheckDefaultArgs, libPaths, typeToAnalyze);
 
+            var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets);
+            var queryAssembly = CreateQueryAssembly(transitionQueries);
+            var evaluator = new QueryEvaluator(codeContractsRunner, queryAssembly);
+            var feasibleTransitions = evaluator.GetFeasibleTransitions(transitionQueries);
+            unprovenQueriesCount += evaluator.UnprovenQueries;
+
+            return feasibleTransitions;
+        }
         public string GetUsageStatistics()
         {
             var statisticsBuilder = new StringBuilder();

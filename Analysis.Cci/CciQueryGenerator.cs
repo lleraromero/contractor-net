@@ -15,6 +15,7 @@ namespace Analysis.Cci
     {
         protected const string NotPrefix = "_Not_";
         protected const string MethodNameDelimiter = "~";
+        public IExpression exitCode_eq_expected;
 
         protected IContractAwareHost host;
 
@@ -112,6 +113,17 @@ namespace Analysis.Cci
                     }
                 }
             }
+            /*
+            IExpression exitCode_eq_expected = new Equality()
+            {
+                LeftOperand = new ExpressionStatement()
+                {
+                    Expression = new FieldReferenceS()
+                },
+                RightOperand = null,
+                Type = host.PlatformType.SystemString
+
+            };*/
 
             // Negated target state invariant as a postcondition
             var targetInv = Helper.GenerateStateInvariant(host, target);
@@ -122,13 +134,26 @@ namespace Analysis.Cci
                 Operand = Helper.JoinWithLogicalAnd(host, targetInv, true)
             };
 
+            IExpression notExitCode = new LogicalNot
+            {
+                Type = host.PlatformType.SystemBoolean,
+                Operand = exitCode_eq_expected
+            };
+
+            List<IExpression> listWithNotExitCodeAndPost = new List<IExpression>();
+            listWithNotExitCodeAndPost.Add(notExitCode);
+            listWithNotExitCodeAndPost.Add(joinedTargetInv);
+
+            IExpression notExitCodeOrNotPost = Helper.JoinWithLogicalOr(host, listWithNotExitCodeAndPost, false); 
+
             var postcondition = new Postcondition
             {
-                Condition = joinedTargetInv,
-                OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(joinedTargetInv),
+                Condition = notExitCodeOrNotPost,
+                OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(notExitCodeOrNotPost),
                 Description = new CompileTimeConstant { Value = "Negated target state invariant", Type = host.PlatformType.SystemString }
             };
-            contracts.Postconditions.Add(postcondition);
+            contracts.Postconditions.Clear();
+           contracts.Postconditions.Add(postcondition);
 
             return contracts;
         }
@@ -296,13 +321,18 @@ namespace Analysis.Cci
                         Description = new CompileTimeConstant { Value = "Inlined method postcondition", Type = host.PlatformType.SystemString }
                     };
                 //Ponemos los assume antes del return
+                var assume=assumes.ElementAt(0);
+                this.exitCode_eq_expected = assume.Condition;
+                List<AssumeStatement> finalAssumes = new List<AssumeStatement>(assumes);
+                finalAssumes.RemoveAt(0);
+
                 if (block.Statements.Count > 0 && block.Statements.Last() is IReturnStatement)
                 {
-                    block.Statements.InsertRange(block.Statements.Count - 1, assumes);
+                    block.Statements.InsertRange(block.Statements.Count - 1, finalAssumes);
                 }
                 else
                 {
-                    block.Statements.AddRange(assumes);
+                    block.Statements.AddRange(finalAssumes);
                 }
             }
 

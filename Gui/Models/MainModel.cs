@@ -11,6 +11,7 @@ using Analyzer.CodeContracts;
 using Analyzer.Corral;
 using Contractor.Core;
 using Contractor.Core.Model;
+using System.Collections.Generic;
 
 
 namespace Contractor.Gui.Models
@@ -20,6 +21,9 @@ namespace Contractor.Gui.Models
         protected FileInfo inputFile;
         protected FileInfo contractFile;
         protected IAssembly inputAssembly;
+
+        //**************************************************
+        protected Dictionary<string, ErrorInstrumentator.MethodInfo> methodsInfo;
 
         protected CancellationTokenSource cancellationSource;
         protected CciAssemblyPersister assemblyPersister;
@@ -65,13 +69,21 @@ namespace Contractor.Gui.Models
             OnInitialStateAdded(this, epaBuilder);
             var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
             epaBuilderObservable.TransitionAdded += OnTransitionAdded;
-
-            return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable);
+            
+            return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable,methodsInfo);
         }
 
         public async Task LoadAssembly(FileInfo inputFileInfo)
         {
             inputFile = inputFileInfo;
+            //*************************************************
+            //cargamos del XML
+            var xmlPath = inputFile.DirectoryName + "\\methodExceptions.xml";
+            using (var stream = File.OpenRead(xmlPath))
+            {
+                methodsInfo = ErrorInstrumentator.XmlInstrumentationInfoSerializer.Deserialize(stream);
+            }
+
             inputAssembly = await Task.Run(() => assemblyPersister.Load(inputFile.FullName, null));
         }
 

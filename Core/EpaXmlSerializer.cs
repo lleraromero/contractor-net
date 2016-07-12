@@ -88,6 +88,7 @@ namespace Contractor.Core
                 writer.WriteAttributeString("destination", t.TargetState.Name);
                 writer.WriteAttributeString("label", t.Action.Name);
                 writer.WriteAttributeString("uncertain", t.IsUnproven.ToString().ToLower());
+                writer.WriteAttributeString("exitCode", t.ExitCode);
                 writer.WriteAttributeString("violates_invariant", "false"); //Contractor.NET does not support this attribute
                 writer.WriteEndElement();
             }
@@ -236,6 +237,7 @@ namespace Contractor.Core
                             var targetState = reader.GetAttribute("destination");
                             var isUnproven = bool.Parse(reader.GetAttribute("uncertain"));
                             var action = new StringAction(reader.GetAttribute("label"));
+                            //var exitCode  = reader.GetAttribute("exitCode")];
                             states[name].Add(new Tuple<string, Action, string, bool>(sourceState, action, targetState, isUnproven));
                             break;
                     }

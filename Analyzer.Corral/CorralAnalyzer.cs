@@ -58,6 +58,25 @@ namespace Analyzer.Corral
             return new ActionAnalysisResults(enabledActions, disabledActions);
         }
 
+        public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions,string expectedExitCode)
+        {
+            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
+
+            if (action.IsPure)
+            {
+                return new ActionAnalysisResults(new HashSet<Action>(source.EnabledActions), new HashSet<Action>(source.DisabledActions));
+            }
+
+            //rewrite(action.Method.Body);
+
+            var enabledActions = GetMustBeEnabledActions(source, action, actions, corralRunner,expectedExitCode);
+            var disabledActions = GetMustBeDisabledActions(source, action, actions, corralRunner,expectedExitCode);
+
+            Contract.Assert(!enabledActions.Intersect(disabledActions).Any());
+
+            return new ActionAnalysisResults(enabledActions, disabledActions);
+        }
+
         public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
             ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
@@ -65,6 +84,19 @@ namespace Analyzer.Corral
             var queryAssembly = CreateBoogieQueryAssembly(transitionQueries);
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
             var feasibleTransitions = evaluator.GetFeasibleTransitions(transitionQueries);
+            unprovenQueriesCount += evaluator.UnprovenQueries;
+
+            return feasibleTransitions;
+        }
+
+        public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string expectedExitCode)
+        {
+            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
+            
+            var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets);
+            var queryAssembly = CreateBoogieQueryAssembly(transitionQueries,expectedExitCode);
+            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var feasibleTransitions = evaluator.GetFeasibleTransitions(transitionQueries,expectedExitCode);
             unprovenQueriesCount += evaluator.UnprovenQueries;
 
             return feasibleTransitions;
@@ -82,7 +114,7 @@ namespace Analyzer.Corral
             return statisticsBuilder.ToString();
         }
 
-        protected ISet<Action> GetMustBeDisabledActions(State source, Action action, IEnumerable<Action> actions, ISolver corralRunner)
+        protected ISet<Action> GetMustBeDisabledActions(State source, Action action, IEnumerable<Action> actions, ISolver corralRunner, string expectedExitCode="Ok")
         {
             Contract.Requires(source != null);
             Contract.Requires(action != null);
@@ -91,14 +123,14 @@ namespace Analyzer.Corral
 
             var targetNegatedPreconditionQueries = queryGenerator.CreateNegativeQueries(source, action, actions);
             generatedQueriesCount += targetNegatedPreconditionQueries.Count;
-            var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries);
+            var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries, expectedExitCode);
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
             var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
             unprovenQueriesCount += evaluator.UnprovenQueries;
             return disabledActions;
         }
 
-        protected ISet<Action> GetMustBeEnabledActions(State source, Action action, IEnumerable<Action> actions, ISolver corralRunner)
+        protected ISet<Action> GetMustBeEnabledActions(State source, Action action, IEnumerable<Action> actions, ISolver corralRunner, string expectedExitCode="Ok")
         {
             Contract.Requires(source != null);
             Contract.Requires(action != null);
@@ -107,7 +139,7 @@ namespace Analyzer.Corral
 
             var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(source, action, actions);
             generatedQueriesCount += targetPreconditionQueries.Count;
-            var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries);
+            var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries,expectedExitCode);
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
             var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
             unprovenQueriesCount += evaluator.UnprovenQueries;
@@ -128,6 +160,28 @@ namespace Analyzer.Corral
             lock (CciAssemblyPersister.turnstile)
             {
                 new CciContractRewriter().Rewrite(queryAssembly);
+            }
+            new CciAssemblyPersister().Save(queryAssembly, queryFilePath);
+
+            return TranslateCSharpToBoogie(queryFilePath);
+        }
+
+        protected FileInfo CreateBoogieQueryAssembly(IReadOnlyCollection<Query> queries, string expectedExitCode="Ok")
+        {
+            Contract.Requires(queries.Any());
+
+            var queryAssembly = new CciQueryAssembly(inputAssembly, typeToAnalyze, queries);
+
+            var queryFilePath = Path.Combine(workingDir.FullName, Guid.NewGuid().ToString(), Path.GetFileName(inputFileName));
+            Contract.Assert(!Directory.Exists(Path.GetDirectoryName(queryFilePath)));
+            Directory.CreateDirectory(Path.GetDirectoryName(queryFilePath));
+
+            // Mutex to avoid race-conditions in CCI static classes
+            lock (CciAssemblyPersister.turnstile)
+            {
+                var rewriter= new CciContractRewriter();
+                //rewriter.expectedExitCode=expectedExitCode;
+                rewriter.Rewrite(queryAssembly);
             }
             new CciAssemblyPersister().Save(queryAssembly, queryFilePath);
 

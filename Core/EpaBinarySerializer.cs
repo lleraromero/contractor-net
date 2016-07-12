@@ -149,6 +149,7 @@ namespace Contractor.Core
 
         private void AddTransition(Transition t, Graph graph)
         {
+            var exitCode = t.ExitCode;
             var label = t.Action.ToString();
             var createEdge = true;
             var lineStyle = t.IsUnproven ? Style.Dashed : Style.Solid;
@@ -167,7 +168,8 @@ namespace Contractor.Core
             {
                 if (ed.Target == t.TargetState.Name && ed.Attr.Styles.Contains(lineStyle))
                 {
-                    ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
+                    ed.LabelText = string.Format("{0}{1}{2}:{3}", ed.LabelText, Environment.NewLine, label, exitCode);
+                    //ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
                     createEdge = false;
                     break;
                 }
@@ -175,8 +177,8 @@ namespace Contractor.Core
 
             if (createEdge)
             {
-                var edge = graph.AddEdge(t.SourceState.Name, label, t.TargetState.Name);
-
+                //var edge = graph.AddEdge(t.SourceState.Name, label, t.TargetState.Name);
+                var edge = graph.AddEdge(t.SourceState.Name, label + ":" + exitCode, t.TargetState.Name);
                 edge.Label.FontName = "Cambria";
                 edge.Label.FontSize = 6;
                 edge.Attr.AddStyle(lineStyle);

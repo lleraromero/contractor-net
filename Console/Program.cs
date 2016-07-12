@@ -11,6 +11,7 @@ using Analyzer.Corral;
 using CommandLine;
 using Contractor.Core;
 using Contractor.Core.Model;
+using System.Collections.Generic;
 
 namespace Contractor.Console
 {
@@ -51,7 +52,17 @@ namespace Contractor.Console
 
             try
             {
-                var analysisResult = GenerateEpa(options);
+                Dictionary<string, ErrorInstrumentator.MethodInfo> methodsInfo;
+                var xmlPath = options.InputAssembly.Substring(0, options.InputAssembly.LastIndexOf('\\'));
+                xmlPath = xmlPath.Substring(0, xmlPath.LastIndexOf('\\'));
+                xmlPath = xmlPath.Substring(0, xmlPath.LastIndexOf('\\'));
+                xmlPath = xmlPath.Substring(0, xmlPath.LastIndexOf('\\')) + "\\methodExceptions.xml";
+                using (var stream = File.OpenRead(xmlPath))
+                {
+                    methodsInfo = ErrorInstrumentator.XmlInstrumentationInfoSerializer.Deserialize(stream);
+                }
+
+                var analysisResult = GenerateEpa(options,methodsInfo);
 
                 var epa = analysisResult.Epa;
 
@@ -70,6 +81,10 @@ namespace Contractor.Console
             catch (Exception ex)
             {
                 System.Console.WriteLine("Error: {0}", ex.Message);
+                System.Console.WriteLine(ex.StackTrace);
+                System.Console.WriteLine(ex.TargetSite);
+                System.Console.WriteLine(ex.Source);
+                System.Console.WriteLine(ex.InnerException);
             }
 
             System.Console.WriteLine("Done!");
@@ -80,7 +95,7 @@ namespace Contractor.Console
             return 0;
         }
 
-        protected static TypeAnalysisResult GenerateEpa(Options options)
+        protected static TypeAnalysisResult GenerateEpa(Options options, Dictionary<string, ErrorInstrumentator.MethodInfo> methodsInfo)
         {
             Contract.Requires(!string.IsNullOrEmpty(options.TypeToAnalyze));
             Contract.Requires(!string.IsNullOrEmpty(options.InputAssembly) && File.Exists(options.InputAssembly));
@@ -140,11 +155,11 @@ namespace Contractor.Console
             if (!options.Methods.Equals("All"))
             {
                 var selectedMethods = options.Methods.Split(';');
-                analysisResult = generator.GenerateEpa(typeDefinition, selectedMethods,epaBuilderObservable).Result;
+                analysisResult = generator.GenerateEpa(typeDefinition, selectedMethods,epaBuilderObservable,methodsInfo).Result;
             }
             else
             {
-                analysisResult = generator.GenerateEpa(typeDefinition, epaBuilderObservable).Result;
+                analysisResult = generator.GenerateEpa(typeDefinition, epaBuilderObservable, methodsInfo).Result;
             }
             return analysisResult;
         }
