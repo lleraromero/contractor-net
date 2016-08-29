@@ -258,14 +258,17 @@ namespace Analysis.Cci
             //retRewriter.expectedExitCode = expectedExitCode;
 
             //replace (nested) ReturnStatements with the GoTo to a single return at the end
+            // DIEGO n
             newStatements.AddRange(existingStatements.Select(stmt => retRewriter.Rewrite(stmt)));
 
             // now, that all the existing statements were added it is time for the postcondition block
+            // DIEGO 
             newStatements.Add(dummyPostconditionStatement);
             //newStatements.Insert(newStatements.Count - 1,dummyPostconditionStatement);
 
-
-            
+            // DIEGO x2
+            //newStatements.Clear();
+            //newStatements.AddRange(existingStatements);
 
             // Add assume statements for each postcondition that predicates ONLY about parameters (ie. not about the instance)
             var contractDependencyAnalyzer = new CciContractDependenciesAnalyzer(contractProvider);

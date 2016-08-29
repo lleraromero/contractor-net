@@ -61,7 +61,7 @@ namespace Contractor.Gui.Models
             cancellationSource = new CancellationTokenSource();
 
             var analyzer = GetAnalyzer(analysisEventArgs.TypeToAnalyze, analysisEventArgs.Engine, cancellationSource.Token);
-            var epaGenerator = new EpaGenerator(analyzer, -1);
+            var epaGenerator = new EpaOGenerator(analyzer, -1);
 
             var selectedMethods = from m in analysisEventArgs.SelectedMethods select m.ToString();
 
@@ -79,11 +79,13 @@ namespace Contractor.Gui.Models
             //*************************************************
             //cargamos del XML
             var xmlPath = inputFile.DirectoryName + "\\methodExceptions.xml";
-            using (var stream = File.OpenRead(xmlPath))
+            if (File.Exists(xmlPath))
             {
-                methodsInfo = ErrorInstrumentator.XmlInstrumentationInfoSerializer.Deserialize(stream);
+                using (var stream = File.OpenRead(xmlPath))
+                {
+                    methodsInfo = ErrorInstrumentator.XmlInstrumentationInfoSerializer.Deserialize(stream);
+                }
             }
-
             inputAssembly = await Task.Run(() => assemblyPersister.Load(inputFile.FullName, null));
         }
 

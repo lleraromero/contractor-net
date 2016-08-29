@@ -142,26 +142,56 @@ namespace Contractor.Console
                 default:
                     throw new NotSupportedException();
             }
-
-            var generator = new EpaGenerator(analyzer,options.Cutter);
-
-            var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
-            var epaBuilder = new EpaBuilder(typeDefinition);
-
-            //OnInitialStateAdded(this, epaBuilder);
-            var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
-            epaBuilderObservable.TransitionAdded += OnTransitionAdded;
-            TypeAnalysisResult analysisResult;
-            if (!options.Methods.Equals("All"))
+            var oc = options.OutputConditions.Split(',');
+            if (options.OutputConditions.Equals("none") || !oc.Contains("exitCode"))
             {
-                var selectedMethods = options.Methods.Split(';');
-                analysisResult = generator.GenerateEpa(typeDefinition, selectedMethods,epaBuilderObservable,methodsInfo).Result;
+                var generator = new EpaGenerator(analyzer, options.Cutter);
+
+                var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
+                var epaBuilder = new EpaBuilder(typeDefinition);
+
+                //OnInitialStateAdded(this, epaBuilder);
+                var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
+                epaBuilderObservable.TransitionAdded += OnTransitionAdded;
+                TypeAnalysisResult analysisResult;
+                if (!options.Methods.Equals("All"))
+                {
+                    var selectedMethods = options.Methods.Split(';');
+                    analysisResult = generator.GenerateEpa(typeDefinition, selectedMethods, epaBuilderObservable).Result;
+                }
+                else
+                {
+                    analysisResult = generator.GenerateEpa(typeDefinition, epaBuilderObservable).Result;
+                }
+                return analysisResult;
             }
             else
             {
-                analysisResult = generator.GenerateEpa(typeDefinition, epaBuilderObservable, methodsInfo).Result;
+                //if (oc.Contains("exitCode"))
+                //{
+                    var generator = new EpaOGenerator(analyzer, options.Cutter);
+
+                    var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
+                    var epaBuilder = new EpaBuilder(typeDefinition);
+
+                    //OnInitialStateAdded(this, epaBuilder);
+                    var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
+                    epaBuilderObservable.TransitionAdded += OnTransitionAdded;
+                    TypeAnalysisResult analysisResult;
+                    if (!options.Methods.Equals("All"))
+                    {
+                        var selectedMethods = options.Methods.Split(';');
+                        analysisResult = generator.GenerateEpa(typeDefinition, selectedMethods, epaBuilderObservable, methodsInfo).Result;
+                    }
+                    else
+                    {
+                        analysisResult = generator.GenerateEpa(typeDefinition, epaBuilderObservable, methodsInfo).Result;
+                    }
+                    return analysisResult;
+                //}
             }
-            return analysisResult;
+
+            
         }
 
         private static void OnTransitionAdded(object sender, TransitionAddedEventArgs e)

@@ -56,7 +56,11 @@ namespace Contractor.Console
         public bool TransitionsWithConditions { get; set; }
 
         [Option("methods", HelpText = "List of methods to analyze. It's important to write the method with parameters types. For example: add(String),hasNext()", DefaultValue = "All")]
+
         public String Methods { get; set; }
+
+        [Option("output-conditions", HelpText = "possible values: exitCode, returnValue.", DefaultValue = "none")]
+        public String OutputConditions { get; set; }
 
         [HelpOption]
         public string GetUsage()

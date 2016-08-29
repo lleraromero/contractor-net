@@ -28,25 +28,25 @@ namespace ErrorInstrumentator
             //var existingStatements = new List<IStatement>(((BlockStatement)sourceMethodBody.Block.Statements.ElementAt(1)).Statements);
             var existingStatements = new List<IStatement>(sourceMethodBody.Block.Statements);
             bool foundAssignment= false;
-            bool foundAssume = false;
+            //bool foundAssume = false;
 
             CompileTimeConstant stringConstant=null;
             
-            var conditionalStatements = existingStatements.Where(s => s is ConditionalStatement);
-            var blockContainigThrow = conditionalStatements.Select(s=> ((BlockStatement)(s as ConditionalStatement).TrueBranch));
-            var throwStmt = (blockContainigThrow.ElementAt(0).Statements.ElementAt(0) as ThrowStatement);
+            //var conditionalStatements = existingStatements.Where(s => s is ConditionalStatement);
+            //var blockContainigThrow = conditionalStatements.Select(s=> ((BlockStatement)(s as ConditionalStatement).TrueBranch));
+            //var throwStmt = (blockContainigThrow.ElementAt(0).Statements.ElementAt(0) as ThrowStatement);
 
-            var existingStatementsCopy = new List<IStatement>();
-            existingStatementsCopy.AddRange(existingStatements);
-            existingStatementsCopy.Remove(conditionalStatements.ElementAt(0));
+            //var existingStatementsCopy = new List<IStatement>();
+            //existingStatementsCopy.AddRange(existingStatements);
+            //existingStatementsCopy.Remove(conditionalStatements.ElementAt(0));
 
-            foreach (Statement statement in existingStatementsCopy)
+            foreach (Statement statement in existingStatements)
             {
                 //var statement = Rewrite(statement);
-                if (!foundAssume)
+                if (!foundAssignment)
                 {
-                    if (!foundAssignment)
-                    {
+                    //if (!foundAssignment)
+                    //{
                         if(statement is LocalDeclarationStatement){
                             newStatements.Add(statement);
                             continue;
@@ -91,36 +91,18 @@ namespace ErrorInstrumentator
                         { // es una asignacion pero no la que queria reescribir
                             //************************************
                             //fmartinelli: Si es una asignacion reescribir, esto es un parche para solucionar el bug de no soportar multiples salidas.
-                            var assign = Rewrite(assignment,throwStmt);
+                            //var assign = Rewrite(assignment,throwStmt);
                             //**************************************
-                            newStatements.Add(assign);
+                            newStatements.Add(statement);
                         }
                     }
                     else
-                    { // si ya encontre la asignacion pero todavia no encontre el assume
-                        var methodCall = ((ExpressionStatement)statement).Expression as MethodCall;
-                        if (methodCall != null && methodCall.MethodToCall.Name.ToString().Equals("Assume"))
-                        {
-                            MethodCall eq_op_method = methodCall.Arguments.ElementAt(0) as MethodCall;
-                            if (eq_op_method != null && eq_op_method.MethodToCall.Name.ToString().Equals("op_Equality"))
-                            {
-                                eq_op_method.Arguments.RemoveAt(1);
-                                eq_op_method.Arguments.Insert(1,stringConstant);
-                            }
-                            //IStatement newStmt = (IExpression) methodCall;
-                            //newStatements.Add(newStmt); 
-                            var es = new ExpressionStatement
-                            {
-                                Expression = methodCall
-                            };
-                            newStatements.Add(es);
-                            foundAssume = true;
-                        }
-                        
+                    { // si ya encontre la asignacion dejo el resto como esta 
+                        newStatements.Add(statement);
                     }                    
-                }
-                else
-                { // ya encontre la asignacion y el assume asi que el resto va como estaba
+                //}
+                //else
+                //{ // ya encontre la asignacion y el assume asi que el resto va como estaba
                     
                     //***********************
                     //fmartinelli: Si hay una asignacion hay que reescribirla, esto es un parche para solucionar el bug de no soportar multiples salidas.
@@ -134,9 +116,9 @@ namespace ErrorInstrumentator
                     else
                     */
                     //***********************
-                    newStatements.Add(Rewrite(statement, throwStmt));
+                    //newStatements.Add(Rewrite(statement, throwStmt));
                     
-                }
+                //}
                 
             }
 

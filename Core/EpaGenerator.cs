@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Contractor.Core.Model;
 using Log;
 using Action = Contractor.Core.Model.Action;
-using ErrorInstrumentator;
 namespace Contractor.Core
 {
     public class EpaGenerator
@@ -22,17 +21,17 @@ namespace Contractor.Core
             this.cutter = cutter;
         }
 
-        public Task<TypeAnalysisResult> GenerateEpa(ITypeDefinition typeToAnalyze, IEpaBuilder epaBuilder, Dictionary<string, ErrorInstrumentator.MethodInfo> methodsInfo = null)
+        public Task<TypeAnalysisResult> GenerateEpa(ITypeDefinition typeToAnalyze, IEpaBuilder epaBuilder)
         {
             Contract.Requires(typeToAnalyze != null);
 
             var constructors = typeToAnalyze.Constructors();
             var actions = typeToAnalyze.Actions();
 
-            return GenerateEpaAndStatistics(constructors, actions, epaBuilder,methodsInfo);
+            return GenerateEpaAndStatistics(constructors, actions, epaBuilder);
         }
 
-        public Task<TypeAnalysisResult> GenerateEpa(ITypeDefinition typeToAnalyze, IEnumerable<string> selectedMethods, IEpaBuilder epaBuilder, Dictionary<string, ErrorInstrumentator.MethodInfo> methodsInfo = null)
+        public Task<TypeAnalysisResult> GenerateEpa(ITypeDefinition typeToAnalyze, IEnumerable<string> selectedMethods, IEpaBuilder epaBuilder)
         {
             Contract.Requires(typeToAnalyze != null);
             Contract.Requires(selectedMethods != null);
@@ -40,14 +39,14 @@ namespace Contractor.Core
             var constructors = new HashSet<Action>(typeToAnalyze.Constructors().Where(a => selectedMethods.Contains(a.ToString())));
             var actions = new HashSet<Action>(typeToAnalyze.Actions().Where(a => selectedMethods.Contains(a.ToString())));
 
-            return GenerateEpaAndStatistics(constructors, actions, epaBuilder,methodsInfo);
+            return GenerateEpaAndStatistics(constructors, actions, epaBuilder);
         }
 
-        protected async Task<TypeAnalysisResult> GenerateEpaAndStatistics(ISet<Action> constructors, ISet<Action> actions, IEpaBuilder epaBuilder, Dictionary<string, ErrorInstrumentator.MethodInfo> methodsInfo = null)
+        protected async Task<TypeAnalysisResult> GenerateEpaAndStatistics(ISet<Action> constructors, ISet<Action> actions, IEpaBuilder epaBuilder)
         {
             var analysisTimer = Stopwatch.StartNew();
 
-            await Task.Run(() => GenerateEpa(constructors, actions, epaBuilder,methodsInfo));
+            await Task.Run(() => GenerateEpa(constructors, actions, epaBuilder));
 
             analysisTimer.Stop();
 
@@ -84,7 +83,7 @@ namespace Contractor.Core
                 {
                     ActionAnalysisResults actionsResult;
 
-                    List<string> errorList = new List<string>();
+                    /*List<string> errorList = new List<string>();
                     errorList.Add("Ok");
                     //errorList.Add("Exception");
                     //errorList.Add("OverflowException");
@@ -110,7 +109,7 @@ namespace Contractor.Core
                         }
                     }
                     else
-                    {/*
+                    {
                         if (action.Name.Contains("_ctor"))
                         {
                             var s = action.Name.ToString().Split('_');
@@ -119,7 +118,7 @@ namespace Contractor.Core
                             if(methods.TryGetValue(name, out mi)){
                                 errorList.AddRange(mi.ExceptionList);
                             } 
-                        }else */if (action.Name.ToString().Contains("get_"))
+                        }else if (action.Name.ToString().Contains("get_"))
                         {
                             //it is a property
                             var s=action.Name.ToString().Split('_');
@@ -142,16 +141,16 @@ namespace Contractor.Core
                     foreach (string exitCode in errorList)
                     {
                         // ACA TENGO QUE MODIFICAR EL M --> Me 
-                        Microsoft.Cci.MutableCodeModel.BlockStatement actionBlock = (action.Method.Body as Microsoft.Cci.MutableCodeModel.SourceMethodBody).Block as Microsoft.Cci.MutableCodeModel.BlockStatement;
-                        actionBlock.Statements = methodStatementsCopy;
+                        //Microsoft.Cci.MutableCodeModel.BlockStatement actionBlock = (action.Method.Body as Microsoft.Cci.MutableCodeModel.SourceMethodBody).Block as Microsoft.Cci.MutableCodeModel.BlockStatement;
+                        //actionBlock.Statements = methodStatementsCopy;
                         if(!mi.IsProperty.Equals("True"))
                             action.Method = new ExpectedExitCodeRewriter(exitCode).Rewrite(action.Method);
-                        
+                        */
                         lock (analyzer)
                         {
                             //var body = (Microsoft.Cci.MutableCodeModel.MethodBody)action.Method.Body;
                             // Which actions are enabled or disabled if 'action' is called from 'source'?
-                            actionsResult = analyzer.AnalyzeActions(source, action, actions, exitCode);
+                            actionsResult = analyzer.AnalyzeActions(source, action, actions);
                         }
                         if (actionsResult.EnabledActions.Count.Equals(actions.Count) && actionsResult.DisabledActions.Count.Equals(actions.Count()))
                         {
@@ -177,7 +176,7 @@ namespace Contractor.Core
                         lock (analyzer)
                         {
                             // Which states are reachable from the current state (aka source) using 'action'?
-                            transitionsResults = analyzer.AnalyzeTransitions(source, action, possibleTargets,exitCode);
+                            transitionsResults = analyzer.AnalyzeTransitions(source, action, possibleTargets);
                         }
                         Contract.Assert(transitionsResults.Count > 0, "There is always at least one transition to traverse");
 
@@ -192,11 +191,11 @@ namespace Contractor.Core
                             epaBuilder.Add(transition);
                         }
                         //END PARA CADA Em
-                    }
+                    //}
                     //Save the original code into the Action/Method
-                    var methodBody= action.Method.Body as Microsoft.Cci.MutableCodeModel.SourceMethodBody;
-                    Microsoft.Cci.MutableCodeModel.BlockStatement block = methodBody.Block as Microsoft.Cci.MutableCodeModel.BlockStatement;
-                    block.Statements = methodStatementsCopy;
+                    //var methodBody= action.Method.Body as Microsoft.Cci.MutableCodeModel.SourceMethodBody;
+                    //Microsoft.Cci.MutableCodeModel.BlockStatement block = methodBody.Block as Microsoft.Cci.MutableCodeModel.BlockStatement;
+                    //block.Statements = methodStatementsCopy;
                 }
             }
 

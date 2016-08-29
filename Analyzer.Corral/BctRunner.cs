@@ -19,7 +19,8 @@ namespace Analyzer.Corral
             {
                 bct.StartInfo = new ProcessStartInfo
                 {
-                    FileName = @"..\..\..\Dependencies\BCT\BytecodeTranslator.exe",
+                    //FileName = @"..\..\..\Dependencies\BCT\BytecodeTranslator.exe",
+                    FileName = @"C:\Users\Administrador\Documents\Visual Studio 2013\Projects\BCT\bytecodetranslator\Binaries\BytecodeTranslator.exe",
                     Arguments = string.Join(" ", args),
                     WorkingDirectory = tmpDir,
                     CreateNoWindow = true,
@@ -31,6 +32,8 @@ namespace Analyzer.Corral
 
                 bct.OutputDataReceived += (sender, e) => { Logger.Log(LogLevel.Debug, "BCT: " + e.Data); };
                 bct.ErrorDataReceived += (sender, e) => { Logger.Log(LogLevel.Fatal, "BCT: " + e.Data); };
+                Console.WriteLine(string.Join(" ", args));
+                Console.WriteLine(tmpDir);
                 bct.Start();
                 bct.BeginErrorReadLine();
                 bct.BeginOutputReadLine();

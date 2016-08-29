@@ -70,7 +70,7 @@ namespace Analyzer.Corral
             return unreachableQueries.Select(query => query.ActionUnderTest).ToList();
         }
 
-        public IReadOnlyCollection<Transition> GetFeasibleTransitions(IReadOnlyCollection<TransitionQuery> transitionQueries,string exitCode="Ok")
+        public IReadOnlyCollection<Transition> GetFeasibleTransitions(IReadOnlyCollection<TransitionQuery> transitionQueries, string exitCode = "NOSE")
         {
             Contract.Requires(transitionQueries != null);
 

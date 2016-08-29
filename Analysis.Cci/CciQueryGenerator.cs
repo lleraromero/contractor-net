@@ -133,25 +133,37 @@ namespace Analysis.Cci
                 Type = host.PlatformType.SystemBoolean,
                 Operand = Helper.JoinWithLogicalAnd(host, targetInv, true)
             };
+            Postcondition postcondition = null;
+            if(exitCode_eq_expected!=null){
+                IExpression notExitCode = new LogicalNot
+                {
+                    Type = host.PlatformType.SystemBoolean,
+                    Operand = exitCode_eq_expected
+                };
 
-            IExpression notExitCode = new LogicalNot
+                List<IExpression> listWithNotExitCodeAndPost = new List<IExpression>();
+                listWithNotExitCodeAndPost.Add(notExitCode);
+                listWithNotExitCodeAndPost.Add(joinedTargetInv);
+
+                IExpression notExitCodeOrNotPost = Helper.JoinWithLogicalOr(host, listWithNotExitCodeAndPost, false);
+
+                postcondition = new Postcondition
+                {
+                    Condition = notExitCodeOrNotPost,
+                    OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(notExitCodeOrNotPost),
+                    Description = new CompileTimeConstant { Value = "Negated target state invariant", Type = host.PlatformType.SystemString }
+                };
+            }
+            else
             {
-                Type = host.PlatformType.SystemBoolean,
-                Operand = exitCode_eq_expected
-            };
-
-            List<IExpression> listWithNotExitCodeAndPost = new List<IExpression>();
-            listWithNotExitCodeAndPost.Add(notExitCode);
-            listWithNotExitCodeAndPost.Add(joinedTargetInv);
-
-            IExpression notExitCodeOrNotPost = Helper.JoinWithLogicalOr(host, listWithNotExitCodeAndPost, false); 
-
-            var postcondition = new Postcondition
-            {
-                Condition = notExitCodeOrNotPost,
-                OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(notExitCodeOrNotPost),
-                Description = new CompileTimeConstant { Value = "Negated target state invariant", Type = host.PlatformType.SystemString }
-            };
+                postcondition = new Postcondition
+                {
+                    Condition = joinedTargetInv,
+                    OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(joinedTargetInv),
+                    Description = new CompileTimeConstant { Value = "Negated target state invariant", Type = host.PlatformType.SystemString }
+                };
+            }
+            
             contracts.Postconditions.Clear();
            contracts.Postconditions.Add(postcondition);
 

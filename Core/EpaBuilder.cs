@@ -26,6 +26,7 @@ namespace Contractor.Core
             lock (transitions)
             {
                 transitions.Add(t);
+                
             }
         }
 
