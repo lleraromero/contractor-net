@@ -26,6 +26,8 @@ namespace Analyzer.Corral
             var args = string.Format("{0} /main:{1} {2}", queryAssembly.FullName, BctMethodNamer.CreateUniqueMethodName(query), corralArguments);
             var output = new StringBuilder();
 
+            MyLogger.LogCorral(args);
+
             using (var corral = new Process())
             {
                 corral.StartInfo = new ProcessStartInfo

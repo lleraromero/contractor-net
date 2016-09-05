@@ -144,6 +144,8 @@ namespace Contractor.Core
                     // PARA CADA Em:
                     foreach (string exitCode in errorList)
                     {
+                        MyLogger.LogAction(action.Name, exitCode, source.Name);
+
                         // ACA TENGO QUE MODIFICAR EL M --> Me 
                         Microsoft.Cci.MutableCodeModel.BlockStatement actionBlock = (action.Method.Body as Microsoft.Cci.MutableCodeModel.SourceMethodBody).Block as Microsoft.Cci.MutableCodeModel.BlockStatement;
 //                        actionBlock.Statements = methodStatementsCopy;

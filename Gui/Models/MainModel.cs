@@ -76,6 +76,8 @@ namespace Contractor.Gui.Models
         public async Task LoadAssembly(FileInfo inputFileInfo)
         {
             inputFile = inputFileInfo;
+
+            Log.MyLogger.LogStartAnalysis(inputFile.FullName);
             //*************************************************
             //cargamos del XML
             var xmlPath = inputFile.DirectoryName + "\\methodExceptions.xml";

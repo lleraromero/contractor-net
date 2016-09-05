@@ -238,6 +238,10 @@
       <Project>{b3247fa5-373e-46fa-8931-c189c522ca58}</Project>
       <Name>ErrorInstrumentator</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Logger\Log.csproj">
+      <Project>{c60da473-d2f6-4650-ada9-ff5aa1c7b75c}</Project>
+      <Name>Log</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

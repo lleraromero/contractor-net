@@ -15,6 +15,8 @@ namespace Analyzer.Corral
             var tmpDir = Path.GetDirectoryName(args[0]);
             Contract.Assert(!string.IsNullOrEmpty(tmpDir) && Directory.Exists(tmpDir));
 
+            MyLogger.LogBCT(string.Join(" ", args));
+
             using (var bct = new Process())
             {
                 bct.StartInfo = new ProcessStartInfo
@@ -42,6 +44,9 @@ namespace Analyzer.Corral
                 if (bct.ExitCode != 0)
                 {
                     Logger.Log(LogLevel.Fatal, "BCT: Error translating the query assembly to boogie");
+
+                    MyLogger.LogBCTBreakingQuery(string.Join(" ", string.Join(" ", args)));
+
                     Logger.Log(LogLevel.Info, string.Format("BCT: args: {0}, {1}", args));
                     throw new Exception("BCT: Error translating the query assembly to boogie");
                 }
