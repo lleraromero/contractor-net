@@ -4,6 +4,144 @@
     <name>Microsoft.Cci.SourceModel</name>
   </assembly>
   <members>
+    <member name="T:Microsoft.Cci.ReadOnlyList`1">
+      <summary>
+            Fixed size array wrapped as IReadOnlyList{T}
+            Construct with known size N, call Add N times, Freeze, and then use as IReadOnlyList{T} or IEnumerable{T}
+            </summary>
+      <typeparam name="T" />
+      <remarks>Optimization for List list = new List{T}(); list.Add() list.Add() ...; list.TrimExcess(); list.AsReadOnly() </remarks>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.#ctor(System.Int32)">
+      <summary>
+            Constructor
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.Create(System.UInt32)">
+      <summary>
+            Creation helper
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.Create(System.Collections.Generic.IEnumerable{`0})">
+      <summary>
+            Creation helper from IEnumerable{T}
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.Freeze(Microsoft.Cci.ReadOnlyList{`0})">
+      <summary>
+            Freeze to be read-only
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.Add(`0)">
+      <summary>
+            Append item
+            </summary>
+    </member>
+    <member name="P:Microsoft.Cci.ReadOnlyList`1.Count">
+      <summary>
+            Count of total allowed items
+            </summary>
+    </member>
+    <member name="P:Microsoft.Cci.ReadOnlyList`1.Item(System.Int32)">
+      <summary>
+            Return an item
+            </summary>
+    </member>
+    <member name="T:Microsoft.Cci.VirtualReadOnlyList`1">
+      <summary>
+             Virtual IReadOnlyList + its enumerator
+             </summary>
+      <remarks>Borrowed from the internal implementation of "yield return", IEnumerable and IEnumerator are implemented in the 
+             same class here, to save one extra allocation for the most common usage pattern of single enumerator in the same thread.
+            
+             This class is used mostly by SingletonList. There are quite a few CCI objects which store single object inside by needs to return IEnumerable from it.
+             This is used in super high frequency (e.g. BaseClasses) that we need to reduce memory allocation and CPU cost for it.
+            
+             This solution is better replacement for GetSingletonEnumerable which just uses "yield return":
+             1) There only needs to be single implementation.
+             2) All the source code is here.
+             3) IReadOnlyList is implemented so caller can query for Count and this[index] without going through enumerator at all.
+             </remarks>
+      <typeparam name="T" />
+    </member>
+    <member name="M:Microsoft.Cci.VirtualReadOnlyList`1.GetItem(System.Int32)">
+      <summary>
+            One method to be implemented in derived classes
+            </summary>
+    </member>
+    <member name="T:Microsoft.Cci.ReadOnlyListEnumerator`1">
+      <summary>
+            Enumerator for IReadOnlyList
+            </summary>
+      <typeparam name="T" />
+    </member>
+    <member name="T:Microsoft.Cci.SingletonList`1">
+      <summary>
+            IReadOnlyList wrapper for single item, + its enumerator (similar to yield return)
+            </summary>
+      <typeparam name="T" />
+    </member>
+    <member name="T:Microsoft.Cci.StringBuilderCache">
+      <summary>
+            Caching 10 StringBuilders per thread (for nested usage)
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.StringBuilderCache.GetList">
+      <summary>
+            Get StringBuilder array
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.StringBuilderCache.Acquire">
+      <summary>
+            Acquire a StringBuilder
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.StringBuilderCache.Release(System.Text.StringBuilder)">
+      <summary>
+            Release StringBuilder to cache
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.StringBuilderCache.GetStringAndRelease(System.Text.StringBuilder)">
+      <summary>
+            Release StringBuilder to cache, after getting string from it
+            </summary>
+    </member>
+    <member name="T:Microsoft.Cci.ContainerCache">
+      <summary>
+            Reusing Containers
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.ContainerCache.AcquireObjectDictionary">
+      <summary>
+            Acquire a Dictionary
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.ContainerCache.Release(System.Collections.Generic.Dictionary{System.Object,System.Object})">
+      <summary>
+            Release Dictionary to cache
+            </summary>
+    </member>
+    <member name="T:Microsoft.Cci.ArrayT`1">
+      <summary>
+            Array related helpers
+            </summary>
+      <typeparam name="T" />
+    </member>
+    <member name="M:Microsoft.Cci.Toolbox.ToReadOnly``1(System.Collections.Generic.List{``0})">
+      <summary>
+            Getting read-only IEnumerable{T} from List{T}
+            Read-only is only enforced in DEBUG build to catch programming errors. In release mode, we just return the original list for performance
+            </summary>
+      <typeparam name="T" />
+      <param name="list" />
+      <returns />
+    </member>
+    <member name="T:Microsoft.Cci.EnumerableAdapter`1">
+      <summary>
+            Wrapper around IEnumerable{T}, optimized for IReadOnlyList{T}
+            </summary>
+      <typeparam name="T" />
+    </member>
     <member name="P:Microsoft.Cci.SourceDummy.PrimarySourceLocation">
       <summary>
             This source location behaves as the notorious FeeFee: a source
@@ -189,6 +327,16 @@
     <member name="P:Microsoft.Cci.IPrimarySourceDocument.LanguageVendor">
       <summary>
             A Guid that identifies the compiler vendor programming language used in the source document. Typically used by a debugger to locate vendor specific logic.
+            </summary>
+    </member>
+    <member name="P:Microsoft.Cci.IPrimarySourceDocument.ChecksumAlgorithm">
+      <summary>
+            A Guid that identifies the checksum algorithm used. Typically used by a debugger to find a matching source file.
+            </summary>
+    </member>
+    <member name="P:Microsoft.Cci.IPrimarySourceDocument.Checksum">
+      <summary>
+            The checksum value for this source document. Typically used by a debugger to find a matching source file.
             </summary>
     </member>
     <member name="P:Microsoft.Cci.IPrimarySourceDocument.PrimarySourceLocation">
@@ -1461,6 +1609,16 @@
             A Guid that identifies the compiler vendor programming language used in the source document. Typically used by a debugger to locate vendor specific logic.
             </summary>
     </member>
+    <member name="P:Microsoft.Cci.PrimarySourceDocument.ChecksumAlgorithm">
+      <summary>
+            A Guid that identifies the checksum algorithm used. Typically used by a debugger to find a matching source file.
+            </summary>
+    </member>
+    <member name="P:Microsoft.Cci.PrimarySourceDocument.Checksum">
+      <summary>
+            The checksum value for this source document. Typically used by a debugger to find a matching source file.
+            </summary>
+    </member>
     <member name="P:Microsoft.Cci.PrimarySourceDocument.Length">
       <summary>
             The length of the source string.
@@ -1619,6 +1777,16 @@
     <member name="P:Microsoft.Cci.SourceDocumentWithInclusion.LanguageVendor">
       <summary>
             A Guid that identifies the compiler vendor programming language used in the source document. Typically used by a debugger to locate vendor specific logic.
+            </summary>
+    </member>
+    <member name="P:Microsoft.Cci.SourceDocumentWithInclusion.ChecksumAlgorithm">
+      <summary>
+            A Guid that identifies the checksum algorithm used. Typically used by a debugger to find a matching source file.
+            </summary>
+    </member>
+    <member name="P:Microsoft.Cci.SourceDocumentWithInclusion.Checksum">
+      <summary>
+            The checksum value for this source document. Typically used by a debugger to find a matching source file.
             </summary>
     </member>
     <member name="P:Microsoft.Cci.SourceDocumentWithInclusion.SourceLocation">
@@ -2641,26 +2809,40 @@
         <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
-    <member name="T:Microsoft.Cci.CopiedSynchronizationPoint">
-      <invariant>this.mapFromOriginaltoCopy != null</invariant>
-      <invariant>this.original != null</invariant>
+    <member name="M:Microsoft.Cci.IncludedSourceLocation.Microsoft#Cci#IPrimarySourceLocation#get_PrimarySourceDocument">
+      <ensures inheritedFrom="M:Microsoft.Cci.IPrimarySourceLocation.get_PrimarySourceDocument" inheritedFromTypeName="IPrimarySourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
-    <member name="M:Microsoft.Cci.CopiedSynchronizationPoint.#ctor(Microsoft.Cci.ISynchronizationPoint,Microsoft.Cci.UtilityDataStructures.Hashtable{System.Object,System.Object})">
-      <requires csharp="original != null" vb="original &lt;&gt; Nothing">original != null</requires>
-      <requires csharp="mapFromOriginaltoCopy != null" vb="mapFromOriginaltoCopy &lt;&gt; Nothing">mapFromOriginaltoCopy != null</requires>
+    <member name="M:Microsoft.Cci.IncludedSourceLocation.Microsoft#Cci#ISourceLocation#get_SourceDocument">
+      <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_SourceDocument" inheritedFromTypeName="ISourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
-    <member name="M:Microsoft.Cci.CompositeSourceDocument.Microsoft#Cci#IDerivedSourceDocument#get_DerivedSourceLocation">
-      <ensures inheritedFrom="M:Microsoft.Cci.IDerivedSourceDocument.get_DerivedSourceLocation" inheritedFromTypeName="IDerivedSourceDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    <member name="M:Microsoft.Cci.IncludedSourceLocation.Microsoft#Cci#ILocation#get_Document">
+      <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
-    <member name="P:Microsoft.Cci.CompositeSourceDocument.Microsoft#Cci#IDerivedSourceDocument#DerivedSourceLocation">
+    <member name="P:Microsoft.Cci.IncludedSourceLocation.Microsoft#Cci#IPrimarySourceLocation#PrimarySourceDocument">
       <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IDerivedSourceDocument.get_DerivedSourceLocation" inheritedFromTypeName="IDerivedSourceDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IPrimarySourceLocation.get_PrimarySourceDocument" inheritedFromTypeName="IPrimarySourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
-    <member name="M:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#Contains(Microsoft.Cci.ISourceLocation)">
+    <member name="P:Microsoft.Cci.IncludedSourceLocation.Microsoft#Cci#ISourceLocation#SourceDocument">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_SourceDocument" inheritedFromTypeName="ISourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.IncludedSourceLocation.Microsoft#Cci#ILocation#Document">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.AggregatingLocalScopeProvider.GetProvider(Microsoft.Cci.IMethodDefinition)">
+      <requires csharp="methodDefinition != null" vb="methodDefinition &lt;&gt; Nothing">methodDefinition != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.AggregatingLocalScopeProvider.GetProvider(Microsoft.Cci.ILocalDefinition)">
+      <requires csharp="localDefinition != null" vb="localDefinition &lt;&gt; Nothing">localDefinition != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.DummySourceLocation.Contains(Microsoft.Cci.ISourceLocation)">
       <requires inheritedFrom="M:Microsoft.Cci.ISourceLocation.Contains(Microsoft.Cci.ISourceLocation)" inheritedFromTypeName="ISourceLocation" csharp="location != null" vb="location &lt;&gt; Nothing">location != null</requires>
     </member>
-    <member name="M:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)">
+    <member name="M:Microsoft.Cci.DummySourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)">
       <requires inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="destination != null" vb="destination &lt;&gt; Nothing">destination != null</requires>
       <requires inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="0 &lt;= offset" vb="0 &lt;= offset">0 &lt;= offset</requires>
       <requires inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="0 &lt;= destinationOffset" vb="0 &lt;= destinationOffset">0 &lt;= destinationOffset</requires>
@@ -2670,64 +2852,44 @@
       <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="(0 &lt;= result ? result &lt;= length : !true) &amp;&amp; !(offset + result &gt; this.Length)" vb="(0 &lt;= result ? result &lt;= length : Not True) AndAlso Not offset + result &gt; Me.Length">(0 &lt;= result ? result &lt;= length : !true) &amp;&amp; !(offset + result &gt; this.Length)</ensures>
       <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= length || offset + result == this.Length" vb="result &gt;= length OrElse (offset + result = Me.Length)">result &gt;= length || offset + result == this.Length</ensures>
     </member>
-    <member name="M:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#get_EndIndex">
-      <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_EndIndex" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0 &amp;&amp; !(result &gt; this.SourceDocument.Length)" vb="result &gt;= 0 AndAlso Not result &gt; Me.SourceDocument.Length">result &gt;= 0 &amp;&amp; !(result &gt; this.SourceDocument.Length)</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_EndIndex" inheritedFromTypeName="ISourceLocation" csharp="result == this.StartIndex + this.Length" vb="result = Me.StartIndex + Me.Length">result == this.StartIndex + this.Length</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#get_Length">
-      <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_Length" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_Length" inheritedFromTypeName="ISourceLocation" csharp="this.StartIndex + result &lt;= this.SourceDocument.Length" vb="Me.StartIndex + result &lt;= Me.SourceDocument.Length">this.StartIndex + result &lt;= this.SourceDocument.Length</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#get_SourceDocument">
-      <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_SourceDocument" inheritedFromTypeName="ISourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#get_Source">
-      <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_Source" inheritedFromTypeName="ISourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#get_StartIndex">
-      <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_StartIndex" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ILocation#get_Document">
-      <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="P:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#EndIndex">
+    <member name="P:Microsoft.Cci.DummySourceLocation.EndIndex">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_EndIndex" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0 &amp;&amp; !(result &gt; this.SourceDocument.Length)" vb="result &gt;= 0 AndAlso Not result &gt; Me.SourceDocument.Length">result &gt;= 0 &amp;&amp; !(result &gt; this.SourceDocument.Length)</ensures>
         <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_EndIndex" inheritedFromTypeName="ISourceLocation" csharp="result == this.StartIndex + this.Length" vb="result = Me.StartIndex + Me.Length">result == this.StartIndex + this.Length</ensures>
       </getter>
     </member>
-    <member name="P:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#Length">
+    <member name="P:Microsoft.Cci.DummySourceLocation.Length">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_Length" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
         <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_Length" inheritedFromTypeName="ISourceLocation" csharp="this.StartIndex + result &lt;= this.SourceDocument.Length" vb="Me.StartIndex + result &lt;= Me.SourceDocument.Length">this.StartIndex + result &lt;= this.SourceDocument.Length</ensures>
       </getter>
     </member>
-    <member name="P:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#SourceDocument">
+    <member name="P:Microsoft.Cci.DummySourceLocation.SourceDocument">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_SourceDocument" inheritedFromTypeName="ISourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
-    <member name="P:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#Source">
+    <member name="P:Microsoft.Cci.DummySourceLocation.Source">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_Source" inheritedFromTypeName="ISourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
-    <member name="P:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#StartIndex">
+    <member name="P:Microsoft.Cci.DummySourceLocation.StartIndex">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_StartIndex" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
       </getter>
     </member>
-    <member name="P:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ILocation#Document">
+    <member name="P:Microsoft.Cci.DummySourceLocation.Document">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
-    <member name="M:Microsoft.Cci.ErrorMessage.Microsoft#Cci#IErrorMessage#get_Location">
-      <ensures inheritedFrom="M:Microsoft.Cci.IErrorMessage.get_Location" inheritedFromTypeName="IErrorMessage" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    <member name="M:Microsoft.Cci.CompositeSourceDocument.Microsoft#Cci#IDerivedSourceDocument#get_DerivedSourceLocation">
+      <ensures inheritedFrom="M:Microsoft.Cci.IDerivedSourceDocument.get_DerivedSourceLocation" inheritedFromTypeName="IDerivedSourceDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
-    <member name="P:Microsoft.Cci.ErrorMessage.Microsoft#Cci#IErrorMessage#Location">
+    <member name="P:Microsoft.Cci.CompositeSourceDocument.Microsoft#Cci#IDerivedSourceDocument#DerivedSourceLocation">
       <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IErrorMessage.get_Location" inheritedFromTypeName="IErrorMessage" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IDerivedSourceDocument.get_DerivedSourceLocation" inheritedFromTypeName="IDerivedSourceDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
     <member name="P:Microsoft.Cci.DummySourceDocumentEdit.SourceLocationBeforeEdit">
@@ -2741,15 +2903,50 @@
         <ensures inheritedFrom="M:Microsoft.Cci.ISourceDocumentEdit.get_SourceDocumentAfterEdit" inheritedFromTypeName="ISourceDocumentEdit" csharp="result.IsUpdatedVersionOf(this.SourceLocationBeforeEdit.SourceDocument)" vb="result.IsUpdatedVersionOf(Me.SourceLocationBeforeEdit.SourceDocument)">result.IsUpdatedVersionOf(this.SourceLocationBeforeEdit.SourceDocument)</ensures>
       </getter>
     </member>
-    <member name="M:Microsoft.Cci.PrimarySourceDocument.GetOwnStreamReaderAndReadAhead(System.IO.StreamReader)">
-      <requires csharp="streamReader != null" vb="streamReader &lt;&gt; Nothing">streamReader != null</requires>
+    <member name="M:Microsoft.Cci.DummyCompilation.Contains(Microsoft.Cci.ISourceDocument)">
+      <requires inheritedFrom="M:Microsoft.Cci.ICompilation.Contains(Microsoft.Cci.ISourceDocument)" inheritedFromTypeName="ICompilation" csharp="sourceDocument != null" vb="sourceDocument &lt;&gt; Nothing">sourceDocument != null</requires>
     </member>
-    <member name="M:Microsoft.Cci.PrimarySourceDocument.Microsoft#Cci#IPrimarySourceDocument#get_PrimarySourceLocation">
-      <ensures inheritedFrom="M:Microsoft.Cci.IPrimarySourceDocument.get_PrimarySourceLocation" inheritedFromTypeName="IPrimarySourceDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    <member name="M:Microsoft.Cci.DummyCompilation.GetUnitSetFor(Microsoft.Cci.IName)">
+      <requires inheritedFrom="M:Microsoft.Cci.ICompilation.GetUnitSetFor(Microsoft.Cci.IName)" inheritedFromTypeName="ICompilation" csharp="unitSetName != null" vb="unitSetName &lt;&gt; Nothing">unitSetName != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.ICompilation.GetUnitSetFor(Microsoft.Cci.IName)" inheritedFromTypeName="ICompilation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
-    <member name="P:Microsoft.Cci.PrimarySourceDocument.Microsoft#Cci#IPrimarySourceDocument#PrimarySourceLocation">
+    <member name="P:Microsoft.Cci.DummyCompilation.PlatformType">
       <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IPrimarySourceDocument.get_PrimarySourceLocation" inheritedFromTypeName="IPrimarySourceDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.ICompilation.get_PlatformType" inheritedFromTypeName="ICompilation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.DummyCompilation.Result">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ICompilation.get_Result" inheritedFromTypeName="ICompilation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.DummyCompilation.UnitSet">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ICompilation.get_UnitSet" inheritedFromTypeName="ICompilation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.SourceLocation.Microsoft#Cci#ILocation#get_Document">
+      <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.SourceLocation.Microsoft#Cci#ILocation#Document">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="T:Microsoft.Cci.CopiedLocalScope">
+      <invariant>this.copiedMethodBody != null</invariant>
+      <invariant>this.originalScope != null</invariant>
+    </member>
+    <member name="M:Microsoft.Cci.CopiedLocalScope.#ctor(Microsoft.Cci.ILocalScope,Microsoft.Cci.IMethodBody)">
+      <requires csharp="originalScope != null" vb="originalScope &lt;&gt; Nothing">originalScope != null</requires>
+      <requires csharp="copiedMethodBody != null" vb="copiedMethodBody &lt;&gt; Nothing">copiedMethodBody != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.CopiedLocalScope.Microsoft#Cci#ILocalScope#get_MethodDefinition">
+      <ensures inheritedFrom="M:Microsoft.Cci.ILocalScope.get_MethodDefinition" inheritedFromTypeName="ILocalScope" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.CopiedLocalScope.Microsoft#Cci#ILocalScope#MethodDefinition">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocalScope.get_MethodDefinition" inheritedFromTypeName="ILocalScope" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
     <member name="M:Microsoft.Cci.DummyPrimarySourceLocation.Microsoft#Cci#IPrimarySourceLocation#get_EndColumn">
@@ -2857,90 +3054,51 @@
         <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
-    <member name="M:Microsoft.Cci.DerivedSourceLocation.Microsoft#Cci#IDerivedSourceLocation#get_PrimarySourceLocations">
-      <ensures inheritedFrom="M:Microsoft.Cci.IDerivedSourceLocation.get_PrimarySourceLocations" inheritedFromTypeName="IDerivedSourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    <member name="M:Microsoft.Cci.ReadOnlyListEnumerator`1.MoveNext">
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_Model == old(this.get_Model)" vb="Me.get_Model = old(Me.get_Model)">this.get_Model == old(this.get_Model)</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex &lt; this.get_Model.Length" vb="Me.get_CurrentIndex &lt; Me.get_Model.Length">this.get_CurrentIndex &lt; this.get_Model.Length</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex &gt;= 0" vb="Me.get_CurrentIndex &gt;= 0">this.get_CurrentIndex &gt;= 0</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex == old(this.get_CurrentIndex) + 1" vb="Me.get_CurrentIndex = old(Me.get_CurrentIndex) + 1">this.get_CurrentIndex == old(this.get_CurrentIndex) + 1</ensures>
     </member>
-    <member name="P:Microsoft.Cci.DerivedSourceLocation.Microsoft#Cci#IDerivedSourceLocation#PrimarySourceLocations">
+    <member name="M:Microsoft.Cci.ReadOnlyListEnumerator`1.System#Collections#Generic#IEnumerator{T}#get_Current">
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerator`1.get_Current" inheritedFromTypeName="IEnumerator" csharp="(object)result == this.get_Model[this.get_CurrentIndex]" vb="((Object)result) = Me.get_Model(Me.get_CurrentIndex)">(object)result == this.get_Model[this.get_CurrentIndex]</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyListEnumerator`1.System#Collections#IEnumerator#get_Current">
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.ReadOnlyListEnumerator`1.System#Collections#Generic#IEnumerator{T}#Current">
       <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IDerivedSourceLocation.get_PrimarySourceLocations" inheritedFromTypeName="IDerivedSourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:System.Collections.Generic.IEnumerator`1.get_Current" inheritedFromTypeName="IEnumerator" csharp="(object)result == this.get_Model[this.get_CurrentIndex]" vb="((Object)result) = Me.get_Model(Me.get_CurrentIndex)">(object)result == this.get_Model[this.get_CurrentIndex]</ensures>
       </getter>
     </member>
-    <member name="M:Microsoft.Cci.SourceLocation.Microsoft#Cci#ILocation#get_Document">
-      <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="P:Microsoft.Cci.SourceLocation.Microsoft#Cci#ILocation#Document">
+    <member name="P:Microsoft.Cci.ReadOnlyListEnumerator`1.System#Collections#IEnumerator#Current">
       <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
       </getter>
     </member>
-    <member name="M:Microsoft.Cci.AggregatingSourceLocationProvider.GetProvider(Microsoft.Cci.IMethodDefinition)">
-      <requires csharp="methodDefinition != null" vb="methodDefinition &lt;&gt; Nothing">methodDefinition != null</requires>
-    </member>
-    <member name="M:Microsoft.Cci.DummySourceLocation.Contains(Microsoft.Cci.ISourceLocation)">
-      <requires inheritedFrom="M:Microsoft.Cci.ISourceLocation.Contains(Microsoft.Cci.ISourceLocation)" inheritedFromTypeName="ISourceLocation" csharp="location != null" vb="location &lt;&gt; Nothing">location != null</requires>
-    </member>
-    <member name="M:Microsoft.Cci.DummySourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)">
-      <requires inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="destination != null" vb="destination &lt;&gt; Nothing">destination != null</requires>
-      <requires inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="0 &lt;= offset" vb="0 &lt;= offset">0 &lt;= offset</requires>
-      <requires inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="0 &lt;= destinationOffset" vb="0 &lt;= destinationOffset">0 &lt;= destinationOffset</requires>
-      <requires inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="0 &lt;= length" vb="0 &lt;= length">0 &lt;= length</requires>
-      <requires inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="offset &lt;= this.Length" vb="offset &lt;= Me.Length">offset &lt;= this.Length</requires>
-      <requires inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="destinationOffset + length &lt;= destination.Length" vb="destinationOffset + length &lt;= destination.Length">destinationOffset + length &lt;= destination.Length</requires>
-      <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="(0 &lt;= result ? result &lt;= length : !true) &amp;&amp; !(offset + result &gt; this.Length)" vb="(0 &lt;= result ? result &lt;= length : Not True) AndAlso Not offset + result &gt; Me.Length">(0 &lt;= result ? result &lt;= length : !true) &amp;&amp; !(offset + result &gt; this.Length)</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= length || offset + result == this.Length" vb="result &gt;= length OrElse (offset + result = Me.Length)">result &gt;= length || offset + result == this.Length</ensures>
-    </member>
-    <member name="P:Microsoft.Cci.DummySourceLocation.EndIndex">
+    <member name="P:Microsoft.Cci.SourceDummy.Compilation">
       <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_EndIndex" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0 &amp;&amp; !(result &gt; this.SourceDocument.Length)" vb="result &gt;= 0 AndAlso Not result &gt; Me.SourceDocument.Length">result &gt;= 0 &amp;&amp; !(result &gt; this.SourceDocument.Length)</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_EndIndex" inheritedFromTypeName="ISourceLocation" csharp="result == this.StartIndex + this.Length" vb="result = Me.StartIndex + Me.Length">result == this.StartIndex + this.Length</ensures>
+        <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
-    <member name="P:Microsoft.Cci.DummySourceLocation.Length">
+    <member name="P:Microsoft.Cci.SourceDummy.PrimarySourceDocument">
       <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_Length" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_Length" inheritedFromTypeName="ISourceLocation" csharp="this.StartIndex + result &lt;= this.SourceDocument.Length" vb="Me.StartIndex + result &lt;= Me.SourceDocument.Length">this.StartIndex + result &lt;= this.SourceDocument.Length</ensures>
+        <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
-    <member name="P:Microsoft.Cci.DummySourceLocation.SourceDocument">
+    <member name="P:Microsoft.Cci.SourceDummy.SourceDocument">
       <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_SourceDocument" inheritedFromTypeName="ISourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
-    <member name="P:Microsoft.Cci.DummySourceLocation.Source">
+    <member name="P:Microsoft.Cci.SourceDummy.SourceDocumentEdit">
       <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_Source" inheritedFromTypeName="ISourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
-    <member name="P:Microsoft.Cci.DummySourceLocation.StartIndex">
+    <member name="P:Microsoft.Cci.SourceDummy.SourceLocation">
       <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_StartIndex" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.DummySourceLocation.Document">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="M:Microsoft.Cci.DummyCompilation.Contains(Microsoft.Cci.ISourceDocument)">
-      <requires inheritedFrom="M:Microsoft.Cci.ICompilation.Contains(Microsoft.Cci.ISourceDocument)" inheritedFromTypeName="ICompilation" csharp="sourceDocument != null" vb="sourceDocument &lt;&gt; Nothing">sourceDocument != null</requires>
-    </member>
-    <member name="M:Microsoft.Cci.DummyCompilation.GetUnitSetFor(Microsoft.Cci.IName)">
-      <requires inheritedFrom="M:Microsoft.Cci.ICompilation.GetUnitSetFor(Microsoft.Cci.IName)" inheritedFromTypeName="ICompilation" csharp="unitSetName != null" vb="unitSetName &lt;&gt; Nothing">unitSetName != null</requires>
-      <ensures inheritedFrom="M:Microsoft.Cci.ICompilation.GetUnitSetFor(Microsoft.Cci.IName)" inheritedFromTypeName="ICompilation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="P:Microsoft.Cci.DummyCompilation.PlatformType">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ICompilation.get_PlatformType" inheritedFromTypeName="ICompilation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.DummyCompilation.Result">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ICompilation.get_Result" inheritedFromTypeName="ICompilation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.DummyCompilation.UnitSet">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ICompilation.get_UnitSet" inheritedFromTypeName="ICompilation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
     <member name="M:Microsoft.Cci.OriginalSourceLocation.Microsoft#Cci#ISourceLocation#Contains(Microsoft.Cci.ISourceLocation)">
@@ -3008,37 +3166,52 @@
         <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
-    <member name="T:Microsoft.Cci.CopiedSynchronizationInformation">
-      <invariant>this.mapFromOriginaltoCopy != null</invariant>
-      <invariant>this.originalSyncrhonizationInformation != null</invariant>
+    <member name="M:Microsoft.Cci.PrimarySourceDocument.GetOwnStreamReaderAndReadAhead(System.IO.StreamReader)">
+      <requires csharp="streamReader != null" vb="streamReader &lt;&gt; Nothing">streamReader != null</requires>
     </member>
-    <member name="M:Microsoft.Cci.CopiedSynchronizationInformation.#ctor(Microsoft.Cci.ISynchronizationInformation,Microsoft.Cci.UtilityDataStructures.Hashtable{System.Object,System.Object})">
-      <requires csharp="originalSyncrhonizationInformation != null" vb="originalSyncrhonizationInformation &lt;&gt; Nothing">originalSyncrhonizationInformation != null</requires>
-      <requires csharp="mapFromOriginaltoCopy != null" vb="mapFromOriginaltoCopy &lt;&gt; Nothing">mapFromOriginaltoCopy != null</requires>
+    <member name="M:Microsoft.Cci.PrimarySourceDocument.Microsoft#Cci#IPrimarySourceDocument#get_PrimarySourceLocation">
+      <ensures inheritedFrom="M:Microsoft.Cci.IPrimarySourceDocument.get_PrimarySourceLocation" inheritedFromTypeName="IPrimarySourceDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
-    <member name="M:Microsoft.Cci.CopiedSynchronizationInformation.Microsoft#Cci#ISynchronizationInformation#get_AsyncMethod">
-      <ensures inheritedFrom="M:Microsoft.Cci.ISynchronizationInformation.get_AsyncMethod" inheritedFromTypeName="ISynchronizationInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.CopiedSynchronizationInformation.Microsoft#Cci#ISynchronizationInformation#get_MoveNextMethod">
-      <ensures inheritedFrom="M:Microsoft.Cci.ISynchronizationInformation.get_MoveNextMethod" inheritedFromTypeName="ISynchronizationInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.CopiedSynchronizationInformation.Microsoft#Cci#ISynchronizationInformation#get_SynchronizationPoints">
-      <ensures inheritedFrom="M:Microsoft.Cci.ISynchronizationInformation.get_SynchronizationPoints" inheritedFromTypeName="ISynchronizationInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="P:Microsoft.Cci.CopiedSynchronizationInformation.Microsoft#Cci#ISynchronizationInformation#AsyncMethod">
+    <member name="P:Microsoft.Cci.PrimarySourceDocument.Microsoft#Cci#IPrimarySourceDocument#PrimarySourceLocation">
       <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ISynchronizationInformation.get_AsyncMethod" inheritedFromTypeName="ISynchronizationInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IPrimarySourceDocument.get_PrimarySourceLocation" inheritedFromTypeName="IPrimarySourceDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
-    <member name="P:Microsoft.Cci.CopiedSynchronizationInformation.Microsoft#Cci#ISynchronizationInformation#MoveNextMethod">
+    <member name="M:Microsoft.Cci.DerivedSourceLocation.Microsoft#Cci#IDerivedSourceLocation#get_PrimarySourceLocations">
+      <ensures inheritedFrom="M:Microsoft.Cci.IDerivedSourceLocation.get_PrimarySourceLocations" inheritedFromTypeName="IDerivedSourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.DerivedSourceLocation.Microsoft#Cci#IDerivedSourceLocation#PrimarySourceLocations">
       <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ISynchronizationInformation.get_MoveNextMethod" inheritedFromTypeName="ISynchronizationInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IDerivedSourceLocation.get_PrimarySourceLocations" inheritedFromTypeName="IDerivedSourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
-    <member name="P:Microsoft.Cci.CopiedSynchronizationInformation.Microsoft#Cci#ISynchronizationInformation#SynchronizationPoints">
+    <member name="M:Microsoft.Cci.ErrorMessage.Microsoft#Cci#IErrorMessage#get_Location">
+      <ensures inheritedFrom="M:Microsoft.Cci.IErrorMessage.get_Location" inheritedFromTypeName="IErrorMessage" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.ErrorMessage.Microsoft#Cci#IErrorMessage#Location">
       <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ISynchronizationInformation.get_SynchronizationPoints" inheritedFromTypeName="ISynchronizationInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IErrorMessage.get_Location" inheritedFromTypeName="IErrorMessage" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
+    </member>
+    <member name="M:Microsoft.Cci.SourceDocument.Microsoft#Cci#ISourceDocument#get_SourceLocation">
+      <ensures inheritedFrom="M:Microsoft.Cci.ISourceDocument.get_SourceLocation" inheritedFromTypeName="ISourceDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.SourceDocument.Microsoft#Cci#ISourceDocument#SourceLocation">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISourceDocument.get_SourceLocation" inheritedFromTypeName="ISourceDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.AggregatingSourceLocationProvider.GetProvider(Microsoft.Cci.IMethodDefinition)">
+      <requires csharp="methodDefinition != null" vb="methodDefinition &lt;&gt; Nothing">methodDefinition != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.GetEnumerator">
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.System#Collections#IEnumerable#GetEnumerator">
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_CurrentIndex == -1" vb="result.get_CurrentIndex = -1">result.get_CurrentIndex == -1</ensures>
     </member>
     <member name="M:Microsoft.Cci.DummySourceDocument.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)">
       <requires inheritedFrom="M:Microsoft.Cci.ISourceDocument.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceDocument" csharp="destination != null" vb="destination &lt;&gt; Nothing">destination != null</requires>
@@ -3097,67 +3270,75 @@
         <ensures inheritedFrom="M:Microsoft.Cci.ISourceDocument.get_SourceLocation" inheritedFromTypeName="ISourceDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
-    <member name="M:Microsoft.Cci.IncludedSourceLocation.Microsoft#Cci#IPrimarySourceLocation#get_PrimarySourceDocument">
-      <ensures inheritedFrom="M:Microsoft.Cci.IPrimarySourceLocation.get_PrimarySourceDocument" inheritedFromTypeName="IPrimarySourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    <member name="T:Microsoft.Cci.CopiedSynchronizationPoint">
+      <invariant>this.mapFromOriginaltoCopy != null</invariant>
+      <invariant>this.original != null</invariant>
     </member>
-    <member name="M:Microsoft.Cci.IncludedSourceLocation.Microsoft#Cci#ISourceLocation#get_SourceDocument">
-      <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_SourceDocument" inheritedFromTypeName="ISourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    <member name="M:Microsoft.Cci.CopiedSynchronizationPoint.#ctor(Microsoft.Cci.ISynchronizationPoint,Microsoft.Cci.UtilityDataStructures.Hashtable{System.Object,System.Object})">
+      <requires csharp="original != null" vb="original &lt;&gt; Nothing">original != null</requires>
+      <requires csharp="mapFromOriginaltoCopy != null" vb="mapFromOriginaltoCopy &lt;&gt; Nothing">mapFromOriginaltoCopy != null</requires>
     </member>
-    <member name="M:Microsoft.Cci.IncludedSourceLocation.Microsoft#Cci#ILocation#get_Document">
-      <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    <member name="T:Microsoft.Cci.CopiedSynchronizationInformation">
+      <invariant>this.mapFromOriginaltoCopy != null</invariant>
+      <invariant>this.originalSyncrhonizationInformation != null</invariant>
     </member>
-    <member name="P:Microsoft.Cci.IncludedSourceLocation.Microsoft#Cci#IPrimarySourceLocation#PrimarySourceDocument">
+    <member name="M:Microsoft.Cci.CopiedSynchronizationInformation.#ctor(Microsoft.Cci.ISynchronizationInformation,Microsoft.Cci.UtilityDataStructures.Hashtable{System.Object,System.Object})">
+      <requires csharp="originalSyncrhonizationInformation != null" vb="originalSyncrhonizationInformation &lt;&gt; Nothing">originalSyncrhonizationInformation != null</requires>
+      <requires csharp="mapFromOriginaltoCopy != null" vb="mapFromOriginaltoCopy &lt;&gt; Nothing">mapFromOriginaltoCopy != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.CopiedSynchronizationInformation.Microsoft#Cci#ISynchronizationInformation#get_AsyncMethod">
+      <ensures inheritedFrom="M:Microsoft.Cci.ISynchronizationInformation.get_AsyncMethod" inheritedFromTypeName="ISynchronizationInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.CopiedSynchronizationInformation.Microsoft#Cci#ISynchronizationInformation#get_MoveNextMethod">
+      <ensures inheritedFrom="M:Microsoft.Cci.ISynchronizationInformation.get_MoveNextMethod" inheritedFromTypeName="ISynchronizationInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.CopiedSynchronizationInformation.Microsoft#Cci#ISynchronizationInformation#get_SynchronizationPoints">
+      <ensures inheritedFrom="M:Microsoft.Cci.ISynchronizationInformation.get_SynchronizationPoints" inheritedFromTypeName="ISynchronizationInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.CopiedSynchronizationInformation.Microsoft#Cci#ISynchronizationInformation#AsyncMethod">
       <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IPrimarySourceLocation.get_PrimarySourceDocument" inheritedFromTypeName="IPrimarySourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISynchronizationInformation.get_AsyncMethod" inheritedFromTypeName="ISynchronizationInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
-    <member name="P:Microsoft.Cci.IncludedSourceLocation.Microsoft#Cci#ISourceLocation#SourceDocument">
+    <member name="P:Microsoft.Cci.CopiedSynchronizationInformation.Microsoft#Cci#ISynchronizationInformation#MoveNextMethod">
       <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_SourceDocument" inheritedFromTypeName="ISourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISynchronizationInformation.get_MoveNextMethod" inheritedFromTypeName="ISynchronizationInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
-    <member name="P:Microsoft.Cci.IncludedSourceLocation.Microsoft#Cci#ILocation#Document">
+    <member name="P:Microsoft.Cci.CopiedSynchronizationInformation.Microsoft#Cci#ISynchronizationInformation#SynchronizationPoints">
       <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISynchronizationInformation.get_SynchronizationPoints" inheritedFromTypeName="ISynchronizationInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
-    <member name="P:Microsoft.Cci.SourceDummy.Compilation">
+    <member name="M:Microsoft.Cci.VirtualReadOnlyList`1.MoveNext">
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_Model == old(this.get_Model)" vb="Me.get_Model = old(Me.get_Model)">this.get_Model == old(this.get_Model)</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex &lt; this.get_Model.Length" vb="Me.get_CurrentIndex &lt; Me.get_Model.Length">this.get_CurrentIndex &lt; this.get_Model.Length</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex &gt;= 0" vb="Me.get_CurrentIndex &gt;= 0">this.get_CurrentIndex &gt;= 0</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex == old(this.get_CurrentIndex) + 1" vb="Me.get_CurrentIndex = old(Me.get_CurrentIndex) + 1">this.get_CurrentIndex == old(this.get_CurrentIndex) + 1</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.VirtualReadOnlyList`1.System#Collections#Generic#IEnumerable{T}#GetEnumerator">
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.VirtualReadOnlyList`1.System#Collections#IEnumerable#GetEnumerator">
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_CurrentIndex == -1" vb="result.get_CurrentIndex = -1">result.get_CurrentIndex == -1</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.VirtualReadOnlyList`1.System#Collections#Generic#IEnumerator{T}#get_Current">
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerator`1.get_Current" inheritedFromTypeName="IEnumerator" csharp="(object)result == this.get_Model[this.get_CurrentIndex]" vb="((Object)result) = Me.get_Model(Me.get_CurrentIndex)">(object)result == this.get_Model[this.get_CurrentIndex]</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.VirtualReadOnlyList`1.System#Collections#IEnumerator#get_Current">
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.VirtualReadOnlyList`1.System#Collections#Generic#IEnumerator{T}#Current">
       <getter>
-        <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:System.Collections.Generic.IEnumerator`1.get_Current" inheritedFromTypeName="IEnumerator" csharp="(object)result == this.get_Model[this.get_CurrentIndex]" vb="((Object)result) = Me.get_Model(Me.get_CurrentIndex)">(object)result == this.get_Model[this.get_CurrentIndex]</ensures>
       </getter>
     </member>
-    <member name="P:Microsoft.Cci.SourceDummy.PrimarySourceDocument">
+    <member name="P:Microsoft.Cci.VirtualReadOnlyList`1.System#Collections#IEnumerator#Current">
       <getter>
-        <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.SourceDummy.SourceDocument">
-      <getter>
-        <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.SourceDummy.SourceDocumentEdit">
-      <getter>
-        <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.SourceDummy.SourceLocation">
-      <getter>
-        <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="M:Microsoft.Cci.AggregatingLocalScopeProvider.GetProvider(Microsoft.Cci.IMethodDefinition)">
-      <requires csharp="methodDefinition != null" vb="methodDefinition &lt;&gt; Nothing">methodDefinition != null</requires>
-    </member>
-    <member name="M:Microsoft.Cci.AggregatingLocalScopeProvider.GetProvider(Microsoft.Cci.ILocalDefinition)">
-      <requires csharp="localDefinition != null" vb="localDefinition &lt;&gt; Nothing">localDefinition != null</requires>
-    </member>
-    <member name="M:Microsoft.Cci.SourceDocument.Microsoft#Cci#ISourceDocument#get_SourceLocation">
-      <ensures inheritedFrom="M:Microsoft.Cci.ISourceDocument.get_SourceLocation" inheritedFromTypeName="ISourceDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="P:Microsoft.Cci.SourceDocument.Microsoft#Cci#ISourceDocument#SourceLocation">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ISourceDocument.get_SourceLocation" inheritedFromTypeName="ISourceDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
       </getter>
     </member>
     <member name="M:Microsoft.Cci.CopiedLocalScopeProvider.Microsoft#Cci#ILocalScopeProvider#GetIteratorScopes(Microsoft.Cci.IMethodBody)">
@@ -3285,20 +3466,69 @@
         <ensures inheritedFrom="M:Microsoft.Cci.IDocument.get_Name" inheritedFromTypeName="IDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
-    <member name="T:Microsoft.Cci.CopiedLocalScope">
-      <invariant>this.copiedMethodBody != null</invariant>
-      <invariant>this.originalScope != null</invariant>
+    <member name="M:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#Contains(Microsoft.Cci.ISourceLocation)">
+      <requires inheritedFrom="M:Microsoft.Cci.ISourceLocation.Contains(Microsoft.Cci.ISourceLocation)" inheritedFromTypeName="ISourceLocation" csharp="location != null" vb="location &lt;&gt; Nothing">location != null</requires>
     </member>
-    <member name="M:Microsoft.Cci.CopiedLocalScope.#ctor(Microsoft.Cci.ILocalScope,Microsoft.Cci.IMethodBody)">
-      <requires csharp="originalScope != null" vb="originalScope &lt;&gt; Nothing">originalScope != null</requires>
-      <requires csharp="copiedMethodBody != null" vb="copiedMethodBody &lt;&gt; Nothing">copiedMethodBody != null</requires>
+    <member name="M:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)">
+      <requires inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="destination != null" vb="destination &lt;&gt; Nothing">destination != null</requires>
+      <requires inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="0 &lt;= offset" vb="0 &lt;= offset">0 &lt;= offset</requires>
+      <requires inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="0 &lt;= destinationOffset" vb="0 &lt;= destinationOffset">0 &lt;= destinationOffset</requires>
+      <requires inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="0 &lt;= length" vb="0 &lt;= length">0 &lt;= length</requires>
+      <requires inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="offset &lt;= this.Length" vb="offset &lt;= Me.Length">offset &lt;= this.Length</requires>
+      <requires inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="destinationOffset + length &lt;= destination.Length" vb="destinationOffset + length &lt;= destination.Length">destinationOffset + length &lt;= destination.Length</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="(0 &lt;= result ? result &lt;= length : !true) &amp;&amp; !(offset + result &gt; this.Length)" vb="(0 &lt;= result ? result &lt;= length : Not True) AndAlso Not offset + result &gt; Me.Length">(0 &lt;= result ? result &lt;= length : !true) &amp;&amp; !(offset + result &gt; this.Length)</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.CopyTo(System.Int32,System.Char[],System.Int32,System.Int32)" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= length || offset + result == this.Length" vb="result &gt;= length OrElse (offset + result = Me.Length)">result &gt;= length || offset + result == this.Length</ensures>
     </member>
-    <member name="M:Microsoft.Cci.CopiedLocalScope.Microsoft#Cci#ILocalScope#get_MethodDefinition">
-      <ensures inheritedFrom="M:Microsoft.Cci.ILocalScope.get_MethodDefinition" inheritedFromTypeName="ILocalScope" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    <member name="M:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#get_EndIndex">
+      <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_EndIndex" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0 &amp;&amp; !(result &gt; this.SourceDocument.Length)" vb="result &gt;= 0 AndAlso Not result &gt; Me.SourceDocument.Length">result &gt;= 0 &amp;&amp; !(result &gt; this.SourceDocument.Length)</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_EndIndex" inheritedFromTypeName="ISourceLocation" csharp="result == this.StartIndex + this.Length" vb="result = Me.StartIndex + Me.Length">result == this.StartIndex + this.Length</ensures>
     </member>
-    <member name="P:Microsoft.Cci.CopiedLocalScope.Microsoft#Cci#ILocalScope#MethodDefinition">
+    <member name="M:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#get_Length">
+      <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_Length" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_Length" inheritedFromTypeName="ISourceLocation" csharp="this.StartIndex + result &lt;= this.SourceDocument.Length" vb="Me.StartIndex + result &lt;= Me.SourceDocument.Length">this.StartIndex + result &lt;= this.SourceDocument.Length</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#get_SourceDocument">
+      <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_SourceDocument" inheritedFromTypeName="ISourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#get_Source">
+      <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_Source" inheritedFromTypeName="ISourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#get_StartIndex">
+      <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_StartIndex" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ILocation#get_Document">
+      <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#EndIndex">
       <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ILocalScope.get_MethodDefinition" inheritedFromTypeName="ILocalScope" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_EndIndex" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0 &amp;&amp; !(result &gt; this.SourceDocument.Length)" vb="result &gt;= 0 AndAlso Not result &gt; Me.SourceDocument.Length">result &gt;= 0 &amp;&amp; !(result &gt; this.SourceDocument.Length)</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_EndIndex" inheritedFromTypeName="ISourceLocation" csharp="result == this.StartIndex + this.Length" vb="result = Me.StartIndex + Me.Length">result == this.StartIndex + this.Length</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#Length">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_Length" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_Length" inheritedFromTypeName="ISourceLocation" csharp="this.StartIndex + result &lt;= this.SourceDocument.Length" vb="Me.StartIndex + result &lt;= Me.SourceDocument.Length">this.StartIndex + result &lt;= this.SourceDocument.Length</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#SourceDocument">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_SourceDocument" inheritedFromTypeName="ISourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#Source">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_Source" inheritedFromTypeName="ISourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#StartIndex">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_StartIndex" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ILocation#Document">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
   </members>

@@ -4,6 +4,144 @@
     <name>Microsoft.Cci.ILGenerator</name>
   </assembly>
   <members>
+    <member name="T:Microsoft.Cci.ReadOnlyList`1">
+      <summary>
+            Fixed size array wrapped as IReadOnlyList{T}
+            Construct with known size N, call Add N times, Freeze, and then use as IReadOnlyList{T} or IEnumerable{T}
+            </summary>
+      <typeparam name="T" />
+      <remarks>Optimization for List list = new List{T}(); list.Add() list.Add() ...; list.TrimExcess(); list.AsReadOnly() </remarks>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.#ctor(System.Int32)">
+      <summary>
+            Constructor
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.Create(System.UInt32)">
+      <summary>
+            Creation helper
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.Create(System.Collections.Generic.IEnumerable{`0})">
+      <summary>
+            Creation helper from IEnumerable{T}
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.Freeze(Microsoft.Cci.ReadOnlyList{`0})">
+      <summary>
+            Freeze to be read-only
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.Add(`0)">
+      <summary>
+            Append item
+            </summary>
+    </member>
+    <member name="P:Microsoft.Cci.ReadOnlyList`1.Count">
+      <summary>
+            Count of total allowed items
+            </summary>
+    </member>
+    <member name="P:Microsoft.Cci.ReadOnlyList`1.Item(System.Int32)">
+      <summary>
+            Return an item
+            </summary>
+    </member>
+    <member name="T:Microsoft.Cci.VirtualReadOnlyList`1">
+      <summary>
+             Virtual IReadOnlyList + its enumerator
+             </summary>
+      <remarks>Borrowed from the internal implementation of "yield return", IEnumerable and IEnumerator are implemented in the 
+             same class here, to save one extra allocation for the most common usage pattern of single enumerator in the same thread.
+            
+             This class is used mostly by SingletonList. There are quite a few CCI objects which store single object inside by needs to return IEnumerable from it.
+             This is used in super high frequency (e.g. BaseClasses) that we need to reduce memory allocation and CPU cost for it.
+            
+             This solution is better replacement for GetSingletonEnumerable which just uses "yield return":
+             1) There only needs to be single implementation.
+             2) All the source code is here.
+             3) IReadOnlyList is implemented so caller can query for Count and this[index] without going through enumerator at all.
+             </remarks>
+      <typeparam name="T" />
+    </member>
+    <member name="M:Microsoft.Cci.VirtualReadOnlyList`1.GetItem(System.Int32)">
+      <summary>
+            One method to be implemented in derived classes
+            </summary>
+    </member>
+    <member name="T:Microsoft.Cci.ReadOnlyListEnumerator`1">
+      <summary>
+            Enumerator for IReadOnlyList
+            </summary>
+      <typeparam name="T" />
+    </member>
+    <member name="T:Microsoft.Cci.SingletonList`1">
+      <summary>
+            IReadOnlyList wrapper for single item, + its enumerator (similar to yield return)
+            </summary>
+      <typeparam name="T" />
+    </member>
+    <member name="T:Microsoft.Cci.StringBuilderCache">
+      <summary>
+            Caching 10 StringBuilders per thread (for nested usage)
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.StringBuilderCache.GetList">
+      <summary>
+            Get StringBuilder array
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.StringBuilderCache.Acquire">
+      <summary>
+            Acquire a StringBuilder
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.StringBuilderCache.Release(System.Text.StringBuilder)">
+      <summary>
+            Release StringBuilder to cache
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.StringBuilderCache.GetStringAndRelease(System.Text.StringBuilder)">
+      <summary>
+            Release StringBuilder to cache, after getting string from it
+            </summary>
+    </member>
+    <member name="T:Microsoft.Cci.ContainerCache">
+      <summary>
+            Reusing Containers
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.ContainerCache.AcquireObjectDictionary">
+      <summary>
+            Acquire a Dictionary
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.ContainerCache.Release(System.Collections.Generic.Dictionary{System.Object,System.Object})">
+      <summary>
+            Release Dictionary to cache
+            </summary>
+    </member>
+    <member name="T:Microsoft.Cci.ArrayT`1">
+      <summary>
+            Array related helpers
+            </summary>
+      <typeparam name="T" />
+    </member>
+    <member name="M:Microsoft.Cci.Toolbox.ToReadOnly``1(System.Collections.Generic.List{``0})">
+      <summary>
+            Getting read-only IEnumerable{T} from List{T}
+            Read-only is only enforced in DEBUG build to catch programming errors. In release mode, we just return the original list for performance
+            </summary>
+      <typeparam name="T" />
+      <param name="list" />
+      <returns />
+    </member>
+    <member name="T:Microsoft.Cci.EnumerableAdapter`1">
+      <summary>
+            Wrapper around IEnumerable{T}, optimized for IReadOnlyList{T}
+            </summary>
+      <typeparam name="T" />
+    </member>
     <member name="T:Microsoft.Cci.ILGenerator">
       <summary>
             Generates Microsoft intermediate language (MSIL) instructions.
@@ -951,6 +1089,75 @@
             </summary>
       <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocationProvider.GetSourceNameFor(Microsoft.Cci.ILocalDefinition,System.Boolean@)" inheritedFromTypeName="ISourceLocationProvider" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.GetEnumerator">
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.System#Collections#IEnumerable#GetEnumerator">
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_CurrentIndex == -1" vb="result.get_CurrentIndex = -1">result.get_CurrentIndex == -1</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.ILGenerator.BeginHandler(Microsoft.Cci.HandlerKind)">
+      <requires csharp="this.InTryBody" vb="Me.InTryBody">this.InTryBody</requires>
+      <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.ILGenerator.GetCurrentSequencePoint">
+      <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.VirtualReadOnlyList`1.MoveNext">
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_Model == old(this.get_Model)" vb="Me.get_Model = old(Me.get_Model)">this.get_Model == old(this.get_Model)</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex &lt; this.get_Model.Length" vb="Me.get_CurrentIndex &lt; Me.get_Model.Length">this.get_CurrentIndex &lt; this.get_Model.Length</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex &gt;= 0" vb="Me.get_CurrentIndex &gt;= 0">this.get_CurrentIndex &gt;= 0</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex == old(this.get_CurrentIndex) + 1" vb="Me.get_CurrentIndex = old(Me.get_CurrentIndex) + 1">this.get_CurrentIndex == old(this.get_CurrentIndex) + 1</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.VirtualReadOnlyList`1.System#Collections#Generic#IEnumerable{T}#GetEnumerator">
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.VirtualReadOnlyList`1.System#Collections#IEnumerable#GetEnumerator">
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_CurrentIndex == -1" vb="result.get_CurrentIndex = -1">result.get_CurrentIndex == -1</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.VirtualReadOnlyList`1.System#Collections#Generic#IEnumerator{T}#get_Current">
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerator`1.get_Current" inheritedFromTypeName="IEnumerator" csharp="(object)result == this.get_Model[this.get_CurrentIndex]" vb="((Object)result) = Me.get_Model(Me.get_CurrentIndex)">(object)result == this.get_Model[this.get_CurrentIndex]</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.VirtualReadOnlyList`1.System#Collections#IEnumerator#get_Current">
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.VirtualReadOnlyList`1.System#Collections#Generic#IEnumerator{T}#Current">
+      <getter>
+        <ensures inheritedFrom="M:System.Collections.Generic.IEnumerator`1.get_Current" inheritedFromTypeName="IEnumerator" csharp="(object)result == this.get_Model[this.get_CurrentIndex]" vb="((Object)result) = Me.get_Model(Me.get_CurrentIndex)">(object)result == this.get_Model[this.get_CurrentIndex]</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.VirtualReadOnlyList`1.System#Collections#IEnumerator#Current">
+      <getter>
+        <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyListEnumerator`1.MoveNext">
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_Model == old(this.get_Model)" vb="Me.get_Model = old(Me.get_Model)">this.get_Model == old(this.get_Model)</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex &lt; this.get_Model.Length" vb="Me.get_CurrentIndex &lt; Me.get_Model.Length">this.get_CurrentIndex &lt; this.get_Model.Length</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex &gt;= 0" vb="Me.get_CurrentIndex &gt;= 0">this.get_CurrentIndex &gt;= 0</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex == old(this.get_CurrentIndex) + 1" vb="Me.get_CurrentIndex = old(Me.get_CurrentIndex) + 1">this.get_CurrentIndex == old(this.get_CurrentIndex) + 1</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyListEnumerator`1.System#Collections#Generic#IEnumerator{T}#get_Current">
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerator`1.get_Current" inheritedFromTypeName="IEnumerator" csharp="(object)result == this.get_Model[this.get_CurrentIndex]" vb="((Object)result) = Me.get_Model(Me.get_CurrentIndex)">(object)result == this.get_Model[this.get_CurrentIndex]</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyListEnumerator`1.System#Collections#IEnumerator#get_Current">
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.ReadOnlyListEnumerator`1.System#Collections#Generic#IEnumerator{T}#Current">
+      <getter>
+        <ensures inheritedFrom="M:System.Collections.Generic.IEnumerator`1.get_Current" inheritedFromTypeName="IEnumerator" csharp="(object)result == this.get_Model[this.get_CurrentIndex]" vb="((Object)result) = Me.get_Model(Me.get_CurrentIndex)">(object)result == this.get_Model[this.get_CurrentIndex]</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.ReadOnlyListEnumerator`1.System#Collections#IEnumerator#Current">
+      <getter>
+        <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
+      </getter>
+    </member>
     <member name="M:Microsoft.Cci.GeneratorLocal.Microsoft#Cci#ILocalDefinition#get_CustomModifiers">
       <requires inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CustomModifiers" inheritedFromTypeName="ILocalDefinition" csharp="this.IsModified" vb="Me.IsModified">this.IsModified</requires>
       <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CustomModifiers" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
@@ -970,6 +1177,11 @@
         <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
         <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
       </getter>
+    </member>
+    <member name="M:Microsoft.Cci.ILGeneratorScope.#ctor(Microsoft.Cci.ILGeneratorLabel,Microsoft.Cci.INameTable,Microsoft.Cci.IMethodDefinition)">
+      <requires csharp="startLabel != null" vb="startLabel &lt;&gt; Nothing">startLabel != null</requires>
+      <requires csharp="nameTable != null" vb="nameTable &lt;&gt; Nothing">nameTable != null</requires>
+      <requires csharp="containingMethod != null" vb="containingMethod &lt;&gt; Nothing">containingMethod != null</requires>
     </member>
     <member name="M:Microsoft.Cci.ILGeneratorImplementation.ExceptionHandler.Microsoft#Cci#IOperationExceptionInformation#get_ExceptionType">
       <ensures inheritedFrom="M:Microsoft.Cci.IOperationExceptionInformation.get_ExceptionType" inheritedFromTypeName="IOperationExceptionInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
@@ -1003,13 +1215,9 @@
         <ensures inheritedFrom="M:Microsoft.Cci.IOperationExceptionInformation.get_HandlerEndOffset" inheritedFromTypeName="IOperationExceptionInformation" csharp="result &gt;= this.HandlerStartOffset" vb="result &gt;= Me.HandlerStartOffset">result &gt;= this.HandlerStartOffset</ensures>
       </getter>
     </member>
-    <member name="M:Microsoft.Cci.ILGeneratorImplementation.Operation.#ctor(Microsoft.Cci.OperationCode,System.UInt32,Microsoft.Cci.ILocation,System.Object)">
-      <requires csharp="location != null" vb="location &lt;&gt; Nothing">location != null</requires>
-    </member>
-    <member name="P:Microsoft.Cci.ILGeneratorImplementation.Operation.Location">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IOperation.get_Location" inheritedFromTypeName="IOperation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
+    <member name="T:Microsoft.Cci.ILGeneratorImplementation.Stack`1">
+      <invariant>this.elements != null</invariant>
+      <invariant>this.elements.Length &gt; 0</invariant>
     </member>
     <member name="P:Microsoft.Cci.ILGeneratorImplementation.SynchronizationInformation.AsyncMethod">
       <getter>
@@ -1026,21 +1234,13 @@
         <ensures inheritedFrom="M:Microsoft.Cci.ISynchronizationInformation.get_SynchronizationPoints" inheritedFromTypeName="ISynchronizationInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
-    <member name="T:Microsoft.Cci.ILGeneratorImplementation.Stack`1">
-      <invariant>this.elements != null</invariant>
-      <invariant>this.elements.Length &gt; 0</invariant>
+    <member name="M:Microsoft.Cci.ILGeneratorImplementation.Operation.#ctor(Microsoft.Cci.OperationCode,System.UInt32,Microsoft.Cci.ILocation,System.Object)">
+      <requires csharp="location != null" vb="location &lt;&gt; Nothing">location != null</requires>
     </member>
-    <member name="M:Microsoft.Cci.ILGenerator.BeginHandler(Microsoft.Cci.HandlerKind)">
-      <requires csharp="this.InTryBody" vb="Me.InTryBody">this.InTryBody</requires>
-      <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.ILGenerator.GetCurrentSequencePoint">
-      <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.ILGeneratorScope.#ctor(Microsoft.Cci.ILGeneratorLabel,Microsoft.Cci.INameTable,Microsoft.Cci.IMethodDefinition)">
-      <requires csharp="startLabel != null" vb="startLabel &lt;&gt; Nothing">startLabel != null</requires>
-      <requires csharp="nameTable != null" vb="nameTable &lt;&gt; Nothing">nameTable != null</requires>
-      <requires csharp="containingMethod != null" vb="containingMethod &lt;&gt; Nothing">containingMethod != null</requires>
+    <member name="P:Microsoft.Cci.ILGeneratorImplementation.Operation.Location">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IOperation.get_Location" inheritedFromTypeName="IOperation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
     </member>
   </members>
 </doc>

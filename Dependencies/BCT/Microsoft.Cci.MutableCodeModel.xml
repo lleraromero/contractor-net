@@ -11196,6 +11196,11 @@
       <param name="body">The block to be rewritten. 
             The entire tree rooted at the block must be mutable and the nodes must not be shared with anything else.</param>
     </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.ForEachRemover.Rewrite(Microsoft.Cci.IForEachStatement)">
+      <summary />
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.CodeRewriter.Rewrite(Microsoft.Cci.IForEachStatement)" inheritedFromTypeName="CodeRewriter" csharp="forEachStatement != null" vb="forEachStatement &lt;&gt; Nothing">forEachStatement != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.CodeRewriter.Rewrite(Microsoft.Cci.IForEachStatement)" inheritedFromTypeName="CodeRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
     <member name="T:Microsoft.Cci.MutableCodeModel.IteratorClosureInformation">
       <summary>
             Information needed for and during the creation of the closure class for an iterator method. Such information includes:
@@ -12919,10 +12924,6 @@
     </member>
     <member name="M:Microsoft.Cci.MutableCodeModel.Contracts.CodeAndContractDeepCopier.ContractElementDispatcher.Visit(Microsoft.Cci.Contracts.ITypeContract)">
       <requires inheritedFrom="M:Microsoft.Cci.Contracts.ICodeAndContractVisitor.Visit(Microsoft.Cci.Contracts.ITypeContract)" inheritedFromTypeName="ICodeAndContractVisitor" csharp="typeContract != null" vb="typeContract &lt;&gt; Nothing">typeContract != null</requires>
-    </member>
-    <member name="M:Microsoft.Cci.MutableCodeModel.ForEachRemover.Rewrite(Microsoft.Cci.IForEachStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.CodeRewriter.Rewrite(Microsoft.Cci.IForEachStatement)" inheritedFromTypeName="CodeRewriter" csharp="forEachStatement != null" vb="forEachStatement &lt;&gt; Nothing">forEachStatement != null</requires>
-      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.CodeRewriter.Rewrite(Microsoft.Cci.IForEachStatement)" inheritedFromTypeName="CodeRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.MutableCodeModel.TryCatchFinallyStatement.Microsoft#Cci#ITryCatchFinallyStatement#get_CatchClauses">
       <ensures inheritedFrom="M:Microsoft.Cci.ITryCatchFinallyStatement.get_CatchClauses" inheritedFromTypeName="ITryCatchFinallyStatement" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
