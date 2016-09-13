@@ -4,6 +4,132 @@
     <name>Microsoft.Cci.PdbReader</name>
   </assembly>
   <members>
+    <member name="T:Microsoft.Cci.ReadOnlyList`1">
+      <summary>
+            Fixed size array wrapped as IReadOnlyList{T}
+            Construct with known size N, call Add N times, Freeze, and then use as IReadOnlyList{T} or IEnumerable{T}
+            </summary>
+      <typeparam name="T" />
+      <remarks>Optimization for List list = new List{T}(); list.Add() list.Add() ...; list.TrimExcess(); list.AsReadOnly() </remarks>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.#ctor(System.Int32)">
+      <summary>
+            Constructor
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.Create(System.UInt32)">
+      <summary>
+            Creation helper
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.Create(System.Collections.Generic.IEnumerable{`0})">
+      <summary>
+            Creation helper from IEnumerable{T}
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.Freeze(Microsoft.Cci.ReadOnlyList{`0})">
+      <summary>
+            Freeze to be read-only
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.Add(`0)">
+      <summary>
+            Append item
+            </summary>
+    </member>
+    <member name="P:Microsoft.Cci.ReadOnlyList`1.Count">
+      <summary>
+            Count of total allowed items
+            </summary>
+    </member>
+    <member name="P:Microsoft.Cci.ReadOnlyList`1.Item(System.Int32)">
+      <summary>
+            Return an item
+            </summary>
+    </member>
+    <member name="T:Microsoft.Cci.VirtualReadOnlyList`1">
+      <summary>
+             Virtual IReadOnlyList + its enumerator
+             </summary>
+      <remarks>Borrowed from the internal implementation of "yield return", IEnumerable and IEnumerator are implemented in the 
+             same class here, to save one extra allocation for the most common usage pattern of single enumerator in the same thread.
+            
+             This class is used mostly by SingletonList. There are quite a few CCI objects which store single object inside by needs to return IEnumerable from it.
+             This is used in super high frequency (e.g. BaseClasses) that we need to reduce memory allocation and CPU cost for it.
+            
+             This solution is better replacement for GetSingletonEnumerable which just uses "yield return":
+             1) There only needs to be single implementation.
+             2) All the source code is here.
+             3) IReadOnlyList is implemented so caller can query for Count and this[index] without going through enumerator at all.
+             </remarks>
+      <typeparam name="T" />
+    </member>
+    <member name="M:Microsoft.Cci.VirtualReadOnlyList`1.GetItem(System.Int32)">
+      <summary>
+            One method to be implemented in derived classes
+            </summary>
+    </member>
+    <member name="T:Microsoft.Cci.ReadOnlyListEnumerator`1">
+      <summary>
+            Enumerator for IReadOnlyList
+            </summary>
+      <typeparam name="T" />
+    </member>
+    <member name="T:Microsoft.Cci.SingletonList`1">
+      <summary>
+            IReadOnlyList wrapper for single item, + its enumerator (similar to yield return)
+            </summary>
+      <typeparam name="T" />
+    </member>
+    <member name="T:Microsoft.Cci.StringBuilderCache">
+      <summary>
+            Caching 10 StringBuilders per thread (for nested usage)
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.StringBuilderCache.GetList">
+      <summary>
+            Get StringBuilder array
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.StringBuilderCache.Acquire">
+      <summary>
+            Acquire a StringBuilder
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.StringBuilderCache.Release(System.Text.StringBuilder)">
+      <summary>
+            Release StringBuilder to cache
+            </summary>
+    </member>
+    <member name="M:Microsoft.Cci.StringBuilderCache.GetStringAndRelease(System.Text.StringBuilder)">
+      <summary>
+            Release StringBuilder to cache, after getting string from it
+            </summary>
+    </member>
+    <member name="T:Microsoft.Cci.ArrayT`1">
+      <summary>
+            Array related helpers
+            </summary>
+      <typeparam name="T" />
+    </member>
+    <member name="M:Microsoft.Cci.Toolbox.ToReadOnly``1(System.Collections.Generic.List{``0})">
+      <summary>
+            Getting read-only IEnumerable{T} from List{T}
+            Read-only is only enforced in DEBUG build to catch programming errors. In release mode, we just return the original list for performance
+            </summary>
+      <typeparam name="T" />
+      <param name="list" />
+      <returns />
+    </member>
+    <member name="T:Microsoft.Cci.EnumerableAdapter`1">
+      <summary>
+            Wrapper around IEnumerable{T}, optimized for IReadOnlyList{T}
+            </summary>
+      <typeparam name="T" />
+    </member>
+    <member name="T:Microsoft.Cci.Pdb.PdbConstant">
+      <summary />
+    </member>
     <member name="T:Microsoft.Cci.PdbReader">
       <summary>
             An object that can map offsets in an IL stream to source locations and block scopes.
@@ -14,13 +140,19 @@
       <invariant>this.sourceFilesOpenedByReader != null</invariant>
       <invariant>this.sourceServerData != null</invariant>
     </member>
-    <member name="M:Microsoft.Cci.PdbReader.#ctor(System.IO.Stream,Microsoft.Cci.IMetadataHost)">
+    <member name="M:Microsoft.Cci.PdbReader.#ctor(System.IO.Stream,Microsoft.Cci.IMetadataHost,System.Boolean)">
       <summary>
             Allocates an object that can map some kinds of ILocation objects to IPrimarySourceLocation objects. 
             For example, a PDB reader that maps offsets in an IL stream to source locations.
             </summary>
       <requires csharp="pdbStream != null" vb="pdbStream &lt;&gt; Nothing">pdbStream != null</requires>
       <requires csharp="host != null" vb="host &lt;&gt; Nothing">host != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.PdbReader.#ctor(System.IO.Stream,Microsoft.Cci.IMetadataHost)">
+      <summary>
+            Allocates an object that can map some kinds of ILocation objects to IPrimarySourceLocation objects. 
+            For example, a PDB reader that maps offsets in an IL stream to source locations.
+            </summary>
     </member>
     <member name="M:Microsoft.Cci.PdbReader.Dispose">
       <summary>
@@ -31,6 +163,14 @@
       <summary>
             Closes all of the source files that have been opened to provide the contents source locations corresponding to IL offsets.
             </summary>
+    </member>
+    <member name="M:Microsoft.Cci.PdbReader.GetSourceFiles">
+      <summary>
+            Gets all source files that this pdb file is referencing.
+            </summary>
+      <returns />
+      <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures csharp="for all item in result item != null" vb="for all item in result item &lt;&gt; Nothing">for all item in result item != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.PdbReader.GetPrimarySourceLocationsFor(System.Collections.Generic.IEnumerable{Microsoft.Cci.ILocation})">
       <summary>
@@ -153,6 +293,12 @@
         <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
+    <member name="P:Microsoft.Cci.PdbReader.DebugInformationVersion">
+      <summary>
+             Returns the PDB signature and age as a concatenated string. This can be compared with
+             IModule.DebugInformationVersion to verify whether a PDB is valid for a given assembly.
+            </summary>
+    </member>
     <member name="T:Microsoft.Cci.Pdb.PdbSourceDocument">
       <summary>
             A primary source document that is referenced by a pdb file and that is used to provide source context to lines from compiled CLR modules with
@@ -254,6 +400,50 @@
         <ensures inheritedFrom="M:Microsoft.Cci.ILocalScope.get_MethodDefinition" inheritedFromTypeName="ILocalScope" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
+    <member name="P:Microsoft.Cci.Pdb.PdbSynchronizationInformation.AsyncMethod">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISynchronizationInformation.get_AsyncMethod" inheritedFromTypeName="ISynchronizationInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Pdb.PdbSynchronizationInformation.MoveNextMethod">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISynchronizationInformation.get_MoveNextMethod" inheritedFromTypeName="ISynchronizationInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Pdb.PdbSynchronizationInformation.SynchronizationPoints">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISynchronizationInformation.get_SynchronizationPoints" inheritedFromTypeName="ISynchronizationInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.Pdb.PdbMetadataConstant.Dispatch(Microsoft.Cci.IMetadataVisitor)">
+      <requires inheritedFrom="M:Microsoft.Cci.IMetadataExpression.Dispatch(Microsoft.Cci.IMetadataVisitor)" inheritedFromTypeName="IMetadataExpression" csharp="visitor != null" vb="visitor &lt;&gt; Nothing">visitor != null</requires>
+    </member>
+    <member name="P:Microsoft.Cci.Pdb.PdbMetadataConstant.Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Pdb.PdbMetadataConstant.Type">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMetadataExpression.get_Type" inheritedFromTypeName="IMetadataExpression" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Pdb.UsedNamespace.Alias">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IUsedNamespace.get_Alias" inheritedFromTypeName="IUsedNamespace" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Pdb.UsedNamespace.NamespaceName">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IUsedNamespace.get_NamespaceName" inheritedFromTypeName="IUsedNamespace" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Pdb.NamespaceScope.UsedNamespaces">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.INamespaceScope.get_UsedNamespaces" inheritedFromTypeName="INamespaceScope" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
     <member name="M:Microsoft.Cci.Pdb.LocalNameSourceLocation.Contains(Microsoft.Cci.ISourceLocation)">
       <requires inheritedFrom="M:Microsoft.Cci.ISourceLocation.Contains(Microsoft.Cci.ISourceLocation)" inheritedFromTypeName="ISourceLocation" csharp="location != null" vb="location &lt;&gt; Nothing">location != null</requires>
     </member>
@@ -324,121 +514,6 @@
         <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
-    <member name="P:Microsoft.Cci.Pdb.PdbIteratorScope.MethodDefinition">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ILocalScope.get_MethodDefinition" inheritedFromTypeName="ILocalScope" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Pdb.NamespaceScope.UsedNamespaces">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.INamespaceScope.get_UsedNamespaces" inheritedFromTypeName="INamespaceScope" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="M:Microsoft.Cci.Pdb.PdbMetadataConstant.Dispatch(Microsoft.Cci.IMetadataVisitor)">
-      <requires inheritedFrom="M:Microsoft.Cci.IMetadataExpression.Dispatch(Microsoft.Cci.IMetadataVisitor)" inheritedFromTypeName="IMetadataExpression" csharp="visitor != null" vb="visitor &lt;&gt; Nothing">visitor != null</requires>
-    </member>
-    <member name="P:Microsoft.Cci.Pdb.PdbMetadataConstant.Locations">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Pdb.PdbMetadataConstant.Type">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IMetadataExpression.get_Type" inheritedFromTypeName="IMetadataExpression" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Pdb.UsedNamespace.Alias">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IUsedNamespace.get_Alias" inheritedFromTypeName="IUsedNamespace" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Pdb.UsedNamespace.NamespaceName">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IUsedNamespace.get_NamespaceName" inheritedFromTypeName="IUsedNamespace" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Pdb.PdbLocalConstant.CompileTimeValue">
-      <getter>
-        <requires inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CompileTimeValue" inheritedFromTypeName="ILocalDefinition" csharp="this.IsConstant" vb="Me.IsConstant">this.IsConstant</requires>
-        <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CompileTimeValue" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Pdb.PdbLocalConstant.CustomModifiers">
-      <getter>
-        <requires inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CustomModifiers" inheritedFromTypeName="ILocalDefinition" csharp="this.IsModified" vb="Me.IsModified">this.IsModified</requires>
-        <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CustomModifiers" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Pdb.PdbLocalConstant.Locations">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Pdb.PdbLocalConstant.MethodDefinition">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_MethodDefinition" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Pdb.PdbLocalConstant.Type">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_Type" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Pdb.PdbLocalConstant.Name">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.INamedEntity.get_Name" inheritedFromTypeName="INamedEntity" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Pdb.PdbSynchronizationInformation.AsyncMethod">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ISynchronizationInformation.get_AsyncMethod" inheritedFromTypeName="ISynchronizationInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Pdb.PdbSynchronizationInformation.MoveNextMethod">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ISynchronizationInformation.get_MoveNextMethod" inheritedFromTypeName="ISynchronizationInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Pdb.PdbSynchronizationInformation.SynchronizationPoints">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ISynchronizationInformation.get_SynchronizationPoints" inheritedFromTypeName="ISynchronizationInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Pdb.PdbLocalVariable.CompileTimeValue">
-      <getter>
-        <requires inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CompileTimeValue" inheritedFromTypeName="ILocalDefinition" csharp="this.IsConstant" vb="Me.IsConstant">this.IsConstant</requires>
-        <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CompileTimeValue" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Pdb.PdbLocalVariable.CustomModifiers">
-      <getter>
-        <requires inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CustomModifiers" inheritedFromTypeName="ILocalDefinition" csharp="this.IsModified" vb="Me.IsModified">this.IsModified</requires>
-        <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CustomModifiers" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Pdb.PdbLocalVariable.Locations">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Pdb.PdbLocalVariable.MethodDefinition">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_MethodDefinition" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Pdb.PdbLocalVariable.Type">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_Type" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.Pdb.PdbLocalVariable.Name">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.INamedEntity.get_Name" inheritedFromTypeName="INamedEntity" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
     <member name="M:Microsoft.Cci.Pdb.PdbSourceLineLocation.Microsoft#Cci#ISourceLocation#Contains(Microsoft.Cci.ISourceLocation)">
       <requires inheritedFrom="M:Microsoft.Cci.ISourceLocation.Contains(Microsoft.Cci.ISourceLocation)" inheritedFromTypeName="ISourceLocation" csharp="location != null" vb="location &lt;&gt; Nothing">location != null</requires>
     </member>
@@ -489,6 +564,139 @@
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Pdb.PdbLocalConstant.CompileTimeValue">
+      <getter>
+        <requires inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CompileTimeValue" inheritedFromTypeName="ILocalDefinition" csharp="this.IsConstant" vb="Me.IsConstant">this.IsConstant</requires>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CompileTimeValue" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Pdb.PdbLocalConstant.CustomModifiers">
+      <getter>
+        <requires inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CustomModifiers" inheritedFromTypeName="ILocalDefinition" csharp="this.IsModified" vb="Me.IsModified">this.IsModified</requires>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CustomModifiers" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Pdb.PdbLocalConstant.Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Pdb.PdbLocalConstant.MethodDefinition">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_MethodDefinition" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Pdb.PdbLocalConstant.Type">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_Type" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Pdb.PdbLocalConstant.Name">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.INamedEntity.get_Name" inheritedFromTypeName="INamedEntity" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Pdb.PdbLocalVariable.CompileTimeValue">
+      <getter>
+        <requires inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CompileTimeValue" inheritedFromTypeName="ILocalDefinition" csharp="this.IsConstant" vb="Me.IsConstant">this.IsConstant</requires>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CompileTimeValue" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Pdb.PdbLocalVariable.CustomModifiers">
+      <getter>
+        <requires inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CustomModifiers" inheritedFromTypeName="ILocalDefinition" csharp="this.IsModified" vb="Me.IsModified">this.IsModified</requires>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CustomModifiers" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Pdb.PdbLocalVariable.Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Pdb.PdbLocalVariable.MethodDefinition">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_MethodDefinition" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Pdb.PdbLocalVariable.Type">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_Type" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Pdb.PdbLocalVariable.Name">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.INamedEntity.get_Name" inheritedFromTypeName="INamedEntity" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Pdb.PdbIteratorScope.MethodDefinition">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocalScope.get_MethodDefinition" inheritedFromTypeName="ILocalScope" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyListEnumerator`1.MoveNext">
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_Model == old(this.get_Model)" vb="Me.get_Model = old(Me.get_Model)">this.get_Model == old(this.get_Model)</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex &lt; this.get_Model.Length" vb="Me.get_CurrentIndex &lt; Me.get_Model.Length">this.get_CurrentIndex &lt; this.get_Model.Length</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex &gt;= 0" vb="Me.get_CurrentIndex &gt;= 0">this.get_CurrentIndex &gt;= 0</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex == old(this.get_CurrentIndex) + 1" vb="Me.get_CurrentIndex = old(Me.get_CurrentIndex) + 1">this.get_CurrentIndex == old(this.get_CurrentIndex) + 1</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyListEnumerator`1.System#Collections#Generic#IEnumerator{T}#get_Current">
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerator`1.get_Current" inheritedFromTypeName="IEnumerator" csharp="(object)result == this.get_Model[this.get_CurrentIndex]" vb="((Object)result) = Me.get_Model(Me.get_CurrentIndex)">(object)result == this.get_Model[this.get_CurrentIndex]</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyListEnumerator`1.System#Collections#IEnumerator#get_Current">
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.ReadOnlyListEnumerator`1.System#Collections#Generic#IEnumerator{T}#Current">
+      <getter>
+        <ensures inheritedFrom="M:System.Collections.Generic.IEnumerator`1.get_Current" inheritedFromTypeName="IEnumerator" csharp="(object)result == this.get_Model[this.get_CurrentIndex]" vb="((Object)result) = Me.get_Model(Me.get_CurrentIndex)">(object)result == this.get_Model[this.get_CurrentIndex]</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.ReadOnlyListEnumerator`1.System#Collections#IEnumerator#Current">
+      <getter>
+        <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.VirtualReadOnlyList`1.MoveNext">
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_Model == old(this.get_Model)" vb="Me.get_Model = old(Me.get_Model)">this.get_Model == old(this.get_Model)</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex &lt; this.get_Model.Length" vb="Me.get_CurrentIndex &lt; Me.get_Model.Length">this.get_CurrentIndex &lt; this.get_Model.Length</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex &gt;= 0" vb="Me.get_CurrentIndex &gt;= 0">this.get_CurrentIndex &gt;= 0</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.MoveNext" inheritedFromTypeName="IEnumerator" csharp="this.get_CurrentIndex == old(this.get_CurrentIndex) + 1" vb="Me.get_CurrentIndex = old(Me.get_CurrentIndex) + 1">this.get_CurrentIndex == old(this.get_CurrentIndex) + 1</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.VirtualReadOnlyList`1.System#Collections#Generic#IEnumerable{T}#GetEnumerator">
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.VirtualReadOnlyList`1.System#Collections#IEnumerable#GetEnumerator">
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_CurrentIndex == -1" vb="result.get_CurrentIndex = -1">result.get_CurrentIndex == -1</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.VirtualReadOnlyList`1.System#Collections#Generic#IEnumerator{T}#get_Current">
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerator`1.get_Current" inheritedFromTypeName="IEnumerator" csharp="(object)result == this.get_Model[this.get_CurrentIndex]" vb="((Object)result) = Me.get_Model(Me.get_CurrentIndex)">(object)result == this.get_Model[this.get_CurrentIndex]</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.VirtualReadOnlyList`1.System#Collections#IEnumerator#get_Current">
+      <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.VirtualReadOnlyList`1.System#Collections#Generic#IEnumerator{T}#Current">
+      <getter>
+        <ensures inheritedFrom="M:System.Collections.Generic.IEnumerator`1.get_Current" inheritedFromTypeName="IEnumerator" csharp="(object)result == this.get_Model[this.get_CurrentIndex]" vb="((Object)result) = Me.get_Model(Me.get_CurrentIndex)">(object)result == this.get_Model[this.get_CurrentIndex]</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.VirtualReadOnlyList`1.System#Collections#IEnumerator#Current">
+      <getter>
+        <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.GetEnumerator">
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Collections.Generic.IEnumerable`1.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.ReadOnlyList`1.System#Collections#IEnumerable#GetEnumerator">
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_Model == this.get_Model" vb="result.get_Model = Me.get_Model">result.get_Model == this.get_Model</ensures>
+      <ensures inheritedFrom="M:System.Collections.IEnumerable.GetEnumerator" inheritedFromTypeName="IEnumerable" csharp="result.get_CurrentIndex == -1" vb="result.get_CurrentIndex = -1">result.get_CurrentIndex == -1</ensures>
     </member>
   </members>
 </doc>
