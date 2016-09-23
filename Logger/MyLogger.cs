@@ -55,5 +55,14 @@ namespace Log
         }
 
 
+
+        public static void LogMsg(string msg)
+        {
+            using (System.IO.StreamWriter file =
+             new System.IO.StreamWriter(logFile, true))
+            {
+                file.WriteLine("contractor msg: " + msg + System.Environment.NewLine);
+            }
+        }
     }
 }
