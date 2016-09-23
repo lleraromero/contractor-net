@@ -184,7 +184,9 @@ namespace Contractor.Core
                             // Which states are reachable from the current state (aka source) using 'action'?
                             transitionsResults = analyzer.AnalyzeTransitions(source, action, possibleTargets, exitCode);
                         }
-                        Contract.Assert(transitionsResults.Count > 0, "There is always at least one transition to traverse");
+                        //Contract.Assert(transitionsResults.Count > 0, "There is always at least one transition to traverse");
+                        if (!(transitionsResults.Count > 0))
+                            MyLogger.LogMsg("transitionsResults.Count == 0. ASSUMPTION FAILURE: There is always at least one transition to traverse. ASSUME: transitionsResults.Count > 0");
 
                         foreach (var transition in transitionsResults)
                         {
