@@ -1,0 +1,350 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{0BBE21D7-FF05-413F-BF79-DB87EEA7CEBC}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Tests</RootNamespace>
+    <AssemblyName>Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
+    <IsCodedUITest>False</IsCodedUITest>
+    <TestProjectType>UnitTest</TestProjectType>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis">
+      <HintPath>..\libraries\roslyn\Microsoft.CodeAnalysis.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp">
+      <HintPath>..\libraries\roslyn\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces">
+      <HintPath>..\libraries\roslyn\Microsoft.CodeAnalysis.CSharp.Workspaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.VisualBasic">
+      <HintPath>..\libraries\roslyn\Microsoft.CodeAnalysis.VisualBasic.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces">
+      <HintPath>..\libraries\roslyn\Microsoft.CodeAnalysis.VisualBasic.Workspaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.Workspaces">
+      <HintPath>..\libraries\roslyn\Microsoft.CodeAnalysis.Workspaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.Workspaces.Desktop">
+      <HintPath>..\libraries\roslyn\Microsoft.CodeAnalysis.Workspaces.Desktop.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="QuickGraph, Version=3.6.61114.0, Culture=neutral, PublicKeyToken=f3fb40175eec2af3, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.dll</HintPath>
+    </Reference>
+    <Reference Include="QuickGraph.Data">
+      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="QuickGraph.Graphviz, Version=3.6.61114.0, Culture=neutral, PublicKeyToken=f3fb40175eec2af3, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Graphviz.dll</HintPath>
+    </Reference>
+    <Reference Include="QuickGraph.Serialization">
+      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Serialization.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable, Version=1.1.36.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libraries\roslyn\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Composition.AttributedModel">
+      <HintPath>..\libraries\roslyn\System.Composition.AttributedModel.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Composition.Convention">
+      <HintPath>..\libraries\roslyn\System.Composition.Convention.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Composition.Hosting">
+      <HintPath>..\libraries\roslyn\System.Composition.Hosting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Composition.Runtime">
+      <HintPath>..\libraries\roslyn\System.Composition.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Composition.TypedParts">
+      <HintPath>..\libraries\roslyn\System.Composition.TypedParts.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reflection.Metadata">
+      <HintPath>..\libraries\roslyn\System.Reflection.Metadata.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <Choose>
+    <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+      </ItemGroup>
+    </When>
+    <Otherwise />
+  </Choose>
+  <ItemGroup>
+    <Compile Include="Cases\InheritanceCallBase.cs" />
+    <Compile Include="Cases\InheritanceCallBaseMultipleCtors.cs" />
+    <Compile Include="Cases\InheritanceCallBaseWithFunction.cs" />
+    <Compile Include="Cases\InheritanceImplicitCallBase.cs" />
+    <Compile Include="Cases\Roslyn\CallWithOutAsParameter.cs" />
+    <Compile Include="Cases\Roslyn\CallWithOutNotInitialized.cs" />
+    <Compile Include="Cases\Roslyn\MemberAccessOfRefExprAsParameter.cs" />
+    <Compile Include="Cases\ActionOnFieldNeedingThisPrefix.cs" />
+    <Compile Include="Cases\ActionOnFieldThroughMemberAccess.cs" />
+    <Compile Include="Cases\AliasingAllocOnNull.cs" />
+    <Compile Include="Cases\AliasingBankTransferSample.cs" />
+    <Compile Include="Cases\AliasingDispatch.cs" />
+    <Compile Include="Cases\AliasingFollowReferences.cs" />
+    <Compile Include="Cases\AliasingGlobal.cs" />
+    <Compile Include="Cases\AliasingAssigningSimpleRef.cs" />
+    <Compile Include="Cases\AliasingGlobalWithConstructor.cs" />
+    <Compile Include="Cases\AliasingThisLikeParameter.cs" />
+    <Compile Include="Cases\ArrayInitialization.cs" />
+    <Compile Include="Cases\AssignOrder.cs" />
+    <Compile Include="Cases\Callback0.cs" />
+    <Compile Include="Cases\EmptyMain.cs" />
+    <Compile Include="Cases\Features\ConditionalOperator.cs" />
+    <Compile Include="Cases\Features\NewWithNoArgumentsAndInitializersCollection.cs" />
+    <Compile Include="Cases\GoToStatement.cs" />
+    <Compile Include="Cases\Roslyn\MemberAccessOfRefExpr.cs" />
+    <Compile Include="Cases\NestedClasses.cs" />
+    <Compile Include="Cases\Features\StringInObjectParameter.cs" />
+    <Compile Include="Cases\LiteralToObjectBinding.cs" />
+    <Compile Include="Cases\RefParamInsideInvocation.cs" />
+    <Compile Include="Cases\Roslyn\CallWithObjectRef.cs" />
+    <Compile Include="Cases\Solver\ChainNews.cs" />
+    <Compile Include="Cases\Solver\HubCompression.cs" />
+    <Compile Include="Cases\NotSupportedUsingVarDeclaration.cs" />
+    <Compile Include="Cases\OrExpressionWithTrue.cs" />
+    <Compile Include="Cases\ParamsBinaryExpression.cs" />
+    <Compile Include="Cases\Roslyn\AssignmentOperators.cs" />
+    <Compile Include="Cases\Roslyn\Call.cs" />
+    <Compile Include="Cases\Roslyn\CallWithNamedArgument.cs" />
+    <Compile Include="Cases\Roslyn\CallWithOut.cs" />
+    <Compile Include="Cases\Roslyn\CallWithRef.cs" />
+    <Compile Include="Cases\Roslyn\Cast.cs" />
+    <Compile Include="Cases\Roslyn\CharacterLiteralExpression.cs" />
+    <Compile Include="Cases\Roslyn\EmptyString.cs" />
+    <Compile Include="Cases\Features\LambdaExpressionsWithoutDelegate.cs" />
+    <Compile Include="Cases\Features\LiteralString.cs" />
+    <Compile Include="Cases\Features\OverrideToStringTest.cs" />
+    <Compile Include="Cases\Callback2different.cs" />
+    <Compile Include="Cases\ClassConstrWithoutInstructions.cs" />
+    <Compile Include="Cases\ConstField.cs" />
+    <Compile Include="Cases\Features\FlagsAttributeTest.cs" />
+    <Compile Include="Cases\Features\GenericTypeConstraint.cs" />
+    <Compile Include="Cases\LambdaTreeExpressions.cs" />
+    <Compile Include="Cases\Features\NullCoalescingOperator.cs" />
+    <Compile Include="Cases\Features\ObsoleteAttributeTest.cs" />
+    <Compile Include="Cases\FieldInitializationAtDeclaration.cs" />
+    <Compile Include="Cases\Figure7.cs" />
+    <Compile Include="Cases\ForeachWithAssignment.cs" />
+    <Compile Include="Cases\GetConstructor.cs" />
+    <Compile Include="Cases\GetterWithReturn.cs" />
+    <Compile Include="Cases\InlineNewInstrumented.cs" />
+    <Compile Include="Cases\InlineNewNonInstrumented.cs" />
+    <Compile Include="Cases\InstrumentedPropertyDetect.cs" />
+    <Compile Include="Cases\InvocationChainWithCall.cs" />
+    <Compile Include="Cases\InvocationChainWithProperty.cs" />
+    <Compile Include="Cases\Features\KeywordVar.cs" />
+    <Compile Include="Cases\Features\KeywordYield.cs" />
+    <Compile Include="Cases\ListAddingElements.cs" />
+    <Compile Include="Cases\ListAddingElementsCount.cs" />
+    <Compile Include="Cases\ListWithForeach.cs" />
+    <Compile Include="Cases\LockPassthrough.cs" />
+    <Compile Include="Cases\MemberAccessChainCase.cs" />
+    <Compile Include="Cases\MemberAccessCombined.cs" />
+    <Compile Include="Cases\MethodFromTwoReceptors.cs" />
+    <Compile Include="Cases\MethodFromTwoReceptorsWithDependencies.cs" />
+    <Compile Include="Cases\MethodFromTwoReceptorsWithDoubleDependencies.cs" />
+    <Compile Include="Cases\NonInstrumentedProperty.cs" />
+    <Compile Include="Cases\NotSupportedForeach.cs" />
+    <Compile Include="Cases\NotSupportedForeachWithCall.cs" />
+    <Compile Include="Cases\NotSupportedLambda.cs" />
+    <Compile Include="Cases\NotSupportedOutInCondition.cs" />
+    <Compile Include="Cases\NotSupportedUsing.cs" />
+    <Compile Include="Cases\Features\NullableTypes.cs" />
+    <Compile Include="Cases\Features\NullableTypesWithMethods.cs" />
+    <Compile Include="Cases\Roslyn\index.cs" />
+    <Compile Include="Cases\Roslyn\newWithArgument.cs" />
+    <Compile Include="Cases\Roslyn\NewWithEmptyInitializer.cs" />
+    <Compile Include="Cases\Roslyn\newWithNamedArgument.cs" />
+    <Compile Include="Cases\Roslyn\NewWithNoArgumentsAndEmptyInitializer.cs" />
+    <Compile Include="Cases\Roslyn\NewWithNoArgumentsAndInitializer.cs" />
+    <Compile Include="Cases\Roslyn\NewWithNoArgumentsAndInitializers.cs" />
+    <Compile Include="Cases\Roslyn\ParenthesizedNulleExpression.cs" />
+    <Compile Include="Cases\Roslyn\ParenthesizedSimpleExpression.cs" />
+    <Compile Include="Cases\PreprocessorDirectiveInstrumentation.cs" />
+    <Compile Include="Cases\Roslyn\PrimaryExpressionsTrue.cs" />
+    <Compile Include="Cases\Roslyn\StringLiteral.cs" />
+    <Compile Include="Cases\Roslyn\TernaryConditional.cs" />
+    <Compile Include="Cases\Roslyn\TernaryConditionalWithNull.cs" />
+    <Compile Include="Cases\Roslyn\TestName.cs" />
+    <Compile Include="Cases\Roslyn\TestNew.cs" />
+    <Compile Include="Cases\ScalarNonSettedField.cs" />
+    <Compile Include="Cases\AliasingRecoveringReference.cs" />
+    <Compile Include="Cases\AliasingReturningRefExpression.cs" />
+    <Compile Include="Cases\ArrayMultipleLastDef.cs" />
+    <Compile Include="Cases\BreakingGlobal.cs" />
+    <Compile Include="Cases\BreakingWhileInsideIf.cs" />
+    <Compile Include="Cases\Callback0FollowLdOutside.cs" />
+    <Compile Include="Cases\Callback0Twice.cs" />
+    <Compile Include="Cases\Callback1.cs" />
+    <Compile Include="Cases\Callback1R.cs" />
+    <Compile Include="Cases\Callback1RInstrumentedOutside.cs" />
+    <Compile Include="Cases\Callback1RNonInstrumentedOutside.cs" />
+    <Compile Include="Cases\NonInstrumentedCallWithBinaryExpr.cs" />
+    <Compile Include="Cases\ExplicitConstructorPrefixedThis.cs" />
+    <Compile Include="Cases\ExplicitConstructorUnprefixedThis.cs" />
+    <Compile Include="Cases\GlobalTwiceEntry.cs" />
+    <Compile Include="Cases\HavocValueType.cs" />
+    <Compile Include="Cases\NonInstrumentedCallWithStringParam.cs" />
+    <Compile Include="Cases\NonInstrumentedNestedInside.cs" />
+    <Compile Include="Cases\NonInstrumentedNestedOutside.cs" />
+    <Compile Include="Cases\ScalarDetectCallInCondition.cs" />
+    <Compile Include="Cases\ScalarDoubleUse.cs" />
+    <Compile Include="Cases\ScalarForWithDeclaration.cs" />
+    <Compile Include="Cases\ScalarSimpleFor.cs" />
+    <Compile Include="Cases\SimpleCallNestedConstructor.cs" />
+    <Compile Include="Cases\LinqQueryToListWithCallBack.cs" />
+    <Compile Include="Cases\SimpleNonInstrumentedObject.cs" />
+    <Compile Include="Cases\SimpleNonInstrumentedString.cs" />
+    <Compile Include="Cases\SlicingDispatchLookupInstrumented.cs" />
+    <Compile Include="Cases\SlicingDispatchLookupNonInstrumented.cs" />
+    <Compile Include="Cases\SlicingSimpleCallFirstStmtIf.cs" />
+    <Compile Include="Cases\Solver\InstrumentedNew.cs" />
+    <Compile Include="Cases\Solver\ListAddWithReadOnlyLambda.cs" />
+    <Compile Include="Cases\Solver\NonInstrumentedChainObjects.cs" />
+    <Compile Include="Cases\Solver\NonInstrumentedInvocation.cs" />
+    <Compile Include="Cases\Solver\NonInstrumentedNew.cs" />
+    <Compile Include="Cases\Solver\NonInstrumentedNewWithArguments.cs" />
+    <Compile Include="Cases\Solver\PtgVertexDisposing.cs" />
+    <Compile Include="Cases\Solver\Scalars.cs" />
+    <Compile Include="Cases\Solver\SolverCallback0.cs" />
+    <Compile Include="Cases\SwitchCase.cs" />
+    <Compile Include="Cases\NonInstrumentedStatic.cs" />
+    <Compile Include="Cases\AliasingGlobalPrefix.cs" />
+    <Compile Include="Cases\NonInstrumentedCallAsParameter.cs" />
+    <Compile Include="Cases\AliasingPassingReference.cs" />
+    <Compile Include="Cases\AliasingAssigningReference.cs" />
+    <Compile Include="Cases\AliasingReturningReference.cs" />
+    <Compile Include="Cases\AliasingTestCopyScalar.cs" />
+    <Compile Include="Cases\AliasingTestCopyRef.cs" />
+    <Compile Include="Cases\AliasingUsingNestedThis.cs" />
+    <Compile Include="Cases\AliasingUsingSingleThis.cs" />
+    <Compile Include="Cases\CallRecursive.cs" />
+    <Compile Include="Cases\CallWithinAnotherCall.cs" />
+    <Compile Include="Cases\CallWithReferencesParameters.cs" />
+    <Compile Include="Cases\DynamicSlicingPaperExample1XIquals0.cs" />
+    <Compile Include="Cases\DynamicSlicingPaperExample1XLess0.cs" />
+    <Compile Include="Cases\DynamicSlicingPaperExample2NIquals2.cs" />
+    <Compile Include="Cases\ImplicitConstructor.cs" />
+    <Compile Include="Cases\LegatingByControlStmt.cs" />
+    <Compile Include="Cases\NonInstrumentedCall.cs" />
+    <Compile Include="Cases\NonInstrumentedCallParentInMetadata.cs" />
+    <Compile Include="Cases\SimpleCallIgnoreParameter.cs" />
+    <Compile Include="Cases\SimpleCallNestedExpressionOutside.cs" />
+    <Compile Include="Cases\SimpleCallNestedExpression.cs" />
+    <Compile Include="Cases\SimpleCallNestedCall.cs" />
+    <Compile Include="Cases\TestFieldInit.cs" />
+    <Compile Include="Cases\FormRepresentation.cs" />
+    <Compile Include="Cases\ThisBindingInInvocation.cs" />
+    <Compile Include="Cases\TryCatchStatement.cs" />
+    <Compile Include="Cases\TypeOf.cs" />
+    <Compile Include="Cases\NewArrayInArgumenter.cs" />
+    <Compile Include="Cases\Features\AutoProperties.cs" />
+    <Compile Include="Cases\Features\FormatString.cs" />
+    <Compile Include="Cases\Features\VariableNames.cs" />
+    <Compile Include="Cases\VerySimpleSlicing.cs" />
+    <Compile Include="Cases\Features\DebuggerDisplayAttribute.cs" />
+    <Compile Include="Cases\Features\LambdaExpressions.cs" />
+    <Compile Include="Cases\WhileMultiple.cs" />
+    <Compile Include="Cases\Features\CondAttribute.cs" />
+    <Compile Include="Cases\Features\AnonymousTypes.cs" />
+    <Compile Include="Cases\Features\WithGenerics.cs" />
+    <Compile Include="Cases\Features\DebuggerBrowsableAttribute.cs" />
+    <Compile Include="Cases\Features\WithoutGenerics.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Suites\Slicing\ErrorSuite.cs" />
+    <Compile Include="Cases\Features\Overloading.cs" />
+    <Compile Include="Suites\Slicing\FeaturesSuite.cs" />
+    <Compile Include="Suites\Slicing\GeneralSuite.cs" />
+    <Compile Include="Suites\Slicing\CallbackSuite.cs" />
+    <Compile Include="Suites\Slicing\CompressionSuite.cs" />
+    <Compile Include="Suites\Slicing\NotSupportedSuite.cs" />
+    <Compile Include="Cases\Roslyn\NumericLiteralExpression.cs" />
+    <Compile Include="Suites\Slicing\OnlyScalarsSuite.cs" />
+    <Compile Include="Suites\Slicing\DubiousSliceCriteriaSuite.cs" />
+    <Compile Include="Suites\Solver\PerformanceSuite.cs" />
+    <Compile Include="Suites\Solver\SolverSuite.cs" />
+    <Compile Include="Util\BaseSlicingTest.cs" />
+    <Compile Include="Util\TestResult.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BinarySample\BinarySample.csproj">
+      <Project>{bc9c7ca1-5e09-460f-ab11-68288af0e059}</Project>
+      <Name>BinarySample</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Slicer\Slicer.csproj">
+      <Project>{54730cc5-81d9-4e08-b491-4b52dcf09e4d}</Project>
+      <Name>Slicer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tracer\Tracer.csproj">
+      <Project>{cde77532-e6a4-485f-8618-0d424a79c15d}</Project>
+      <Name>Tracer</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Choose>
+    <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.QualityTools.CodedUITestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.TestTools.UITest.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.TestTools.UITest.Extension, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="Microsoft.VisualStudio.TestTools.UITesting, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+          <Private>False</Private>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
