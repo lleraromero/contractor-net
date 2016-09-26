@@ -1,0 +1,2 @@
+# quiero agregar las dll de roslyn necesarias para compilar el proyecto
+!*.dll
