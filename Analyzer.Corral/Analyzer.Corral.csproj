@@ -124,6 +124,7 @@
   <ItemGroup>
     <Compile Include="BctRunner.cs" />
     <Compile Include="BctMethodNamer.cs" />
+    <Compile Include="BoggieHardcoderForExceptionSupport.cs" />
     <Compile Include="CciContractRewriter.cs" />
     <Compile Include="CorralAnalyzer.cs" />
     <Compile Include="CorralRunner.cs" />
