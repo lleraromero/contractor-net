@@ -215,7 +215,7 @@ namespace Analysis.Cci
 
             //if (Configuration.InlineMethodsBody)
             //{
-            block = InlineMethodBody(action);
+            block = CallMethod(action);//InlineMethodBody(action);
             //}
             //else
             //{
@@ -233,58 +233,58 @@ namespace Analysis.Cci
 
         private BlockStatement CallMethod(Action action)
         {
-            throw new NotSupportedException();
-            //var block = new BlockStatement();
-            //var args = new List<IExpression>();
+            //throw new NotSupportedException();
+            var block = new BlockStatement();
+            var args = new List<IExpression>();
 
-            //foreach (var arg in action.Parameters)
-            //{
-            //    args.Add(new BoundExpression()
-            //    {
-            //        Definition = arg,
-            //        Instance = null,
-            //        Locations = new List<ILocation>(arg.Locations),
-            //        Type = arg.Type
-            //    });
-            //}
+            foreach (var arg in action.Method.ExtraParameters) //action.Parameters)
+            {
+                args.Add(new BoundExpression()
+                {
+                    Definition = arg,
+                    Instance = null,
+                    Locations = new List<ILocation>(action.Method.Locations), //arg.Locations),
+                    Type = arg.Type
+                });
+            }
 
-            //IMethodReference methodReference = action;
+            IMethodReference methodReference = action.Method;
 
             //if (typeToAnalyze.IsGeneric)
             //{
             //    methodReference = specializedInputType.SpecializeMember(action, host.InternFactory) as IMethodReference;
             //}
 
-            //var callExpr = new MethodCall()
-            //{
-            //    Arguments = args,
-            //    IsStaticCall = false,
-            //    MethodToCall = methodReference,
-            //    Type = action.Type,
-            //    ThisArgument = new ThisReference(),
-            //    Locations = new List<ILocation>(action.Locations)
-            //};
+            var callExpr = new MethodCall()
+            {
+                Arguments = args,
+                IsStaticCall = false,
+                MethodToCall = methodReference,
+                Type = action.Method.Type,
+                ThisArgument = new ThisReference(),
+                Locations = new List<ILocation>(action.Method.Locations)
+            };
 
-            //if (action.Type.TypeCode == PrimitiveTypeCode.Void)
-            //{
-            //    var call = new ExpressionStatement()
-            //    {
-            //        Expression = callExpr
-            //    };
+            if (action.Method.Type.TypeCode == PrimitiveTypeCode.Void)
+            {
+                var call = new ExpressionStatement()
+                {
+                    Expression = callExpr
+                };
 
-            //    block.Statements.Add(call);
-            //}
-            //else
-            //{
-            //    var ret = new ReturnStatement()
-            //    {
-            //        Expression = callExpr
-            //    };
+                block.Statements.Add(call);
+            }
+            else
+            {
+                var ret = new ReturnStatement()
+                {
+                    Expression = callExpr
+                };
 
-            //    block.Statements.Add(ret);
-            //}
+                block.Statements.Add(ret);
+            }
 
-            //return block;
+            return block;
         }
 
         private BlockStatement InlineMethodBody(Action action)
