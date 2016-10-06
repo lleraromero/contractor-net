@@ -55,6 +55,17 @@ namespace Analyzer.Corral
             stringBuilder.AppendLine("axiom $Subtype(T$System.NullReferenceException(), T$System.Exception());");
             stringBuilder.AppendLine("axiom $Subtype(T$System.IndexOutOfRangeException(), T$System.Exception());");
             stringBuilder.AppendLine("axiom $Subtype(T$System.OverflowException(), T$System.Exception());");
+
+            stringBuilder.AppendLine("function {:extern} T$System.NullReferenceException() : Ref;");
+            stringBuilder.AppendLine("const {:extern} unique T$System.NullReferenceException: int;");
+            stringBuilder.AppendLine("function {:extern} T$System.IndexOutOfRangeException() : Ref;");
+            stringBuilder.AppendLine("const {:extern} unique T$System.IndexOutOfRangeException: int;");
+            stringBuilder.AppendLine("function {:extern} T$System.DivideByZeroException() : Ref;");
+            stringBuilder.AppendLine("const {:extern} unique T$System.DivideByZeroException: int;");
+            stringBuilder.AppendLine("function {:extern} T$System.OverflowException() : Ref;");
+            stringBuilder.AppendLine("const {:extern} unique T$System.OverflowException: int;");
+            stringBuilder.AppendLine("function {:extern} T$System.Exception() : Ref;");
+            stringBuilder.AppendLine("const {:extern} unique T$System.Exception: int;");
         }
 
         private void hardcodeExceptionNotSubtypeOf(StringBuilder stringBuilder)

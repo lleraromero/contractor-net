@@ -75,12 +75,12 @@ namespace Analysis.Cci
             var stateInv = Helper.GenerateStateInvariant(host, state);
 
             var preconditions = from condition in stateInv
-                select new Precondition
-                {
-                    Condition = condition,
-                    OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(condition),
-                    Description = new CompileTimeConstant { Value = "Source state invariant", Type = host.PlatformType.SystemString }
-                };
+                                select new Precondition
+                                {
+                                    Condition = condition,
+                                    OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(condition),
+                                    Description = new CompileTimeConstant { Value = "Source state invariant", Type = host.PlatformType.SystemString }
+                                };
             contracts.Preconditions.AddRange(preconditions);
 
             // Add a redundant postcondition for only those conditions that predicate ONLY about parameters and not the instance. 
@@ -134,7 +134,8 @@ namespace Analysis.Cci
                 Operand = Helper.JoinWithLogicalAnd(host, targetInv, true)
             };
             Postcondition postcondition = null;
-            if(exitCode_eq_expected!=null){
+            if (exitCode_eq_expected != null)
+            {
                 IExpression notExitCode = new LogicalNot
                 {
                     Type = host.PlatformType.SystemBoolean,
@@ -163,9 +164,9 @@ namespace Analysis.Cci
                     Description = new CompileTimeConstant { Value = "Negated target state invariant", Type = host.PlatformType.SystemString }
                 };
             }
-            
+
             contracts.Postconditions.Clear();
-           contracts.Postconditions.Add(postcondition);
+            contracts.Postconditions.Add(postcondition);
 
             return contracts;
         }
@@ -215,7 +216,8 @@ namespace Analysis.Cci
 
             //if (Configuration.InlineMethodsBody)
             //{
-            block = CallMethod(action);//InlineMethodBody(action);
+            //block = CallMethod(action);
+            block = InlineMethodBody(action);
             //}
             //else
             //{
@@ -318,11 +320,69 @@ namespace Analysis.Cci
                 actionBodyBlock = actionBody.Block;
             }
 
+            //***************************************************** armamos el TRY-CATCH
+            //AGREGAR LOS STATEMENT DEL ACTION AL TRYBLOCK EN VEZ DE AL BLOCK
+            
+            var tryBlock = new BlockStatement();
+
             //Por tratarse de un constructor skipeamos
             //el primer statement porque es base..ctor();
             var skipCount = action.Method.IsConstructor ? 1 : 0;
-            block.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));
+            tryBlock.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));
+            
+            var unit = this.host.LoadedUnits.First();
+            var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
+            
+            var catchClauses = new List<ICatchClause>();
+            var exceptionType = coreAssembly.GetAllTypes().Single(t => t.Name.Value == "Exception");
+            var intType = coreAssembly.PlatformType.SystemInt32;
+           
 
+            // var variable = action.Method.Body.LocalVariables.FirstOrDefault( v => v.Name.Value == "exitCode");
+
+            var variable = new LocalDefinition()
+            {
+                Name = Dummy.Name,
+                Type = coreAssembly.PlatformType.SystemString,
+                MethodDefinition = action.Method
+            };
+
+            var excBody = new BlockStatement();
+
+            var assign = new ExpressionStatement(){
+                Expression = new Assignment()
+                {
+                    Source = new CompileTimeConstant
+                    {
+                        Type = coreAssembly.PlatformType.SystemString,
+                        Value = "Hola"
+                    },
+                    Target = new TargetExpression() 
+                    {
+                        Definition = variable,
+                        Type = variable.Type
+                    },
+                    Type = coreAssembly.PlatformType.SystemString
+                }
+            };
+            excBody.Statements.Add(assign);
+
+            var catchExc = new CatchClause(){
+                ExceptionType = exceptionType, // this.host.NameTable.GetNameFor("Exception"),
+                Body = excBody                
+            };
+
+            catchClauses.Add(catchExc);
+
+            var tryStmt = new TryCatchFinallyStatement
+                {
+                    TryBody = tryBlock,
+	                CatchClauses = catchClauses
+                };
+
+            block.Statements.Add(tryStmt);
+            //*****************************************************
+            
             if (mc != null && mc.Postconditions.Any())
             {
                 var assumes = from post in mc.Postconditions
