@@ -30,6 +30,12 @@ namespace Contractor.Gui
             cmbBackend.Items.Add("Corral");
             cmbBackend.SelectedIndex = 1;
 
+            cmbConditions.Items.Add("EPA");
+            cmbConditions.Items.Add("EPA-I");
+            cmbConditions.Items.Add("EPA-O");
+            cmbConditions.Items.Add("EPA-I/O");
+            cmbConditions.SelectedIndex = 2;
+
             epaViewerPresenter = new EpaViewerPresenter(epaViewer, new EpaViewer(), SynchronizationContext.Current);
             typesViewerPresenter = new TypesViewerPresenter(typesViewer, new TypesViewer(), SynchronizationContext.Current);
             typesViewerPresenter.TypeSelected += TypesViewerPresenterOnTypeSelected;
@@ -43,6 +49,11 @@ namespace Contractor.Gui
         public string Engine
         {
             get { return (string) cmbBackend.SelectedItem; }
+        }
+
+        public string Conditions
+        {
+            get { return (string)cmbConditions.SelectedItem; }
         }
 
         public event EventHandler<FileInfo> LoadAssembly;
@@ -89,6 +100,7 @@ namespace Contractor.Gui
             buttonGenerateAssembly.Enabled = false;
             buttonStartAnalysis.Enabled = false;
             cmbBackend.Enabled = false;
+            cmbConditions.Enabled = false;
             typesViewer.Enabled = false;
             methodFilter.Enabled = false;
 
@@ -104,6 +116,7 @@ namespace Contractor.Gui
             buttonGenerateAssembly.Enabled = true;
             buttonStartAnalysis.Enabled = true;
             cmbBackend.Enabled = true;
+            cmbConditions.Enabled = true;
             typesViewer.Enabled = true;
             methodFilter.Enabled = true;
 
@@ -195,7 +208,7 @@ namespace Contractor.Gui
             if (StartAnalysis != null)
             {
                 epaViewerPresenter.Reset();
-                var analysisArgs = new AnalysisEventArgs(selectedType, methodFilterPresenter.SelectedMethods(), Engine);
+                var analysisArgs = new AnalysisEventArgs(selectedType, methodFilterPresenter.SelectedMethods(), Engine, Conditions);
                 StartAnalysis(sender, analysisArgs);
             }
         }

@@ -61,7 +61,6 @@ namespace Contractor.Gui.Models
             cancellationSource = new CancellationTokenSource();
 
             var analyzer = GetAnalyzer(analysisEventArgs.TypeToAnalyze, analysisEventArgs.Engine, cancellationSource.Token);
-            var epaGenerator = new EpaOGenerator(analyzer, -1);
 
             var selectedMethods = from m in analysisEventArgs.SelectedMethods select m.ToString();
 
@@ -70,7 +69,17 @@ namespace Contractor.Gui.Models
             var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
             epaBuilderObservable.TransitionAdded += OnTransitionAdded;
             
-            return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable,methodsInfo);
+            if(analysisEventArgs.Conditions.Equals("EPA")){
+                var epaGenerator = new EpaGenerator(analyzer, -1);
+                return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable);
+            }
+            else if (analysisEventArgs.Conditions.Equals("EPA-O"))
+            {
+                var epaGenerator = new EpaOGenerator(analyzer, -1);
+                return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable,methodsInfo);
+            }else{
+                throw new NotImplementedException();
+            }
         }
 
         public async Task LoadAssembly(FileInfo inputFileInfo)
