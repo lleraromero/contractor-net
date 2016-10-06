@@ -48,6 +48,7 @@
             this.buttonStopAnalysis = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.cmbBackend = new System.Windows.Forms.ToolStripComboBox();
+            this.cmbConditions = new System.Windows.Forms.ToolStripComboBox();
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.menuitemView = new System.Windows.Forms.ToolStripMenuItem();
             this.menuitemOutput = new System.Windows.Forms.ToolStripMenuItem();
@@ -147,7 +148,8 @@
             this.buttonStartAnalysis,
             this.buttonStopAnalysis,
             this.toolStripSeparator2,
-            this.cmbBackend});
+            this.cmbBackend,
+            this.cmbConditions});
             this.toolStrip.Location = new System.Drawing.Point(0, 24);
             this.toolStrip.Name = "toolStrip";
             this.toolStrip.Size = new System.Drawing.Size(775, 25);
@@ -248,6 +250,11 @@
             this.cmbBackend.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbBackend.Name = "cmbBackend";
             this.cmbBackend.Size = new System.Drawing.Size(110, 25);
+            // 
+            // cmbConditions
+            // 
+            this.cmbConditions.Name = "cmbConditions";
+            this.cmbConditions.Size = new System.Drawing.Size(121, 25);
             // 
             // menuStrip
             // 
@@ -528,6 +535,7 @@
         private System.Windows.Forms.OpenFileDialog loadContractsDialog;
         private System.Windows.Forms.ToolStripButton buttonLoadContracts;
         private System.Windows.Forms.ToolStripComboBox cmbBackend;
+        private System.Windows.Forms.ToolStripComboBox cmbConditions;
         private EpaViewerScreen epaViewer;
         private TypesViewerScreen typesViewer;
         private MethodFilterScreen methodFilter;
