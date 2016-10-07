@@ -334,12 +334,8 @@ namespace Analysis.Cci
             var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
             
             var catchClauses = new List<ICatchClause>();
-            var exceptionType = coreAssembly.GetAllTypes().Single(t => t.Name.Value == "Exception");
+
             var intType = coreAssembly.PlatformType.SystemInt32;
-           
-
-            // var variable = action.Method.Body.LocalVariables.FirstOrDefault( v => v.Name.Value == "exitCode");
-
             var variable = new LocalDefinition()
             {
                 Name = Dummy.Name,
@@ -347,33 +343,21 @@ namespace Analysis.Cci
                 MethodDefinition = action.Method
             };
 
-            var excBody = new BlockStatement();
+            // var variable = action.Method.Body.LocalVariables.FirstOrDefault( v => v.Name.Value == "exitCode");
 
-            var assign = new ExpressionStatement(){
-                Expression = new Assignment()
-                {
-                    Source = new CompileTimeConstant
-                    {
-                        Type = coreAssembly.PlatformType.SystemString,
-                        Value = "Hola"
-                    },
-                    Target = new TargetExpression() 
-                    {
-                        Definition = variable,
-                        Type = variable.Type
-                    },
-                    Type = coreAssembly.PlatformType.SystemString
-                }
-            };
-            excBody.Statements.Add(assign);
+            var listOfExceptions = new List<String>();
+            listOfExceptions.Add("NullReferenceException");
+            listOfExceptions.Add("IndexOutOfRangeException");
+            listOfExceptions.Add("DivideByZeroException");
+            listOfExceptions.Add("OverflowException");
+            listOfExceptions.Add("Exception");
 
-            var catchExc = new CatchClause(){
-                ExceptionType = exceptionType, // this.host.NameTable.GetNameFor("Exception"),
-                Body = excBody                
-            };
-
-            catchClauses.Add(catchExc);
-
+            foreach(var exception in listOfExceptions){
+                var excType = coreAssembly.GetAllTypes().Single(t => t.Name.Value == exception);
+                var catchExc = GenerateCatchClauseFor(coreAssembly, variable, excType);
+                catchClauses.Add(catchExc);
+            }
+            
             var tryStmt = new TryCatchFinallyStatement
                 {
                     TryBody = tryBlock,
@@ -409,6 +393,36 @@ namespace Analysis.Cci
             }
 
             return block;
+        }
+
+        private CatchClause GenerateCatchClauseFor(Microsoft.Cci.IAssembly coreAssembly, LocalDefinition variable, INamedTypeDefinition nullExcType)
+        {
+            var nullExcBody = new BlockStatement();
+            var assign2 = new ExpressionStatement()
+            {
+                Expression = new Assignment()
+                {
+                    Source = new CompileTimeConstant
+                    {
+                        Type = coreAssembly.PlatformType.SystemString,
+                        Value = "Hola"
+                    },
+                    Target = new TargetExpression()
+                    {
+                        Definition = variable,
+                        Type = variable.Type
+                    },
+                    Type = coreAssembly.PlatformType.SystemString
+                }
+            };
+            nullExcBody.Statements.Add(assign2);
+            var catchNullExc = new CatchClause()
+            {
+                ExceptionType = nullExcType, // this.host.NameTable.GetNameFor("Exception"),
+                Body = nullExcBody,
+                ExceptionContainer = variable
+            };
+            return catchNullExc;
         }
     }
 }
