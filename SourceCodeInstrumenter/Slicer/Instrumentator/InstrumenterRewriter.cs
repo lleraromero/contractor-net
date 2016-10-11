@@ -695,6 +695,7 @@ namespace DC.Slicer
 
         private SyntaxNode rewriteThrow(SyntaxNode method, SyntaxNode throwStmt)
         {
+            return throwStmt;
             var methodDecl = method as MethodDeclarationSyntax;
             var descendant = throwStmt.DescendantNodesAndTokens();
             BlockSyntax newBlock = SyntaxFactory.Block();
@@ -755,7 +756,7 @@ namespace DC.Slicer
             FieldDeclarationSyntax fieldDeclaration = firstNode as FieldDeclarationSyntax;
             //var fieldDeclaration =SyntaxFactory.FieldDeclaration(SyntaxFactory.VariableDeclaration();
             //var fieldDeclaration = SyntaxFactory.FieldDeclaration(SyntaxFactory.VariableDeclaration();
-            modifiedClassNode = modifiedClassNode.WithMembers(modifiedClassNode.Members.Insert(0,fieldDeclaration));
+            //modifiedClassNode = modifiedClassNode.WithMembers(modifiedClassNode.Members.Insert(0,fieldDeclaration));
             //var fieldDeclaration = RoslynHelpers.CreateFieldDeclaration(RoslynHelpers.GetParameterType(parameter), fieldName);
             //foreach (SyntaxNode node in modifiedClassNode.DescendantNodes())
             //{
@@ -859,20 +860,21 @@ namespace DC.Slicer
             {
                 if (!contractStmtsFinished && blockNode.DescendantNodes().Where(x => x.ToString().Contains("Contract.Require") || x.ToString().Contains("Contract.Ensures") || x.ToString().Contains("Contract.Invariant")).Count() == 0)
                 {
-                    contractStmtsFinished = true;
-                    
-                    
-                    stmtList = stmtList.Add(SyntaxFactory.ParseStatement("Contract.Ensures(exitCode==expectedExitCode);" + System.Environment.NewLine));
-                    //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("Contract.Ensures(exitCode.Equals(expectedExitCode));" + System.Environment.NewLine));
+                    contractStmtsFinished = true;                    
 
                     //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("if(expectedExitCode==null){throw new Exception();};" + System.Environment.NewLine));
 
-                    stmtList = stmtList.Add(SyntaxFactory.ParseStatement("expectedExitCode = " + '"' + "Ok" + '"' + ";" + System.Environment.NewLine));
+                    //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("expectedExitCode = " + '"' + "Ok" + '"' + ";" + System.Environment.NewLine));
+                    stmtList = stmtList.Add(SyntaxFactory.ParseStatement("int expectedExitCode = 0;" + System.Environment.NewLine));
                     //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("Contract.Assume(expectedExitCode==" + '"' + "Ok" + '"' + ");" + System.Environment.NewLine));
 
-                    stmtList = stmtList.Add(SyntaxFactory.ParseStatement("exitCode=" + '"' + "Ok" + '"' + ";" + System.Environment.NewLine));
+                    //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("exitCode=" + '"' + "Ok" + '"' + ";" + System.Environment.NewLine));
+                    stmtList = stmtList.Add(SyntaxFactory.ParseStatement("int exitCode = 0;" + System.Environment.NewLine));
                     //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("Contract.Assume(exitCode==" + '"' + "Ok" + '"' + ");" + System.Environment.NewLine));
-                                        
+
+                    //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("Contract.Assert(exitCode==expectedExitCode);" + System.Environment.NewLine));
+                    //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("Contract.Ensures(exitCode.Equals(expectedExitCode));" + System.Environment.NewLine));
+
                     stmtList = stmtList.Add(blockNode);
                 }else{
                     stmtList = stmtList.Add(blockNode);
@@ -908,16 +910,18 @@ namespace DC.Slicer
                 {
                     contractStmtsFinished = true;
 
-                    stmtList = stmtList.Add(SyntaxFactory.ParseStatement("Contract.Ensures(exitCode==expectedExitCode);" + System.Environment.NewLine));
-                    //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("Contract.Ensures(exitCode.Equals(expectedExitCode));" + System.Environment.NewLine));
-
                     //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("if(expectedExitCode==null){throw new Exception();};" + System.Environment.NewLine));
 
-                    stmtList = stmtList.Add(SyntaxFactory.ParseStatement("expectedExitCode = " + '"' + "Ok" + '"' + ";" + System.Environment.NewLine));
+                    stmtList = stmtList.Add(SyntaxFactory.ParseStatement("int expectedExitCode = 0;" + System.Environment.NewLine));
+                    //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("expectedExitCode = " + '"' + "Ok" + '"' + ";" + System.Environment.NewLine));
                     //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("Contract.Assume(expectedExitCode==" + '"' + "Ok" + '"' + ");" + System.Environment.NewLine));
 
-                    stmtList = stmtList.Add(SyntaxFactory.ParseStatement("exitCode=" + '"' + "Ok" + '"' + ";" + System.Environment.NewLine));
+                    stmtList = stmtList.Add(SyntaxFactory.ParseStatement("int exitCode = 0;" + System.Environment.NewLine));
+                    //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("exitCode=" + '"' + "Ok" + '"' + ";" + System.Environment.NewLine));
                     //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("Contract.Assume(exitCode==" + '"' + "Ok" + '"' + ");" + System.Environment.NewLine));
+
+                    //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("Contract.Assert(exitCode==expectedExitCode);" + System.Environment.NewLine));
+                    //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("Contract.Ensures(exitCode.Equals(expectedExitCode));" + System.Environment.NewLine));
                     
                     stmtList = stmtList.Add(blockNode);
                 }
