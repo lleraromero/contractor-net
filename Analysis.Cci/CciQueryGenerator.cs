@@ -15,7 +15,12 @@ namespace Analysis.Cci
     {
         protected const string NotPrefix = "_Not_";
         protected const string MethodNameDelimiter = "~";
+
         public IExpression exitCode_eq_expected;
+
+        private IStatement localDefExitCode;
+
+        private IStatement localDefExpectedExitCode; 
 
         protected IContractAwareHost host;
 
@@ -136,6 +141,42 @@ namespace Analysis.Cci
             Postcondition postcondition = null;
             if (exitCode_eq_expected != null)
             {
+                var unit = this.host.LoadedUnits.First();
+                var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
+
+                var arg= new List<IExpression>();
+
+                //-------
+                exitCode_eq_expected = new Equality
+                {
+                    Type = host.PlatformType.SystemBoolean,
+                    //LeftOperand = new OldValue
+                    //{
+                    //    Type = coreAssembly.PlatformType.SystemInt32,
+                    //    Expression = new BoundExpression
+                    //    {
+                    //        Definition = field,
+                    //        Instance = new ThisReference(),
+                    //        Type = field.Type
+                    //    }
+                    //},
+                    //RightOperand = new CompileTimeConstant
+                    //{
+                    //    Type = coreAssembly.PlatformType.SystemInt32,
+                    //    Value = fromStateId
+                    //}
+                    LeftOperand = ((IExpressionStatement)localDefExitCode).Expression,
+                    RightOperand = ((IExpressionStatement)localDefExpectedExitCode).Expression
+                };
+                //------
+
+                //exitCode_eq_expected = new MethodCall()
+                //{
+                //    MethodToCall = coreAssembly.PlatformType.,
+                //    Type = coreAssembly.PlatformType.SystemBoolean,
+                //    Arguments = arg
+                //};
+
                 IExpression notExitCode = new LogicalNot
                 {
                     Type = host.PlatformType.SystemBoolean,
@@ -329,7 +370,10 @@ namespace Analysis.Cci
             //el primer statement porque es base..ctor();
             var skipCount = action.Method.IsConstructor ? 1 : 0;
             tryBlock.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));
-            
+
+            localDefExitCode = tryBlock.Statements.First(x => x is LocalDeclarationStatement && (x as LocalDeclarationStatement).LocalVariable.Name.Value == "exitCode");
+            localDefExpectedExitCode = tryBlock.Statements.First(x => x is LocalDeclarationStatement && (x as LocalDeclarationStatement).LocalVariable.Name.Value == "expectedExitCode");
+
             var unit = this.host.LoadedUnits.First();
             var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
             
@@ -377,10 +421,10 @@ namespace Analysis.Cci
                         Description = new CompileTimeConstant { Value = "Inlined method postcondition", Type = host.PlatformType.SystemString }
                     };
                 //Ponemos los assume antes del return
-                var assume=assumes.ElementAt(0);
-                this.exitCode_eq_expected = assume.Condition;
+                //var assume=assumes.ElementAt(0);
+                //this.exitCode_eq_expected = assume.Condition;
                 List<AssumeStatement> finalAssumes = new List<AssumeStatement>(assumes);
-                finalAssumes.RemoveAt(0);
+                //finalAssumes.RemoveAt(0);
 
                 if (block.Statements.Count > 0 && block.Statements.Last() is IReturnStatement)
                 {
@@ -424,5 +468,7 @@ namespace Analysis.Cci
             };
             return catchNullExc;
         }
+
+        
     }
 }
