@@ -27,7 +27,7 @@ namespace ErrorInstrumentator
             var block = sourceMethodBody.Block as BlockStatement;
             //var existingStatements = new List<IStatement>(((BlockStatement)sourceMethodBody.Block.Statements.ElementAt(1)).Statements);
             var existingStatements = new List<IStatement>(sourceMethodBody.Block.Statements);
-            bool foundAssignment= false;
+            
             //bool foundAssume = false;
 
             CompileTimeConstant stringConstant=null;
@@ -40,7 +40,21 @@ namespace ErrorInstrumentator
             //existingStatementsCopy.AddRange(existingStatements);
             //existingStatementsCopy.Remove(conditionalStatements.ElementAt(0));
 
+            var existingStatements2 = new List<IStatement>();
             foreach (Statement statement in existingStatements)
+            {
+                if (statement is BlockStatement)
+                {
+                    existingStatements2.AddRange(((BlockStatement)statement).Statements);
+                }
+                else
+                {
+                    existingStatements2.Add(statement);
+                }
+            }
+
+            bool foundAssignment = false;
+            foreach (Statement statement in existingStatements2)
             {
                 //var statement = Rewrite(statement);
                 if (!foundAssignment)
