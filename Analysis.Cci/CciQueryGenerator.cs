@@ -448,15 +448,15 @@ namespace Analysis.Cci
                 {
                     Source = new CompileTimeConstant
                     {
-                        Type = coreAssembly.PlatformType.SystemString,
-                        Value = "Hola"
+                        Type = coreAssembly.PlatformType.SystemInt32,
+                        Value = 1
                     },
                     Target = new TargetExpression()
                     {
-                        Definition = variable,
-                        Type = variable.Type
+                        Definition = ((ILocalDeclarationStatement)localDefExitCode).LocalVariable,
+                        Type = coreAssembly.PlatformType.SystemInt32
                     },
-                    Type = coreAssembly.PlatformType.SystemString
+                    Type = coreAssembly.PlatformType.SystemInt32
                 }
             };
             nullExcBody.Statements.Add(assign2);
