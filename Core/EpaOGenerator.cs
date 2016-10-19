@@ -135,7 +135,7 @@ namespace Contractor.Core
                         }
                     }
 
-                    var methodStatementsCopy = new List<Microsoft.Cci.IStatement>();
+                    //var methodStatementsCopy = new List<Microsoft.Cci.IStatement>();
                     //foreach (Microsoft.Cci.MutableCodeModel.Statement st in (action.Method.Body as Microsoft.Cci.MutableCodeModel.SourceMethodBody).Block.Statements)
                     //{
 
@@ -145,12 +145,12 @@ namespace Contractor.Core
                     foreach (string exitCode in errorList)
                     {
                         MyLogger.LogAction(action.Name, exitCode, source.Name);
-
+                        
                         // ACA TENGO QUE MODIFICAR EL M --> Me 
-                        Microsoft.Cci.MutableCodeModel.BlockStatement actionBlock = (action.Method.Body as Microsoft.Cci.MutableCodeModel.SourceMethodBody).Block as Microsoft.Cci.MutableCodeModel.BlockStatement;
+                        //Microsoft.Cci.MutableCodeModel.BlockStatement actionBlock = (action.Method.Body as Microsoft.Cci.MutableCodeModel.SourceMethodBody).Block as Microsoft.Cci.MutableCodeModel.BlockStatement;
 //                        actionBlock.Statements = methodStatementsCopy;
                         //if (!mi.IsProperty.Equals("True"))
-                            action.Method = new ExpectedExitCodeRewriter(exitCode).Rewrite(action.Method);
+                            //action.Method = new ExpectedExitCodeRewriter(exitCode).Rewrite(action.Method);
 
                         lock (analyzer)
                         {
