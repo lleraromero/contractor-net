@@ -442,6 +442,9 @@ namespace Analysis.Cci
             listOfExceptions.Add("IndexOutOfRangeException");
             listOfExceptions.Add("DivideByZeroException");
             listOfExceptions.Add("OverflowException");
+            listOfExceptions.Add("IllegalStateException");
+            listOfExceptions.Add("ConcurrentModificationException");
+            listOfExceptions.Add("NoSuchElementException");
             listOfExceptions.Add("Exception");
 
             foreach (var exception in listOfExceptions)
