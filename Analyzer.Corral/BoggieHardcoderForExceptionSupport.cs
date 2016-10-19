@@ -47,6 +47,9 @@ namespace Analyzer.Corral
             stringBuilder.AppendLine("axiom $Subtype(T$System.IndexOutOfRangeException(), T$System.IndexOutOfRangeException());");
             stringBuilder.AppendLine("axiom $Subtype(T$System.OverflowException(), T$System.OverflowException());");
 
+            stringBuilder.AppendLine("axiom $Subtype(T$System.IllegalStateException(), T$System.IllegalStateException());");
+            stringBuilder.AppendLine("axiom $Subtype(T$System.ConcurrentModificationException(), T$System.ConcurrentModificationException());");
+            stringBuilder.AppendLine("axiom $Subtype(T$System.NoSuchElementException(), T$System.NoSuchElementException());");
         }
 
         private void harcodeAllSubtypeOfException(StringBuilder stringBuilder)
@@ -56,16 +59,35 @@ namespace Analyzer.Corral
             stringBuilder.AppendLine("axiom $Subtype(T$System.IndexOutOfRangeException(), T$System.Exception());");
             stringBuilder.AppendLine("axiom $Subtype(T$System.OverflowException(), T$System.Exception());");
 
+            stringBuilder.AppendLine("axiom $Subtype(T$System.IllegalStateException(), T$System.Exception());");
+            stringBuilder.AppendLine("axiom $Subtype(T$System.ConcurrentModificationException(), T$System.Exception());");
+            stringBuilder.AppendLine("axiom $Subtype(T$System.NoSuchElementException(), T$System.Exception());");
+
+            //All declared as extern functions
             stringBuilder.AppendLine("function {:extern} T$System.NullReferenceException() : Ref;");
             stringBuilder.AppendLine("const {:extern} unique T$System.NullReferenceException: int;");
+
             stringBuilder.AppendLine("function {:extern} T$System.IndexOutOfRangeException() : Ref;");
             stringBuilder.AppendLine("const {:extern} unique T$System.IndexOutOfRangeException: int;");
+            
             stringBuilder.AppendLine("function {:extern} T$System.DivideByZeroException() : Ref;");
             stringBuilder.AppendLine("const {:extern} unique T$System.DivideByZeroException: int;");
+            
             stringBuilder.AppendLine("function {:extern} T$System.OverflowException() : Ref;");
             stringBuilder.AppendLine("const {:extern} unique T$System.OverflowException: int;");
+            
             stringBuilder.AppendLine("function {:extern} T$System.Exception() : Ref;");
             stringBuilder.AppendLine("const {:extern} unique T$System.Exception: int;");
+
+            
+            stringBuilder.AppendLine("function {:extern} T$System.IllegalStateException() : Ref;");
+            stringBuilder.AppendLine("const {:extern} unique T$System.IllegalStateException: int;");
+
+            stringBuilder.AppendLine("function {:extern} T$System.ConcurrentModificationException() : Ref;");
+            stringBuilder.AppendLine("const {:extern} unique T$System.ConcurrentModificationException: int;");
+
+            stringBuilder.AppendLine("function {:extern} T$System.NoSuchElementException() : Ref;");
+            stringBuilder.AppendLine("const {:extern} unique T$System.NoSuchElementException: int;");
         }
 
         private void hardcodeExceptionNotSubtypeOf(StringBuilder stringBuilder)
@@ -74,6 +96,10 @@ namespace Analyzer.Corral
             stringBuilder.AppendLine("axiom !$Subtype(T$System.Exception(), T$System.NullReferenceException());");
             stringBuilder.AppendLine("axiom !$Subtype(T$System.Exception(), T$System.OverflowException());");
             stringBuilder.AppendLine("axiom !$Subtype(T$System.Exception(), T$System.IndexOutOfRangeException());");
+
+            stringBuilder.AppendLine("axiom !$Subtype(T$System.Exception(), T$System.IllegalStateException());");
+            stringBuilder.AppendLine("axiom !$Subtype(T$System.Exception(), T$System.ConcurrentModificationException());");
+            stringBuilder.AppendLine("axiom !$Subtype(T$System.Exception(), T$System.NoSuchElementException());");
         }
 
         private void hardcodeExceptionEqualsToNullToQueries()
