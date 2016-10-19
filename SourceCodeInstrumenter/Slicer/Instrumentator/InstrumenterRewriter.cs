@@ -631,7 +631,7 @@ namespace DC.Slicer
                     {
                         // fmartinelli: this is a patch for static methods 
                         // TODO: do it generically.
-                        if (stmt.ToString().Equals("Contract") || stmt.ToString().Equals("Abs") || stmt.ToString().Equals("MyArray"))
+                        if (stmt.ToString().Equals("Contract") || stmt.ToString().Equals("Abs") || stmt.ToString().Equals("MyArray") || stmt.ToString().Equals("Array"))
                         {
                             break;
                         }//----------------------------------
@@ -746,8 +746,8 @@ namespace DC.Slicer
 
         public override SyntaxNode VisitClassDeclaration(ClassDeclarationSyntax originalClassNode)
         {
-            if (!originalClassNode.Identifier.ToString().Equals(classToRewrite))
-               return originalClassNode;  
+            //if (!originalClassNode.Identifier.ToString().Equals(classToRewrite))
+            //   return originalClassNode;  
 
             ClassDeclarationSyntax modifiedClassNode = (ClassDeclarationSyntax)base.VisitClassDeclaration(originalClassNode);
             //CreateFieldDeclaration
@@ -865,11 +865,11 @@ namespace DC.Slicer
                     //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("if(expectedExitCode==null){throw new Exception();};" + System.Environment.NewLine));
 
                     //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("expectedExitCode = " + '"' + "Ok" + '"' + ";" + System.Environment.NewLine));
-                    stmtList = stmtList.Add(SyntaxFactory.ParseStatement("int expectedExitCode = 0;" + System.Environment.NewLine));
+                    //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("int expectedExitCode = 0;" + System.Environment.NewLine));
                     //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("Contract.Assume(expectedExitCode==" + '"' + "Ok" + '"' + ");" + System.Environment.NewLine));
 
                     //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("exitCode=" + '"' + "Ok" + '"' + ";" + System.Environment.NewLine));
-                    stmtList = stmtList.Add(SyntaxFactory.ParseStatement("int exitCode = 0;" + System.Environment.NewLine));
+                    //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("int exitCode = 0;" + System.Environment.NewLine));
                     //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("Contract.Assume(exitCode==" + '"' + "Ok" + '"' + ");" + System.Environment.NewLine));
 
                     //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("Contract.Assert(exitCode==expectedExitCode);" + System.Environment.NewLine));
@@ -912,11 +912,11 @@ namespace DC.Slicer
 
                     //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("if(expectedExitCode==null){throw new Exception();};" + System.Environment.NewLine));
 
-                    stmtList = stmtList.Add(SyntaxFactory.ParseStatement("int expectedExitCode = 0;" + System.Environment.NewLine));
+                    //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("int expectedExitCode = 0;" + System.Environment.NewLine));
                     //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("expectedExitCode = " + '"' + "Ok" + '"' + ";" + System.Environment.NewLine));
                     //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("Contract.Assume(expectedExitCode==" + '"' + "Ok" + '"' + ");" + System.Environment.NewLine));
 
-                    stmtList = stmtList.Add(SyntaxFactory.ParseStatement("int exitCode = 0;" + System.Environment.NewLine));
+                    //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("int exitCode = 0;" + System.Environment.NewLine));
                     //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("exitCode=" + '"' + "Ok" + '"' + ";" + System.Environment.NewLine));
                     //stmtList = stmtList.Add(SyntaxFactory.ParseStatement("Contract.Assume(exitCode==" + '"' + "Ok" + '"' + ");" + System.Environment.NewLine));
 
@@ -938,6 +938,7 @@ namespace DC.Slicer
 
         public override SyntaxNode VisitThrowStatement(ThrowStatementSyntax node)
         {
+            return node;
             var descendant = node.DescendantNodesAndTokens();
             BlockSyntax newBlock = SyntaxFactory.Block();
 
