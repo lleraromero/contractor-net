@@ -179,6 +179,7 @@
     <Compile Include="CciQueryGenerator.cs" />
     <Compile Include="CciTypeDefinition.cs" />
     <Compile Include="ContractRewriter.cs" />
+    <Compile Include="ExceptionEncoder.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
