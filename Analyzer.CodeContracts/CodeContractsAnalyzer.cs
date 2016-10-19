@@ -109,7 +109,7 @@ namespace Analyzer.CodeContracts
         {
             var codeContractsRunner = new CodeContractsRunner(workingDir, ccCheckDefaultArgs, libPaths, typeToAnalyze);
 
-            var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets);
+            var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets,exitCode);
             var queryAssembly = CreateQueryAssembly(transitionQueries);
             var evaluator = new QueryEvaluator(codeContractsRunner, queryAssembly);
             var feasibleTransitions = evaluator.GetFeasibleTransitions(transitionQueries);

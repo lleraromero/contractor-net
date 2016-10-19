@@ -16,13 +16,14 @@ namespace Analysis.Cci
         protected const string NotPrefix = "_Not_";
         protected const string MethodNameDelimiter = "~";
 
-        public IExpression exitCode_eq_expected;
+        private IExpression exitCode_eq_expected;
 
-        private IStatement localDefExitCode;
+        private LocalDeclarationStatement localDefExitCode;
 
-        private IStatement localDefExpectedExitCode; 
+        private LocalDeclarationStatement localDefExpectedExitCode;
 
         protected IContractAwareHost host;
+        private string expectedExitCode;
 
         public CciQueryGenerator()
         {
@@ -52,8 +53,9 @@ namespace Analysis.Cci
             return queries;
         }
 
-        public IReadOnlyCollection<TransitionQuery> CreateTransitionQueries(State sourceState, Action action, IEnumerable<State> targetStates)
+        public IReadOnlyCollection<TransitionQuery> CreateTransitionQueries(State sourceState, Action action, IEnumerable<State> targetStates, string expectedExitCode=null)
         {
+            this.expectedExitCode = expectedExitCode;
             return
                 targetStates.Select(
                     targetState => new TransitionQuery(GenerateQuery(sourceState, action, targetState), sourceState, action, targetState)).ToList();
@@ -139,12 +141,24 @@ namespace Analysis.Cci
                 Operand = Helper.JoinWithLogicalAnd(host, targetInv, true)
             };
             Postcondition postcondition = null;
-            if (exitCode_eq_expected != null)
+            if (expectedExitCode != null)
             {
                 var unit = this.host.LoadedUnits.First();
                 var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
 
-                var arg= new List<IExpression>();
+                var arg = new List<IExpression>();
+
+                var exitCodeExpr = new BoundExpression()
+                    {
+                        Type = host.PlatformType.SystemInt32,
+                        Definition = localDefExitCode.LocalVariable
+                    };
+
+                var expectedExitCodeExpr = new BoundExpression()
+                {
+                    Type = host.PlatformType.SystemInt32,
+                    Definition = localDefExpectedExitCode.LocalVariable
+                };
 
                 //-------
                 exitCode_eq_expected = new Equality
@@ -165,8 +179,9 @@ namespace Analysis.Cci
                     //    Type = coreAssembly.PlatformType.SystemInt32,
                     //    Value = fromStateId
                     //}
-                    LeftOperand = ((IExpressionStatement)localDefExitCode).Expression,
-                    RightOperand = ((IExpressionStatement)localDefExpectedExitCode).Expression
+                    LeftOperand = exitCodeExpr,
+                    //LeftOperand = ((IExpressionStatement)localDefExitCode).Expression,
+                    RightOperand = expectedExitCodeExpr
                 };
                 //------
 
@@ -339,12 +354,12 @@ namespace Analysis.Cci
             if (mc != null && mc.Preconditions.Any())
             {
                 var asserts = from pre in mc.Preconditions
-                    select new AssertStatement
-                    {
-                        Condition = pre.Condition,
-                        OriginalSource = pre.OriginalSource,
-                        Description = new CompileTimeConstant { Value = "Inlined method precondition", Type = host.PlatformType.SystemString }
-                    };
+                              select new AssertStatement
+                              {
+                                  Condition = pre.Condition,
+                                  OriginalSource = pre.OriginalSource,
+                                  Description = new CompileTimeConstant { Value = "Inlined method precondition", Type = host.PlatformType.SystemString }
+                              };
 
                 block.Statements.AddRange(asserts);
             }
@@ -360,10 +375,46 @@ namespace Analysis.Cci
                 var actionBody = action.Method.Body as SourceMethodBody;
                 actionBodyBlock = actionBody.Block;
             }
+            //**************************************************** agregamos exitCode & expectedExitCode
+            var unit = this.host.LoadedUnits.First();
+            var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
+
+            localDefExitCode = new LocalDeclarationStatement()
+            {
+                InitialValue = new CompileTimeConstant
+                    {
+                        Type = coreAssembly.PlatformType.SystemInt32,
+                        Value = 0
+                    },
+                LocalVariable = new LocalDefinition()
+                    {
+                        Name = Dummy.Name,
+                        Type = coreAssembly.PlatformType.SystemInt32,
+                        MethodDefinition = action.Method
+                    }
+            };
+
+            localDefExpectedExitCode = new LocalDeclarationStatement()
+            {
+                InitialValue = new CompileTimeConstant
+                {
+                    Type = coreAssembly.PlatformType.SystemInt32,
+                    Value = ExceptionEncoder.ExceptionToInt(expectedExitCode)
+                },
+                LocalVariable = new LocalDefinition()
+                {
+                    Name = Dummy.Name,
+                    Type = coreAssembly.PlatformType.SystemInt32,
+                    MethodDefinition = action.Method
+                }
+            };
+
+            block.Statements.Add(localDefExitCode);
+            block.Statements.Add(localDefExpectedExitCode);
 
             //***************************************************** armamos el TRY-CATCH
             //AGREGAR LOS STATEMENT DEL ACTION AL TRYBLOCK EN VEZ DE AL BLOCK
-            
+
             var tryBlock = new BlockStatement();
 
             //Por tratarse de un constructor skipeamos
@@ -371,21 +422,18 @@ namespace Analysis.Cci
             var skipCount = action.Method.IsConstructor ? 1 : 0;
             tryBlock.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));
 
-            localDefExitCode = tryBlock.Statements.First(x => x is LocalDeclarationStatement && (x as LocalDeclarationStatement).LocalVariable.Name.Value == "exitCode");
-            localDefExpectedExitCode = tryBlock.Statements.First(x => x is LocalDeclarationStatement && (x as LocalDeclarationStatement).LocalVariable.Name.Value == "expectedExitCode");
+            //localDefExitCode = tryBlock.Statements.First(x => x is LocalDeclarationStatement && (x as LocalDeclarationStatement).LocalVariable.Name.Value == "exitCode");
+            //localDefExpectedExitCode = tryBlock.Statements.First(x => x is LocalDeclarationStatement && (x as LocalDeclarationStatement).LocalVariable.Name.Value == "expectedExitCode");
 
-            var unit = this.host.LoadedUnits.First();
-            var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
-            
+            //tryBlock.Statements.Remove(localDefExitCode);
+            //tryBlock.Statements.Remove(localDefExpectedExitCode);
+
+
+
             var catchClauses = new List<ICatchClause>();
 
             var intType = coreAssembly.PlatformType.SystemInt32;
-            var variable = new LocalDefinition()
-            {
-                Name = Dummy.Name,
-                Type = coreAssembly.PlatformType.SystemString,
-                MethodDefinition = action.Method
-            };
+
 
             // var variable = action.Method.Body.LocalVariables.FirstOrDefault( v => v.Name.Value == "exitCode");
 
@@ -396,30 +444,38 @@ namespace Analysis.Cci
             listOfExceptions.Add("OverflowException");
             listOfExceptions.Add("Exception");
 
-            foreach(var exception in listOfExceptions){
+            foreach (var exception in listOfExceptions)
+            {
                 var excType = coreAssembly.GetAllTypes().Single(t => t.Name.Value == exception);
+                var variable = new LocalDefinition()
+                {
+                    Name = Dummy.Name,
+                    Type = excType,
+                    MethodDefinition = action.Method
+                };
                 var catchExc = GenerateCatchClauseFor(coreAssembly, variable, excType);
+                //block.Statements.AddRange(catchExc.Body.Statements);
                 catchClauses.Add(catchExc);
             }
-            
+
             var tryStmt = new TryCatchFinallyStatement
                 {
                     TryBody = tryBlock,
-	                CatchClauses = catchClauses
+                    CatchClauses = catchClauses
                 };
 
             block.Statements.Add(tryStmt);
             //*****************************************************
-            
+
             if (mc != null && mc.Postconditions.Any())
             {
                 var assumes = from post in mc.Postconditions
-                    select new AssumeStatement
-                    {
-                        Condition = post.Condition,
-                        OriginalSource = post.OriginalSource,
-                        Description = new CompileTimeConstant { Value = "Inlined method postcondition", Type = host.PlatformType.SystemString }
-                    };
+                              select new AssumeStatement
+                              {
+                                  Condition = post.Condition,
+                                  OriginalSource = post.OriginalSource,
+                                  Description = new CompileTimeConstant { Value = "Inlined method postcondition", Type = host.PlatformType.SystemString }
+                              };
                 //Ponemos los assume antes del return
                 //var assume=assumes.ElementAt(0);
                 //this.exitCode_eq_expected = assume.Condition;
@@ -449,7 +505,7 @@ namespace Analysis.Cci
                     Source = new CompileTimeConstant
                     {
                         Type = coreAssembly.PlatformType.SystemInt32,
-                        Value = 1
+                        Value = ExceptionEncoder.ExceptionToInt(nullExcType.Name.Value)
                     },
                     Target = new TargetExpression()
                     {
@@ -459,7 +515,24 @@ namespace Analysis.Cci
                     Type = coreAssembly.PlatformType.SystemInt32
                 }
             };
+
             nullExcBody.Statements.Add(assign2);
+            //var other = new LocalDeclarationStatement()
+            //{
+            //    InitialValue = new CompileTimeConstant
+            //        {
+            //            Type = coreAssembly.PlatformType.SystemInt32,
+            //            Value = 10
+            //        },
+            //    LocalVariable = new LocalDefinition()
+            //{
+            //    Name = Dummy.Name,
+            //    Type = coreAssembly.PlatformType.SystemInt32,
+            //    MethodDefinition = variable.MethodDefinition
+            //}
+
+            //};
+            //nullExcBody.Statements.Add(other);
             var catchNullExc = new CatchClause()
             {
                 ExceptionType = nullExcType, // this.host.NameTable.GetNameFor("Exception"),
@@ -469,6 +542,6 @@ namespace Analysis.Cci
             return catchNullExc;
         }
 
-        
+
     }
 }

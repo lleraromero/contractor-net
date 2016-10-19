@@ -93,7 +93,7 @@ namespace Analyzer.Corral
         {
             ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
             
-            var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets);
+            var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets,expectedExitCode);
             var queryAssembly = CreateBoogieQueryAssembly(transitionQueries,expectedExitCode);
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
             var feasibleTransitions = evaluator.GetFeasibleTransitions(transitionQueries,expectedExitCode);
@@ -184,7 +184,7 @@ namespace Analyzer.Corral
                 rewriter.Rewrite(queryAssembly);
             }
             new CciAssemblyPersister().Save(queryAssembly, queryFilePath);
-
+            
             return TranslateCSharpToBoogie(queryFilePath);
         }
 
