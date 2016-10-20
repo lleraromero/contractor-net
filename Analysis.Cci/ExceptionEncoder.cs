@@ -25,6 +25,12 @@ namespace Analysis.Cci
                     return 4;
                 case "Exception":
                     return 5;
+                case "IllegalStateException":
+                    return 6;
+                case "ConcurrentModificationException":
+                    return 7;
+                case "NoSuchElementException":
+                    return 8;
                 default:
                     throw new NotSupportedException();
             }
