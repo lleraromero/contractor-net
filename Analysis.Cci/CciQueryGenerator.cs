@@ -377,6 +377,7 @@ namespace Analysis.Cci
             }
             //**************************************************** agregamos exitCode & expectedExitCode
             var unit = this.host.LoadedUnits.First();
+            var assembly = unit as Microsoft.Cci.IAssembly;
             var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
 
             localDefExitCode = new LocalDeclarationStatement()
@@ -446,10 +447,12 @@ namespace Analysis.Cci
             listOfExceptions.Add("ConcurrentModificationException");
             listOfExceptions.Add("NoSuchElementException");
             listOfExceptions.Add("Exception");
-
+            var x = assembly.GetAllTypes();
+            var y =coreAssembly.GetAllTypes();
+            x= x.Union( y);
             foreach (var exception in listOfExceptions)
             {
-                var excType = coreAssembly.GetAllTypes().Single(t => t.Name.Value == exception);
+                var excType = x.Single(t => t.Name.Value == exception);
                 var variable = new LocalDefinition()
                 {
                     Name = Dummy.Name,
