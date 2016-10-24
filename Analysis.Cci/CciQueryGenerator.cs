@@ -452,16 +452,22 @@ namespace Analysis.Cci
             x= x.Union( y);
             foreach (var exception in listOfExceptions)
             {
-                var excType = x.Single(t => t.Name.Value == exception);
-                var variable = new LocalDefinition()
+                try
                 {
-                    Name = Dummy.Name,
-                    Type = excType,
-                    MethodDefinition = action.Method
-                };
-                var catchExc = GenerateCatchClauseFor(coreAssembly, variable, excType);
-                //block.Statements.AddRange(catchExc.Body.Statements);
-                catchClauses.Add(catchExc);
+                    var excType = x.Single(t => t.Name.Value == exception);
+                    var variable = new LocalDefinition()
+                    {
+                        Name = Dummy.Name,
+                        Type = excType,
+                        MethodDefinition = action.Method
+                    };
+                    var catchExc = GenerateCatchClauseFor(coreAssembly, variable, excType);
+                    //block.Statements.AddRange(catchExc.Body.Statements);
+                    catchClauses.Add(catchExc);
+                }
+                catch (Exception ){
+                    System.Console.WriteLine("exception does not exists: "+exception);
+                }
             }
 
             var tryStmt = new TryCatchFinallyStatement
