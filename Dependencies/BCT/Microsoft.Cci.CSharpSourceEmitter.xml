@@ -1,23 +1,22 @@
-﻿<?xml version="1.0"?>
+<?xml version="1.0"?>
 <doc>
-  <assembly>
-    <name>Microsoft.Cci.CSharpSourceEmitter</name>
-  </assembly>
-  <members>
-    <member name="T:CSharpSourceEmitter.SourceEmitter">
-      <summary>
+    <assembly>
+        <name>Microsoft.Cci.CSharpSourceEmitter</name>
+    </assembly>
+    <members>
+        <member name="T:CSharpSourceEmitter.SourceEmitter">
+            <summary>
             Prints out C# source corresponding to CCI nodes as they are visited.
             </summary>
-      <remarks>
+            <remarks>
             Extenders can modify the output by overriding Traverse or Print* methods.
             This is a rather ugly and somewhat inflexible model.  A better approach would be to transform
             the CCI object model into a C# AST (parse tree), then let extenders mutate that model before 
             running a very simple visitor that prints it out as text.
             </remarks>
-      <invariant>this.sourceEmitterOutput != null</invariant>
-    </member>
-    <member name="T:CSharpSourceEmitter.ICSharpSourceEmitter">
-      <summary>
+        </member>
+        <member name="T:CSharpSourceEmitter.ICSharpSourceEmitter">
+            <summary>
             This interface is a placeholder only (for now).
             We would like to derive this interface automatically from an annotated grammar file (X.language).
             This interface will reflect closely the grammar productions so that the code emitter stays
@@ -31,715 +30,69 @@
                 ...
             
             </summary>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintPseudoCustomAttribute(Microsoft.Cci.IReference,System.String,System.String,System.Boolean,System.String)">
-      <summary>
+        </member>
+        <member name="M:CSharpSourceEmitter.SourceEmitter.PrintPseudoCustomAttribute(Microsoft.Cci.IReference,System.String,System.String,System.Boolean,System.String)">
+            <summary>
             Prints out a C# attribute which doesn't actually exist as an attribute in the metadata.
             </summary>
-      <remarks>
+            <remarks>
             Perhaps callers should instead construct an ICustomAttribute instance (using some helpers), then they could just
             call PrintAttribute.
             </remarks>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.Precedence(Microsoft.Cci.IExpression)">
-      <summary>
+        </member>
+        <member name="M:CSharpSourceEmitter.SourceEmitter.Precedence(Microsoft.Cci.IExpression)">
+            <summary>
             Higher precedence means more tightly binding.
             </summary>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IBlockExpression)">
-      <summary>
+        </member>
+        <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IBlockExpression)">
+            <summary>
             Special case for the source expression "new C(){ f1 = e1, f2 = e2, ... }" (where the f's can be fields
             or properties). See comment in the decompiler.
             </summary>
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IBlockExpression)" inheritedFromTypeName="CodeTraverser" csharp="blockExpression != null" vb="blockExpression &lt;&gt; Nothing">blockExpression != null</requires>
-    </member>
-    <member name="P:CSharpSourceEmitter.ISourceEmitterOutput.CurrentLineEmpty">
-      <summary>
+        </member>
+        <member name="P:CSharpSourceEmitter.ISourceEmitterOutput.CurrentLineEmpty">
+            <summary>
             Indicates whether anything has been written to the current line yet
             </summary>
-    </member>
-    <member name="E:CSharpSourceEmitter.ISourceEmitterOutput.LineStart">
-      <summary>
+        </member>
+        <member name="E:CSharpSourceEmitter.ISourceEmitterOutput.LineStart">
+            <summary>
             Invoked at the start of a new non-empty line, just before writing the indent
             </summary>
-    </member>
-    <member name="M:CSharpSourceEmitter.Utils.IsMscorlibTypeNamed(Microsoft.Cci.ITypeReference,System.String)">
-      <summary>
+        </member>
+        <member name="M:CSharpSourceEmitter.Utils.IsMscorlibTypeNamed(Microsoft.Cci.ITypeReference,System.String)">
+            <summary>
             True if the specified type is defined in mscorlib and has the specified name
             </summary>
-      <requires csharp="type != null" vb="type &lt;&gt; Nothing">type != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.Utils.GetHiddenBaseClassMethod(Microsoft.Cci.IMethodDefinition)">
-      <summary>
+        </member>
+        <member name="M:CSharpSourceEmitter.Utils.GetHiddenBaseClassMethod(Microsoft.Cci.IMethodDefinition)">
+            <summary>
             Returns the method from the closest base class that is hidden by the given method according to C# rules.
             If the method is an interface method definition, then look at it's base interfaces
             If no such method exists, Dummy.MethodDefinition is returned.
             </summary>
-      <requires csharp="derivedClassMethod != null" vb="derivedClassMethod &lt;&gt; Nothing">derivedClassMethod != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.Utils.GetHiddenField(Microsoft.Cci.IFieldDefinition)">
-      <summary>
+        </member>
+        <member name="M:CSharpSourceEmitter.Utils.GetHiddenField(Microsoft.Cci.IFieldDefinition)">
+            <summary>
             Returns the field from the closest base class that is hidden by the given field according to C# rules.
             </summary>
-      <requires csharp="derivedClassField != null" vb="derivedClassField &lt;&gt; Nothing">derivedClassField != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.Utils.GetAttributeType(Microsoft.Cci.ICustomAttribute)">
-      <summary>
+        </member>
+        <member name="M:CSharpSourceEmitter.Utils.GetAttributeType(Microsoft.Cci.ICustomAttribute)">
+            <summary>
             Determine if the specified attribute is of a special type, and if so return a code representing it.
             This is usefull for types not alread in IPlatformType
             </summary>
-      <requires csharp="attr != null" vb="attr &lt;&gt; Nothing">attr != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.Utils.FindAttribute(System.Collections.Generic.IEnumerable{Microsoft.Cci.ICustomAttribute},CSharpSourceEmitter.SpecialAttribute)">
-      <summary>
+        </member>
+        <member name="M:CSharpSourceEmitter.Utils.FindAttribute(System.Collections.Generic.IEnumerable{Microsoft.Cci.ICustomAttribute},CSharpSourceEmitter.SpecialAttribute)">
+            <summary>
             IF an attribute of the specified special type exists in the sequence, return it.  Otherwise return null.
             </summary>
-      <requires csharp="attrs != null" vb="attrs &lt;&gt; Nothing">attrs != null</requires>
-    </member>
-    <member name="T:CSharpSourceEmitter.SpecialAttribute">
-      <summary>
+        </member>
+        <member name="T:CSharpSourceEmitter.SpecialAttribute">
+            <summary>
             Identifiers for some common attribute types
             </summary>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintAttributes(Microsoft.Cci.IReference)">
-      <requires csharp="target != null" vb="target &lt;&gt; Nothing">target != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintAttribute(Microsoft.Cci.IReference,Microsoft.Cci.ICustomAttribute,System.Boolean,System.String)">
-      <requires csharp="attribute != null" vb="attribute &lt;&gt; Nothing">attribute != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintBaseTypeOrInterfaceName(Microsoft.Cci.ITypeReference)">
-      <requires csharp="typeReference != null" vb="typeReference &lt;&gt; Nothing">typeReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintBaseTypesAndInterfacesList(Microsoft.Cci.ITypeDefinition)">
-      <requires csharp="typeDefinition != null" vb="typeDefinition &lt;&gt; Nothing">typeDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintBaseTypeOrInterface(Microsoft.Cci.ITypeReference)">
-      <requires csharp="baseTypeReference != null" vb="baseTypeReference &lt;&gt; Nothing">baseTypeReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.#ctor(CSharpSourceEmitter.ISourceEmitterOutput,Microsoft.Cci.IMetadataHost)">
-      <requires csharp="sourceEmitterOutput != null" vb="sourceEmitterOutput &lt;&gt; Nothing">sourceEmitterOutput != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.#ctor(CSharpSourceEmitter.ISourceEmitterOutput)">
-      <requires csharp="sourceEmitterOutput != null" vb="sourceEmitterOutput &lt;&gt; Nothing">sourceEmitterOutput != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintString(System.String)">
-      <requires csharp="str != null" vb="str &lt;&gt; Nothing">str != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.QuoteString(System.String)">
-      <requires csharp="str != null" vb="str &lt;&gt; Nothing">str != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintIdentifier(Microsoft.Cci.IName)">
-      <requires csharp="name != null" vb="name &lt;&gt; Nothing">name != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IEventDefinition)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IEventDefinition)" inheritedFromTypeName="MetadataTraverser" csharp="eventDefinition != null" vb="eventDefinition &lt;&gt; Nothing">eventDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintEventDefinitionVisibility(Microsoft.Cci.IEventDefinition)">
-      <requires csharp="eventDefinition != null" vb="eventDefinition &lt;&gt; Nothing">eventDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintEventDefinitionDelegateType(Microsoft.Cci.IEventDefinition)">
-      <requires csharp="eventDefinition != null" vb="eventDefinition &lt;&gt; Nothing">eventDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintEventDefinitionName(Microsoft.Cci.IEventDefinition)">
-      <requires csharp="eventDefinition != null" vb="eventDefinition &lt;&gt; Nothing">eventDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.IsLogicalOr(Microsoft.Cci.IConditional)">
-      <requires csharp="conditional != null" vb="conditional &lt;&gt; Nothing">conditional != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.IsLogicalAnd(Microsoft.Cci.IConditional)">
-      <requires csharp="conditional != null" vb="conditional &lt;&gt; Nothing">conditional != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.IsPrefix(Microsoft.Cci.IBinaryOperation)">
-      <requires csharp="binaryOperation != null" vb="binaryOperation &lt;&gt; Nothing">binaryOperation != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.IsPostfix(Microsoft.Cci.IBinaryOperation)">
-      <requires csharp="binaryOperation != null" vb="binaryOperation &lt;&gt; Nothing">binaryOperation != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IAddition)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IAddition)" inheritedFromTypeName="CodeTraverser" csharp="addition != null" vb="addition &lt;&gt; Nothing">addition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IAddressableExpression)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IAddressableExpression)" inheritedFromTypeName="CodeTraverser" csharp="addressableExpression != null" vb="addressableExpression &lt;&gt; Nothing">addressableExpression != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.ToString">
-      <ensures inheritedFrom="M:System.Object.ToString" inheritedFromTypeName="Object" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IAddressDereference)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IAddressDereference)" inheritedFromTypeName="CodeTraverser" csharp="addressDereference != null" vb="addressDereference &lt;&gt; Nothing">addressDereference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IAddressOf)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IAddressOf)" inheritedFromTypeName="CodeTraverser" csharp="addressOf != null" vb="addressOf &lt;&gt; Nothing">addressOf != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IAliasForType)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IAliasForType)" inheritedFromTypeName="MetadataTraverser" csharp="aliasForType != null" vb="aliasForType &lt;&gt; Nothing">aliasForType != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IAnonymousDelegate)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IAnonymousDelegate)" inheritedFromTypeName="CodeTraverser" csharp="anonymousDelegate != null" vb="anonymousDelegate &lt;&gt; Nothing">anonymousDelegate != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IArrayIndexer)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IArrayIndexer)" inheritedFromTypeName="CodeTraverser" csharp="arrayIndexer != null" vb="arrayIndexer &lt;&gt; Nothing">arrayIndexer != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IArrayTypeReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IArrayTypeReference)" inheritedFromTypeName="MetadataTraverser" csharp="arrayTypeReference != null" vb="arrayTypeReference &lt;&gt; Nothing">arrayTypeReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IAssembly)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IAssembly)" inheritedFromTypeName="MetadataTraverser" csharp="assembly != null" vb="assembly &lt;&gt; Nothing">assembly != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IAssemblyReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IAssemblyReference)" inheritedFromTypeName="MetadataTraverser" csharp="assemblyReference != null" vb="assemblyReference &lt;&gt; Nothing">assemblyReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IAssignment)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IAssignment)" inheritedFromTypeName="CodeTraverser" csharp="assignment != null" vb="assignment &lt;&gt; Nothing">assignment != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IBitwiseAnd)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IBitwiseAnd)" inheritedFromTypeName="CodeTraverser" csharp="bitwiseAnd != null" vb="bitwiseAnd &lt;&gt; Nothing">bitwiseAnd != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IBitwiseOr)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IBitwiseOr)" inheritedFromTypeName="CodeTraverser" csharp="bitwiseOr != null" vb="bitwiseOr &lt;&gt; Nothing">bitwiseOr != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintNewExpressionWithInitializers(Microsoft.Cci.IBlockExpression)">
-      <requires csharp="blockExpression != null" vb="blockExpression &lt;&gt; Nothing">blockExpression != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IBoundExpression)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IBoundExpression)" inheritedFromTypeName="CodeTraverser" csharp="boundExpression != null" vb="boundExpression &lt;&gt; Nothing">boundExpression != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ICastIfPossible)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ICastIfPossible)" inheritedFromTypeName="CodeTraverser" csharp="castIfPossible != null" vb="castIfPossible &lt;&gt; Nothing">castIfPossible != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ICheckIfInstance)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ICheckIfInstance)" inheritedFromTypeName="CodeTraverser" csharp="checkIfInstance != null" vb="checkIfInstance &lt;&gt; Nothing">checkIfInstance != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ICompileTimeConstant)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ICompileTimeConstant)" inheritedFromTypeName="CodeTraverser" csharp="constant != null" vb="constant &lt;&gt; Nothing">constant != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IConditional)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IConditional)" inheritedFromTypeName="CodeTraverser" csharp="conditional != null" vb="conditional &lt;&gt; Nothing">conditional != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IConversion)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IConversion)" inheritedFromTypeName="CodeTraverser" csharp="conversion != null" vb="conversion &lt;&gt; Nothing">conversion != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ICreateArray)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ICreateArray)" inheritedFromTypeName="CodeTraverser" csharp="createArray != null" vb="createArray &lt;&gt; Nothing">createArray != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(System.Collections.Generic.IEnumerable{System.UInt64})">
-      <requires csharp="sizes != null" vb="sizes &lt;&gt; Nothing">sizes != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ICreateDelegateInstance)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ICreateDelegateInstance)" inheritedFromTypeName="CodeTraverser" csharp="createDelegateInstance != null" vb="createDelegateInstance &lt;&gt; Nothing">createDelegateInstance != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ICreateObjectInstance)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ICreateObjectInstance)" inheritedFromTypeName="CodeTraverser" csharp="createObjectInstance != null" vb="createObjectInstance &lt;&gt; Nothing">createObjectInstance != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ICustomAttribute)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.ICustomAttribute)" inheritedFromTypeName="MetadataTraverser" csharp="customAttribute != null" vb="customAttribute &lt;&gt; Nothing">customAttribute != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ICustomModifier)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.ICustomModifier)" inheritedFromTypeName="MetadataTraverser" csharp="customModifier != null" vb="customModifier &lt;&gt; Nothing">customModifier != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IDefaultValue)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IDefaultValue)" inheritedFromTypeName="CodeTraverser" csharp="defaultValue != null" vb="defaultValue &lt;&gt; Nothing">defaultValue != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IDivision)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IDivision)" inheritedFromTypeName="CodeTraverser" csharp="division != null" vb="division &lt;&gt; Nothing">division != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IDupValue)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IDupValue)" inheritedFromTypeName="CodeTraverser" csharp="dupValue != null" vb="dupValue &lt;&gt; Nothing">dupValue != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IEquality)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IEquality)" inheritedFromTypeName="CodeTraverser" csharp="equality != null" vb="equality &lt;&gt; Nothing">equality != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IExclusiveOr)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IExclusiveOr)" inheritedFromTypeName="CodeTraverser" csharp="exclusiveOr != null" vb="exclusiveOr &lt;&gt; Nothing">exclusiveOr != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.Traverse(System.Collections.Generic.IEnumerable{Microsoft.Cci.IExpression})">
-      <requires csharp="arguments != null" vb="arguments &lt;&gt; Nothing">arguments != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IExpression)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IExpression)" inheritedFromTypeName="CodeTraverser" csharp="expression != null" vb="expression &lt;&gt; Nothing">expression != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IGetTypeOfTypedReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IGetTypeOfTypedReference)" inheritedFromTypeName="CodeTraverser" csharp="getTypeOfTypedReference != null" vb="getTypeOfTypedReference &lt;&gt; Nothing">getTypeOfTypedReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IGetValueOfTypedReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IGetValueOfTypedReference)" inheritedFromTypeName="CodeTraverser" csharp="getValueOfTypedReference != null" vb="getValueOfTypedReference &lt;&gt; Nothing">getValueOfTypedReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IGreaterThan)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IGreaterThan)" inheritedFromTypeName="CodeTraverser" csharp="greaterThan != null" vb="greaterThan &lt;&gt; Nothing">greaterThan != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IGreaterThanOrEqual)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IGreaterThanOrEqual)" inheritedFromTypeName="CodeTraverser" csharp="greaterThanOrEqual != null" vb="greaterThanOrEqual &lt;&gt; Nothing">greaterThanOrEqual != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ILeftShift)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ILeftShift)" inheritedFromTypeName="CodeTraverser" csharp="leftShift != null" vb="leftShift &lt;&gt; Nothing">leftShift != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ILessThan)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ILessThan)" inheritedFromTypeName="CodeTraverser" csharp="lessThan != null" vb="lessThan &lt;&gt; Nothing">lessThan != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ILessThanOrEqual)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ILessThanOrEqual)" inheritedFromTypeName="CodeTraverser" csharp="lessThanOrEqual != null" vb="lessThanOrEqual &lt;&gt; Nothing">lessThanOrEqual != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ILogicalNot)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ILogicalNot)" inheritedFromTypeName="CodeTraverser" csharp="logicalNot != null" vb="logicalNot &lt;&gt; Nothing">logicalNot != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IMakeTypedReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IMakeTypedReference)" inheritedFromTypeName="CodeTraverser" csharp="makeTypedReference != null" vb="makeTypedReference &lt;&gt; Nothing">makeTypedReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IManagedPointerTypeReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IManagedPointerTypeReference)" inheritedFromTypeName="MetadataTraverser" csharp="managedPointerTypeReference != null" vb="managedPointerTypeReference &lt;&gt; Nothing">managedPointerTypeReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IMarshallingInformation)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IMarshallingInformation)" inheritedFromTypeName="MetadataTraverser" csharp="marshallingInformation != null" vb="marshallingInformation &lt;&gt; Nothing">marshallingInformation != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IMetadataConstant)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IMetadataConstant)" inheritedFromTypeName="MetadataTraverser" csharp="constant != null" vb="constant &lt;&gt; Nothing">constant != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintEnumValue(Microsoft.Cci.ITypeDefinition,System.Object)">
-      <requires csharp="enumType != null" vb="enumType &lt;&gt; Nothing">enumType != null</requires>
-      <requires csharp="valObj != null" vb="valObj &lt;&gt; Nothing">valObj != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.UnboxToULong(System.Object)">
-      <requires csharp="obj != null" vb="obj &lt;&gt; Nothing">obj != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IMetadataCreateArray)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IMetadataCreateArray)" inheritedFromTypeName="MetadataTraverser" csharp="createArray != null" vb="createArray &lt;&gt; Nothing">createArray != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IMetadataNamedArgument)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IMetadataNamedArgument)" inheritedFromTypeName="MetadataTraverser" csharp="namedArgument != null" vb="namedArgument &lt;&gt; Nothing">namedArgument != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IMetadataTypeOf)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IMetadataTypeOf)" inheritedFromTypeName="MetadataTraverser" csharp="typeOf != null" vb="typeOf &lt;&gt; Nothing">typeOf != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IMethodCall)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IMethodCall)" inheritedFromTypeName="CodeTraverser" csharp="methodCall != null" vb="methodCall &lt;&gt; Nothing">methodCall != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintArgumentList(System.Collections.Generic.IEnumerable{Microsoft.Cci.IExpression},System.Collections.Generic.IEnumerable{Microsoft.Cci.IParameterTypeInformation})">
-      <requires csharp="arguments != null" vb="arguments &lt;&gt; Nothing">arguments != null</requires>
-      <requires csharp="parameters != null" vb="parameters &lt;&gt; Nothing">parameters != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IMethodImplementation)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IMethodImplementation)" inheritedFromTypeName="MetadataTraverser" csharp="methodImplementation != null" vb="methodImplementation &lt;&gt; Nothing">methodImplementation != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IMethodReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IMethodReference)" inheritedFromTypeName="MetadataTraverser" csharp="methodReference != null" vb="methodReference &lt;&gt; Nothing">methodReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IModifiedTypeReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IModifiedTypeReference)" inheritedFromTypeName="MetadataTraverser" csharp="modifiedTypeReference != null" vb="modifiedTypeReference &lt;&gt; Nothing">modifiedTypeReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IModule)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IModule)" inheritedFromTypeName="MetadataTraverser" csharp="module != null" vb="module &lt;&gt; Nothing">module != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IModuleReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IModuleReference)" inheritedFromTypeName="MetadataTraverser" csharp="moduleReference != null" vb="moduleReference &lt;&gt; Nothing">moduleReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IModulus)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IModulus)" inheritedFromTypeName="CodeTraverser" csharp="modulus != null" vb="modulus &lt;&gt; Nothing">modulus != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IMultiplication)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IMultiplication)" inheritedFromTypeName="CodeTraverser" csharp="multiplication != null" vb="multiplication &lt;&gt; Nothing">multiplication != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.INamedArgument)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.INamedArgument)" inheritedFromTypeName="CodeTraverser" csharp="namedArgument != null" vb="namedArgument &lt;&gt; Nothing">namedArgument != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.INamespaceAliasForType)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.INamespaceAliasForType)" inheritedFromTypeName="MetadataTraverser" csharp="namespaceAliasForType != null" vb="namespaceAliasForType &lt;&gt; Nothing">namespaceAliasForType != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.INamespaceTypeReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.INamespaceTypeReference)" inheritedFromTypeName="MetadataTraverser" csharp="namespaceTypeReference != null" vb="namespaceTypeReference &lt;&gt; Nothing">namespaceTypeReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.INestedTypeReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.INestedTypeReference)" inheritedFromTypeName="MetadataTraverser" csharp="nestedTypeReference != null" vb="nestedTypeReference &lt;&gt; Nothing">nestedTypeReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.INotEquality)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.INotEquality)" inheritedFromTypeName="CodeTraverser" csharp="notEquality != null" vb="notEquality &lt;&gt; Nothing">notEquality != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IOldValue)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IOldValue)" inheritedFromTypeName="CodeTraverser" csharp="oldValue != null" vb="oldValue &lt;&gt; Nothing">oldValue != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IOnesComplement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IOnesComplement)" inheritedFromTypeName="CodeTraverser" csharp="onesComplement != null" vb="onesComplement &lt;&gt; Nothing">onesComplement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IOperation)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IOperation)" inheritedFromTypeName="MetadataTraverser" csharp="operation != null" vb="operation &lt;&gt; Nothing">operation != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IOperationExceptionInformation)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IOperationExceptionInformation)" inheritedFromTypeName="MetadataTraverser" csharp="operationExceptionInformation != null" vb="operationExceptionInformation &lt;&gt; Nothing">operationExceptionInformation != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IOutArgument)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IOutArgument)" inheritedFromTypeName="CodeTraverser" csharp="outArgument != null" vb="outArgument &lt;&gt; Nothing">outArgument != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IParameterTypeInformation)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IParameterTypeInformation)" inheritedFromTypeName="MetadataTraverser" csharp="parameterTypeInformation != null" vb="parameterTypeInformation &lt;&gt; Nothing">parameterTypeInformation != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IPlatformInvokeInformation)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IPlatformInvokeInformation)" inheritedFromTypeName="MetadataTraverser" csharp="platformInvokeInformation != null" vb="platformInvokeInformation &lt;&gt; Nothing">platformInvokeInformation != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IPointerCall)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IPointerCall)" inheritedFromTypeName="CodeTraverser" csharp="pointerCall != null" vb="pointerCall &lt;&gt; Nothing">pointerCall != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IPointerTypeReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IPointerTypeReference)" inheritedFromTypeName="MetadataTraverser" csharp="pointerTypeReference != null" vb="pointerTypeReference &lt;&gt; Nothing">pointerTypeReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IPopValue)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IPopValue)" inheritedFromTypeName="CodeTraverser" csharp="popValue != null" vb="popValue &lt;&gt; Nothing">popValue != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IRefArgument)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IRefArgument)" inheritedFromTypeName="CodeTraverser" csharp="refArgument != null" vb="refArgument &lt;&gt; Nothing">refArgument != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IResourceReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IResourceReference)" inheritedFromTypeName="MetadataTraverser" csharp="resourceReference != null" vb="resourceReference &lt;&gt; Nothing">resourceReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IReturnValue)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IReturnValue)" inheritedFromTypeName="CodeTraverser" csharp="returnValue != null" vb="returnValue &lt;&gt; Nothing">returnValue != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IRightShift)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IRightShift)" inheritedFromTypeName="CodeTraverser" csharp="rightShift != null" vb="rightShift &lt;&gt; Nothing">rightShift != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IRuntimeArgumentHandleExpression)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IRuntimeArgumentHandleExpression)" inheritedFromTypeName="CodeTraverser" csharp="runtimeArgumentHandleExpression != null" vb="runtimeArgumentHandleExpression &lt;&gt; Nothing">runtimeArgumentHandleExpression != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ISecurityAttribute)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.ISecurityAttribute)" inheritedFromTypeName="MetadataTraverser" csharp="securityAttribute != null" vb="securityAttribute &lt;&gt; Nothing">securityAttribute != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ISizeOf)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ISizeOf)" inheritedFromTypeName="CodeTraverser" csharp="sizeOf != null" vb="sizeOf &lt;&gt; Nothing">sizeOf != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ISourceMethodBody)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ISourceMethodBody)" inheritedFromTypeName="CodeTraverser" csharp="sourceMethodBody != null" vb="sourceMethodBody &lt;&gt; Nothing">sourceMethodBody != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IStackArrayCreate)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IStackArrayCreate)" inheritedFromTypeName="CodeTraverser" csharp="stackArrayCreate != null" vb="stackArrayCreate &lt;&gt; Nothing">stackArrayCreate != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ISubtraction)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ISubtraction)" inheritedFromTypeName="CodeTraverser" csharp="subtraction != null" vb="subtraction &lt;&gt; Nothing">subtraction != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ITargetExpression)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ITargetExpression)" inheritedFromTypeName="CodeTraverser" csharp="targetExpression != null" vb="targetExpression &lt;&gt; Nothing">targetExpression != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintLocalName(Microsoft.Cci.ILocalDefinition)">
-      <requires csharp="local != null" vb="local &lt;&gt; Nothing">local != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IThisReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IThisReference)" inheritedFromTypeName="CodeTraverser" csharp="thisReference != null" vb="thisReference &lt;&gt; Nothing">thisReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ITypeDefinitionMember)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.ITypeDefinitionMember)" inheritedFromTypeName="MetadataTraverser" csharp="typeMember != null" vb="typeMember &lt;&gt; Nothing">typeMember != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ITokenOf)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ITokenOf)" inheritedFromTypeName="CodeTraverser" csharp="tokenOf != null" vb="tokenOf &lt;&gt; Nothing">tokenOf != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ITypeOf)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ITypeOf)" inheritedFromTypeName="CodeTraverser" csharp="typeOf != null" vb="typeOf &lt;&gt; Nothing">typeOf != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ITypeReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.ITypeReference)" inheritedFromTypeName="MetadataTraverser" csharp="typeReference != null" vb="typeReference &lt;&gt; Nothing">typeReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IUnaryNegation)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IUnaryNegation)" inheritedFromTypeName="CodeTraverser" csharp="unaryNegation != null" vb="unaryNegation &lt;&gt; Nothing">unaryNegation != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IUnaryPlus)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IUnaryPlus)" inheritedFromTypeName="CodeTraverser" csharp="unaryPlus != null" vb="unaryPlus &lt;&gt; Nothing">unaryPlus != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IUnitNamespaceReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IUnitNamespaceReference)" inheritedFromTypeName="MetadataTraverser" csharp="unitNamespaceReference != null" vb="unitNamespaceReference &lt;&gt; Nothing">unitNamespaceReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IVectorLength)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IVectorLength)" inheritedFromTypeName="CodeTraverser" csharp="vectorLength != null" vb="vectorLength &lt;&gt; Nothing">vectorLength != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IFieldDefinition)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IFieldDefinition)" inheritedFromTypeName="MetadataTraverser" csharp="fieldDefinition != null" vb="fieldDefinition &lt;&gt; Nothing">fieldDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintFieldDefinitionValue(Microsoft.Cci.IFieldDefinition)">
-      <requires csharp="fieldDefinition != null" vb="fieldDefinition &lt;&gt; Nothing">fieldDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintFieldDefinitionVisibility(Microsoft.Cci.IFieldDefinition)">
-      <requires csharp="fieldDefinition != null" vb="fieldDefinition &lt;&gt; Nothing">fieldDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintFieldDefinitionModifiers(Microsoft.Cci.IFieldDefinition)">
-      <requires csharp="fieldDefinition != null" vb="fieldDefinition &lt;&gt; Nothing">fieldDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintFieldDefinitionType(Microsoft.Cci.IFieldDefinition)">
-      <requires csharp="fieldDefinition != null" vb="fieldDefinition &lt;&gt; Nothing">fieldDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintFieldDefinitionName(Microsoft.Cci.IFieldDefinition)">
-      <requires csharp="fieldDefinition != null" vb="fieldDefinition &lt;&gt; Nothing">fieldDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintFieldDefinitionFixedBuffer(Microsoft.Cci.IFieldDefinition,Microsoft.Cci.ICustomAttribute)">
-      <requires csharp="fixedBufferAttribute != null" vb="fixedBufferAttribute &lt;&gt; Nothing">fixedBufferAttribute != null</requires>
-      <requires csharp="fieldDefinition != null" vb="fieldDefinition &lt;&gt; Nothing">fieldDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintFieldDefinitionEnumValue(Microsoft.Cci.IFieldDefinition)">
-      <requires csharp="fieldDefinition != null" vb="fieldDefinition &lt;&gt; Nothing">fieldDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.Traverse(System.Collections.Generic.IEnumerable{Microsoft.Cci.IGenericTypeParameter})">
-      <requires csharp="genericParameters != null" vb="genericParameters &lt;&gt; Nothing">genericParameters != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.Traverse(System.Collections.Generic.IEnumerable{Microsoft.Cci.IGenericMethodParameter})">
-      <requires csharp="genericParameters != null" vb="genericParameters &lt;&gt; Nothing">genericParameters != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IGenericTypeParameter)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IGenericTypeParameter)" inheritedFromTypeName="MetadataTraverser" csharp="genericTypeParameter != null" vb="genericTypeParameter &lt;&gt; Nothing">genericTypeParameter != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IGenericMethodParameter)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IGenericMethodParameter)" inheritedFromTypeName="MetadataTraverser" csharp="genericMethodParameter != null" vb="genericMethodParameter &lt;&gt; Nothing">genericMethodParameter != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IMethodDefinition)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IMethodDefinition)" inheritedFromTypeName="MetadataTraverser" csharp="method != null" vb="method &lt;&gt; Nothing">method != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintConstraints(System.Collections.Generic.IEnumerable{Microsoft.Cci.IGenericMethodParameter})">
-      <requires csharp="genericParameters != null" vb="genericParameters &lt;&gt; Nothing">genericParameters != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintMethodDefinitionVisibility(Microsoft.Cci.IMethodDefinition)">
-      <requires csharp="methodDefinition != null" vb="methodDefinition &lt;&gt; Nothing">methodDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.IsOperator(Microsoft.Cci.IMethodDefinition)">
-      <requires csharp="methodDefinition != null" vb="methodDefinition &lt;&gt; Nothing">methodDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.IsConversionOperator(Microsoft.Cci.IMethodDefinition)">
-      <requires csharp="methodDefinition != null" vb="methodDefinition &lt;&gt; Nothing">methodDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.IsDestructor(Microsoft.Cci.IMethodDefinition)">
-      <requires csharp="methodDefinition != null" vb="methodDefinition &lt;&gt; Nothing">methodDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.IsDestructor(Microsoft.Cci.IMethodDefinition,Microsoft.Cci.ITypeReference)">
-      <requires csharp="baseClassReference != null" vb="baseClassReference &lt;&gt; Nothing">baseClassReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintMethodDefinitionModifiers(Microsoft.Cci.IMethodDefinition)">
-      <requires csharp="methodDefinition != null" vb="methodDefinition &lt;&gt; Nothing">methodDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintMethodDefinitionName(Microsoft.Cci.IMethodDefinition)">
-      <requires csharp="methodDefinition != null" vb="methodDefinition &lt;&gt; Nothing">methodDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.MapOperatorNameToCSharp(Microsoft.Cci.IMethodDefinition)">
-      <requires csharp="methodDefinition != null" vb="methodDefinition &lt;&gt; Nothing">methodDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintMethodReferenceName(Microsoft.Cci.IMethodReference,Microsoft.Cci.NameFormattingOptions)">
-      <requires csharp="methodReference != null" vb="methodReference &lt;&gt; Nothing">methodReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.Traverse(Microsoft.Cci.IMethodBody)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.Traverse(Microsoft.Cci.IMethodBody)" inheritedFromTypeName="MetadataTraverser" csharp="methodBody != null" vb="methodBody &lt;&gt; Nothing">methodBody != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.INestedUnitNamespace)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.INestedUnitNamespace)" inheritedFromTypeName="MetadataTraverser" csharp="nestedUnitNamespace != null" vb="nestedUnitNamespace &lt;&gt; Nothing">nestedUnitNamespace != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintNamespaceDefinition(Microsoft.Cci.INamespaceDefinition)">
-      <requires csharp="namespaceDefinition != null" vb="namespaceDefinition &lt;&gt; Nothing">namespaceDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintNamespaceDefinitionAttributes(Microsoft.Cci.INamespaceDefinition)">
-      <requires csharp="namespaceDefinition != null" vb="namespaceDefinition &lt;&gt; Nothing">namespaceDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintNamespaceDefinitionName(Microsoft.Cci.INamespaceDefinition)">
-      <requires csharp="namespaceDefinition != null" vb="namespaceDefinition &lt;&gt; Nothing">namespaceDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.VisitWithInterveningBlankLines``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0})">
-      <requires csharp="(() =&gt; {&#xD;&#xA;    {&#xD;&#xA;        new CSharpSourceEmitter.SourceEmitter.&lt;&gt;c__DisplayClass8&lt;T&gt;().&lt;&gt;4__this = this;&#xD;&#xA;    }&#xD;&#xA;    return members != null; })()" vb="(() =&gt; {&#xD;&#xA;    New CSharpSourceEmitter.SourceEmitter.&lt;&gt;c__DisplayClass8(Of T)().&lt;&gt;4__this = Me&#xD;&#xA;    return members &lt;&gt; Nothing; })()">(() =&gt; {
-    {
-        new CSharpSourceEmitter.SourceEmitter.&lt;&gt;c__DisplayClass8&lt;T&gt;().&lt;&gt;4__this = this;
-    }
-    return members != null; })()</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IPropertyDefinition)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IPropertyDefinition)" inheritedFromTypeName="MetadataTraverser" csharp="propertyDefinition != null" vb="propertyDefinition &lt;&gt; Nothing">propertyDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintPropertyDefinitionVisibility(Microsoft.Cci.IPropertyDefinition)">
-      <requires csharp="propertyDefinition != null" vb="propertyDefinition &lt;&gt; Nothing">propertyDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintPropertyDefinitionReturnType(Microsoft.Cci.IPropertyDefinition)">
-      <requires csharp="propertyDefinition != null" vb="propertyDefinition &lt;&gt; Nothing">propertyDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintPropertyDefinitionName(Microsoft.Cci.IPropertyDefinition)">
-      <requires csharp="propertyDefinition != null" vb="propertyDefinition &lt;&gt; Nothing">propertyDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintPropertyDefinitionModifiers(Microsoft.Cci.IPropertyDefinition)">
-      <requires csharp="propertyDefinition != null" vb="propertyDefinition &lt;&gt; Nothing">propertyDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IBlockStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IBlockStatement)" inheritedFromTypeName="CodeTraverser" csharp="block != null" vb="block &lt;&gt; Nothing">block != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IAssertStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IAssertStatement)" inheritedFromTypeName="CodeTraverser" csharp="assertStatement != null" vb="assertStatement &lt;&gt; Nothing">assertStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IAssumeStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IAssumeStatement)" inheritedFromTypeName="CodeTraverser" csharp="assumeStatement != null" vb="assumeStatement &lt;&gt; Nothing">assumeStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IBreakStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IBreakStatement)" inheritedFromTypeName="CodeTraverser" csharp="breakStatement != null" vb="breakStatement &lt;&gt; Nothing">breakStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IConditionalStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IConditionalStatement)" inheritedFromTypeName="CodeTraverser" csharp="conditionalStatement != null" vb="conditionalStatement &lt;&gt; Nothing">conditionalStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IContinueStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IContinueStatement)" inheritedFromTypeName="CodeTraverser" csharp="continueStatement != null" vb="continueStatement &lt;&gt; Nothing">continueStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ICopyMemoryStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ICopyMemoryStatement)" inheritedFromTypeName="CodeTraverser" csharp="copyMemoryStatement != null" vb="copyMemoryStatement &lt;&gt; Nothing">copyMemoryStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ICatchClause)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ICatchClause)" inheritedFromTypeName="CodeTraverser" csharp="catchClause != null" vb="catchClause &lt;&gt; Nothing">catchClause != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IDebuggerBreakStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IDebuggerBreakStatement)" inheritedFromTypeName="CodeTraverser" csharp="debuggerBreakStatement != null" vb="debuggerBreakStatement &lt;&gt; Nothing">debuggerBreakStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IDoUntilStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IDoUntilStatement)" inheritedFromTypeName="CodeTraverser" csharp="doUntilStatement != null" vb="doUntilStatement &lt;&gt; Nothing">doUntilStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IEmptyStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IEmptyStatement)" inheritedFromTypeName="CodeTraverser" csharp="emptyStatement != null" vb="emptyStatement &lt;&gt; Nothing">emptyStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IExpressionStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IExpressionStatement)" inheritedFromTypeName="CodeTraverser" csharp="expressionStatement != null" vb="expressionStatement &lt;&gt; Nothing">expressionStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IFieldReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IFieldReference)" inheritedFromTypeName="MetadataTraverser" csharp="fieldReference != null" vb="fieldReference &lt;&gt; Nothing">fieldReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IFileReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IFileReference)" inheritedFromTypeName="MetadataTraverser" csharp="fileReference != null" vb="fileReference &lt;&gt; Nothing">fileReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IFillMemoryStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IFillMemoryStatement)" inheritedFromTypeName="CodeTraverser" csharp="fillMemoryStatement != null" vb="fillMemoryStatement &lt;&gt; Nothing">fillMemoryStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IForEachStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IForEachStatement)" inheritedFromTypeName="CodeTraverser" csharp="forEachStatement != null" vb="forEachStatement &lt;&gt; Nothing">forEachStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IForStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IForStatement)" inheritedFromTypeName="CodeTraverser" csharp="forStatement != null" vb="forStatement &lt;&gt; Nothing">forStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseInitializersOrIncrementers(System.Collections.Generic.IEnumerable{Microsoft.Cci.IStatement})">
-      <requires csharp="statements != null" vb="statements &lt;&gt; Nothing">statements != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IFunctionPointerTypeReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IFunctionPointerTypeReference)" inheritedFromTypeName="MetadataTraverser" csharp="functionPointerTypeReference != null" vb="functionPointerTypeReference &lt;&gt; Nothing">functionPointerTypeReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IGenericMethodInstanceReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IGenericMethodInstanceReference)" inheritedFromTypeName="MetadataTraverser" csharp="genericMethodInstanceReference != null" vb="genericMethodInstanceReference &lt;&gt; Nothing">genericMethodInstanceReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IGenericMethodParameterReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IGenericMethodParameterReference)" inheritedFromTypeName="MetadataTraverser" csharp="genericMethodParameterReference != null" vb="genericMethodParameterReference &lt;&gt; Nothing">genericMethodParameterReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IGenericTypeInstanceReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IGenericTypeInstanceReference)" inheritedFromTypeName="MetadataTraverser" csharp="genericTypeInstanceReference != null" vb="genericTypeInstanceReference &lt;&gt; Nothing">genericTypeInstanceReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IGenericTypeParameterReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IGenericTypeParameterReference)" inheritedFromTypeName="MetadataTraverser" csharp="genericTypeParameterReference != null" vb="genericTypeParameterReference &lt;&gt; Nothing">genericTypeParameterReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IGotoStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IGotoStatement)" inheritedFromTypeName="CodeTraverser" csharp="gotoStatement != null" vb="gotoStatement &lt;&gt; Nothing">gotoStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IGotoSwitchCaseStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IGotoSwitchCaseStatement)" inheritedFromTypeName="CodeTraverser" csharp="gotoSwitchCaseStatement != null" vb="gotoSwitchCaseStatement &lt;&gt; Nothing">gotoSwitchCaseStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ILabeledStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ILabeledStatement)" inheritedFromTypeName="CodeTraverser" csharp="labeledStatement != null" vb="labeledStatement &lt;&gt; Nothing">labeledStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ILocalDefinition)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataTraverser" csharp="localDefinition != null" vb="localDefinition &lt;&gt; Nothing">localDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintLocalDefinition(Microsoft.Cci.ILocalDefinition)">
-      <requires csharp="localDefinition != null" vb="localDefinition &lt;&gt; Nothing">localDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ILocalDeclarationStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ILocalDeclarationStatement)" inheritedFromTypeName="CodeTraverser" csharp="localDeclarationStatement != null" vb="localDeclarationStatement &lt;&gt; Nothing">localDeclarationStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ILockStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ILockStatement)" inheritedFromTypeName="CodeTraverser" csharp="lockStatement != null" vb="lockStatement &lt;&gt; Nothing">lockStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IPushStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IPushStatement)" inheritedFromTypeName="CodeTraverser" csharp="pushStatement != null" vb="pushStatement &lt;&gt; Nothing">pushStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IResourceUseStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IResourceUseStatement)" inheritedFromTypeName="CodeTraverser" csharp="resourceUseStatement != null" vb="resourceUseStatement &lt;&gt; Nothing">resourceUseStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IRethrowStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IRethrowStatement)" inheritedFromTypeName="CodeTraverser" csharp="rethrowStatement != null" vb="rethrowStatement &lt;&gt; Nothing">rethrowStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IReturnStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IReturnStatement)" inheritedFromTypeName="CodeTraverser" csharp="returnStatement != null" vb="returnStatement &lt;&gt; Nothing">returnStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IStatement)" inheritedFromTypeName="CodeTraverser" csharp="statement != null" vb="statement &lt;&gt; Nothing">statement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ISwitchCase)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ISwitchCase)" inheritedFromTypeName="CodeTraverser" csharp="switchCase != null" vb="switchCase &lt;&gt; Nothing">switchCase != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ISwitchStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ISwitchStatement)" inheritedFromTypeName="CodeTraverser" csharp="switchStatement != null" vb="switchStatement &lt;&gt; Nothing">switchStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IThrowStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IThrowStatement)" inheritedFromTypeName="CodeTraverser" csharp="throwStatement != null" vb="throwStatement &lt;&gt; Nothing">throwStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.ITryCatchFinallyStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ITryCatchFinallyStatement)" inheritedFromTypeName="CodeTraverser" csharp="tryCatchFilterFinallyStatement != null" vb="tryCatchFilterFinallyStatement &lt;&gt; Nothing">tryCatchFilterFinallyStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IWhileDoStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IWhileDoStatement)" inheritedFromTypeName="CodeTraverser" csharp="whileDoStatement != null" vb="whileDoStatement &lt;&gt; Nothing">whileDoStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IWin32Resource)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IWin32Resource)" inheritedFromTypeName="MetadataTraverser" csharp="win32Resource != null" vb="win32Resource &lt;&gt; Nothing">win32Resource != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IYieldBreakStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IYieldBreakStatement)" inheritedFromTypeName="CodeTraverser" csharp="yieldBreakStatement != null" vb="yieldBreakStatement &lt;&gt; Nothing">yieldBreakStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IYieldReturnStatement)">
-      <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IYieldReturnStatement)" inheritedFromTypeName="CodeTraverser" csharp="yieldReturnStatement != null" vb="yieldReturnStatement &lt;&gt; Nothing">yieldReturnStatement != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintTypeDefinition(Microsoft.Cci.ITypeDefinition)">
-      <requires csharp="typeDefinition != null" vb="typeDefinition &lt;&gt; Nothing">typeDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintDelegateDefinition(Microsoft.Cci.ITypeDefinition)">
-      <requires csharp="delegateDefinition != null" vb="delegateDefinition &lt;&gt; Nothing">delegateDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintTypeDefinitionAttributes(Microsoft.Cci.ITypeDefinition)">
-      <requires csharp="typeDefinition != null" vb="typeDefinition &lt;&gt; Nothing">typeDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintTypeDefinitionModifiers(Microsoft.Cci.ITypeDefinition)">
-      <requires csharp="typeDefinition != null" vb="typeDefinition &lt;&gt; Nothing">typeDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintTypeDefinitionKeywordType(Microsoft.Cci.ITypeDefinition)">
-      <requires csharp="typeDefinition != null" vb="typeDefinition &lt;&gt; Nothing">typeDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintTypeDefinitionBaseTypesAndInterfaces(Microsoft.Cci.ITypeDefinition)">
-      <requires csharp="typeDefinition != null" vb="typeDefinition &lt;&gt; Nothing">typeDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.Traverse(System.Collections.Generic.IEnumerable{Microsoft.Cci.ITypeDefinitionMember})">
-      <requires csharp="(() =&gt; {&#xD;&#xA;    {&#xD;&#xA;        System.Action&lt;Microsoft.Cci.ITypeDefinitionMember&gt; local_1 = (System.Action&lt;Microsoft.Cci.ITypeDefinitionMember&gt;)null;&#xD;&#xA;    }&#xD;&#xA;    return typeMembers != null; })()" vb="(() =&gt; {&#xD;&#xA;    System.Action&lt;Microsoft.Cci.ITypeDefinitionMember&gt; local_1 = ((System.Action(Of Microsoft.Cci.ITypeDefinitionMember))Nothing);&#xD;&#xA;    return typeMembers &lt;&gt; Nothing; })()">(() =&gt; {
-    {
-        System.Action&lt;Microsoft.Cci.ITypeDefinitionMember&gt; local_1 = (System.Action&lt;Microsoft.Cci.ITypeDefinitionMember&gt;)null;
-    }
-    return typeMembers != null; })()</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.Traverse(System.Collections.Generic.IEnumerable{Microsoft.Cci.IParameterDefinition})">
-      <requires csharp="parameters != null" vb="parameters &lt;&gt; Nothing">parameters != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.IParameterDefinition)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IParameterDefinition)" inheritedFromTypeName="MetadataTraverser" csharp="parameterDefinition != null" vb="parameterDefinition &lt;&gt; Nothing">parameterDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintParameterDefinitionModifiers(Microsoft.Cci.IParameterDefinition)">
-      <requires csharp="parameterDefinition != null" vb="parameterDefinition &lt;&gt; Nothing">parameterDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintParameterDefinitionType(Microsoft.Cci.IParameterDefinition)">
-      <requires csharp="parameterDefinition != null" vb="parameterDefinition &lt;&gt; Nothing">parameterDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintParameterDefinitionName(Microsoft.Cci.IParameterDefinition)">
-      <requires csharp="parameterDefinition != null" vb="parameterDefinition &lt;&gt; Nothing">parameterDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintTypeReference(Microsoft.Cci.ITypeReference)">
-      <requires csharp="typeReference != null" vb="typeReference &lt;&gt; Nothing">typeReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.PrintTypeReferenceName(Microsoft.Cci.ITypeReference)">
-      <requires csharp="typeReference != null" vb="typeReference &lt;&gt; Nothing">typeReference != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.INamespaceTypeDefinition)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.INamespaceTypeDefinition)" inheritedFromTypeName="MetadataTraverser" csharp="namespaceTypeDefinition != null" vb="namespaceTypeDefinition &lt;&gt; Nothing">namespaceTypeDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.SourceEmitter.TraverseChildren(Microsoft.Cci.INestedTypeDefinition)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.INestedTypeDefinition)" inheritedFromTypeName="MetadataTraverser" csharp="nestedTypeDefinition != null" vb="nestedTypeDefinition &lt;&gt; Nothing">nestedTypeDefinition != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.Utils.GetHiddenBaseClassMethod(Microsoft.Cci.IMethodDefinition,Microsoft.Cci.ITypeDefinition)">
-      <requires csharp="derivedClassMethod != null" vb="derivedClassMethod &lt;&gt; Nothing">derivedClassMethod != null</requires>
-      <requires csharp="baseClass != null" vb="baseClass &lt;&gt; Nothing">baseClass != null</requires>
-    </member>
-    <member name="M:CSharpSourceEmitter.Utils.GetHiddenField(Microsoft.Cci.IFieldDefinition,Microsoft.Cci.ITypeDefinition)">
-      <requires csharp="baseClass != null" vb="baseClass &lt;&gt; Nothing">baseClass != null</requires>
-      <requires csharp="derivedClassField != null" vb="derivedClassField &lt;&gt; Nothing">derivedClassField != null</requires>
-    </member>
-  </members>
+        </member>
+    </members>
 </doc>
