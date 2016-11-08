@@ -324,30 +324,30 @@ namespace Analysis.Cci
             }
 
             // add the invariant as a postcondition as well
-            if (typeContract != null)
-            {
-                foreach (var inv in typeContract.Invariants)
-                {
-                    var methodCall = new MethodCall
-                    {
-                        Arguments =
-                            new List<IExpression>
-                            {
-                                Rewrite(inv.Condition),
-                                new CompileTimeConstant { Value = "Type invariant", Type = host.PlatformType.SystemString }
-                            },
-                        IsStaticCall = true,
-                        MethodToCall = AssertReference,
-                        Type = systemVoid,
-                        Locations = new List<ILocation>(inv.Locations)
-                    };
-                    var es = new ExpressionStatement
-                    {
-                        Expression = methodCall
-                    };
-                    newStatements.Add(es);
-                }
-            }
+            //if (typeContract != null)
+            //{
+            //    foreach (var inv in typeContract.Invariants)
+            //    {
+            //        var methodCall = new MethodCall
+            //        {
+            //            Arguments =
+            //                new List<IExpression>
+            //                {
+            //                    Rewrite(inv.Condition),
+            //                    new CompileTimeConstant { Value = "Type invariant", Type = host.PlatformType.SystemString }
+            //                },
+            //            IsStaticCall = true,
+            //            MethodToCall = AssertReference,
+            //            Type = systemVoid,
+            //            Locations = new List<ILocation>(inv.Locations)
+            //        };
+            //        var es = new ExpressionStatement
+            //        {
+            //            Expression = methodCall
+            //        };
+            //        newStatements.Add(es);
+            //    }
+            //}
 
             IReturnStatement returnStatement;
             if (TypeHelper.GetTypeName(methodDefinition.Type) != TypeHelper.GetTypeName(host.PlatformType.SystemVoid))
