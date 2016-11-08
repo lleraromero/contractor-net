@@ -358,6 +358,7 @@ namespace DC.Slicer
                     var argument = stmt.DescendantNodes().Where(x => x.IsKind(SyntaxKind.Argument));
                     SyntaxNode argumentExpr = null;
                     bool preInc = false;
+                    bool pre = false;
                     foreach (SyntaxNode argumentNode in argument.ToList().ElementAt(0).DescendantNodes())
                     {
                         if (argumentNode.IsKind(SyntaxKind.PostIncrementExpression) || argumentNode.IsKind(SyntaxKind.PostDecrementExpression))
@@ -366,7 +367,9 @@ namespace DC.Slicer
                         }
                         else if (argumentNode.IsKind(SyntaxKind.PreIncrementExpression) || argumentNode.IsKind(SyntaxKind.PreDecrementExpression))
                         {
-                            preInc = true;
+                            pre = true;
+                            if(argumentNode.IsKind(SyntaxKind.PreIncrementExpression))
+                                preInc = true;
                             continue;
                         }
                         else
@@ -386,11 +389,15 @@ namespace DC.Slicer
                     var checkStmt = SyntaxFactory.ParseStatement("if((" + argumentExpr.ToString() + ") < 0 || (" + argumentExpr.ToString() + ") >= " +
                         arrayName.ToString() + ".Length)" +  System.Environment.NewLine + throwStmt.ToString() + System.Environment.NewLine);
                     
-                    if (preInc)
+                    if (pre && preInc)
                     {
                         checkStmt = SyntaxFactory.ParseStatement("if(" + argumentExpr.ToString() + "+1 < 0 || " + argumentExpr.ToString() + "+1 >= " +
-                        arrayName.ToString() + ".Length){" + System.Environment.NewLine + argumentExpr.ToString() +"++;"+System.Environment.NewLine 
+                        arrayName.ToString() + ".Length){" +System.Environment.NewLine 
                         + throwStmt.ToString() + System.Environment.NewLine+"}");
+                    }else if(pre){
+                        checkStmt = SyntaxFactory.ParseStatement("if(" + argumentExpr.ToString() + "-1 < 0 || " + argumentExpr.ToString() + "-1 >= " +
+                        arrayName.ToString() + ".Length){" + System.Environment.NewLine
+                        + throwStmt.ToString() + System.Environment.NewLine + "}");
                     }
 
                     if (!statementOriginal.IsKind(SyntaxKind.ForStatement))
