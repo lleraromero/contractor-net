@@ -59,8 +59,16 @@ namespace Contractor.Gui.Models
         public async Task<TypeAnalysisResult> Start(AnalysisEventArgs analysisEventArgs)
         {
             cancellationSource = new CancellationTokenSource();
-
-            var analyzer = GetAnalyzer(analysisEventArgs.TypeToAnalyze, analysisEventArgs.Engine, cancellationSource.Token);
+            List<string> errorList = new List<string>();
+            errorList.Add("Ok");
+            errorList.Add("Exception");
+            errorList.Add("OverflowException");
+            errorList.Add("IndexOutOfRangeException");
+            errorList.Add("NullReferenceException");
+            errorList.Add("IllegalStateException");
+            errorList.Add("ConcurrentModificationException");
+            errorList.Add("NoSuchElementException");
+            var analyzer = GetAnalyzer(analysisEventArgs.TypeToAnalyze, analysisEventArgs.Engine, cancellationSource.Token,errorList);
 
             var selectedMethods = from m in analysisEventArgs.SelectedMethods select m.ToString();
 
@@ -75,7 +83,7 @@ namespace Contractor.Gui.Models
             }
             else if (analysisEventArgs.Conditions.Equals("EPA-O"))
             {
-                var epaGenerator = new EpaOGenerator(analyzer, -1);
+                var epaGenerator = new EpaOGenerator(analyzer, -1,errorList);
                 return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable,methodsInfo);
             }else{
                 throw new NotImplementedException();
@@ -119,12 +127,12 @@ namespace Contractor.Gui.Models
             TransitionAdded(sender, e);
         }
 
-        protected IAnalyzer GetAnalyzer(ITypeDefinition typeToAnalyze, string engine, CancellationToken cancellationToken)
+        protected IAnalyzer GetAnalyzer(ITypeDefinition typeToAnalyze, string engine, CancellationToken cancellationToken, List<string> errorList)
         {
             var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
             workingDir.Create();
 
-            var queryGenerator = new CciQueryGenerator();
+            var queryGenerator = new CciQueryGenerator(errorList);
 
             IAnalyzer analyzer;
             switch (engine)

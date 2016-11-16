@@ -14,12 +14,15 @@ namespace Contractor.Core
     {
         protected IAnalyzer analyzer;
         protected int cutter;
+        protected List<string> errorList;
 
-        public EpaOGenerator(IAnalyzer analyzer, int cutter)
+        public EpaOGenerator(IAnalyzer analyzer, int cutter, List<string> errorList)
         {
             Contract.Requires(analyzer != null);
             this.analyzer = analyzer;
             this.cutter = cutter;
+            this.errorList = errorList;
+            
         }
 
         public Task<TypeAnalysisResult> GenerateEpa(ITypeDefinition typeToAnalyze, IEpaBuilder epaBuilder, Dictionary<string, ErrorInstrumentator.MethodInfo> methodsInfo = null)
@@ -83,16 +86,6 @@ namespace Contractor.Core
                 foreach (var action in source.EnabledActions)
                 {
                     ActionAnalysisResults actionsResult;
-
-                    List<string> errorList = new List<string>();
-                    errorList.Add("Ok");
-                    errorList.Add("Exception");
-                    errorList.Add("OverflowException");
-                    errorList.Add("IndexOutOfRangeException");
-                    errorList.Add("NullReferenceException");
-                    errorList.Add("IllegalStateException");
-                    errorList.Add("ConcurrentModificationException");
-                    errorList.Add("NoSuchElementException");
 
                     //ErrorInstrumentator.MethodInfo mi;
                     //if (action.Method.IsConstructor)

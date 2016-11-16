@@ -52,16 +52,16 @@ namespace Contractor.Console
 
             try
             {
-                Dictionary<string, ErrorInstrumentator.MethodInfo> methodsInfo;
-                var xmlPath = options.InputAssembly.Substring(0, options.InputAssembly.LastIndexOf('\\'));
-                xmlPath = xmlPath.Substring(0, xmlPath.LastIndexOf('\\'));
-                xmlPath = xmlPath.Substring(0, xmlPath.LastIndexOf('\\'));
-                xmlPath = xmlPath.Substring(0, xmlPath.LastIndexOf('\\')) + "\\methodExceptions.xml";
-                using (var stream = File.OpenRead(xmlPath))
-                {
-                    methodsInfo = ErrorInstrumentator.XmlInstrumentationInfoSerializer.Deserialize(stream);
-                }
-
+                Dictionary<string, ErrorInstrumentator.MethodInfo> methodsInfo=null;
+                //var xmlPath = options.InputAssembly.Substring(0, options.InputAssembly.LastIndexOf('\\'));
+                //xmlPath = xmlPath.Substring(0, xmlPath.LastIndexOf('\\'));
+                //xmlPath = xmlPath.Substring(0, xmlPath.LastIndexOf('\\'));
+                //xmlPath = xmlPath.Substring(0, xmlPath.LastIndexOf('\\')) + "\\methodExceptions.xml";
+                //using (var stream = File.OpenRead(xmlPath))
+                //{
+                //    methodsInfo = ErrorInstrumentator.XmlInstrumentationInfoSerializer.Deserialize(stream);
+                //}
+                
                 var analysisResult = GenerateEpa(options,methodsInfo);
 
                 var epa = analysisResult.Epa;
@@ -110,7 +110,24 @@ namespace Contractor.Console
             var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
             workingDir.Create();
 
-            var queryGenerator = new CciQueryGenerator();
+            List<string> errorList = new List<string>();
+            errorList.Add("Ok");
+            if (options.ErrorList.Equals("All"))
+            {
+                errorList.Add("Exception");
+                errorList.Add("OverflowException");
+                errorList.Add("IndexOutOfRangeException");
+                errorList.Add("NullReferenceException");
+                errorList.Add("IllegalStateException");
+                errorList.Add("ConcurrentModificationException");
+                errorList.Add("NoSuchElementException");
+            }
+            else
+            {
+                errorList.AddRange(options.ErrorList.Split(';'));
+            }
+
+            var queryGenerator = new CciQueryGenerator(errorList);
 
             IAnalyzer analyzer;
             switch (options.Backend)
@@ -169,7 +186,8 @@ namespace Contractor.Console
             {
                 //if (oc.Contains("exitCode"))
                 //{
-                    var generator = new EpaOGenerator(analyzer, options.Cutter);
+                
+                var generator = new EpaOGenerator(analyzer, options.Cutter, errorList);
 
                     var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
                     var epaBuilder = new EpaBuilder(typeDefinition);

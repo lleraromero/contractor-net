@@ -24,10 +24,12 @@ namespace Analysis.Cci
 
         protected IContractAwareHost host;
         private string expectedExitCode;
+        protected List<string> listOfExceptions;
 
-        public CciQueryGenerator()
+        public CciQueryGenerator(List<string> listOfExceptions)
         {
             host = CciHostEnvironment.GetInstance();
+            this.listOfExceptions = listOfExceptions;
         }
 
         public IReadOnlyCollection<ActionQuery> CreatePositiveQueries(State state, Action action, IEnumerable<Action> actions)
@@ -442,20 +444,22 @@ namespace Analysis.Cci
 
                 // var variable = action.Method.Body.LocalVariables.FirstOrDefault( v => v.Name.Value == "exitCode");
 
-                var listOfExceptions = new List<String>();
-                listOfExceptions.Add("NullReferenceException");
-                listOfExceptions.Add("IndexOutOfRangeException");
-                listOfExceptions.Add("DivideByZeroException");
-                listOfExceptions.Add("OverflowException");
-                listOfExceptions.Add("IllegalStateException");
-                listOfExceptions.Add("ConcurrentModificationException");
-                listOfExceptions.Add("NoSuchElementException");
-                listOfExceptions.Add("Exception");
+                //var listOfExceptions = new List<String>();
+                //listOfExceptions.Add("NullReferenceException");
+                //listOfExceptions.Add("IndexOutOfRangeException");
+                //listOfExceptions.Add("DivideByZeroException");
+                //listOfExceptions.Add("OverflowException");
+                //listOfExceptions.Add("IllegalStateException");
+                //listOfExceptions.Add("ConcurrentModificationException");
+                //listOfExceptions.Add("NoSuchElementException");
+                //listOfExceptions.Add("Exception");
                 var x = assembly.GetAllTypes();
                 var y = coreAssembly.GetAllTypes();
                 x = x.Union(y);
                 foreach (var exception in listOfExceptions)
                 {
+                    if (exception.Equals("Ok"))
+                        continue;
                     try
                     {
                         var excType = x.Single(t => t.Name.Value == exception);

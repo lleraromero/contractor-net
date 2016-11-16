@@ -55,13 +55,16 @@ namespace Contractor.Console
         [Option("wc", HelpText = "Transition with conditions.", DefaultValue = false)]
         public bool TransitionsWithConditions { get; set; }
 
-        [Option("methods", HelpText = "List of methods to analyze. It's important to write the method with parameters types. For example: add(String),hasNext()", DefaultValue = "All")]
+        [Option("methods", HelpText = "List of methods to analyze. It's important to write the method with parameters types. For example: add(String);hasNext()", DefaultValue = "All")]
 
         public String Methods { get; set; }
 
         [Option("output-conditions", HelpText = "possible values: exitCode, returnValue.", DefaultValue = "none")]
         public String OutputConditions { get; set; }
 
+        [Option("error-list", HelpText = "List of possibles exitCodes to analyze. For example: Exception;NullReferenceException;IndexOutOfRangeException;OutOfMemoryException;ByZeroDivisionException", DefaultValue = "All")]
+
+        public String ErrorList { get; set; }
         [HelpOption]
         public string GetUsage()
         {
