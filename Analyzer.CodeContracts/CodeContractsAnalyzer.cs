@@ -176,5 +176,10 @@ namespace Analyzer.CodeContracts
 
             return new FileInfo(queryFilePath);
         }
+
+        public Transition AnalyzeTransitionToNotInv(State source, Action action, string exitCode)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

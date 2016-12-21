@@ -195,6 +195,20 @@ namespace Contractor.Core
                             }
                             epaBuilder.Add(transition);
                         }
+
+                        //Not-INV ******************
+                        var transitionResult = analyzer.AnalyzeTransitionToNotInv(source, action, exitCode);
+                        if (transitionResult != null)
+                        {
+                            var target = transitionResult.TargetState;
+                            // Do I have to add a new state to the EPA?
+                            if (!visitedStates.Contains(target) && !statesToVisit.Contains(target))
+                            {
+                                statesToVisit.Enqueue(target);
+                            }
+                            epaBuilder.Add(transitionResult);
+                        }
+                        //***************************
                         //END PARA CADA Em
                     }
                     //Save the original code into the Action/Method

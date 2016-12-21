@@ -102,6 +102,14 @@ namespace Analyzer.Corral
             return feasibleTransitions;
         }
 
+        public Transition AnalyzeTransitionToNotInv(State source, Action action, string exitCode)
+        {
+            State notInvState = null;
+            var targets = new List<State>();
+            targets.Add(notInvState);
+            return AnalyzeTransitions(source, action, targets,exitCode);
+        }
+
         public string GetUsageStatistics()
         {
             var statisticsBuilder = new StringBuilder();

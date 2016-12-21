@@ -17,6 +17,8 @@ namespace Contractor.Core
         ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions, string exitCode);
 
         IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string exitCode);
+
+        Transition AnalyzeTransitionToNotInv(State source, Action action, string exitCode);
     }
 
     #region IAnalyzer Contracts
@@ -61,6 +63,11 @@ namespace Contractor.Core
             throw new NotImplementedException();
         }
         public string GetUsageStatistics()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Transition AnalyzeTransitionToNotInv(State source, Action action, string exitCode)
         {
             throw new NotImplementedException();
         }

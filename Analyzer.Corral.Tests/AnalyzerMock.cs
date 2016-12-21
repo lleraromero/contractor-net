@@ -134,8 +134,11 @@ namespace Analyzer.Corral.Tests
             A.CallTo(() => fakeQuery.Action).Returns(fakeAction);
             return fakeQuery;
         }
-        
 
+        public Transition AnalyzeTransitionToNotInv(State source, Action action, string exitCode)
+        {
+            throw new NotImplementedException();
+        }
         //private Dictionary<string, Query> Analyze(List<string> queries)
         //{
         //    var results = new Dictionary<string, Query>();
