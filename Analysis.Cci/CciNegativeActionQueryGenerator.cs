@@ -16,9 +16,9 @@ namespace Analysis.Cci
         {
         }
 
-        public override ActionQuery CreateQuery(State state, Action action, Action actionUnderTest)
+        public override ActionQuery CreateQuery(State state, Action action, Action actionUnderTest, string expectedExitCode)
         {
-            return new ActionQuery(GenerateQuery(state, action, actionUnderTest), QueryType.Negative, actionUnderTest);
+            return new ActionQuery(GenerateQuery(state, action, actionUnderTest,expectedExitCode), QueryType.Negative, actionUnderTest);
         }
 
         protected override string CreateQueryName(State state, Action action, Action actionUnderTest)

@@ -32,25 +32,25 @@ namespace Analysis.Cci
             this.listOfExceptions = listOfExceptions;
         }
 
-        public IReadOnlyCollection<ActionQuery> CreatePositiveQueries(State state, Action action, IEnumerable<Action> actions)
+        public IReadOnlyCollection<ActionQuery> CreatePositiveQueries(State state, Action action, IEnumerable<Action> actions, string expectedExitCode = null)
         {
             var queryGenerator = new CciPositiveActionQueryGenerator(host);
-            return CreateQueries(state, action, actions, queryGenerator);
+            return CreateQueries(state, action, actions, queryGenerator, expectedExitCode);
         }
 
-        public IReadOnlyCollection<ActionQuery> CreateNegativeQueries(State state, Action action, IEnumerable<Action> actions)
+        public IReadOnlyCollection<ActionQuery> CreateNegativeQueries(State state, Action action, IEnumerable<Action> actions, string expectedExitCode = null)
         {
             var queryGenerator = new CciNegativeActionQueryGenerator(host);
-            return CreateQueries(state, action, actions, queryGenerator);
+            return CreateQueries(state, action, actions, queryGenerator,expectedExitCode);
         }
 
         protected IReadOnlyCollection<ActionQuery> CreateQueries(State state, Action action, IEnumerable<Action> actions,
-            CciActionQueryGenerator queryGenerator)
+            CciActionQueryGenerator queryGenerator, string expectedExitCode)
         {
             var queries = new List<ActionQuery>();
             foreach (var actionUnderTest in actions)
             {
-                queries.Add(queryGenerator.CreateQuery(state, action, actionUnderTest));
+                queries.Add(queryGenerator.CreateQuery(state, action, actionUnderTest, expectedExitCode));
             }
             return queries;
         }

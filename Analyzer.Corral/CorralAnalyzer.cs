@@ -136,14 +136,24 @@ namespace Analyzer.Corral
             Contract.Requires(action != null);
             Contract.Requires(actions.Any());
             Contract.Requires(corralRunner != null);
-
-            var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(source, action, actions);
-            generatedQueriesCount += targetPreconditionQueries.Count;
-            var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries,expectedExitCode);
-            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
-            var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
-            unprovenQueriesCount += evaluator.UnprovenQueries;
-            return enabledActions;
+            if(expectedExitCode!="Ok"){
+                var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(source, action, actions,expectedExitCode);
+                generatedQueriesCount += targetPreconditionQueries.Count;
+                var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries, expectedExitCode);
+                var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+                var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
+                unprovenQueriesCount += evaluator.UnprovenQueries;
+                return enabledActions;
+            }else{
+                var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(source, action, actions);
+                generatedQueriesCount += targetPreconditionQueries.Count;
+                var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries, expectedExitCode);
+                var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+                var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
+                unprovenQueriesCount += evaluator.UnprovenQueries;
+                return enabledActions;
+            }
+            
         }
 
         protected FileInfo CreateBoogieQueryAssembly(IReadOnlyCollection<Query> queries)

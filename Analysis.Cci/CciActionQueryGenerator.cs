@@ -13,19 +13,21 @@ namespace Analysis.Cci
     {
         protected IContractAwareHost host;
         public IExpression exitCode_eq_expected;
+        private string expectedExitCode;
         protected CciActionQueryGenerator(IContractAwareHost host)
         {
             this.host = host;
         }
 
-        public abstract ActionQuery CreateQuery(State state, Action action, Action actionUnderTest);
+        public abstract ActionQuery CreateQuery(State state, Action action, Action actionUnderTest, string expectedExitCode);
         protected abstract string CreateQueryName(State state, Action action, Action actionUnderTest);
         protected abstract IMethodContract CreateQueryContract(State state, Action actionUnderTest);
 
-        protected CciAction GenerateQuery(State state, Action action, Action target)
+        protected CciAction GenerateQuery(State state, Action action, Action target, string expectedExitCode = null)
         {
             Contract.Requires(state != null && action != null && target != null);
 
+            this.expectedExitCode = expectedExitCode;
             var queryName = CreateQueryName(state, action, target);
             var queryMethod = CreateQueryMethod(state, queryName, action, target);
             var queryContract = CreateQueryContract(state, target);
@@ -113,10 +115,46 @@ namespace Analysis.Cci
             }
             Contract.Assert(actionBodyBlock != null);
 
-            //Por tratarse de un constructor skipeamos
-            //el primer statement porque es base..ctor();
-            var skipCount = action.Method.IsConstructor ? 1 : 0;
-            block.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));
+            if (expectedExitCode != null){
+                //EPA-O
+                var unit = this.host.LoadedUnits.First();
+                var assembly = unit as Microsoft.Cci.IAssembly;
+                var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
+
+                var x = assembly.GetAllTypes();
+                var y = coreAssembly.GetAllTypes();
+                x = x.Union(y);
+
+                var excType = x.Single(t => t.Name.Value == "Exception");
+
+                var tryBlock = new BlockStatement();
+
+                //Por tratarse de un constructor skipeamos
+                //el primer statement porque es base..ctor();
+                var skipCount = action.Method.IsConstructor ? 1 : 0;
+                tryBlock.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));
+
+                var catchClauses = new List<ICatchClause>();
+
+                var catchExc= new CatchClause()
+                {
+                    ExceptionType = excType, // this.host.NameTable.GetNameFor("Exception"),
+                    Body = new BlockStatement()
+                };
+                catchClauses.Add(catchExc);
+
+                var tryStmt = new TryCatchFinallyStatement
+                {
+                    TryBody = tryBlock,
+                    CatchClauses = catchClauses
+                };
+
+                block.Statements.Add(tryStmt);
+            }else{
+                //EPAs
+                var skipCount = action.Method.IsConstructor ? 1 : 0;
+                block.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));
+            }
 
             if (mc != null && mc.Postconditions.Any())
             {
