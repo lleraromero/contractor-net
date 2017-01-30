@@ -36,6 +36,10 @@ namespace Contractor.Gui
             cmbConditions.Items.Add("EPA-I/O");
             cmbConditions.SelectedIndex = 2;
 
+            cmbExc.Items.Add("All");
+            cmbExc.Items.Add("Exc");
+            cmbExc.SelectedIndex = 0;
+
             epaViewerPresenter = new EpaViewerPresenter(epaViewer, new EpaViewer(), SynchronizationContext.Current);
             typesViewerPresenter = new TypesViewerPresenter(typesViewer, new TypesViewer(), SynchronizationContext.Current);
             typesViewerPresenter.TypeSelected += TypesViewerPresenterOnTypeSelected;
@@ -54,6 +58,11 @@ namespace Contractor.Gui
         public string Conditions
         {
             get { return (string)cmbConditions.SelectedItem; }
+        }
+
+        public string Exceptions
+        {
+            get { return (string)cmbExc.SelectedItem; }
         }
 
         public event EventHandler<FileInfo> LoadAssembly;
@@ -101,6 +110,7 @@ namespace Contractor.Gui
             buttonStartAnalysis.Enabled = false;
             cmbBackend.Enabled = false;
             cmbConditions.Enabled = false;
+            cmbExc.Enabled = false;
             typesViewer.Enabled = false;
             methodFilter.Enabled = false;
 
@@ -117,6 +127,7 @@ namespace Contractor.Gui
             buttonStartAnalysis.Enabled = true;
             cmbBackend.Enabled = true;
             cmbConditions.Enabled = true;
+            cmbExc.Enabled = true;
             typesViewer.Enabled = true;
             methodFilter.Enabled = true;
 
@@ -208,7 +219,7 @@ namespace Contractor.Gui
             if (StartAnalysis != null)
             {
                 epaViewerPresenter.Reset();
-                var analysisArgs = new AnalysisEventArgs(selectedType, methodFilterPresenter.SelectedMethods(), Engine, Conditions);
+                var analysisArgs = new AnalysisEventArgs(selectedType, methodFilterPresenter.SelectedMethods(), Engine, Conditions, Exceptions);
                 StartAnalysis(sender, analysisArgs);
             }
         }
