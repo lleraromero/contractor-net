@@ -104,10 +104,14 @@ namespace Analyzer.Corral
 
         public Transition AnalyzeTransitionToNotInv(State source, Action action, string exitCode)
         {
-            State notInvState = null;
+            State notInvState = new State(new HashSet<Action>(), new HashSet<Action>());
             var targets = new List<State>();
             targets.Add(notInvState);
-            return AnalyzeTransitions(source, action, targets,exitCode);
+            var result = AnalyzeTransitions(source, action, targets, exitCode);
+            Contract.Assert(result.Count<=1);
+            if (result.Count == 0)
+                return null;
+            return result.ElementAt(0);
         }
 
         public string GetUsageStatistics()
