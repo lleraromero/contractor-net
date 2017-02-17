@@ -114,29 +114,39 @@ namespace Analyzer.Corral
             return statisticsBuilder.ToString();
         }
 
-        protected ISet<Action> GetMustBeDisabledActions(State source, Action action, IEnumerable<Action> actions, ISolver corralRunner, string expectedExitCode="Ok")
+        protected ISet<Action> GetMustBeDisabledActions(State source, Action action, IEnumerable<Action> actions, ISolver corralRunner, string expectedExitCode=null)
         {
             Contract.Requires(source != null);
             Contract.Requires(action != null);
             Contract.Requires(actions.Any());
             Contract.Requires(corralRunner != null);
-
-            var targetNegatedPreconditionQueries = queryGenerator.CreateNegativeQueries(source, action, actions);
-            generatedQueriesCount += targetNegatedPreconditionQueries.Count;
-            var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries, expectedExitCode);
-            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
-            var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
-            unprovenQueriesCount += evaluator.UnprovenQueries;
-            return disabledActions;
+            if (expectedExitCode != null){
+                var targetNegatedPreconditionQueries = queryGenerator.CreateNegativeQueries(source, action, actions,expectedExitCode);
+                generatedQueriesCount += targetNegatedPreconditionQueries.Count;
+                var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries, expectedExitCode);
+                var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+                var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
+                unprovenQueriesCount += evaluator.UnprovenQueries;
+                return disabledActions;
+            
+            }else{
+                var targetNegatedPreconditionQueries = queryGenerator.CreateNegativeQueries(source, action, actions);
+                generatedQueriesCount += targetNegatedPreconditionQueries.Count;
+                var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries, "Ok");
+                var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+                var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
+                unprovenQueriesCount += evaluator.UnprovenQueries;
+                return disabledActions;
+            }
         }
 
-        protected ISet<Action> GetMustBeEnabledActions(State source, Action action, IEnumerable<Action> actions, ISolver corralRunner, string expectedExitCode="Ok")
+        protected ISet<Action> GetMustBeEnabledActions(State source, Action action, IEnumerable<Action> actions, ISolver corralRunner, string expectedExitCode=null)
         {
             Contract.Requires(source != null);
             Contract.Requires(action != null);
             Contract.Requires(actions.Any());
             Contract.Requires(corralRunner != null);
-            if(expectedExitCode!="Ok"){
+            if(expectedExitCode!=null){
                 var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(source, action, actions,expectedExitCode);
                 generatedQueriesCount += targetPreconditionQueries.Count;
                 var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries, expectedExitCode);
@@ -147,7 +157,7 @@ namespace Analyzer.Corral
             }else{
                 var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(source, action, actions);
                 generatedQueriesCount += targetPreconditionQueries.Count;
-                var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries, expectedExitCode);
+                var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries, "Ok");
                 var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
                 var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
                 unprovenQueriesCount += evaluator.UnprovenQueries;
