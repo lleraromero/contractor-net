@@ -113,14 +113,14 @@ namespace Contractor.Console
             List<string> errorList = new List<string>();
             errorList.Add("Ok");
             if (options.ErrorList.Equals("All"))
-            {
-                errorList.Add("Exception");
+            {  
                 errorList.Add("OverflowException");
                 errorList.Add("IndexOutOfRangeException");
                 errorList.Add("NullReferenceException");
                 errorList.Add("IllegalStateException");
                 errorList.Add("ConcurrentModificationException");
                 errorList.Add("NoSuchElementException");
+                errorList.Add("Exception");
             }
             else
             {

@@ -61,13 +61,13 @@ namespace Contractor.Gui.Models
             cancellationSource = new CancellationTokenSource();
             List<string> errorList = new List<string>();
             errorList.Add("Ok");
-            errorList.Add("Exception");
             errorList.Add("OverflowException");
             errorList.Add("IndexOutOfRangeException");
             errorList.Add("NullReferenceException");
             errorList.Add("IllegalStateException");
             errorList.Add("ConcurrentModificationException");
             errorList.Add("NoSuchElementException");
+            errorList.Add("Exception");
             var analyzer = GetAnalyzer(analysisEventArgs.TypeToAnalyze, analysisEventArgs.Engine, cancellationSource.Token,errorList);
 
             var selectedMethods = from m in analysisEventArgs.SelectedMethods select m.ToString();
