@@ -82,70 +82,8 @@ namespace Contractor.Core
                 foreach (var action in source.EnabledActions)
                 {
                     ActionAnalysisResults actionsResult;
-
-                    /*List<string> errorList = new List<string>();
-                    errorList.Add("Ok");
-                    //errorList.Add("Exception");
-                    //errorList.Add("OverflowException");
-                    //errorList.Add("IndexOutOfRangeException");
-                    //errorList.Add("NullReferenceException");
-                    ErrorInstrumentator.MethodInfo mi;
-                    if (action.Method.IsConstructor)
-                    {
-                        if (methods.TryGetValue(action.Name.ToString().Split('_')[1], out mi))
-                        {
-
-                            errorList.AddRange(mi.ExceptionList);
-                        }
-                        else
-                        {
-                            var s = action.Name.ToString().Split('_');
-                            int pos = s.ToList().IndexOf(s.First(x => x.Contains("ctor")));
-                            var name = s[pos - 1];
-                            if (methods.TryGetValue(name, out mi))
-                            {
-                                errorList.AddRange(mi.ExceptionList);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (action.Name.Contains("_ctor"))
-                        {
-                            var s = action.Name.ToString().Split('_');
-                            int pos = s.ToList().IndexOf("_ctor");
-                            var name = s[pos-1];
-                            if(methods.TryGetValue(name, out mi)){
-                                errorList.AddRange(mi.ExceptionList);
-                            } 
-                        }else if (action.Name.ToString().Contains("get_"))
-                        {
-                            //it is a property
-                            var s=action.Name.ToString().Split('_');
-                            if(methods.TryGetValue(s[s.Length-1], out mi)){
-                                errorList.AddRange(mi.ExceptionList);
-                            }                           
-                        }else if (methods.TryGetValue(action.Name.ToString().Split('_')[2].Replace("System",""), out mi))
-                        {
-                            errorList.AddRange(mi.ExceptionList);
-                        }
-                    }
+                    MyLogger.LogAction(action.Name, "NOSE", source.Name);
                     
-                    var methodStatementsCopy = new List<Microsoft.Cci.IStatement>();
-                    //foreach (Microsoft.Cci.MutableCodeModel.Statement st in (action.Method.Body as Microsoft.Cci.MutableCodeModel.SourceMethodBody).Block.Statements)
-                    //{
-                        
-                    //}
-                    methodStatementsCopy.AddRange((action.Method.Body as Microsoft.Cci.MutableCodeModel.SourceMethodBody).Block.Statements);
-                    // PARA CADA Em:
-                    foreach (string exitCode in errorList)
-                    {
-                        // ACA TENGO QUE MODIFICAR EL M --> Me 
-                        //Microsoft.Cci.MutableCodeModel.BlockStatement actionBlock = (action.Method.Body as Microsoft.Cci.MutableCodeModel.SourceMethodBody).Block as Microsoft.Cci.MutableCodeModel.BlockStatement;
-                        //actionBlock.Statements = methodStatementsCopy;
-                        if(!mi.IsProperty.Equals("True"))
-                            action.Method = new ExpectedExitCodeRewriter(exitCode).Rewrite(action.Method);
-                        */
                         lock (analyzer)
                         {
                             //var body = (Microsoft.Cci.MutableCodeModel.MethodBody)action.Method.Body;
@@ -190,7 +128,6 @@ namespace Contractor.Core
                             }
                             epaBuilder.Add(transition);
                         }
-                        //END PARA CADA Em
                     //}
                     //Save the original code into the Action/Method
                     //var methodBody= action.Method.Body as Microsoft.Cci.MutableCodeModel.SourceMethodBody;
