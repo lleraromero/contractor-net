@@ -74,7 +74,12 @@ namespace Contractor.Gui
             {
                 if (ed.Target == transition.TargetState.Name && ed.Attr.Styles.Contains(lineStyle))
                 {
-                    ed.LabelText = string.Format("{0}{1}{2}:{3}", ed.LabelText, Environment.NewLine, label,exitCode);
+                    if(exitCode.Equals("NOSE")){
+                        ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
+                    }else{
+                        ed.LabelText = string.Format("{0}{1}{2}:{3}", ed.LabelText, Environment.NewLine, label, exitCode);
+                    }
+                    
                     createEdge = false;
                     break;
                 }
@@ -82,8 +87,15 @@ namespace Contractor.Gui
 
             if (createEdge)
             {
-                var edge = graph.AddEdge(transition.SourceState.Name, label+":"+exitCode, transition.TargetState.Name);
-
+                Microsoft.Msagl.Drawing.Edge edge = null;
+                if (exitCode.Equals("NOSE"))
+                {
+                    edge = graph.AddEdge(transition.SourceState.Name, label, transition.TargetState.Name);
+                }
+                else
+                {
+                    edge = graph.AddEdge(transition.SourceState.Name, label + ":" + exitCode, transition.TargetState.Name);
+                }
                 edge.Label.FontName = "Cambria";
                 edge.Label.FontSize = 6;
                 edge.Attr.AddStyle(lineStyle);
