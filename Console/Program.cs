@@ -117,7 +117,7 @@ namespace Contractor.Console
                 errorList.Add("OverflowException");
                 errorList.Add("IndexOutOfRangeException");
                 errorList.Add("NullReferenceException");
-                errorList.Add("ByZeroDivisionException");
+                errorList.Add("DivideByZeroException");
                 errorList.Add("IllegalStateException");
                 errorList.Add("ConcurrentModificationException");
                 errorList.Add("NoSuchElementException");
