@@ -71,12 +71,12 @@ namespace Analysis.Cci
             var methodName = string.Format("{1}{0}{2}{0}{3}", MethodNameDelimiter, stateName, actionName, targetName);
 
             var method = CreateQueryMethod(state, methodName, action, target);
-            var queryContract = CreateQueryContract(state, target);
+            var queryContract = CreateQueryContract(state, target, method);
 
             return new CciAction(method, queryContract);
         }
 
-        private MethodContract CreateQueryContract(State state, State target)
+        private MethodContract CreateQueryContract(State state, State target, MethodDefinition method )
         {
             var contracts = new MethodContract();
 
@@ -137,16 +137,59 @@ namespace Analysis.Cci
             // Negated target state invariant as a postcondition
             var targetInv = Helper.GenerateStateInvariant(host, target);
 
+            // -----------
+            IBlockStatement actionBodyBlock = null;
+            if (method.Body is Microsoft.Cci.ILToCodeModel.SourceMethodBody)
+            {
+                var actionBody = method.Body as Microsoft.Cci.ILToCodeModel.SourceMethodBody;
+                actionBodyBlock = actionBody.Block;
+            }
+            else if (method.Body is SourceMethodBody)
+            {
+                var actionBody = method.Body as SourceMethodBody;
+                actionBodyBlock = actionBody.Block;
+            }
+            //******************************************************************
+            var unit = this.host.LoadedUnits.First();
+            var assembly = unit as Microsoft.Cci.IAssembly;
+            var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
+            var localVars = new List<Microsoft.Cci.IExpression>();
+
+            // for each expr we should generate a localDeclAssign and then use it
+            foreach(var expr in targetInv){                
+                var localVar = new LocalDefinition()
+                    {
+                        Name = Dummy.Name,
+                        Type = coreAssembly.PlatformType.SystemBoolean,
+                        MethodDefinition = method
+                    };
+                var st = new LocalDeclarationStatement()
+                {
+                    InitialValue = expr,
+                    LocalVariable = localVar
+                };
+
+                (actionBodyBlock as BlockStatement).Statements.Add(st);
+                var varExpr = new BoundExpression()
+                {
+                    Type = coreAssembly.PlatformType.SystemBoolean,
+                    Definition = localVar
+                };
+                localVars.Add(varExpr);
+            }
+            // ---------
             IExpression joinedTargetInv = new LogicalNot
             {
                 Type = host.PlatformType.SystemBoolean,
-                Operand = Helper.JoinWithLogicalAnd(host, targetInv, true)
+                Operand = Helper.JoinWithLogicalAnd(host, localVars, true)
             };
+            
+            //******************************************************************
             Postcondition postcondition = null;
             if (expectedExitCode != null)
             {
-                var unit = this.host.LoadedUnits.First();
-                var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
+                //var unit = this.host.LoadedUnits.First();
+                //var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
 
                 var arg = new List<IExpression>();
 
