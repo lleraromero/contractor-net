@@ -92,11 +92,12 @@ namespace Instrumenter
                 }
 
                 var conditions = (from pre in action.Contract.Preconditions select pre.Condition).ToList();
-                var condition = new LogicalNot
+                var condition = Helper.LogicalNotAfterJoinWithLogicalAnd(host, conditions, true);
+                /*var condition = new LogicalNot
                 {
                     Type = host.PlatformType.SystemBoolean,
                     Operand = Helper.JoinWithLogicalAnd(host, conditions, true)
-                };
+                };*/
 
                 exprs.Add(condition);
             }

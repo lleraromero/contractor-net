@@ -61,11 +61,12 @@ namespace Analysis.Cci
 
                 var preconditions = from p in actionContract.Preconditions
                     select p.Condition;
-                var joinedPreconditions = new LogicalNot
+                var joinedPreconditions = Helper.LogicalNotAfterJoinWithLogicalAnd(host, preconditions.ToList(), true);
+                /*var joinedPreconditions = new LogicalNot
                 {
                     Type = host.PlatformType.SystemBoolean,
                     Operand = Helper.JoinWithLogicalAnd(host, preconditions.ToList(), true)
-                };
+                };*/
                 var compactPrecondition = new Precondition
                 {
                     Condition = joinedPreconditions,

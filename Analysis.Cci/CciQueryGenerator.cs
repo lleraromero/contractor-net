@@ -178,11 +178,12 @@ namespace Analysis.Cci
                 localVars.Add(varExpr);
             }
             // ---------
-            IExpression joinedTargetInv = new LogicalNot
+            IExpression joinedTargetInv = Helper.LogicalNotAfterJoinWithLogicalAnd(host, localVars, true);
+            /*IExpression joinedTargetInv = new LogicalNot
             {
                 Type = host.PlatformType.SystemBoolean,
                 Operand = Helper.JoinWithLogicalAnd(host, localVars, true)
-            };
+            };*/
             
             //******************************************************************
             Postcondition postcondition = null;

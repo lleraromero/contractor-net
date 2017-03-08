@@ -62,11 +62,12 @@ namespace Analysis.Cci
 
                 var preconditions = from p in actionContract.Preconditions
                     select p.Condition;
-                var joinedPreconditions = new LogicalNot
+                var joinedPreconditions = Helper.LogicalNotAfterJoinWithLogicalAnd(host, preconditions.ToList(), true);
+                /*var joinedPreconditions = new LogicalNot
                 {
                     Type = host.PlatformType.SystemBoolean,
                     Operand = Helper.JoinWithLogicalAnd(host, preconditions.ToList(), true)
-                };
+                };*/
                 var compactPrecondition = new Precondition
                 {
                     Condition = joinedPreconditions,
@@ -106,11 +107,12 @@ namespace Analysis.Cci
 
                 var post = new Postcondition
                 {
-                    Condition = new LogicalNot
+                    /*Condition = new LogicalNot
                     {
                         Type = host.PlatformType.SystemBoolean,
                         Operand = Helper.JoinWithLogicalAnd(host, exprs, true)
-                    },
+                    }*/
+                    Condition = Helper.LogicalNotAfterJoinWithLogicalAnd(host, exprs, true),
                     OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(Helper.JoinWithLogicalAnd(host, exprs, true)),
                     Description = new CompileTimeConstant { Value = "Target negated precondition", Type = host.PlatformType.SystemString }
                 };

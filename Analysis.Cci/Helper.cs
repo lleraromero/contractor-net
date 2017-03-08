@@ -8,6 +8,22 @@ namespace Analysis.Cci
 {
     public static class Helper
     {
+        public static IExpression LogicalNotAfterJoinWithLogicalAnd(IMetadataHost host, List<IExpression> expressions, bool defaultValue)
+        {
+            List<IExpression> negatedExpressions = new List<IExpression>();
+            for (var i = 0; i < expressions.Count; ++i)
+            {
+                var notExpr = new LogicalNot
+                {
+                    Type = host.PlatformType.SystemBoolean,
+                    Operand = expressions[i]
+                }; 
+                negatedExpressions.Add(notExpr);
+            }
+            return JoinWithLogicalOr(host, negatedExpressions, !defaultValue);
+
+        }
+
         // A && B = A ? B : false
         public static IExpression JoinWithLogicalAnd(IMetadataHost host, List<IExpression> expressions, bool defaultValue)
         {
@@ -101,11 +117,12 @@ namespace Analysis.Cci
                     var conditions = (from pre in action.Contract.Preconditions
                         select pre.Condition).ToList();
 
-                    var condition = new LogicalNot
+                    var condition = Helper.LogicalNotAfterJoinWithLogicalAnd(host, conditions, true);
+                    /*var condition = new LogicalNot
                     {
                         Type = host.PlatformType.SystemBoolean,
                         Operand = JoinWithLogicalAnd(host, conditions, true)
-                    };
+                    };*/
 
                     exprs.Add(condition);
                 }
