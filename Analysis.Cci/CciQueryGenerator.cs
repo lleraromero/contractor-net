@@ -122,17 +122,7 @@ namespace Analysis.Cci
                     }
                 }
             }
-            /*
-            IExpression exitCode_eq_expected = new Equality()
-            {
-                LeftOperand = new ExpressionStatement()
-                {
-                    Expression = new FieldReferenceS()
-                },
-                RightOperand = null,
-                Type = host.PlatformType.SystemString
-
-            };*/
+           
 
             // Negated target state invariant as a postcondition
             var targetInv = Helper.GenerateStateInvariant(host, target);
@@ -156,42 +146,20 @@ namespace Analysis.Cci
             var localVars = new List<Microsoft.Cci.IExpression>();
 
             // for each expr we should generate a localDeclAssign and then use it
-            foreach(var expr in targetInv){                
-                var localVar = new LocalDefinition()
-                    {
-                        Name = Dummy.Name,
-                        Type = coreAssembly.PlatformType.SystemBoolean,
-                        MethodDefinition = method
-                    };
-                var st = new LocalDeclarationStatement()
-                {
-                    InitialValue = expr,
-                    LocalVariable = localVar
-                };
-
-                (actionBodyBlock as BlockStatement).Statements.Add(st);
-                var varExpr = new BoundExpression()
-                {
-                    Type = coreAssembly.PlatformType.SystemBoolean,
-                    Definition = localVar
-                };
-                localVars.Add(varExpr);
+            foreach(var expr in targetInv){
+                var localVar = Rewrite(method, actionBodyBlock, coreAssembly, expr);
+               
+                localVars.Add(localVar);
             }
             // ---------
-            IExpression joinedTargetInv = Helper.LogicalNotAfterJoinWithLogicalAnd(host, localVars, true);
-            /*IExpression joinedTargetInv = new LogicalNot
-            {
-                Type = host.PlatformType.SystemBoolean,
-                Operand = Helper.JoinWithLogicalAnd(host, localVars, true)
-            };*/
+            IExpression joinedTargetInv = Rewrite(method, actionBodyBlock, coreAssembly, Helper.LogicalNotAfterJoinWithLogicalAnd(host, localVars, true));
             
+
             //******************************************************************
             Postcondition postcondition = null;
             if (expectedExitCode != null)
             {
-                //var unit = this.host.LoadedUnits.First();
-                //var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
-
+              
                 var arg = new List<IExpression>();
 
                 var exitCodeExpr = new BoundExpression()
@@ -210,33 +178,13 @@ namespace Analysis.Cci
                 exitCode_eq_expected = new Equality
                 {
                     Type = host.PlatformType.SystemBoolean,
-                    //LeftOperand = new OldValue
-                    //{
-                    //    Type = coreAssembly.PlatformType.SystemInt32,
-                    //    Expression = new BoundExpression
-                    //    {
-                    //        Definition = field,
-                    //        Instance = new ThisReference(),
-                    //        Type = field.Type
-                    //    }
-                    //},
-                    //RightOperand = new CompileTimeConstant
-                    //{
-                    //    Type = coreAssembly.PlatformType.SystemInt32,
-                    //    Value = fromStateId
-                    //}
+                    
                     LeftOperand = exitCodeExpr,
-                    //LeftOperand = ((IExpressionStatement)localDefExitCode).Expression,
+                    
                     RightOperand = expectedExitCodeExpr
                 };
                 //------
 
-                //exitCode_eq_expected = new MethodCall()
-                //{
-                //    MethodToCall = coreAssembly.PlatformType.,
-                //    Type = coreAssembly.PlatformType.SystemBoolean,
-                //    Arguments = arg
-                //};
 
                 IExpression notExitCode = new LogicalNot
                 {
@@ -271,6 +219,78 @@ namespace Analysis.Cci
             contracts.Postconditions.Add(postcondition);
 
             return contracts;
+        }
+        public IExpression Rewrite(MethodDefinition method, IBlockStatement actionBodyBlock, Microsoft.Cci.IAssembly coreAssembly, IExpression expr)
+        {
+            if(expr is Conditional){
+                if ((expr as Conditional).Condition is Conditional)
+                {
+                    //As Condition we have another Conditional
+                    var locDef = Rewrite( method, actionBodyBlock, coreAssembly, (expr as Conditional).Condition);
+                    (expr as Conditional).Condition= locDef;
+
+                    var varExpr = new BoundExpression()
+                    {
+                        Type = coreAssembly.PlatformType.SystemBoolean,
+                        Definition = AddLocalVariableDefForBooleanExpression(method, actionBodyBlock, coreAssembly, expr)
+                    };
+                    return varExpr;
+                }
+                else if ((expr as Conditional).Condition is LogicalNot)
+                {
+                    var locDef = Rewrite(method, actionBodyBlock, coreAssembly, ((expr as Conditional).Condition as LogicalNot).Operand);
+                    ((expr as Conditional).Condition as LogicalNot).Operand = locDef;
+                    var varExpr = new BoundExpression()
+                    {
+                        Type = coreAssembly.PlatformType.SystemBoolean,
+                        Definition = AddLocalVariableDefForBooleanExpression(method, actionBodyBlock, coreAssembly, expr)
+                    };
+                    return varExpr;
+                }
+                else
+                {
+                    //the expr.Condition is not a Conditional
+                    //so, we create a local that will replace the conditional
+                    var varExpr = new BoundExpression()
+                    {
+                        Type = coreAssembly.PlatformType.SystemBoolean,
+                        Definition = AddLocalVariableDefForBooleanExpression(method, actionBodyBlock, coreAssembly, expr)
+                    };
+                    return varExpr;
+                }
+            }
+            else if (expr is LogicalNot && (expr as LogicalNot).Operand is Conditional)
+            {
+                (expr as LogicalNot).Operand=Rewrite(method, actionBodyBlock, coreAssembly, (expr as LogicalNot).Operand);
+                return expr;
+            }
+            else
+            {
+                //just rewrite Conditionals
+                return expr;
+            }
+        }
+
+        private static int countVar = 0;
+        //Adds to method body a localDeclaration with the given expression and returns the localDefinition to use it.
+        private LocalDefinition AddLocalVariableDefForBooleanExpression(MethodDefinition method, IBlockStatement actionBodyBlock, Microsoft.Cci.IAssembly coreAssembly, IExpression expr)
+        {
+            countVar++;
+            var varName = host.NameTable.GetNameFor("edgar"+countVar.ToString());
+            var localVar = new LocalDefinition()
+            {
+                Name =  varName, //Dummy.Name,
+                Type = coreAssembly.PlatformType.SystemBoolean,
+                MethodDefinition = method
+            };
+            var st = new LocalDeclarationStatement()
+            {
+                InitialValue = expr,
+                LocalVariable = localVar
+            };
+
+            (actionBodyBlock as BlockStatement).Statements.Add(st);
+            return localVar;
         }
 
         private MethodDefinition CreateQueryMethod(State state, string name, Action action, State target)
