@@ -258,17 +258,50 @@ namespace Analysis.Cci
             //retRewriter.expectedExitCode = expectedExitCode;
 
             //replace (nested) ReturnStatements with the GoTo to a single return at the end
-            // DIEGO n
             newStatements.AddRange(existingStatements.Select(stmt => retRewriter.Rewrite(stmt)));
 
             // now, that all the existing statements were added it is time for the postcondition block
-            // DIEGO 
             newStatements.Add(dummyPostconditionStatement);
             //newStatements.Insert(newStatements.Count - 1,dummyPostconditionStatement);
 
-            // DIEGO x2
-            //newStatements.Clear();
-            //newStatements.AddRange(existingStatements);
+            //****************************
+            // move the localDeclarations to this point
+            bool foundLocals=false;
+            var localDeclStatements = new List<IStatement>();
+            int i = 0;
+            while (!foundLocals && i < newStatements.Count)
+            {
+                if (newStatements[i] is LabeledStatement)
+                {
+                    var labeled=(newStatements[i] as LabeledStatement);
+                    if (labeled.Label.Value.Equals("begin"))
+                        foundLocals = true;
+                    else
+                        i++;
+                }
+                else {
+                    i++;
+                }
+                
+            }
+            foundLocals=false;
+            while (!foundLocals && i<newStatements.Count)
+            {
+                if (newStatements[i] is LabeledStatement)
+                {
+                    if ((newStatements[i] as LabeledStatement).Label.Value.Equals("end"))
+                    {
+                        foundLocals = true;
+                    }
+                    newStatements.RemoveAt(i);
+                }
+                else
+                {
+                    localDeclStatements.Add(newStatements[i]);
+                    newStatements.RemoveAt(i);
+                }
+            }
+            newStatements.AddRange(localDeclStatements);
 
             // Add assume statements for each postcondition that predicates ONLY about parameters (ie. not about the instance)
             var contractDependencyAnalyzer = new CciContractDependenciesAnalyzer(contractProvider);

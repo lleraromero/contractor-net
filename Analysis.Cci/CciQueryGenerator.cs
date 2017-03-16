@@ -144,7 +144,24 @@ namespace Analysis.Cci
             var assembly = unit as Microsoft.Cci.IAssembly;
             var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
             var localVars = new List<Microsoft.Cci.IExpression>();
-
+            var beginStatement = new LabeledStatement
+            {
+                Label = host.NameTable.GetNameFor("begin"),
+                Statement = new EmptyStatement()
+            };
+            var bst = (actionBodyBlock as BlockStatement);
+            if (bst.Statements.Last() is ReturnStatement)
+            {
+                var pos = bst.Statements.Count - 1;
+                //if (pos < 0)
+                //{
+                //    pos = 0;
+                //}
+                bst.Statements.Insert(pos, beginStatement);
+            }
+            else
+                bst.Statements.Add(beginStatement);
+           
             // for each expr we should generate a localDeclAssign and then use it
             foreach(var expr in targetInv){
                 var localVar = Rewrite(method, actionBodyBlock, coreAssembly, expr);
@@ -153,7 +170,22 @@ namespace Analysis.Cci
             }
             // ---------
             IExpression joinedTargetInv = Rewrite(method, actionBodyBlock, coreAssembly, Helper.LogicalNotAfterJoinWithLogicalAnd(host, localVars, true));
-            
+            var endStatement = new LabeledStatement
+            {
+                Label = host.NameTable.GetNameFor("end"),
+                Statement = new EmptyStatement()
+            };
+            if (bst.Statements.Last() is ReturnStatement)
+            {
+                var pos = bst.Statements.Count - 1;
+                //if (pos < 0)
+                //{
+                //    pos = 0;
+                //}
+                bst.Statements.Insert(pos, endStatement);
+            }
+            else
+                bst.Statements.Add(endStatement);
 
             //******************************************************************
             Postcondition postcondition = null;
@@ -288,8 +320,18 @@ namespace Analysis.Cci
                 InitialValue = expr,
                 LocalVariable = localVar
             };
-
-            (actionBodyBlock as BlockStatement).Statements.Add(st);
+            var bst = (actionBodyBlock as BlockStatement);
+            if (bst.Statements.Last() is ReturnStatement)
+            {
+                var pos = bst.Statements.Count - 1;
+                //if (pos < 0)
+                //{
+                //    pos = 0;
+                //}
+                bst.Statements.Insert(pos, st);
+            }
+            else
+                bst.Statements.Add(st);
             return localVar;
         }
 
