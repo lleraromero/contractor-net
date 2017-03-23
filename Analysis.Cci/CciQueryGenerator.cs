@@ -144,23 +144,8 @@ namespace Analysis.Cci
             var assembly = unit as Microsoft.Cci.IAssembly;
             var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
             var localVars = new List<Microsoft.Cci.IExpression>();
-            var beginStatement = new LabeledStatement
-            {
-                Label = host.NameTable.GetNameFor("begin"),
-                Statement = new EmptyStatement()
-            };
-            var bst = (actionBodyBlock as BlockStatement);
-            if (bst.Statements.Last() is ReturnStatement)
-            {
-                var pos = bst.Statements.Count - 1;
-                //if (pos < 0)
-                //{
-                //    pos = 0;
-                //}
-                bst.Statements.Insert(pos, beginStatement);
-            }
-            else
-                bst.Statements.Add(beginStatement);
+           
+            var bst = InsertLabeledStatement(actionBodyBlock, "begin");
            
             // for each expr we should generate a localDeclAssign and then use it
             foreach(var expr in targetInv){
@@ -170,54 +155,16 @@ namespace Analysis.Cci
             }
             // ---------
             IExpression joinedTargetInv = Rewrite(method, actionBodyBlock, coreAssembly, Helper.LogicalNotAfterJoinWithLogicalAnd(host, localVars, true));
-            var endStatement = new LabeledStatement
-            {
-                Label = host.NameTable.GetNameFor("end"),
-                Statement = new EmptyStatement()
-            };
-            if (bst.Statements.Last() is ReturnStatement)
-            {
-                var pos = bst.Statements.Count - 1;
-                //if (pos < 0)
-                //{
-                //    pos = 0;
-                //}
-                bst.Statements.Insert(pos, endStatement);
-            }
-            else
-                bst.Statements.Add(endStatement);
+            
+            bst = InsertLabeledStatement(actionBodyBlock, "end");
 
             //******************************************************************
             Postcondition postcondition = null;
             if (expectedExitCode != null)
             {
               
-                var arg = new List<IExpression>();
-
-                var exitCodeExpr = new BoundExpression()
-                    {
-                        Type = host.PlatformType.SystemInt32,
-                        Definition = localDefExitCode.LocalVariable
-                    };
-
-                var expectedExitCodeExpr = new BoundExpression()
-                {
-                    Type = host.PlatformType.SystemInt32,
-                    Definition = localDefExpectedExitCode.LocalVariable
-                };
-
-                //-------
-                exitCode_eq_expected = new Equality
-                {
-                    Type = host.PlatformType.SystemBoolean,
-                    
-                    LeftOperand = exitCodeExpr,
-                    
-                    RightOperand = expectedExitCodeExpr
-                };
-                //------
-
-
+                GenerateEqualityExprForExitCode();
+                
                 IExpression notExitCode = new LogicalNot
                 {
                     Type = host.PlatformType.SystemBoolean,
@@ -252,6 +199,56 @@ namespace Analysis.Cci
 
             return contracts;
         }
+
+        private void GenerateEqualityExprForExitCode()
+        {
+            var exitCodeExpr = new BoundExpression()
+            {
+                Type = host.PlatformType.SystemInt32,
+                Definition = localDefExitCode.LocalVariable
+            };
+
+            var expectedExitCodeExpr = new BoundExpression()
+            {
+                Type = host.PlatformType.SystemInt32,
+                Definition = localDefExpectedExitCode.LocalVariable
+            };
+
+            //-------
+            exitCode_eq_expected = new Equality
+            {
+                Type = host.PlatformType.SystemBoolean,
+
+                LeftOperand = exitCodeExpr,
+
+                RightOperand = expectedExitCodeExpr
+            };
+            //------
+        }
+
+        private BlockStatement InsertLabeledStatement(IBlockStatement actionBodyBlock, string label)
+        {
+            var labeledStatement = new LabeledStatement
+            {
+                Label = host.NameTable.GetNameFor(label),
+                Statement = new EmptyStatement()
+            };
+            var bst = (actionBodyBlock as BlockStatement);
+            if (bst.Statements.Last() is ReturnStatement)
+            {
+                var pos = bst.Statements.Count - 1;
+                //if (pos < 0)
+                //{
+                //    pos = 0;
+                //}
+                bst.Statements.Insert(pos, labeledStatement);
+            }
+            else
+                bst.Statements.Add(labeledStatement);
+            return bst;
+        }
+
+        //-----------other file to reuse
         public IExpression Rewrite(MethodDefinition method, IBlockStatement actionBodyBlock, Microsoft.Cci.IAssembly coreAssembly, IExpression expr)
         {
             if(expr is Conditional){
@@ -308,7 +305,7 @@ namespace Analysis.Cci
         private LocalDefinition AddLocalVariableDefForBooleanExpression(MethodDefinition method, IBlockStatement actionBodyBlock, Microsoft.Cci.IAssembly coreAssembly, IExpression expr)
         {
             countVar++;
-            var varName = host.NameTable.GetNameFor("edgar"+countVar.ToString());
+            var varName = host.NameTable.GetNameFor("local"+countVar.ToString());
             var localVar = new LocalDefinition()
             {
                 Name =  varName, //Dummy.Name,
@@ -334,6 +331,7 @@ namespace Analysis.Cci
                 bst.Statements.Add(st);
             return localVar;
         }
+        //--------------------------------
 
         private MethodDefinition CreateQueryMethod(State state, string name, Action action, State target)
         {
@@ -464,7 +462,7 @@ namespace Analysis.Cci
                 var asserts = from pre in mc.Preconditions
                               select new AssertStatement
                               {
-                                  Condition = pre.Condition,
+                                  Condition = pre.Condition, //*******************************************************Rewrite
                                   OriginalSource = pre.OriginalSource,
                                   Description = new CompileTimeConstant { Value = "Inlined method precondition", Type = host.PlatformType.SystemString }
                               };
@@ -491,105 +489,16 @@ namespace Analysis.Cci
                 var unit = this.host.LoadedUnits.First();
                 var assembly = unit as Microsoft.Cci.IAssembly;
                 var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
+                
+                localDefExitCode = CreateLocalInt(action, coreAssembly, 0);
 
-                localDefExitCode = new LocalDeclarationStatement()
-                {
-                    InitialValue = new CompileTimeConstant
-                        {
-                            Type = coreAssembly.PlatformType.SystemInt32,
-                            Value = 0
-                        },
-                    LocalVariable = new LocalDefinition()
-                        {
-                            Name = Dummy.Name,
-                            Type = coreAssembly.PlatformType.SystemInt32,
-                            MethodDefinition = action.Method
-                        }
-                };
-
-                localDefExpectedExitCode = new LocalDeclarationStatement()
-                {
-                    InitialValue = new CompileTimeConstant
-                    {
-                        Type = coreAssembly.PlatformType.SystemInt32,
-                        Value = ExceptionEncoder.ExceptionToInt(expectedExitCode)
-                    },
-                    LocalVariable = new LocalDefinition()
-                    {
-                        Name = Dummy.Name,
-                        Type = coreAssembly.PlatformType.SystemInt32,
-                        MethodDefinition = action.Method
-                    }
-                };
+                localDefExpectedExitCode = CreateLocalInt(action, coreAssembly, ExceptionEncoder.ExceptionToInt(expectedExitCode));
 
                 block.Statements.Add(localDefExitCode);
                 block.Statements.Add(localDefExpectedExitCode);
 
                 //***************************************************** armamos el TRY-CATCH
-                //AGREGAR LOS STATEMENT DEL ACTION AL TRYBLOCK EN VEZ DE AL BLOCK
-
-                var tryBlock = new BlockStatement();
-
-                //Por tratarse de un constructor skipeamos
-                //el primer statement porque es base..ctor();
-                var skipCount = action.Method.IsConstructor ? 1 : 0;
-                tryBlock.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));
-
-                //localDefExitCode = tryBlock.Statements.First(x => x is LocalDeclarationStatement && (x as LocalDeclarationStatement).LocalVariable.Name.Value == "exitCode");
-                //localDefExpectedExitCode = tryBlock.Statements.First(x => x is LocalDeclarationStatement && (x as LocalDeclarationStatement).LocalVariable.Name.Value == "expectedExitCode");
-
-                //tryBlock.Statements.Remove(localDefExitCode);
-                //tryBlock.Statements.Remove(localDefExpectedExitCode);
-
-
-
-                var catchClauses = new List<ICatchClause>();
-
-                var intType = coreAssembly.PlatformType.SystemInt32;
-
-
-                // var variable = action.Method.Body.LocalVariables.FirstOrDefault( v => v.Name.Value == "exitCode");
-
-                //var listOfExceptions = new List<String>();
-                //listOfExceptions.Add("NullReferenceException");
-                //listOfExceptions.Add("IndexOutOfRangeException");
-                //listOfExceptions.Add("DivideByZeroException");
-                //listOfExceptions.Add("OverflowException");
-                //listOfExceptions.Add("IllegalStateException");
-                //listOfExceptions.Add("ConcurrentModificationException");
-                //listOfExceptions.Add("NoSuchElementException");
-                //listOfExceptions.Add("Exception");
-                var x = assembly.GetAllTypes();
-                var y = coreAssembly.GetAllTypes();
-                x = x.Union(y);
-                foreach (var exception in listOfExceptions)
-                {
-                    if (exception.Equals("Ok"))
-                        continue;
-                    try
-                    {
-                        var excType = x.Single(t => t.Name.Value == exception);
-                        var variable = new LocalDefinition()
-                        {
-                            Name = Dummy.Name,
-                            Type = excType,
-                            MethodDefinition = action.Method
-                        };
-                        var catchExc = GenerateCatchClauseFor(coreAssembly, variable, excType);
-                        //block.Statements.AddRange(catchExc.Body.Statements);
-                        catchClauses.Add(catchExc);
-                    }
-                    catch (Exception)
-                    {
-                        System.Console.WriteLine("exception does not exists: " + exception);
-                    }
-                }
-
-                var tryStmt = new TryCatchFinallyStatement
-                    {
-                        TryBody = tryBlock,
-                        CatchClauses = catchClauses
-                    };
+                var tryStmt = GenerateTryStatement(action, actionBodyBlock, assembly, coreAssembly);
 
                 block.Statements.Add(tryStmt);
                 //*****************************************************
@@ -606,7 +515,7 @@ namespace Analysis.Cci
                 var assumes = from post in mc.Postconditions
                               select new AssumeStatement
                               {
-                                  Condition = post.Condition,
+                                  Condition = post.Condition,//*******************************************************Rewrite
                                   OriginalSource = post.OriginalSource,
                                   Description = new CompileTimeConstant { Value = "Inlined method postcondition", Type = host.PlatformType.SystemString }
                               };
@@ -627,6 +536,79 @@ namespace Analysis.Cci
             }
 
             return block;
+        }
+
+        private static LocalDeclarationStatement CreateLocalInt(Action action, Microsoft.Cci.IAssembly coreAssembly, int defaultValue)
+        {
+            var local = new LocalDeclarationStatement()
+            {
+                InitialValue = new CompileTimeConstant
+                {
+                    Type = coreAssembly.PlatformType.SystemInt32,
+                    Value = defaultValue
+                },
+                LocalVariable = new LocalDefinition()
+                {
+                    Name = Dummy.Name,
+                    Type = coreAssembly.PlatformType.SystemInt32,
+                    MethodDefinition = action.Method
+                }
+            };
+            return local;
+        }
+
+        private TryCatchFinallyStatement GenerateTryStatement(Action action, IBlockStatement actionBodyBlock, Microsoft.Cci.IAssembly assembly, Microsoft.Cci.IAssembly coreAssembly)
+        {
+            //AGREGAR LOS STATEMENT DEL ACTION AL TRYBLOCK EN VEZ DE AL BLOCK
+            var tryBlock = new BlockStatement();
+
+            //Por tratarse de un constructor skipeamos
+            //el primer statement porque es base..ctor();
+            var skipCount = action.Method.IsConstructor ? 1 : 0;
+            tryBlock.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));//*******************************************************Rewrite
+
+            var catchClauses = GenerateCatchClauses(action, assembly, coreAssembly);
+
+            var tryStmt = new TryCatchFinallyStatement
+            {
+                TryBody = tryBlock,
+                CatchClauses = catchClauses
+            };
+            return tryStmt;
+        }
+
+        private List<ICatchClause> GenerateCatchClauses(Action action, Microsoft.Cci.IAssembly assembly, Microsoft.Cci.IAssembly coreAssembly)
+        {
+            var catchClauses = new List<ICatchClause>();
+
+            var intType = coreAssembly.PlatformType.SystemInt32;
+
+            var x = assembly.GetAllTypes();
+            var y = coreAssembly.GetAllTypes();
+            x = x.Union(y);
+            foreach (var exception in listOfExceptions)
+            {
+                if (exception.Equals("Ok"))
+                    continue;
+                try
+                {
+                    var excType = x.Single(t => t.Name.Value == exception);
+                    var variable = new LocalDefinition()
+                    {
+                        Name = Dummy.Name,
+                        Type = excType,
+                        MethodDefinition = action.Method
+                    };
+                    var catchExc = GenerateCatchClauseFor(coreAssembly, variable, excType);
+           
+                    catchClauses.Add(catchExc);
+                }
+                catch (Exception)
+                {
+                    System.Console.WriteLine("exception does not exists: " + exception);
+                }
+            }
+            return catchClauses;
         }
 
         private CatchClause GenerateCatchClauseFor(Microsoft.Cci.IAssembly coreAssembly, LocalDefinition variable, INamedTypeDefinition nullExcType)
@@ -651,25 +633,10 @@ namespace Analysis.Cci
             };
 
             nullExcBody.Statements.Add(assign2);
-            //var other = new LocalDeclarationStatement()
-            //{
-            //    InitialValue = new CompileTimeConstant
-            //        {
-            //            Type = coreAssembly.PlatformType.SystemInt32,
-            //            Value = 10
-            //        },
-            //    LocalVariable = new LocalDefinition()
-            //{
-            //    Name = Dummy.Name,
-            //    Type = coreAssembly.PlatformType.SystemInt32,
-            //    MethodDefinition = variable.MethodDefinition
-            //}
-
-            //};
-            //nullExcBody.Statements.Add(other);
+            
             var catchNullExc = new CatchClause()
             {
-                ExceptionType = nullExcType, // this.host.NameTable.GetNameFor("Exception"),
+                ExceptionType = nullExcType, 
                 Body = nullExcBody,
                 ExceptionContainer = variable
             };
