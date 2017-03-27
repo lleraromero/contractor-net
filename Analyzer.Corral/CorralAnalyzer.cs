@@ -21,7 +21,7 @@ namespace Analyzer.Corral
         protected ITypeDefinition typeToAnalyze;
         protected CancellationToken token;
         protected DirectoryInfo workingDir;
-
+        protected Dictionary<Tuple<State, Action, IEnumerable<Action>>, ActionAnalysisResults> map;
         protected int generatedQueriesCount;
         protected int unprovenQueriesCount;
 
@@ -36,6 +36,8 @@ namespace Analyzer.Corral
             this.typeToAnalyze = typeToAnalyze;
             this.inputFileName = inputFileName;
             this.token = token;
+
+            this.map = new Dictionary<Tuple<State, Action, IEnumerable<Action>>, ActionAnalysisResults>();
 
             generatedQueriesCount = 0;
             unprovenQueriesCount = 0;
@@ -67,6 +69,11 @@ namespace Analyzer.Corral
                 return new ActionAnalysisResults(new HashSet<Action>(source.EnabledActions), new HashSet<Action>(source.DisabledActions));
             }
 
+            ActionAnalysisResults result;
+            if (map.TryGetValue(new Tuple<State,Action,IEnumerable<Action>>(source,action,actions), out result))
+            {
+                return result;
+            }
             //rewrite(action.Method.Body);
 
             var enabledActions = GetMustBeEnabledActions(source, action, actions, corralRunner,expectedExitCode);
@@ -74,7 +81,10 @@ namespace Analyzer.Corral
 
             Contract.Assert(!enabledActions.Intersect(disabledActions).Any());
 
-            return new ActionAnalysisResults(enabledActions, disabledActions);
+            result = new ActionAnalysisResults(enabledActions, disabledActions);
+            map.Add(new Tuple<State, Action, IEnumerable<Action>>(source, action, actions), result);
+
+            return result;
         }
 
         public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
