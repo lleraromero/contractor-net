@@ -146,15 +146,16 @@ namespace Analysis.Cci
             var localVars = new List<Microsoft.Cci.IExpression>();
            
             var bst = InsertLabeledStatement(actionBodyBlock, "begin");
-           
+            var condRewriter = new ConditionalRewriter(host,method,actionBodyBlock);
+
             // for each expr we should generate a localDeclAssign and then use it
             foreach(var expr in targetInv){
-                var localVar = Rewrite(method, actionBodyBlock, coreAssembly, expr);
+                var localVar = condRewriter.Rewrite(expr);
                
                 localVars.Add(localVar);
             }
             // ---------
-            IExpression joinedTargetInv = Rewrite(method, actionBodyBlock, coreAssembly, Helper.LogicalNotAfterJoinWithLogicalAnd(host, localVars, true));
+            IExpression joinedTargetInv = condRewriter.Rewrite(Helper.LogicalNotAfterJoinWithLogicalAnd(host, localVars, true));
             
             bst = InsertLabeledStatement(actionBodyBlock, "end");
 
@@ -248,91 +249,6 @@ namespace Analysis.Cci
             return bst;
         }
 
-        //-----------other file to reuse
-        public IExpression Rewrite(MethodDefinition method, IBlockStatement actionBodyBlock, Microsoft.Cci.IAssembly coreAssembly, IExpression expr)
-        {
-            if(expr is Conditional){
-                if ((expr as Conditional).Condition is Conditional)
-                {
-                    //As Condition we have another Conditional
-                    var locDef = Rewrite( method, actionBodyBlock, coreAssembly, (expr as Conditional).Condition);
-                    (expr as Conditional).Condition= locDef;
-
-                    var varExpr = new BoundExpression()
-                    {
-                        Type = coreAssembly.PlatformType.SystemBoolean,
-                        Definition = AddLocalVariableDefForBooleanExpression(method, actionBodyBlock, coreAssembly, expr)
-                    };
-                    return varExpr;
-                }
-                else if ((expr as Conditional).Condition is LogicalNot)
-                {
-                    var locDef = Rewrite(method, actionBodyBlock, coreAssembly, ((expr as Conditional).Condition as LogicalNot).Operand);
-                    ((expr as Conditional).Condition as LogicalNot).Operand = locDef;
-                    var varExpr = new BoundExpression()
-                    {
-                        Type = coreAssembly.PlatformType.SystemBoolean,
-                        Definition = AddLocalVariableDefForBooleanExpression(method, actionBodyBlock, coreAssembly, expr)
-                    };
-                    return varExpr;
-                }
-                else
-                {
-                    //the expr.Condition is not a Conditional
-                    //so, we create a local that will replace the conditional
-                    var varExpr = new BoundExpression()
-                    {
-                        Type = coreAssembly.PlatformType.SystemBoolean,
-                        Definition = AddLocalVariableDefForBooleanExpression(method, actionBodyBlock, coreAssembly, expr)
-                    };
-                    return varExpr;
-                }
-            }
-            else if (expr is LogicalNot && (expr as LogicalNot).Operand is Conditional)
-            {
-                (expr as LogicalNot).Operand=Rewrite(method, actionBodyBlock, coreAssembly, (expr as LogicalNot).Operand);
-                return expr;
-            }
-            else
-            {
-                //just rewrite Conditionals
-                return expr;
-            }
-        }
-
-        private static int countVar = 0;
-        //Adds to method body a localDeclaration with the given expression and returns the localDefinition to use it.
-        private LocalDefinition AddLocalVariableDefForBooleanExpression(MethodDefinition method, IBlockStatement actionBodyBlock, Microsoft.Cci.IAssembly coreAssembly, IExpression expr)
-        {
-            countVar++;
-            var varName = host.NameTable.GetNameFor("local"+countVar.ToString());
-            var localVar = new LocalDefinition()
-            {
-                Name =  varName, //Dummy.Name,
-                Type = coreAssembly.PlatformType.SystemBoolean,
-                MethodDefinition = method
-            };
-            var st = new LocalDeclarationStatement()
-            {
-                InitialValue = expr,
-                LocalVariable = localVar
-            };
-            var bst = (actionBodyBlock as BlockStatement);
-            if (bst.Statements.Last() is ReturnStatement)
-            {
-                var pos = bst.Statements.Count - 1;
-                //if (pos < 0)
-                //{
-                //    pos = 0;
-                //}
-                bst.Statements.Insert(pos, st);
-            }
-            else
-                bst.Statements.Add(st);
-            return localVar;
-        }
-        //--------------------------------
-
         private MethodDefinition CreateQueryMethod(State state, string name, Action action, State target)
         {
             var parameters = GetStateParameters(state);
@@ -379,7 +295,9 @@ namespace Analysis.Cci
             //if (Configuration.InlineMethodsBody)
             //{
             //block = CallMethod(action);
-            block = InlineMethodBody(action);
+            var condRewriter = new ConditionalRewriter(host,method,null);
+
+            block = InlineMethodBody(action,condRewriter);
             //}
             //else
             //{
@@ -451,9 +369,10 @@ namespace Analysis.Cci
             return block;
         }
 
-        private BlockStatement InlineMethodBody(Action action)
+        private BlockStatement InlineMethodBody(Action action,ConditionalRewriter condRewriter)
         {
             var block = new BlockStatement();
+            condRewriter.actionBodyBlock = block;
 
             var mc = action.Contract;
 
@@ -462,7 +381,7 @@ namespace Analysis.Cci
                 var asserts = from pre in mc.Preconditions
                               select new AssertStatement
                               {
-                                  Condition = pre.Condition, //*******************************************************Rewrite
+                                  Condition = condRewriter.Rewrite(pre.Condition), //*******************************************************Rewrite
                                   OriginalSource = pre.OriginalSource,
                                   Description = new CompileTimeConstant { Value = "Inlined method precondition", Type = host.PlatformType.SystemString }
                               };
@@ -515,7 +434,7 @@ namespace Analysis.Cci
                 var assumes = from post in mc.Postconditions
                               select new AssumeStatement
                               {
-                                  Condition = post.Condition,//*******************************************************Rewrite
+                                  Condition = condRewriter.Rewrite(post.Condition),//*******************************************************Rewrite
                                   OriginalSource = post.OriginalSource,
                                   Description = new CompileTimeConstant { Value = "Inlined method postcondition", Type = host.PlatformType.SystemString }
                               };

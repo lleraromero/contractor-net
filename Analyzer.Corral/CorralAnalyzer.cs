@@ -69,12 +69,12 @@ namespace Analyzer.Corral
                 return new ActionAnalysisResults(new HashSet<Action>(source.EnabledActions), new HashSet<Action>(source.DisabledActions));
             }
 
+            //Cache optimization
             ActionAnalysisResults result;
             if (map.TryGetValue(new Tuple<State,Action,IEnumerable<Action>>(source,action,actions), out result))
             {
                 return result;
             }
-            //rewrite(action.Method.Body);
 
             var enabledActions = GetMustBeEnabledActions(source, action, actions, corralRunner,expectedExitCode);
             var disabledActions = GetMustBeDisabledActions(source, action, actions, corralRunner,expectedExitCode);
