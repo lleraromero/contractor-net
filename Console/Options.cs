@@ -63,8 +63,11 @@ namespace Contractor.Console
         public String OutputConditions { get; set; }
 
         [Option("error-list", HelpText = "List of possibles exitCodes to analyze. For example: Exception;NullReferenceException;IndexOutOfRangeException;OutOfMemoryException;ByZeroDivisionException", DefaultValue = "All")]
-
         public String ErrorList { get; set; }
+
+        [Option("query", HelpText = "format: STATE$enabledActions$ ACTION$action$ STATE$enabledActions$ EXITCODE$Ok/Exception$ CONDITIONS$c1;c2$", DefaultValue = null)]
+        public String Query { get; set; }
+
         [HelpOption]
         public string GetUsage()
         {

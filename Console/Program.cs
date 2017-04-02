@@ -12,6 +12,7 @@ using CommandLine;
 using Contractor.Core;
 using Contractor.Core.Model;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Contractor.Console
 {
@@ -160,6 +161,26 @@ namespace Contractor.Console
                 default:
                     throw new NotSupportedException();
             }
+
+            if (options.Query!=null)
+            {
+                var analysisTimer = Stopwatch.StartNew();
+
+                var helper = new QueryHelper(analyzer, typeToAnalyze, errorList);
+                var selectedMethods = options.Methods.Split(';');
+                var transition = helper.computeQuery(options.Query, selectedMethods);
+                var transitions = new List<Transition>();
+                if (transition != null)
+                {
+                    transitions.Add(transition);
+                }
+                var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
+                var epa = new Epa(typeDefinition, transitions);
+                
+                analysisTimer.Stop();
+                return new TypeAnalysisResult(epa, analysisTimer.Elapsed, analyzer.GetUsageStatistics());
+            }
+
             var oc = options.OutputConditions.Split(',');
             if (options.OutputConditions.Equals("none") || !oc.Contains("exitCode"))
             {
