@@ -204,6 +204,7 @@
     <Compile Include="EpaXmlSerializer.cs" />
     <Compile Include="EventArgs.cs" />
     <Compile Include="IAnalyzer.cs" />
+    <Compile Include="ImplementedExceptions.cs" />
     <Compile Include="ISolver.cs" />
     <Compile Include="ISerializer.cs" />
     <Compile Include="ObservableEpaBuilder.cs" />

@@ -63,17 +63,7 @@ namespace Contractor.Gui.Models
             errorList.Add("Ok");
             if (analysisEventArgs.Exceptions.Equals("All"))
             {
-                errorList.Add("OverflowException");
-                errorList.Add("IndexOutOfRangeException");
-                errorList.Add("NullReferenceException");
-                errorList.Add("DivideByZeroException");
-                errorList.Add("IllegalStateException");
-                errorList.Add("ConcurrentModificationException");
-                errorList.Add("NoSuchElementException");
-                errorList.Add("ArgumentNullException");
-                errorList.Add("ArgumentException");
-                errorList.Add("ArgumentOutOfRangeException");
-                errorList.Add("InvalidOperationException");
+                ImplementedExceptions.AddAllExceptionsTo(errorList);
             }
             errorList.Add("Exception");
             
