@@ -25,11 +25,13 @@ namespace Analysis.Cci
         protected IContractAwareHost host;
         private string expectedExitCode;
         protected List<string> listOfExceptions;
+        protected ExceptionEncoder exceptionEncoder;
 
         public CciQueryGenerator(List<string> listOfExceptions)
         {
             host = CciHostEnvironment.GetInstance();
             this.listOfExceptions = listOfExceptions;
+            this.exceptionEncoder = new ExceptionEncoder(listOfExceptions);
         }
 
         public IReadOnlyCollection<ActionQuery> CreatePositiveQueries(State state, Action action, IEnumerable<Action> actions, string expectedExitCode = null)
@@ -411,7 +413,7 @@ namespace Analysis.Cci
                 
                 localDefExitCode = CreateLocalInt(action, coreAssembly, 0);
 
-                localDefExpectedExitCode = CreateLocalInt(action, coreAssembly, ExceptionEncoder.ExceptionToInt(expectedExitCode));
+                localDefExpectedExitCode = CreateLocalInt(action, coreAssembly, exceptionEncoder.ExceptionToInt(expectedExitCode));
 
                 block.Statements.Add(localDefExitCode);
                 block.Statements.Add(localDefExpectedExitCode);
@@ -540,7 +542,7 @@ namespace Analysis.Cci
                     Source = new CompileTimeConstant
                     {
                         Type = coreAssembly.PlatformType.SystemInt32,
-                        Value = ExceptionEncoder.ExceptionToInt(nullExcType.Name.Value)
+                        Value = exceptionEncoder.ExceptionToInt(nullExcType.Name.Value)
                     },
                     Target = new TargetExpression()
                     {
