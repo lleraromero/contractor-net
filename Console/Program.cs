@@ -122,6 +122,10 @@ namespace Contractor.Console
                 errorList.Add("IllegalStateException");
                 errorList.Add("ConcurrentModificationException");
                 errorList.Add("NoSuchElementException");
+                errorList.Add("ArgumentNullException");
+                errorList.Add("ArgumentException");
+                errorList.Add("ArgumentOutOfRangeException");
+                errorList.Add("InvalidOperationException");
                 errorList.Add("Exception");
             }
             else
@@ -156,7 +160,7 @@ namespace Contractor.Console
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
                     Contract.Assert(corralDefaultArgs != null);
                     analyzer = new CorralAnalyzer(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly,
-                        options.InputAssembly, typeToAnalyze, cancellationSource.Token);
+                        options.InputAssembly, typeToAnalyze, cancellationSource.Token, errorList);
                     break;
                 default:
                     throw new NotSupportedException();

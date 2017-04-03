@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Analyzer.Corral
 {
-    class BoggieHardcoderForExceptionSupport
+    public class BoggieHardcoderForExceptionSupport
     {
         private List<string> errorList;
         private string full_path_to_boogie_file;
@@ -27,6 +27,11 @@ namespace Analyzer.Corral
             errorList.Add("ArgumentOutOfRangeException");
             errorList.Add("InvalidOperationException");
             errorList.Add("Exception");
+        }
+
+        public BoggieHardcoderForExceptionSupport(List<string> errorList)
+        {
+            this.errorList = errorList;
         }
 
         public void hardcodeExceptionsToFile(string file){

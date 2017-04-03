@@ -167,7 +167,7 @@ namespace Contractor.Gui.Models
                 case "Corral":
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];        
                     analyzer = new CorralAnalyzer(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly, inputFile.FullName,
-                        typeToAnalyze, cancellationToken);
+                        typeToAnalyze, cancellationToken,errorList);
                     break;
                 default:
                     throw new NotSupportedException();

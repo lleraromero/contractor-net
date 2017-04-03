@@ -24,10 +24,11 @@ namespace Analyzer.Corral
         protected Dictionary<Tuple<State, Action, IEnumerable<Action>>, ActionAnalysisResults> map;
         protected int generatedQueriesCount;
         protected int unprovenQueriesCount;
+        protected BoggieHardcoderForExceptionSupport exceptionHarcoder;
 
         public CorralAnalyzer(string defaultArgs, DirectoryInfo workingDir, CciQueryGenerator queryGenerator, CciAssembly inputAssembly,
             string inputFileName, ITypeDefinition typeToAnalyze,
-            CancellationToken token)
+            CancellationToken token, List<string> errorList)
         {
             this.defaultArgs = defaultArgs;
             this.workingDir = workingDir;
@@ -39,13 +40,15 @@ namespace Analyzer.Corral
 
             this.map = new Dictionary<Tuple<State, Action, IEnumerable<Action>>, ActionAnalysisResults>();
 
+            this.exceptionHarcoder = new BoggieHardcoderForExceptionSupport(errorList);
+
             generatedQueriesCount = 0;
             unprovenQueriesCount = 0;
         }
 
         public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
         {
-            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
+            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir, exceptionHarcoder);
 
             if (action.IsPure)
             {
@@ -62,7 +65,7 @@ namespace Analyzer.Corral
 
         public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions,string expectedExitCode)
         {
-            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
+            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir, exceptionHarcoder);
 
             if (action.IsPure)
             {
@@ -89,7 +92,7 @@ namespace Analyzer.Corral
 
         public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
-            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
+            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir, exceptionHarcoder);
             var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets);
             var queryAssembly = CreateBoogieQueryAssembly(transitionQueries);
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
@@ -101,7 +104,7 @@ namespace Analyzer.Corral
 
         public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string expectedExitCode)
         {
-            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
+            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir, exceptionHarcoder);
             
             var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets,expectedExitCode);
             var queryAssembly = CreateBoogieQueryAssembly(transitionQueries,expectedExitCode);

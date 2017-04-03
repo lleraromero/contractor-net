@@ -11,11 +11,13 @@ namespace Analyzer.Corral
     {
         protected readonly string corralArguments;
         protected readonly DirectoryInfo workingDir;
+        protected BoggieHardcoderForExceptionSupport boogieHarcoder;
 
-        public CorralRunner(string defaultArgs, DirectoryInfo workingDir)
+        public CorralRunner(string defaultArgs, DirectoryInfo workingDir, BoggieHardcoderForExceptionSupport boogieHarcoder)
         {
             corralArguments = defaultArgs;
             this.workingDir = workingDir;
+            this.boogieHarcoder = boogieHarcoder;
         }
 
         public QueryResult Execute(FileInfo queryAssembly, Query query)
@@ -29,8 +31,8 @@ namespace Analyzer.Corral
             MyLogger.LogCorral(args);
 
             //THIS SHOULD BE NOT HERE.  
-            var boogieHarcoder = new BoggieHardcoderForExceptionSupport();
-            boogieHarcoder.hardcodeExceptionsToFile(queryAssembly.FullName);
+            //var boogieHarcoder = new BoggieHardcoderForExceptionSupport();
+            this.boogieHarcoder.hardcodeExceptionsToFile(queryAssembly.FullName);
             //--
             using (var corral = new Process())
             {
