@@ -31,6 +31,15 @@ namespace Analysis.Cci
                     return 7;
                 case "NoSuchElementException":
                     return 8;
+                case "ArgumentNullException":
+                    return 9;
+                case "ArgumentException":
+                    return 10;
+                case "ArgumentOutOfRangeException":
+                    return 11;
+                case "InvalidOperationException":
+                    return 12;
+
                 default:
                     throw new NotSupportedException();
             }

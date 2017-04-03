@@ -22,6 +22,10 @@ namespace Analyzer.Corral
             errorList.Add("IllegalStateException");
             errorList.Add("ConcurrentModificationException");
             errorList.Add("NoSuchElementException");
+            errorList.Add("ArgumentNullException");
+            errorList.Add("ArgumentException");
+            errorList.Add("ArgumentOutOfRangeException");
+            errorList.Add("InvalidOperationException");
             errorList.Add("Exception");
         }
 
