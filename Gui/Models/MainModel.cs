@@ -72,7 +72,7 @@ namespace Contractor.Gui.Models
             var selectedMethods = from m in analysisEventArgs.SelectedMethods select m.ToString();
 
             var epaBuilder = new EpaBuilder(analysisEventArgs.TypeToAnalyze);
-            OnInitialStateAdded(this, epaBuilder);
+            OnInitialStateAdded(this, epaBuilder,analysisEventArgs.SelectedMethods);
             var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
             epaBuilderObservable.TransitionAdded += OnTransitionAdded;
             
@@ -113,10 +113,19 @@ namespace Contractor.Gui.Models
             inputAssembly = await Task.Run(() => assemblyPersister.Load(inputFile.FullName, contractFile.FullName));
         }
 
-        protected void OnInitialStateAdded(object sender, IEpaBuilder epaBuilder)
+        protected void OnInitialStateAdded(object sender, IEpaBuilder epaBuilder, IEnumerable<Contractor.Core.Model.Action> selectedMethods)
         {
             generatedEpa = epaBuilder.Build();
-            var stateAddedEventArg = new StateAddedEventArgs(epaBuilder.Type, epaBuilder, generatedEpa.Initial);
+            Core.StateAddedEventArgs stateAddedEventArg;
+            if((epaBuilder.Type.Constructors().Except(selectedMethods).Any())){ // if selected constructors
+                var constructors=(epaBuilder.Type.Constructors().Intersect(selectedMethods));
+                var initialState = new State(new HashSet<Core.Model.Action>(constructors), new HashSet<Core.Model.Action>());
+                stateAddedEventArg = new StateAddedEventArgs(epaBuilder.Type, epaBuilder, initialState);
+            }
+            else
+            {
+                stateAddedEventArg = new StateAddedEventArgs(epaBuilder.Type, epaBuilder, generatedEpa.Initial);
+            }
             StateAdded(sender, stateAddedEventArg);
         }
 
