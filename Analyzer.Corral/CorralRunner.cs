@@ -33,6 +33,7 @@ namespace Analyzer.Corral
             //THIS SHOULD BE NOT HERE.  
             //var boogieHarcoder = new BoggieHardcoderForExceptionSupport();
             this.boogieHarcoder.hardcodeExceptionsToFile(queryAssembly.FullName);
+            this.boogieHarcoder.SolveConstUniqueProblem();
             //--
             using (var corral = new Process())
             {

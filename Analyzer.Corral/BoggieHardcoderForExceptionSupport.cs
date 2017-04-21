@@ -39,6 +39,16 @@ namespace Analyzer.Corral
             hardcodeExceptionEqualsToNullToQueries();
             hardcodeSubtypeAxioms();
         }
+        
+        public void SolveConstUniqueProblem(){
+            var input = File.ReadAllText(this.full_path_to_boogie_file);
+            string pattern = "const unique System.Collections.Generic.IArraySortHelper: Ref;";
+            string replacement = "//const unique System.Collections.Generic.IArraySortHelper: Ref;";
+            Regex rgx = new Regex(Regex.Escape(pattern));
+            string result = rgx.Replace(input, replacement, rgx.Matches(input).Count - 1);
+            File.WriteAllText(this.full_path_to_boogie_file, result);    
+        }
+        
 
         private void hardcodeSubtypeAxioms()
         {
