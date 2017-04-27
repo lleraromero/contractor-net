@@ -37,10 +37,8 @@ namespace Analysis.Cci
 
         protected MethodDefinition CreateQueryMethod(State state, string name, Action action, Action target)
         {
-            var parameters = GetStateParameters(state);
-            parameters.UnionWith(action.Method.Parameters);
-            parameters.UnionWith(target.Method.Parameters);
-
+            var parameters = new HashSet<IParameterDefinition> (action.Method.Parameters);
+            
             return CreateMethod(name, action, parameters);
         }
 
@@ -92,7 +90,7 @@ namespace Analysis.Cci
             if (mc != null && mc.Preconditions.Any())
             {
                 var asserts = from pre in mc.Preconditions
-                    select new AssertStatement
+                    select new AssumeStatement
                     {
                         Condition = pre.Condition,
                         OriginalSource = pre.OriginalSource,

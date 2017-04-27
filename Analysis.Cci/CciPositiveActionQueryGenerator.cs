@@ -32,6 +32,7 @@ namespace Analysis.Cci
         {
             var queryContract = new MethodContract();
             var targetContract = target.Contract;
+            var contractDependencyAnalyzer = new CciContractDependenciesAnalyzer(new ContractProvider(new ContractMethods(host), null));
 
             // Add preconditions of enabled actions
             foreach (var a in state.EnabledActions)
@@ -50,7 +51,7 @@ namespace Analysis.Cci
                         },
                         OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(p.Condition)
                     };
-                queryContract.Preconditions.AddRange(preconditions);
+                queryContract.Preconditions.AddRange(preconditions.Where(x => !contractDependencyAnalyzer.PredicatesAboutParameter(x)));
             }
 
             // Add negated preconditions of disabled actions
@@ -59,7 +60,7 @@ namespace Analysis.Cci
                 var actionContract = a.Contract;
                 if (actionContract == null || !actionContract.Preconditions.Any()) continue;
 
-                var preconditions = from p in actionContract.Preconditions
+                var preconditions = from p in actionContract.Preconditions.Where(x => !contractDependencyAnalyzer.PredicatesAboutParameter(x))
                     select p.Condition;
                 var joinedPreconditions = Helper.LogicalNotAfterJoinWithLogicalAnd(host, preconditions.ToList(), true);
                 /*var joinedPreconditions = new LogicalNot
@@ -85,7 +86,7 @@ namespace Analysis.Cci
             // Now the postconditions
             if (targetContract != null && targetContract.Preconditions.Any())
             {
-                var targetPreconditions = from pre in targetContract.Preconditions
+                var targetPreconditions = from pre in targetContract.Preconditions.Where(x => !contractDependencyAnalyzer.PredicatesAboutParameter(x))
                     select new Postcondition
                     {
                         Condition = pre.Condition,

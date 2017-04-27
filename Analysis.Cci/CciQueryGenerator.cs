@@ -81,6 +81,7 @@ namespace Analysis.Cci
         private MethodContract CreateQueryContract(State state, State target, MethodDefinition method )
         {
             var contracts = new MethodContract();
+            var contractDependencyAnalyzer = new CciContractDependenciesAnalyzer(new ContractProvider(new ContractMethods(host), null));
 
             // Source state invariant as a precondition
             var stateInv = Helper.GenerateStateInvariant(host, state);
@@ -92,11 +93,12 @@ namespace Analysis.Cci
                                     OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(condition),
                                     Description = new CompileTimeConstant { Value = "Source state invariant", Type = host.PlatformType.SystemString }
                                 };
-            contracts.Preconditions.AddRange(preconditions);
+
+            contracts.Preconditions.AddRange(preconditions.Where(x=>!contractDependencyAnalyzer.PredicatesAboutParameter(x)));
 
             // Add a redundant postcondition for only those conditions that predicate ONLY about parameters and not the instance. 
             // These postconditions will be translated as assumes in the ContractRewriter.cs
-            var contractDependencyAnalyzer = new CciContractDependenciesAnalyzer(new ContractProvider(new ContractMethods(host), null));
+            
             foreach (var action in target.EnabledActions.Union(target.DisabledActions))
             {
                 if (action.Contract != null)
@@ -253,12 +255,8 @@ namespace Analysis.Cci
 
         private MethodDefinition CreateQueryMethod(State state, string name, Action action, State target)
         {
-            var parameters = GetStateParameters(state);
-
-            parameters.UnionWith(action.Method.Parameters);
-
-            parameters.UnionWith(GetStateParameters(target));
-
+            var parameters = new HashSet<IParameterDefinition>(action.Method.Parameters);
+            
             return CreateMethod(name, action, parameters);
         }
 
@@ -381,7 +379,7 @@ namespace Analysis.Cci
             if (mc != null && mc.Preconditions.Any())
             {
                 var asserts = from pre in mc.Preconditions
-                              select new AssertStatement
+                              select new AssumeStatement
                               {
                                   Condition = condRewriter.Rewrite(pre.Condition), //*******************************************************Rewrite
                                   OriginalSource = pre.OriginalSource,
