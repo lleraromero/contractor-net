@@ -563,5 +563,10 @@ namespace Analysis.Cci
         }
 
 
+
+        public IReadOnlyCollection<TransitionQuery> CreateTransitionQueries(State source, Action action, IEnumerable<State> targets, string expectedExitCode, string condition)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -87,11 +87,19 @@ namespace Contractor.Core
 
         public string getExitCode()
         {
+            if (this.exitCode == "")
+            {
+                return null;
+            }
             return this.exitCode;
         }
 
         public string getCondition()
         {
+            if (this.condition == "")
+            {
+                return null;
+            }
             return this.condition;
         }
     }

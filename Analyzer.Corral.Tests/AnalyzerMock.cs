@@ -67,6 +67,16 @@ namespace Analyzer.Corral.Tests
             var transitionQueries = CreateTransitionQueries(source, action, targets);
             return evaluator.GetFeasibleTransitions(transitionQueries);
         }
+
+        public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string exitCode,string condition)
+        {
+            throw new NotImplementedException();
+            //var evaluator = new QueryEvaluator(new CorralMock(), new FileInfo(@"C:\Windows\notepad.exe"));
+
+            //var transitionQueries = CreateTransitionQueries(source, action, targets);
+            //return evaluator.GetFeasibleTransitions(transitionQueries);
+        }
+
         protected IReadOnlyCollection<ActionQuery> CreatePositiveQueries(State source, Action action, IEnumerable<Action> actions)
         {
             var queries = new List<ActionQuery>();

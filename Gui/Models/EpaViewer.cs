@@ -55,6 +55,8 @@ namespace Contractor.Gui
         public void AddTransition(Transition transition)
         {
             var exitCode = transition.ExitCode;
+            if (!transition.ReturnType.Equals(""))
+                exitCode += " && result is "+ transition.ReturnType;
             var label = transition.Action.ToString();
             var createEdge = true;
             var lineStyle = transition.IsUnproven ? Style.Dashed : Style.Solid;

@@ -115,6 +115,19 @@ namespace Analyzer.Corral
             return feasibleTransitions;
         }
 
+        public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string expectedExitCode, string condition)
+        {
+            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir, exceptionHarcoder);
+
+            var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets, expectedExitCode,condition);
+            var queryAssembly = CreateBoogieQueryAssembly(transitionQueries, expectedExitCode);
+            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var feasibleTransitions = evaluator.GetFeasibleTransitions(transitionQueries, expectedExitCode,condition);
+            unprovenQueriesCount += evaluator.UnprovenQueries;
+
+            return feasibleTransitions;
+        }
+
         public string GetUsageStatistics()
         {
             var statisticsBuilder = new StringBuilder();

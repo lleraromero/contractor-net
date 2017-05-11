@@ -70,7 +70,7 @@ namespace Analyzer.Corral
             return unreachableQueries.Select(query => query.ActionUnderTest).ToList();
         }
 
-        public IReadOnlyCollection<Transition> GetFeasibleTransitions(IReadOnlyCollection<TransitionQuery> transitionQueries, string exitCode = "NOSE")
+        public IReadOnlyCollection<Transition> GetFeasibleTransitions(IReadOnlyCollection<TransitionQuery> transitionQueries, string exitCode = "NOSE", string condition = "NOSE")
         {
             Contract.Requires(transitionQueries != null);
 
@@ -79,13 +79,18 @@ namespace Analyzer.Corral
             foreach (var query in transitionQueries)
             {
                 var result = solver.Execute(queryAssembly, query);
+                var resultInfo = "";
+                if (!query.Method.Method.Type.ToString().Equals("System.Void") && !condition.Equals("NOSE"))
+                    resultInfo = query.Method.Method.Type.ToString() + " && " + condition;
+                else if (!query.Method.Method.Type.ToString().Equals("System.Void"))
+                     resultInfo = query.Method.Method.Type.ToString();
                 switch (result)
                 {
                     case QueryResult.Reachable:
-                        feasibleTransitions.Add(new Transition(query.Action, query.SourceState, query.TargetState, false,exitCode,"NOSE"));
+                        feasibleTransitions.Add(new Transition(query.Action, query.SourceState, query.TargetState, false, exitCode, resultInfo));
                         break;
                     case QueryResult.MaybeReachable:
-                        feasibleTransitions.Add(new Transition(query.Action, query.SourceState, query.TargetState, true, exitCode,"NOSE"));
+                        feasibleTransitions.Add(new Transition(query.Action, query.SourceState, query.TargetState, true, exitCode, resultInfo));
                         unprovenQueries++;
                         break;
                     case QueryResult.Unreachable:

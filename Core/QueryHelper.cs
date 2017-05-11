@@ -48,7 +48,19 @@ namespace Contractor.Core
         {
             var targets=new List<State>();
             targets.Add(target);
-            var result= analyzer.AnalyzeTransitions(source, action, targets,exitCode);
+            IReadOnlyCollection<Transition> result = null;
+            if(condition==null){
+                result = analyzer.AnalyzeTransitions(source, action, targets, exitCode);
+            }
+            else
+            {
+                //the following if should be avoided with a better design that allow extension for query generation
+                //var corralAnalyzer= analyzer as CorralAnalyzer;
+                //if (corralAnalyzer != null)
+                result = analyzer.AnalyzeTransitions(source, action, targets, exitCode, condition);
+                //else
+                //    throw new NotImplementedException("INVALID ENGINE FOR CONDITIONS, NOT IMPLEMENTED");
+            }
             if (result.Count != 0)
             {
                 return result.ElementAt(0);

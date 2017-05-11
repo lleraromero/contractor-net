@@ -117,6 +117,12 @@ namespace Analyzer.CodeContracts
 
             return feasibleTransitions;
         }
+
+        public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string exitCode, string condition)
+        {
+            throw new NotImplementedException("CodeContractsAnalyzer does not implement condition queries yet");
+        }
+
         public string GetUsageStatistics()
         {
             var statisticsBuilder = new StringBuilder();
