@@ -164,6 +164,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AggregatingContractProvider.cs" />
+    <Compile Include="BooleanResultDecorator.cs" />
     <Compile Include="CciAction.cs" />
     <Compile Include="CciActionQueryGenerator.cs" />
     <Compile Include="CciAssembly.cs" />
@@ -180,9 +181,12 @@
     <Compile Include="CciTypeDefinition.cs" />
     <Compile Include="ConditionalRewriter.cs" />
     <Compile Include="ContractRewriter.cs" />
+    <Compile Include="DummyQueryDecorator.cs" />
     <Compile Include="ExceptionEncoder.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Helper.cs" />
+    <Compile Include="IResultDecorator.cs" />
+    <Compile Include="QueryDecorator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReturnRewriter.cs" />
   </ItemGroup>
