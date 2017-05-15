@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace Analysis.Cci
 {
-    public abstract class IResultDecorator
+    public abstract class IResultDecorator: QueryDecorator
     {
-        void DefineResultValueToCompare(IExpression value);
+        public abstract void DefineResultValueToCompare(IExpression value);
     }
 }

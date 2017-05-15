@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Analysis.Cci
 {
-    public class BooleanResultDecorator: QueryDecorator, IResultDecorator
+    public class BooleanResultDecorator: IResultDecorator
     {
         private IExpression value; 
 
@@ -28,7 +28,7 @@ namespace Analysis.Cci
 
         public override void DefineResultValueToCompare(IExpression value)
         {
-            this.value = IExpression;
+            this.value = value;
         }
     }
 }
