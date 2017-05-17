@@ -7,8 +7,14 @@ using System.Threading.Tasks;
 
 namespace Analysis.Cci
 {
-    public abstract class IResultDecorator: QueryDecorator
+
+    public abstract class ResultDecorator: QueryDecorator
     {
-        public abstract void DefineResultValueToCompare(IExpression value);
+        protected IExpression comparisonExpression; //this expression will be used to instrument the query.
+
+        public void DefineResultValueToCompare(IExpression comparisonExpression)
+        {
+            this.comparisonExpression = comparisonExpression;
+        }
     }
 }
