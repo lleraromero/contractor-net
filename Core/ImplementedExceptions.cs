@@ -21,6 +21,12 @@ namespace Contractor.Core
             errorList.Add("ArgumentException");
             errorList.Add("ArgumentOutOfRangeException");
             errorList.Add("InvalidOperationException");
+            errorList.Add("IOException");
+            errorList.Add("EndOfStreamException");
+            errorList.Add("ObjectDisposedException");
+            errorList.Add("NotSupportedException");
+            errorList.Add("NotImplementedException");
+            errorList.Add("AssertFailedException");
         }
     }
 }
