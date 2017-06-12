@@ -68,7 +68,7 @@ namespace Analyzer.Corral
             }
 
             Directory.Delete(tmpDir, true);
-
+            MyLogger.LogCorralOutput(output.ToString());
             return ParseResultKind(output.ToString(), query);
         }
 
@@ -118,7 +118,7 @@ namespace Analyzer.Corral
             }
 
             Directory.Delete(tmpDir, true);
-
+            MyLogger.LogCorral(args);
             return ParseResultKind(output.ToString(), query);
         }
 

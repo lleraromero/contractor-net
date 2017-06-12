@@ -54,6 +54,14 @@ namespace Log
             }
         }
 
+        public static void LogCorralOutput(string output)
+        {
+            using (System.IO.StreamWriter file =
+            new System.IO.StreamWriter(logFile, true))
+            {
+                file.WriteLine("Corral output: " + output + System.Environment.NewLine);
+            }
+        }
 
 
         public static void LogMsg(string msg)
