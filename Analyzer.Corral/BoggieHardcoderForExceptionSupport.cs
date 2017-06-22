@@ -15,18 +15,18 @@ namespace Analyzer.Corral
         public BoggieHardcoderForExceptionSupport() {
             errorList = new List<string>();
             errorList.Add("Ok");
-            errorList.Add("OverflowException");
-            errorList.Add("IndexOutOfRangeException");
-            errorList.Add("NullReferenceException");
-            errorList.Add("DivideByZeroException");
+            errorList.Add("System.OverflowException");
+            errorList.Add("System.IndexOutOfRangeException");
+            errorList.Add("System.NullReferenceException");
+            errorList.Add("System.DivideByZeroException");
             errorList.Add("IllegalStateException");
             errorList.Add("ConcurrentModificationException");
             errorList.Add("NoSuchElementException");
-            errorList.Add("ArgumentNullException");
-            errorList.Add("ArgumentException");
-            errorList.Add("ArgumentOutOfRangeException");
-            errorList.Add("InvalidOperationException");
-            errorList.Add("Exception");
+            errorList.Add("System.ArgumentNullException");
+            errorList.Add("System.ArgumentException");
+            errorList.Add("System.ArgumentOutOfRangeException");
+            errorList.Add("System.InvalidOperationException");
+            errorList.Add("System.Exception");
         }
 
         public BoggieHardcoderForExceptionSupport(List<string> errorList)
@@ -77,7 +77,7 @@ namespace Analyzer.Corral
             {
                 if (!exception.Equals("Ok"))
                 {
-                    stringBuilder.AppendLine("axiom $Subtype(T$System." + exception + "(), T$System." + exception + "());");
+                    stringBuilder.AppendLine("axiom $Subtype(T$" + exception + "(), T$" + exception + "());");
                 }
             }
             //stringBuilder.AppendLine("axiom $Subtype(T$System.DivideByZeroException(), T$System.DivideByZeroException());");
@@ -95,9 +95,9 @@ namespace Analyzer.Corral
         {
             foreach (var exception in errorList)
             {
-                if (!exception.Equals("Ok") && !exception.Equals("Exception"))
+                if (!exception.Equals("Ok") && !exception.Equals("System.Exception"))
                 {
-                    stringBuilder.AppendLine("axiom $Subtype(T$System." + exception + "(), T$System.Exception());");
+                    stringBuilder.AppendLine("axiom $Subtype(T$" + exception + "(), T$System.Exception());");
                 }
             }
 
@@ -115,8 +115,8 @@ namespace Analyzer.Corral
             {
                 if (!exception.Equals("Ok"))
                 {
-                    stringBuilder.AppendLine("function {:extern} T$System." + exception + "() : Ref;");
-                    stringBuilder.AppendLine("const {:extern} unique T$System." + exception + ": int;");
+                    stringBuilder.AppendLine("function {:extern} T$" + exception + "() : Ref;");
+                    stringBuilder.AppendLine("const {:extern} unique T$" + exception + ": int;");
                 }
             }
             //stringBuilder.AppendLine("function {:extern} T$System.NullReferenceException() : Ref;");
@@ -149,9 +149,9 @@ namespace Analyzer.Corral
         {
             foreach (var exception in errorList)
             {
-                if (!exception.Equals("Ok") && !exception.Equals("Exception"))
+                if (!exception.Equals("Ok") && !exception.Equals("System.Exception"))
                 {
-                    stringBuilder.AppendLine("axiom !$Subtype(T$System.Exception(), T$System."+exception+"());");
+                    stringBuilder.AppendLine("axiom !$Subtype(T$System.Exception(), T$"+exception+"());");
                 }
             }
             //stringBuilder.AppendLine("axiom !$Subtype(T$System.Exception(), T$System.DivideByZeroException());");
@@ -167,13 +167,13 @@ namespace Analyzer.Corral
         {
             foreach (var exception in errorList)
             {
-                if(!exception.Equals("Ok") && !exception.Equals("Exception"))
+                if (!exception.Equals("Ok") && !exception.Equals("System.Exception"))
                 {
                     foreach (var exception2 in errorList)
                     {
-                        if (!exception2.Equals("Ok") && !exception2.Equals("Exception") && !exception.Equals(exception2))
+                        if (!exception2.Equals("Ok") && !exception2.Equals("System.Exception") && !exception.Equals(exception2))
                         {
-                            stringBuilder.AppendLine("axiom !$Subtype(T$System." + exception + "(), T$System." + exception2 + "());");
+                            stringBuilder.AppendLine("axiom !$Subtype(T$" + exception + "(), T$" + exception2 + "());");
                         }
                     }
                 }

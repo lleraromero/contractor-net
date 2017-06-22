@@ -10,22 +10,22 @@ namespace Contractor.Core
     {
         public static void AddAllExceptionsTo(List<string> errorList)
         {
-            errorList.Add("OverflowException");
-            errorList.Add("IndexOutOfRangeException");
-            errorList.Add("NullReferenceException");
-            errorList.Add("DivideByZeroException");
-            errorList.Add("IllegalStateException");
-            errorList.Add("ConcurrentModificationException");
-            errorList.Add("NoSuchElementException");
-            errorList.Add("ArgumentNullException");
-            errorList.Add("ArgumentException");
-            errorList.Add("ArgumentOutOfRangeException");
-            errorList.Add("InvalidOperationException");
-            errorList.Add("IOException");
-            errorList.Add("EndOfStreamException");
-            errorList.Add("ObjectDisposedException");
-            errorList.Add("NotSupportedException");
-            errorList.Add("NotImplementedException");
+            errorList.Add("System.OverflowException");
+            errorList.Add("System.IndexOutOfRangeException");
+            errorList.Add("System.NullReferenceException");
+            errorList.Add("System.DivideByZeroException");
+            errorList.Add("System.IllegalStateException");
+            errorList.Add("System.ConcurrentModificationException");
+            errorList.Add("System.NoSuchElementException");
+            errorList.Add("System.ArgumentNullException");
+            errorList.Add("System.ArgumentException");
+            errorList.Add("System.ArgumentOutOfRangeException");
+            errorList.Add("System.InvalidOperationException");
+            errorList.Add("System.IO.IOException");
+            errorList.Add("System.IO.EndOfStreamException");
+            errorList.Add("System.ObjectDisposedException");
+            errorList.Add("System.NotSupportedException");
+            errorList.Add("System.NotImplementedException");
             errorList.Add("AssertFailedException");
         }
     }

@@ -65,7 +65,7 @@ namespace Contractor.Gui.Models
             {
                 ImplementedExceptions.AddAllExceptionsTo(errorList);
             }
-            errorList.Add("Exception");
+            errorList.Add("System.Exception");
             
             var analyzer = GetAnalyzer(analysisEventArgs.TypeToAnalyze, analysisEventArgs.Engine, cancellationSource.Token,errorList);
 
@@ -82,6 +82,7 @@ namespace Contractor.Gui.Models
             }
             else if (analysisEventArgs.Conditions.Equals("EPA-O"))
             {
+                errorList = errorList.Select(x => x.Split('.').Last()).ToList();
                 var epaGenerator = new EpaOGenerator(analyzer, -1,errorList);
                 return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable,methodsInfo);
             }else{
@@ -140,7 +141,7 @@ namespace Contractor.Gui.Models
             var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
             workingDir.Create();
 
-            var queryGenerator = new CciQueryGenerator(errorList);
+            var queryGenerator = new CciQueryGenerator(errorList.Select(x => x.Split('.').Last()).ToList());
 
             IAnalyzer analyzer;
             switch (engine)
