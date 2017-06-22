@@ -390,6 +390,9 @@ namespace Analysis.Cci
             }
 
             IBlockStatement actionBodyBlock = null;
+            
+            var m= Microsoft.Cci.MutableCodeModel.MetadataCopier.DeepCopy(host,action.Method).ResolvedMethod;
+            
             if (action.Method.Body is Microsoft.Cci.ILToCodeModel.SourceMethodBody)
             {
                 var actionBody = action.Method.Body as Microsoft.Cci.ILToCodeModel.SourceMethodBody;
@@ -511,7 +514,7 @@ namespace Analysis.Cci
                     continue;
                 try
                 {
-                    var excType = x.Single(t => t.Name.Value == exception);
+                    var excType = x.Single(t => t.Name.Value == exception.Split('.').Last());
                     var variable = new LocalDefinition()
                     {
                         Name = Dummy.Name,
