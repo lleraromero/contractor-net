@@ -391,8 +391,9 @@ namespace Analysis.Cci
 
             IBlockStatement actionBodyBlock = null;
             
-            var m= Microsoft.Cci.MutableCodeModel.MetadataCopier.DeepCopy(host,action.Method).ResolvedMethod;
-            
+            //var m= Microsoft.Cci.MutableCodeModel.MetadataCopier.DeepCopy(host,action.Method).ResolvedMethod;
+            //Microsoft.Cci.MutableCodeModel.CodeDeepCopier copier= new CodeDeepCopier(host);
+            //var m = copier.Copy(action.Method);
             if (action.Method.Body is Microsoft.Cci.ILToCodeModel.SourceMethodBody)
             {
                 var actionBody = action.Method.Body as Microsoft.Cci.ILToCodeModel.SourceMethodBody;
