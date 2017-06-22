@@ -93,6 +93,7 @@ namespace Analyzer.Corral
         public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
             ISolver corralRunner = new CorralRunner(defaultArgs, workingDir, exceptionHarcoder);
+            Log.MyLogger.LogMsg("---- #TARGETS "+targets.Count()+"----");
             var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets);
             var queryAssembly = CreateBoogieQueryAssembly(transitionQueries);
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
