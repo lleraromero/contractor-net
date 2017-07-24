@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Console", "Console\Console.csproj", "{53B2EDCB-0DA2-435C-973F-86F6F303623A}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -52,6 +52,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Instrumenter", "Instrumenter\Instrumenter.csproj", "{86C9FA05-49E9-462D-B719-1456A7E542E8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ErrorInstrumentator", "ErrorInstrumentator\ErrorInstrumentator.csproj", "{B3247FA5-373E-46FA-8931-C189C522CA58}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Console.Tests", "Console.Tests\Console.Tests.csproj", "{893158E1-F873-440C-994D-98BFEB5A853D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -223,6 +225,16 @@ Global
 		{B3247FA5-373E-46FA-8931-C189C522CA58}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{B3247FA5-373E-46FA-8931-C189C522CA58}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{B3247FA5-373E-46FA-8931-C189C522CA58}.Release|x86.ActiveCfg = Release|Any CPU
+		{893158E1-F873-440C-994D-98BFEB5A853D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{893158E1-F873-440C-994D-98BFEB5A853D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{893158E1-F873-440C-994D-98BFEB5A853D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{893158E1-F873-440C-994D-98BFEB5A853D}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{893158E1-F873-440C-994D-98BFEB5A853D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{893158E1-F873-440C-994D-98BFEB5A853D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{893158E1-F873-440C-994D-98BFEB5A853D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{893158E1-F873-440C-994D-98BFEB5A853D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{893158E1-F873-440C-994D-98BFEB5A853D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{893158E1-F873-440C-994D-98BFEB5A853D}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -232,5 +244,6 @@ Global
 		{CD4DD380-2148-4C8C-B646-D0405F22D9DE} = {579D0B2C-9780-4C79-B41A-5A222BFC5E3D}
 		{84CDCF2E-CF8F-4381-93E6-CD204D50F8C5} = {937440F7-801C-4674-A140-098AF035AE8A}
 		{AB023680-8E27-4D6C-9EC7-56102A6D3A8A} = {579D0B2C-9780-4C79-B41A-5A222BFC5E3D}
+		{893158E1-F873-440C-994D-98BFEB5A853D} = {937440F7-801C-4674-A140-098AF035AE8A}
 	EndGlobalSection
 EndGlobal

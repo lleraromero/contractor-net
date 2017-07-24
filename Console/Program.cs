@@ -16,7 +16,7 @@ using System.Diagnostics;
 
 namespace Contractor.Console
 {
-    internal class Program
+    public class Program
     {
         public static int Main(string[] args)
         {
@@ -42,11 +42,16 @@ namespace Contractor.Console
 #endif
             //System.Diagnostics.Debugger.Break();
             var options = new Options();
-            if (!Parser.Default.ParseArgumentsStrict(args, options))
+            System.Action myact = () =>
+            {
+                //throw new Exception("test");
+                //return -1;
+            };
+            if (!Parser.Default.ParseArgumentsStrict(args, options, myact))
             {
                 System.Console.WriteLine("Args parsing error!");
 #if DEBUG
-                System.Console.ReadKey();
+                //System.Console.ReadKey();
 #endif
                 return -1;
             }
@@ -96,7 +101,7 @@ namespace Contractor.Console
             return 0;
         }
 
-        protected static TypeAnalysisResult GenerateEpa(Options options, Dictionary<string, ErrorInstrumentator.MethodInfo> methodsInfo)
+        internal static TypeAnalysisResult GenerateEpa(Options options, Dictionary<string, ErrorInstrumentator.MethodInfo> methodsInfo)
         {
             Contract.Requires(!string.IsNullOrEmpty(options.TypeToAnalyze));
             Contract.Requires(!string.IsNullOrEmpty(options.InputAssembly) && File.Exists(options.InputAssembly));
