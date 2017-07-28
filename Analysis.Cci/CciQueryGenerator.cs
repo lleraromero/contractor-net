@@ -239,7 +239,7 @@ namespace Analysis.Cci
                 Statement = new EmptyStatement()
             };
             var bst = (actionBodyBlock as BlockStatement);
-            if (bst.Statements.Last() is ReturnStatement)
+            if (bst.Statements.Count>0 && bst.Statements.Last() is ReturnStatement)
             {
                 var pos = bst.Statements.Count - 1;
                 //if (pos < 0)
