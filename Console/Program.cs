@@ -121,14 +121,15 @@ namespace Contractor.Console
             if (options.ErrorList.Equals("All"))
             {
                 ImplementedExceptions.AddAllExceptionsTo(errorList);
-                errorList.Add("Exception");
+                //errorList.Add("Exception");
+                errorList.Add("System.Exception");
             }
             else
             {
                 errorList.AddRange(options.ErrorList.Split(';'));
             }
-
-            var queryGenerator = new CciQueryGenerator(errorList);
+            var queryGenerator = new CciQueryGenerator(errorList.Select(x => x.Split('.').Last()).ToList());
+            //var queryGenerator = new CciQueryGenerator(errorList);
 
             IAnalyzer analyzer;
             switch (options.Backend)
@@ -207,7 +208,7 @@ namespace Contractor.Console
             {
                 //if (oc.Contains("exitCode"))
                 //{
-                
+                errorList = errorList.Select(x => x.Split('.').Last()).ToList();
                 var generator = new EpaOGenerator(analyzer, options.Cutter, errorList);
 
                     var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
@@ -248,6 +249,8 @@ namespace Contractor.Console
             Contract.Requires(outputDir != null);
 
             var typeName = epa.Type.ToString().Replace('.', '_');
+            typeName = typeName.Replace('<', '_');
+            typeName = typeName.Replace('>', '_');
             using (var stream = File.Create(string.Format("{0}\\{1}.png", outputDir.FullName, typeName)))
             {
                 new EpaBinarySerializer().Serialize(stream, epa);
@@ -260,6 +263,8 @@ namespace Contractor.Console
             Contract.Requires(outputDir.Exists);
 
             var typeName = epa.Type.ToString().Replace('.', '_');
+            typeName = typeName.Replace('<', '_');
+            typeName = typeName.Replace('>', '_');
             using (var stream = File.Create(string.Format("{0}\\{1}.xml", outputDir.FullName, typeName)))
             {
                 new EpaXmlSerializer().Serialize(stream, epa);
