@@ -70,6 +70,12 @@ namespace Contractor.Gui.Models
             var analyzer = GetAnalyzer(analysisEventArgs.TypeToAnalyze, analysisEventArgs.Engine, cancellationSource.Token,errorList);
 
             var selectedMethods = from m in analysisEventArgs.SelectedMethods select m.ToString();
+            
+            /*using (StreamWriter writer = new StreamWriter("selectedMethods.txt", true))
+            {
+                foreach(var m in selectedMethods)
+                    writer.Write(m+";");
+            }*/
 
             var epaBuilder = new EpaBuilder(analysisEventArgs.TypeToAnalyze);
             OnInitialStateAdded(this, epaBuilder,analysisEventArgs.SelectedMethods);
