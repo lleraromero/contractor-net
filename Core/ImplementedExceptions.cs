@@ -26,6 +26,8 @@ namespace Contractor.Core
             errorList.Add("System.ObjectDisposedException");
             errorList.Add("System.NotSupportedException");
             errorList.Add("System.NotImplementedException");
+            errorList.Add("System.InvalidCastException");
+            errorList.Add("System.RankException");
             errorList.Add("AssertFailedException");
         }
     }
