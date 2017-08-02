@@ -36,8 +36,8 @@ namespace Contractor.Core
             Contract.Requires(typeToAnalyze != null);
             Contract.Requires(selectedMethods != null);
 
-            var constructors = new HashSet<Action>(typeToAnalyze.Constructors().Where(a => selectedMethods.Contains(a.ToString())));
-            var actions = new HashSet<Action>(typeToAnalyze.Actions().Where(a => selectedMethods.Contains(a.ToString())));
+            var constructors = new HashSet<Action>(typeToAnalyze.Constructors().Where(a => selectedMethods.Contains(a.ToString().Replace(" ", ""))));
+            var actions = new HashSet<Action>(typeToAnalyze.Actions().Where(a => selectedMethods.Contains(a.ToString().Replace(" ", ""))));
 
             return GenerateEpaAndStatistics(constructors, actions, epaBuilder);
         }
