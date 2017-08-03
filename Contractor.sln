@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		cccheck help.txt = cccheck help.txt
 		GlobalAssemblyInfo.cs = GlobalAssemblyInfo.cs
 		Key.snk = Key.snk
+		Performance1.psess = Performance1.psess
+		Performance2.psess = Performance2.psess
 		UpdateDependencies.cmd = UpdateDependencies.cmd
 	EndProjectSection
 EndProject
@@ -245,5 +247,8 @@ Global
 		{84CDCF2E-CF8F-4381-93E6-CD204D50F8C5} = {937440F7-801C-4674-A140-098AF035AE8A}
 		{AB023680-8E27-4D6C-9EC7-56102A6D3A8A} = {579D0B2C-9780-4C79-B41A-5A222BFC5E3D}
 		{893158E1-F873-440C-994D-98BFEB5A853D} = {937440F7-801C-4674-A140-098AF035AE8A}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

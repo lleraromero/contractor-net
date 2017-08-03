@@ -107,6 +107,7 @@ namespace Contractor.Console
             Contract.Requires(!string.IsNullOrEmpty(options.InputAssembly) && File.Exists(options.InputAssembly));
 
             System.Console.WriteLine("Starting analysis for type {0}", options.TypeToAnalyze);
+            Log.MyLogger.LogStartAnalysis(options.TypeToAnalyze);
 
             var decompiler = new CciAssemblyPersister();
             var inputAssembly = decompiler.Load(options.InputAssembly, null);

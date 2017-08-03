@@ -34,8 +34,8 @@ namespace Analyzer.Corral
 
                 bct.OutputDataReceived += (sender, e) => { Logger.Log(LogLevel.Debug, "BCT: " + e.Data); };
                 bct.ErrorDataReceived += (sender, e) => { Logger.Log(LogLevel.Fatal, "BCT: " + e.Data); };
-                Console.WriteLine(string.Join(" ", args));
-                Console.WriteLine(tmpDir);
+                //Console.WriteLine(string.Join(" ", args));
+                //Console.WriteLine(tmpDir);
                 bct.Start();
                 bct.BeginErrorReadLine();
                 bct.BeginOutputReadLine();
