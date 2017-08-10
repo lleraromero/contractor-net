@@ -168,6 +168,7 @@
     <Compile Include="Instrumentator\InstrumenterRewriter.cs" />
     <Compile Include="Instrumentator\InvocationInstrumenterWalker.cs" />
     <Compile Include="Instrumentator\TraceSyntaxGenerator.cs" />
+    <Compile Include="Instrumentator\CodeAdapterRewriter.cs" />
     <Compile Include="Orchestrator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Instrumentator\SourceCompiler.cs" />
