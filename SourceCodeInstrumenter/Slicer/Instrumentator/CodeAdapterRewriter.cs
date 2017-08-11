@@ -18,6 +18,18 @@ namespace DC.Slicer
 
         //public override SyntaxNode VisitConditionalExpression(ConditionalExpressionSyntax node);
         //seria assign= cond;
+        public override SyntaxNode VisitAssignmentExpression(AssignmentExpressionSyntax node)
+        {
+            if (node.Right is ConditionalExpressionSyntax)
+            {
+                return SyntaxFactory.ParseStatement(node.ToString());
+            }
+            return node;
+        }
+        public override SyntaxNode VisitLocalDeclarationStatement(LocalDeclarationStatementSyntax node)
+        {
+            return node;
+        }
         /*public override SyntaxNode VisitAssignmentExpression(AssignmentExpressionSyntax node)
         {
             var result = new BlockSyntax();
