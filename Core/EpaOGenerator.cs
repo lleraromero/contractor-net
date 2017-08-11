@@ -39,7 +39,7 @@ namespace Contractor.Core
         {
             Contract.Requires(typeToAnalyze != null);
             Contract.Requires(selectedMethods != null);
-
+            selectedMethods = selectedMethods.Select(a => a.Replace(" ", ""));
             var constructors = new HashSet<Action>(typeToAnalyze.Constructors().Where(a => selectedMethods.Contains(a.ToString().Replace(" ", ""))));
             var actions = new HashSet<Action>(typeToAnalyze.Actions().Where(a => selectedMethods.Contains(a.ToString().Replace(" ",""))));
 

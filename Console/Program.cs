@@ -221,7 +221,7 @@ namespace Contractor.Console
                     TypeAnalysisResult analysisResult;
                     if (!options.Methods.Equals("All"))
                     {
-                        var selectedMethods = options.Methods.Split(';').Select(a=>a.Replace(" ",""));
+                        var selectedMethods = options.Methods.Split(';');
                         analysisResult = generator.GenerateEpa(typeDefinition, selectedMethods, epaBuilderObservable, methodsInfo).Result;
                     }
                     else
