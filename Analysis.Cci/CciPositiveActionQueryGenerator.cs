@@ -4,6 +4,7 @@ using Contractor.Core.Model;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableContracts;
+using System.Collections.Generic;
 
 namespace Analysis.Cci
 {
@@ -11,7 +12,8 @@ namespace Analysis.Cci
     {
         protected const string MethodNameDelimiter = "~";
 
-        public CciPositiveActionQueryGenerator(IContractAwareHost host) : base(host)
+        public CciPositiveActionQueryGenerator(IContractAwareHost host, List<string> listOfExceptions)
+            : base(host,listOfExceptions)
         {
         }
 

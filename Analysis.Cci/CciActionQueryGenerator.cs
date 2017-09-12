@@ -14,9 +14,11 @@ namespace Analysis.Cci
         protected IContractAwareHost host;
         public IExpression exitCode_eq_expected;
         private string expectedExitCode;
-        protected CciActionQueryGenerator(IContractAwareHost host)
+        protected List<string> listOfExceptions;
+        protected CciActionQueryGenerator(IContractAwareHost host, List<string> listOfExceptions)
         {
             this.host = host;
+            this.listOfExceptions = listOfExceptions;
         }
 
         public abstract ActionQuery CreateQuery(State state, Action action, Action actionUnderTest, string expectedExitCode);
@@ -87,7 +89,7 @@ namespace Analysis.Cci
 
             var mc = action.Contract;
 
-            if (mc != null && mc.Preconditions.Any())
+            /*if (mc != null && mc.Preconditions.Any())
             {
                 var asserts = from pre in mc.Preconditions
                     select new AssumeStatement
@@ -98,7 +100,7 @@ namespace Analysis.Cci
                     };
 
                 block.Statements.AddRange(asserts);
-            }
+            }*/
 
             IBlockStatement actionBodyBlock = null;
             if (action.Method.Body is Microsoft.Cci.ILToCodeModel.SourceMethodBody)
@@ -118,7 +120,7 @@ namespace Analysis.Cci
                 var unit = this.host.LoadedUnits.First();
                 var assembly = unit as Microsoft.Cci.IAssembly;
                 var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
-
+                /*
                 var x = assembly.GetAllTypes();
                 var y = coreAssembly.GetAllTypes();
                 x = x.Union(y);
@@ -126,27 +128,36 @@ namespace Analysis.Cci
                 var excType = x.Single(t => t.Name.Value == "Exception");
 
                 var tryBlock = new BlockStatement();
-
+                
                 //Por tratarse de un constructor skipeamos
                 //el primer statement porque es base..ctor();
                 var skipCount = action.Method.IsConstructor ? 1 : 0;
                 tryBlock.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));
+                */
+                var try_catch_gen = new CciTryCatchGenerator(listOfExceptions);
 
+                var localDefExitCode = try_catch_gen.CreateLocalInt(action, coreAssembly, 0);
+
+                var tryStmt = try_catch_gen.GenerateTryStatement(action, actionBodyBlock, assembly, coreAssembly, localDefExitCode);
+
+                /*
                 var catchClauses = new List<ICatchClause>();
-
+                //------------------------------------------------------------------------------
+                //reemplazar esto por un metodo que genere las catch
+                //extraer el metodo de CCI query generator
                 var catchExc= new CatchClause()
                 {
                     ExceptionType = excType, // this.host.NameTable.GetNameFor("Exception"),
                     Body = new BlockStatement()
                 };
                 catchClauses.Add(catchExc);
-
+                //------------------------------------------------------------------------------
                 var tryStmt = new TryCatchFinallyStatement
                 {
                     TryBody = tryBlock,
                     CatchClauses = catchClauses
                 };
-
+                */
                 block.Statements.Add(tryStmt);
             }else{
                 //EPAs

@@ -36,13 +36,13 @@ namespace Analysis.Cci
 
         public IReadOnlyCollection<ActionQuery> CreatePositiveQueries(State state, Action action, IEnumerable<Action> actions, string expectedExitCode = null)
         {
-            var queryGenerator = new CciPositiveActionQueryGenerator(host);
+            var queryGenerator = new CciPositiveActionQueryGenerator(host, listOfExceptions);
             return CreateQueries(state, action, actions, queryGenerator, expectedExitCode);
         }
 
         public IReadOnlyCollection<ActionQuery> CreateNegativeQueries(State state, Action action, IEnumerable<Action> actions, string expectedExitCode = null)
         {
-            var queryGenerator = new CciNegativeActionQueryGenerator(host);
+            var queryGenerator = new CciNegativeActionQueryGenerator(host, listOfExceptions);
             return CreateQueries(state, action, actions, queryGenerator,expectedExitCode);
         }
 
@@ -375,7 +375,7 @@ namespace Analysis.Cci
             condRewriter.actionBodyBlock = block;
 
             var mc = action.Contract;
-
+            /*
             if (mc != null && mc.Preconditions.Any())
             {
                 var asserts = from pre in mc.Preconditions
@@ -387,7 +387,7 @@ namespace Analysis.Cci
                               };
 
                 block.Statements.AddRange(asserts);
-            }
+            }*/
 
             IBlockStatement actionBodyBlock = null;
             
@@ -412,16 +412,19 @@ namespace Analysis.Cci
                 var unit = this.host.LoadedUnits.First();
                 var assembly = unit as Microsoft.Cci.IAssembly;
                 var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
-                
-                localDefExitCode = CreateLocalInt(action, coreAssembly, 0);
 
-                localDefExpectedExitCode = CreateLocalInt(action, coreAssembly, exceptionEncoder.ExceptionToInt(expectedExitCode));
+                var try_catch_gen = new CciTryCatchGenerator(listOfExceptions);
+
+                localDefExitCode = try_catch_gen.CreateLocalInt(action, coreAssembly, 0);
+
+                localDefExpectedExitCode = try_catch_gen.CreateLocalInt(action, coreAssembly, exceptionEncoder.ExceptionToInt(expectedExitCode));
 
                 block.Statements.Add(localDefExitCode);
                 block.Statements.Add(localDefExpectedExitCode);
 
                 //***************************************************** armamos el TRY-CATCH
-                var tryStmt = GenerateTryStatement(action, actionBodyBlock, assembly, coreAssembly);
+
+                var tryStmt = try_catch_gen.GenerateTryStatement(action, actionBodyBlock, assembly, coreAssembly, localDefExitCode);
 
                 block.Statements.Add(tryStmt);
                 //*****************************************************
@@ -460,113 +463,6 @@ namespace Analysis.Cci
 
             return block;
         }
-
-        private static LocalDeclarationStatement CreateLocalInt(Action action, Microsoft.Cci.IAssembly coreAssembly, int defaultValue)
-        {
-            var local = new LocalDeclarationStatement()
-            {
-                InitialValue = new CompileTimeConstant
-                {
-                    Type = coreAssembly.PlatformType.SystemInt32,
-                    Value = defaultValue
-                },
-                LocalVariable = new LocalDefinition()
-                {
-                    Name = Dummy.Name,
-                    Type = coreAssembly.PlatformType.SystemInt32,
-                    MethodDefinition = action.Method
-                }
-            };
-            return local;
-        }
-
-        private TryCatchFinallyStatement GenerateTryStatement(Action action, IBlockStatement actionBodyBlock, Microsoft.Cci.IAssembly assembly, Microsoft.Cci.IAssembly coreAssembly)
-        {
-            //AGREGAR LOS STATEMENT DEL ACTION AL TRYBLOCK EN VEZ DE AL BLOCK
-            var tryBlock = new BlockStatement();
-
-            //Por tratarse de un constructor skipeamos
-            //el primer statement porque es base..ctor();
-            var skipCount = action.Method.IsConstructor ? 1 : 0;
-            tryBlock.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));//*******************************************************Rewrite
-
-            var catchClauses = GenerateCatchClauses(action, assembly, coreAssembly);
-
-            var tryStmt = new TryCatchFinallyStatement
-            {
-                TryBody = tryBlock,
-                CatchClauses = catchClauses
-            };
-            return tryStmt;
-        }
-
-        private List<ICatchClause> GenerateCatchClauses(Action action, Microsoft.Cci.IAssembly assembly, Microsoft.Cci.IAssembly coreAssembly)
-        {
-            var catchClauses = new List<ICatchClause>();
-
-            var intType = coreAssembly.PlatformType.SystemInt32;
-
-            var x = assembly.GetAllTypes();
-            var y = coreAssembly.GetAllTypes();
-            x = x.Union(y);
-            foreach (var exception in listOfExceptions)
-            {
-                if (exception.Equals("Ok"))
-                    continue;
-                try
-                {
-                    var excType = x.Single(t => t.Name.Value == exception.Split('.').Last());
-                    var variable = new LocalDefinition()
-                    {
-                        Name = Dummy.Name,
-                        Type = excType,
-                        MethodDefinition = action.Method
-                    };
-                    var catchExc = GenerateCatchClauseFor(coreAssembly, variable, excType);
-           
-                    catchClauses.Add(catchExc);
-                }
-                catch (Exception)
-                {
-                    System.Console.WriteLine("exception does not exists: " + exception);
-                }
-            }
-            return catchClauses;
-        }
-
-        private CatchClause GenerateCatchClauseFor(Microsoft.Cci.IAssembly coreAssembly, LocalDefinition variable, INamedTypeDefinition nullExcType)
-        {
-            var nullExcBody = new BlockStatement();
-            var assign2 = new ExpressionStatement()
-            {
-                Expression = new Assignment()
-                {
-                    Source = new CompileTimeConstant
-                    {
-                        Type = coreAssembly.PlatformType.SystemInt32,
-                        Value = exceptionEncoder.ExceptionToInt(nullExcType.Name.Value)
-                    },
-                    Target = new TargetExpression()
-                    {
-                        Definition = ((ILocalDeclarationStatement)localDefExitCode).LocalVariable,
-                        Type = coreAssembly.PlatformType.SystemInt32
-                    },
-                    Type = coreAssembly.PlatformType.SystemInt32
-                }
-            };
-
-            nullExcBody.Statements.Add(assign2);
-            
-            var catchNullExc = new CatchClause()
-            {
-                ExceptionType = nullExcType, 
-                Body = nullExcBody,
-                ExceptionContainer = variable
-            };
-            return catchNullExc;
-        }
-
-
 
         public IReadOnlyCollection<TransitionQuery> CreateTransitionQueries(State source, Action action, IEnumerable<State> targets, string expectedExitCode, string condition)
         {

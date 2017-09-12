@@ -4,6 +4,7 @@ using Contractor.Core.Model;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableContracts;
+using System.Collections.Generic;
 
 namespace Analysis.Cci
 {
@@ -12,7 +13,8 @@ namespace Analysis.Cci
         protected const string MethodNameDelimiter = "~";
         protected const string NotPrefix = "_Not_";
 
-        public CciNegativeActionQueryGenerator(IContractAwareHost host) : base(host)
+        public CciNegativeActionQueryGenerator(IContractAwareHost host, List<string> listOfExceptions)
+            : base(host, listOfExceptions)
         {
         }
 

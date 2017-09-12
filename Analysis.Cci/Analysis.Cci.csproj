@@ -178,6 +178,7 @@
     <Compile Include="CciPositiveActionQueryGenerator.cs" />
     <Compile Include="CciQueryAssembly.cs" />
     <Compile Include="CciQueryGenerator.cs" />
+    <Compile Include="CciTryCatchGenerator.cs" />
     <Compile Include="CciTypeDefinition.cs" />
     <Compile Include="ConditionalRewriter.cs" />
     <Compile Include="ContractRewriter.cs" />
