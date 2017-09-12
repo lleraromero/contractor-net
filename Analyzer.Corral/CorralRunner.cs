@@ -82,8 +82,8 @@ namespace Analyzer.Corral
 
             MyLogger.LogCorral(args);
 
-            var boogieHarcoder = new BoggieHardcoderForExceptionSupport();
-            boogieHarcoder.hardcodeExceptionsToFile(queryAssembly.FullName);
+            //var boogieHarcoder = new BoggieHardcoderForExceptionSupport();
+            //boogieHarcoder.hardcodeExceptionsToFile(queryAssembly.FullName);
 
             using (var corral = new Process())
             {

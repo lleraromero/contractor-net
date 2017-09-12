@@ -40,7 +40,7 @@ namespace Analyzer.Corral
 
             this.map = new Dictionary<Tuple<State, Action, IEnumerable<Action>>, ActionAnalysisResults>();
 
-            this.exceptionHarcoder = new BoggieHardcoderForExceptionSupport(errorList);
+            this.exceptionHarcoder = new BoggieHardcoderForExceptionSupport();
 
             generatedQueriesCount = 0;
             unprovenQueriesCount = 0;

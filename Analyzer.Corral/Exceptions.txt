@@ -1,0 +1,38 @@
+//Runtime Exceptions
+System.OverflowException
+System.IndexOutOfRangeException
+System.NullReferenceException
+System.DivideByZeroException
+System.InvalidCastException
+
+//Argument Exceptions
+System.ArgumentNullException
+System.ArgumentException
+System.ArgumentOutOfRangeException
+
+//IOExceptions
+System.IO.FileNotFoundException
+System.IO.DirectoryNotFoundException
+System.IO.PathTooLongException
+System.IO.EndOfStreamException
+System.IO.IOException
+
+//Ad-hoc Exceptions for Java examples
+System.IllegalStateException
+System.ConcurrentModificationException
+System.NoSuchElementException
+
+//Incorrect method execution exceptions
+System.InvalidOperationException
+System.NotSupportedException
+
+//System Exceptions
+System.ObjectDisposedException
+System.UnauthorizedAccessException
+System.NotImplementedException
+System.RankException
+System.TimeoutException
+System.Exception
+
+//Special Ad-hoc Exception for Assert calls
+System.AssertFailedException

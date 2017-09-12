@@ -14,19 +14,12 @@ namespace Analyzer.Corral
         private string full_path_to_boogie_file;
         public BoggieHardcoderForExceptionSupport() {
             errorList = new List<string>();
-            errorList.Add("Ok");
-            errorList.Add("System.OverflowException");
-            errorList.Add("System.IndexOutOfRangeException");
-            errorList.Add("System.NullReferenceException");
-            errorList.Add("System.DivideByZeroException");
-            errorList.Add("IllegalStateException");
-            errorList.Add("ConcurrentModificationException");
-            errorList.Add("NoSuchElementException");
-            errorList.Add("System.ArgumentNullException");
-            errorList.Add("System.ArgumentException");
-            errorList.Add("System.ArgumentOutOfRangeException");
-            errorList.Add("System.InvalidOperationException");
-            errorList.Add("System.Exception");
+            string[] lines = System.IO.File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + @"..\..\..\Analyzer.Corral\Exceptions.txt");
+            foreach (string line in lines)
+            {
+                if(!line.Equals("") && !line.Contains("//"))
+                    errorList.Add(line);
+            }
         }
 
         public BoggieHardcoderForExceptionSupport(List<string> errorList)
@@ -53,7 +46,7 @@ namespace Analyzer.Corral
         private void hardcodeSubtypeAxioms()
         {
             StringBuilder stringBuilder = new StringBuilder();
-            hardcodeExceptionNotSubtypeOf(stringBuilder);
+            //hardcodeExceptionNotSubtypeOf(stringBuilder);
             hardcodeAllNotSubtypeOf(stringBuilder);
             harcodeAllSubtypeOfException(stringBuilder);
             harcodeSubtypeOfThemSelves(stringBuilder);
@@ -93,6 +86,7 @@ namespace Analyzer.Corral
 
         private void harcodeAllSubtypeOfException(StringBuilder stringBuilder)
         {
+            /*
             foreach (var exception in errorList)
             {
                 if (!exception.Equals("Ok") && !exception.Equals("System.Exception"))
@@ -100,7 +94,7 @@ namespace Analyzer.Corral
                     stringBuilder.AppendLine("axiom $Subtype(T$" + exception + "(), T$System.Exception());");
                 }
             }
-
+            */
             //stringBuilder.AppendLine("axiom $Subtype(T$System.DivideByZeroException(), T$System.Exception());");
             //stringBuilder.AppendLine("axiom $Subtype(T$System.NullReferenceException(), T$System.Exception());");
             //stringBuilder.AppendLine("axiom $Subtype(T$System.IndexOutOfRangeException(), T$System.Exception());");
@@ -167,11 +161,11 @@ namespace Analyzer.Corral
         {
             foreach (var exception in errorList)
             {
-                if (!exception.Equals("Ok") && !exception.Equals("System.Exception"))
+                if (!exception.Equals("Ok"))
                 {
                     foreach (var exception2 in errorList)
                     {
-                        if (!exception2.Equals("Ok") && !exception2.Equals("System.Exception") && !exception.Equals(exception2))
+                        if (!exception2.Equals("Ok") && !exception.Equals(exception2))
                         {
                             stringBuilder.AppendLine("axiom !$Subtype(T$" + exception + "(), T$" + exception2 + "());");
                         }
