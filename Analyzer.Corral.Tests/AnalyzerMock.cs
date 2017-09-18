@@ -136,6 +136,11 @@ namespace Analyzer.Corral.Tests
             return queries;
         }
 
+        public void ComputeDependencies(ISet<Action> actions)
+        {
+            throw new NotImplementedException("CodeContractsAnalyzer does not implement dependencies optimization queries yet");
+        }
+
         protected TransitionQuery CreateFakeTransitionQuery(string methodName)
         {
             var fakeQuery = A.Fake<TransitionQuery>();

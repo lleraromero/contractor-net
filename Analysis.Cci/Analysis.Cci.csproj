@@ -166,6 +166,7 @@
     <Compile Include="AggregatingContractProvider.cs" />
     <Compile Include="BooleanResultDecorator.cs" />
     <Compile Include="CciAction.cs" />
+    <Compile Include="CciActionDependenciesQueryGenerator.cs" />
     <Compile Include="CciActionQueryGenerator.cs" />
     <Compile Include="CciAssembly.cs" />
     <Compile Include="CciAttributeAdder.cs" />
@@ -174,7 +175,9 @@
     <Compile Include="CciAssemblyPersister.cs" />
     <Compile Include="CciExpressionPrettyPrinter.cs" />
     <Compile Include="CciHostEnvironment.cs" />
+    <Compile Include="CciNegativeActionDependenciesQueryGenerator.cs" />
     <Compile Include="CciNegativeActionQueryGenerator.cs" />
+    <Compile Include="CciPositiveActionDependenciesQueryGenerator.cs" />
     <Compile Include="CciPositiveActionQueryGenerator.cs" />
     <Compile Include="CciQueryAssembly.cs" />
     <Compile Include="CciQueryGenerator.cs" />

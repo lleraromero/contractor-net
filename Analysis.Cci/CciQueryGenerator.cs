@@ -468,5 +468,28 @@ namespace Analysis.Cci
         {
             throw new NotImplementedException();
         }
+
+        public IReadOnlyCollection<ActionQuery> CreateNegativeQueries(Action action, ISet<Action> actions)
+        {
+            var queryGenerator = new CciNegativeActionDependenciesQueryGenerator(host, listOfExceptions, expectedExitCode!=null);
+            return CreateQueries(action, actions, queryGenerator);
+        }
+
+        public IReadOnlyCollection<ActionQuery> CreatePositiveQueries(Action action, ISet<Action> actions)
+        {
+            var queryGenerator = new CciPositiveActionDependenciesQueryGenerator(host, listOfExceptions, expectedExitCode != null);
+            return CreateQueries(action, actions, queryGenerator);
+        }
+
+        protected IReadOnlyCollection<ActionQuery> CreateQueries(Action action, IEnumerable<Action> actions,
+            CciActionDependenciesQueryGenerator queryGenerator)
+        {
+            var queries = new List<ActionQuery>();
+            foreach (var actionUnderTest in actions)
+            {
+                queries.Add(queryGenerator.CreateQuery(action, actionUnderTest));
+            }
+            return queries;
+        }
     }
 }

@@ -123,6 +123,11 @@ namespace Analyzer.CodeContracts
             throw new NotImplementedException("CodeContractsAnalyzer does not implement condition queries yet");
         }
 
+        public void ComputeDependencies(ISet<Action> actions)
+        {
+            throw new NotImplementedException("CodeContractsAnalyzer does not implement dependencies optimization queries yet");
+        }
+
         public string GetUsageStatistics()
         {
             var statisticsBuilder = new StringBuilder();

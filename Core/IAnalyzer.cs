@@ -19,6 +19,8 @@ namespace Contractor.Core
         IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string exitCode);
 
         IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string exitCode, string condition);
+
+        void ComputeDependencies(ISet<Action> actions);
     }
 
     #region IAnalyzer Contracts
@@ -70,6 +72,13 @@ namespace Contractor.Core
             Contract.Ensures(Contract.Result<IReadOnlyCollection<Transition>>().Any());
             throw new NotImplementedException();
         }
+
+        public void ComputeDependencies(ISet<Action> actions)
+        {
+            Contract.Requires(actions != null);
+            throw new NotImplementedException();
+        }
+
         public string GetUsageStatistics()
         {
             throw new NotImplementedException();

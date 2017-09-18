@@ -64,7 +64,10 @@ namespace Contractor.Core
             Contract.Requires(constructors != null);
             Contract.Requires(actions != null);
             Contract.Requires(epaBuilder != null);
-
+            lock (analyzer)
+            {
+                analyzer.ComputeDependencies(actions);
+            }
             var initialState = new State(constructors, new HashSet<Action>());
             var statesToVisit = new Queue<State>();
             var visitedStates = new HashSet<State>();

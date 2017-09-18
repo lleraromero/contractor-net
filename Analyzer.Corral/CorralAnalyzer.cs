@@ -22,6 +22,8 @@ namespace Analyzer.Corral
         protected CancellationToken token;
         protected DirectoryInfo workingDir;
         protected Dictionary<Tuple<State, Action, IEnumerable<Action>>, ActionAnalysisResults> map;
+        protected Dictionary<Action, ISet<Action>> enabled_dependencies;
+        protected Dictionary<Action, ISet<Action>> disabled_dependencies;
         protected int generatedQueriesCount;
         protected int unprovenQueriesCount;
         protected BoggieHardcoderForExceptionSupport exceptionHarcoder;
@@ -39,11 +41,77 @@ namespace Analyzer.Corral
             this.token = token;
 
             this.map = new Dictionary<Tuple<State, Action, IEnumerable<Action>>, ActionAnalysisResults>();
-
+            this.enabled_dependencies = new Dictionary<Action,ISet<Action>>();
+            this.disabled_dependencies = new Dictionary<Action, ISet<Action>>();
+            
             this.exceptionHarcoder = new BoggieHardcoderForExceptionSupport();
 
             generatedQueriesCount = 0;
             unprovenQueriesCount = 0;
+        }
+
+        public void ComputeDependencies(ISet<Action> actions)
+        {
+            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir, exceptionHarcoder);
+            int i=1;
+            foreach (var action in actions.Where(a=>!a.IsPure))
+            {
+                var enabledActions = GetMustBeEnabledActionsDependencies(action, actions, corralRunner);
+                var disabledActions = GetMustBeDisabledActionsDependencies(action, actions, corralRunner);
+                enabled_dependencies.Add(action, enabledActions);
+                disabled_dependencies.Add(action, disabledActions);
+                Console.WriteLine("DEP ACT " + i + ": " + action.Name + " ENA:" + enabledActions.Count + " DIS:" + disabledActions.Count);
+                Console.Write("enabled={ ");
+                foreach (var act in enabledActions)
+                {
+                    Console.Write(act.Name+" ");
+                }
+                Console.WriteLine("}");
+                Console.Write("disabled={");
+                foreach (var act in disabledActions)
+                {
+                    Console.Write(act.Name + " ");
+                }
+                Console.WriteLine("}");
+            }
+        }
+
+        private ISet<Action> GetMustBeDisabledActionsDependencies(Action action, ISet<Action> actions, ISolver corralRunner)
+        {
+            if (enabled_dependencies.ContainsKey(action))
+            {
+                actions = new HashSet<Action>(actions.Except<Action>(disabled_dependencies[action]));
+            }
+            var targetNegatedPreconditionQueries = queryGenerator.CreateNegativeQueries(action, actions);
+            generatedQueriesCount += targetNegatedPreconditionQueries.Count;
+            var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries);
+            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
+            if (enabled_dependencies.ContainsKey(action))
+            {
+                disabledActions.UnionWith(disabled_dependencies[action]);
+            }
+            unprovenQueriesCount += evaluator.UnprovenQueries;
+            return disabledActions;
+        }
+
+        private ISet<Action> GetMustBeEnabledActionsDependencies(Action action, ISet<Action> actions, ISolver corralRunner)
+        {
+            if (enabled_dependencies.ContainsKey(action))
+            {
+                actions = new HashSet<Action>(actions.Except<Action>(enabled_dependencies[action]));
+            }
+            var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(action, actions);
+            generatedQueriesCount += targetPreconditionQueries.Count;
+            var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries);
+            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
+            if (enabled_dependencies.ContainsKey(action))
+            {
+                enabledActions.UnionWith(disabled_dependencies[action]);
+            }
+            unprovenQueriesCount += evaluator.UnprovenQueries;
+            return enabledActions;
         }
 
         public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
