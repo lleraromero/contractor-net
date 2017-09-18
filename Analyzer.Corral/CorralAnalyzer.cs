@@ -73,6 +73,7 @@ namespace Analyzer.Corral
                     Console.Write(act.Name + " ");
                 }
                 Console.WriteLine("}");
+                i++;
             }
         }
 
