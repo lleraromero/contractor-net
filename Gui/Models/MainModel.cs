@@ -11,6 +11,7 @@ using Analyzer.CodeContracts;
 using Analyzer.Corral;
 using Contractor.Core;
 using Contractor.Core.Model;
+using System.Collections.Generic;
 
 namespace Contractor.Gui.Models
 {
@@ -19,6 +20,9 @@ namespace Contractor.Gui.Models
         protected FileInfo inputFile;
         protected FileInfo contractFile;
         protected IAssembly inputAssembly;
+
+        //**************************************************
+        protected Dictionary<string, ErrorInstrumentator.MethodInfo> methodsInfo;
 
         protected CancellationTokenSource cancellationSource;
         protected CciAssemblyPersister assemblyPersister;
@@ -53,23 +57,58 @@ namespace Contractor.Gui.Models
         public async Task<TypeAnalysisResult> Start(AnalysisEventArgs analysisEventArgs)
         {
             cancellationSource = new CancellationTokenSource();
-
-            var analyzer = GetAnalyzerFactory(analysisEventArgs.TypeToAnalyze, analysisEventArgs.Engine, cancellationSource.Token);
-            var epaGenerator = new EpaGenerator(analyzer, -1);
+            List<string> errorList = new List<string>();
+            errorList.Add("Ok");
+            if (analysisEventArgs.Exceptions.Equals("All"))
+            {
+                ImplementedExceptions.AddAllExceptionsTo(errorList);
+            }
+            errorList.Add("System.Exception");
+            
+            var analyzer = GetAnalyzer(analysisEventArgs.TypeToAnalyze, analysisEventArgs.Engine, cancellationSource.Token,errorList);
 
             var selectedMethods = from m in analysisEventArgs.SelectedMethods select m.ToString();
+            
+            /*using (StreamWriter writer = new StreamWriter("selectedMethods.txt", true))
+            {
+                foreach(var m in selectedMethods)
+                    writer.Write(m+";");
+            }*/
 
             var epaBuilder = new EpaBuilder(analysisEventArgs.TypeToAnalyze);
-            OnInitialStateAdded(this, epaBuilder);
+            OnInitialStateAdded(this, epaBuilder,analysisEventArgs.SelectedMethods);
             var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
             epaBuilderObservable.TransitionAdded += OnTransitionAdded;
-
-            return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable);
+            
+            if(analysisEventArgs.Conditions.Equals("EPA")){
+                var epaGenerator = new EpaGenerator(analyzer, -1);
+                return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable);
+            }
+            else if (analysisEventArgs.Conditions.Equals("EPA-O"))
+            {
+                errorList = errorList.Select(x => x.Split('.').Last()).ToList();
+                var epaGenerator = new EpaOGenerator(analyzer, -1,errorList);
+                return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable,methodsInfo);
+            }else{
+                throw new NotImplementedException();
+            }
         }
 
         public async Task LoadAssembly(FileInfo inputFileInfo)
         {
             inputFile = inputFileInfo;
+
+            Log.MyLogger.LogStartAnalysis(inputFile.FullName);
+            //*************************************************
+            //cargamos del XML
+            var xmlPath = inputFile.DirectoryName + "\\methodExceptions.xml";
+            if (File.Exists(xmlPath))
+            {
+                using (var stream = File.OpenRead(xmlPath))
+                {
+                    methodsInfo = ErrorInstrumentator.XmlInstrumentationInfoSerializer.Deserialize(stream);
+                }
+            }
             inputAssembly = await Task.Run(() => assemblyPersister.Load(inputFile.FullName, null));
         }
 
@@ -79,10 +118,19 @@ namespace Contractor.Gui.Models
             inputAssembly = await Task.Run(() => assemblyPersister.Load(inputFile.FullName, contractFile.FullName));
         }
 
-        protected void OnInitialStateAdded(object sender, IEpaBuilder epaBuilder)
+        protected void OnInitialStateAdded(object sender, IEpaBuilder epaBuilder, IEnumerable<Contractor.Core.Model.Action> selectedMethods)
         {
             generatedEpa = epaBuilder.Build();
-            var stateAddedEventArg = new StateAddedEventArgs(epaBuilder.Type, epaBuilder, generatedEpa.Initial);
+            Core.StateAddedEventArgs stateAddedEventArg;
+            if((epaBuilder.Type.Constructors().Except(selectedMethods).Any())){ // if selected constructors
+                var constructors=(epaBuilder.Type.Constructors().Intersect(selectedMethods));
+                var initialState = new State(new HashSet<Core.Model.Action>(constructors), new HashSet<Core.Model.Action>());
+                stateAddedEventArg = new StateAddedEventArgs(epaBuilder.Type, epaBuilder, initialState);
+            }
+            else
+            {
+                stateAddedEventArg = new StateAddedEventArgs(epaBuilder.Type, epaBuilder, generatedEpa.Initial);
+            }
             StateAdded(sender, stateAddedEventArg);
         }
 
@@ -93,6 +141,7 @@ namespace Contractor.Gui.Models
         }
 
         protected IAnalyzerFactory GetAnalyzerFactory(ITypeDefinition typeToAnalyze, string engine, CancellationToken cancellationToken)
+        protected IAnalyzer GetAnalyzer(ITypeDefinition typeToAnalyze, string engine, CancellationToken cancellationToken, List<string> errorList)
         {
             var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
             if (workingDir.Exists && workingDir.CreationTimeUtc < DateTime.UtcNow.AddDays(-3))
@@ -101,7 +150,7 @@ namespace Contractor.Gui.Models
             }
             workingDir.Create();
 
-            var queryGenerator = new CciQueryGenerator();
+            var queryGenerator = new CciQueryGenerator(errorList.Select(x => x.Split('.').Last()).ToList());
 
             IAnalyzerFactory analyzerFactory;
             switch (engine)
@@ -130,6 +179,7 @@ namespace Contractor.Gui.Models
                     analyzerFactory = new CorralAnalyzerFactory(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly,
                         inputFile.FullName,
                         typeToAnalyze, cancellationToken);
+                        typeToAnalyze, cancellationToken,errorList);
                     break;
                 default:
                     throw new NotSupportedException();

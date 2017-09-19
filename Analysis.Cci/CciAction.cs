@@ -17,11 +17,13 @@ namespace Analysis.Cci
         public override IMethodDefinition Method
         {
             get { return method; }
+            set { method = value; }
         }
 
         public override IMethodContract Contract
         {
             get { return contract; }
+            set { contract = value; }
         }
 
         public override bool IsPure

@@ -234,6 +234,14 @@
       <Project>{EBEDD305-0975-416B-A4E5-4C8F5EADB304}</Project>
       <Name>Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ErrorInstrumentator\ErrorInstrumentator.csproj">
+      <Project>{b3247fa5-373e-46fa-8931-c189c522ca58}</Project>
+      <Name>ErrorInstrumentator</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Logger\Log.csproj">
+      <Project>{c60da473-d2f6-4650-ada9-ff5aa1c7b75c}</Project>
+      <Name>Log</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Instrumenter\Instrumenter.csproj">
       <Project>{86c9fa05-49e9-462d-b719-1456a7e542e8}</Project>
       <Name>Instrumenter</Name>

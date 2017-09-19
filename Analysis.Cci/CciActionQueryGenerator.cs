@@ -12,20 +12,24 @@ namespace Analysis.Cci
     public abstract class CciActionQueryGenerator
     {
         protected IContractAwareHost host;
-
-        protected CciActionQueryGenerator(IContractAwareHost host)
+        public IExpression exitCode_eq_expected;
+        private string expectedExitCode;
+        protected List<string> listOfExceptions;
+        protected CciActionQueryGenerator(IContractAwareHost host, List<string> listOfExceptions)
         {
             this.host = host;
+            this.listOfExceptions = listOfExceptions;
         }
 
-        public abstract ActionQuery CreateQuery(State state, Action action, Action actionUnderTest);
+        public abstract ActionQuery CreateQuery(State state, Action action, Action actionUnderTest, string expectedExitCode);
         protected abstract string CreateQueryName(State state, Action action, Action actionUnderTest);
         protected abstract IMethodContract CreateQueryContract(State state, Action actionUnderTest);
 
-        protected CciAction GenerateQuery(State state, Action action, Action target)
+        protected CciAction GenerateQuery(State state, Action action, Action target, string expectedExitCode = null)
         {
             Contract.Requires(state != null && action != null && target != null);
 
+            this.expectedExitCode = expectedExitCode;
             var queryName = CreateQueryName(state, action, target);
             var queryMethod = CreateQueryMethod(state, queryName, action, target);
             var queryContract = CreateQueryContract(state, target);
@@ -35,10 +39,8 @@ namespace Analysis.Cci
 
         protected MethodDefinition CreateQueryMethod(State state, string name, Action action, Action target)
         {
-            var parameters = GetStateParameters(state);
-            parameters.UnionWith(action.Method.Parameters);
-            parameters.UnionWith(target.Method.Parameters);
-
+            var parameters = new HashSet<IParameterDefinition> (action.Method.Parameters);
+            
             return CreateMethod(name, action, parameters);
         }
 
@@ -87,10 +89,10 @@ namespace Analysis.Cci
 
             var mc = action.Contract;
 
-            if (mc != null && mc.Preconditions.Any())
+            /*if (mc != null && mc.Preconditions.Any())
             {
                 var asserts = from pre in mc.Preconditions
-                    select new AssertStatement
+                    select new AssumeStatement
                     {
                         Condition = pre.Condition,
                         OriginalSource = pre.OriginalSource,
@@ -98,7 +100,7 @@ namespace Analysis.Cci
                     };
 
                 block.Statements.AddRange(asserts);
-            }
+            }*/
 
             IBlockStatement actionBodyBlock = null;
             if (action.Method.Body is Microsoft.Cci.ILToCodeModel.SourceMethodBody)
@@ -113,10 +115,55 @@ namespace Analysis.Cci
             }
             Contract.Assert(actionBodyBlock != null);
 
-            //Por tratarse de un constructor skipeamos
-            //el primer statement porque es base..ctor();
-            var skipCount = action.Method.IsConstructor ? 1 : 0;
-            block.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));
+            if (expectedExitCode != null){
+                //EPA-O
+                var unit = this.host.LoadedUnits.First();
+                var assembly = unit as Microsoft.Cci.IAssembly;
+                var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
+                /*
+                var x = assembly.GetAllTypes();
+                var y = coreAssembly.GetAllTypes();
+                x = x.Union(y);
+
+                var excType = x.Single(t => t.Name.Value == "Exception");
+
+                var tryBlock = new BlockStatement();
+                
+                //Por tratarse de un constructor skipeamos
+                //el primer statement porque es base..ctor();
+                var skipCount = action.Method.IsConstructor ? 1 : 0;
+                tryBlock.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));
+                */
+                var try_catch_gen = new CciTryCatchGenerator(listOfExceptions);
+
+                var localDefExitCode = try_catch_gen.CreateLocalInt(action, coreAssembly, 0);
+
+                var tryStmt = try_catch_gen.GenerateTryStatement(action, actionBodyBlock, assembly, coreAssembly, localDefExitCode);
+
+                /*
+                var catchClauses = new List<ICatchClause>();
+                //------------------------------------------------------------------------------
+                //reemplazar esto por un metodo que genere las catch
+                //extraer el metodo de CCI query generator
+                var catchExc= new CatchClause()
+                {
+                    ExceptionType = excType, // this.host.NameTable.GetNameFor("Exception"),
+                    Body = new BlockStatement()
+                };
+                catchClauses.Add(catchExc);
+                //------------------------------------------------------------------------------
+                var tryStmt = new TryCatchFinallyStatement
+                {
+                    TryBody = tryBlock,
+                    CatchClauses = catchClauses
+                };
+                */
+                block.Statements.Add(tryStmt);
+            }else{
+                //EPAs
+                var skipCount = action.Method.IsConstructor ? 1 : 0;
+                block.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));
+            }
 
             if (mc != null && mc.Postconditions.Any())
             {
@@ -128,13 +175,18 @@ namespace Analysis.Cci
                         Description = new CompileTimeConstant { Value = "Inlined method postcondition", Type = host.PlatformType.SystemString }
                     };
                 //Ponemos los assume antes del return
+                var assume = assumes.ElementAt(0);
+                this.exitCode_eq_expected = assume.Condition;
+                List<AssumeStatement> finalAssumes = new List<AssumeStatement>(assumes);
+                finalAssumes.RemoveAt(0);
+
                 if (block.Statements.Count > 0 && block.Statements.Last() is IReturnStatement)
                 {
-                    block.Statements.InsertRange(block.Statements.Count - 1, assumes);
+                    block.Statements.InsertRange(block.Statements.Count - 1, finalAssumes);
                 }
                 else
                 {
-                    block.Statements.AddRange(assumes);
+                    block.Statements.AddRange(finalAssumes);
                 }
             }
 

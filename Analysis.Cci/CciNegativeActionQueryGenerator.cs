@@ -4,6 +4,7 @@ using Contractor.Core.Model;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableContracts;
+using System.Collections.Generic;
 
 namespace Analysis.Cci
 {
@@ -12,13 +13,14 @@ namespace Analysis.Cci
         protected const string MethodNameDelimiter = "~";
         protected const string NotPrefix = "_Not_";
 
-        public CciNegativeActionQueryGenerator(IContractAwareHost host) : base(host)
+        public CciNegativeActionQueryGenerator(IContractAwareHost host, List<string> listOfExceptions)
+            : base(host, listOfExceptions)
         {
         }
 
-        public override ActionQuery CreateQuery(State state, Action action, Action actionUnderTest)
+        public override ActionQuery CreateQuery(State state, Action action, Action actionUnderTest, string expectedExitCode)
         {
-            return new ActionQuery(GenerateQuery(state, action, actionUnderTest), QueryType.Negative, actionUnderTest);
+            return new ActionQuery(GenerateQuery(state, action, actionUnderTest,expectedExitCode), QueryType.Negative, actionUnderTest);
         }
 
         protected override string CreateQueryName(State state, Action action, Action actionUnderTest)
@@ -33,6 +35,7 @@ namespace Analysis.Cci
         {
             var queryContract = new MethodContract();
             var targetContract = target.Contract;
+            var contractDependencyAnalyzer = new CciContractDependenciesAnalyzer(new ContractProvider(new ContractMethods(host), null));
 
             // Add preconditions of enabled actions
             foreach (var a in state.EnabledActions)
@@ -51,7 +54,7 @@ namespace Analysis.Cci
                         },
                         OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(p.Condition)
                     };
-                queryContract.Preconditions.AddRange(preconditions);
+                queryContract.Preconditions.AddRange(preconditions.Where(x => !contractDependencyAnalyzer.PredicatesAboutParameter(x)));
             }
 
             // Add negated preconditions of disabled actions
@@ -60,13 +63,14 @@ namespace Analysis.Cci
                 var actionContract = a.Contract;
                 if (actionContract == null || !actionContract.Preconditions.Any()) continue;
 
-                var preconditions = from p in actionContract.Preconditions
+                var preconditions = from p in actionContract.Preconditions.Where(x => !contractDependencyAnalyzer.PredicatesAboutParameter(x))
                     select p.Condition;
-                var joinedPreconditions = new LogicalNot
+                var joinedPreconditions = Helper.LogicalNotAfterJoinWithLogicalAnd(host, preconditions.ToList(), true);
+                /*var joinedPreconditions = new LogicalNot
                 {
                     Type = host.PlatformType.SystemBoolean,
                     Operand = Helper.JoinWithLogicalAnd(host, preconditions.ToList(), true)
-                };
+                };*/
                 var compactPrecondition = new Precondition
                 {
                     Condition = joinedPreconditions,
@@ -101,16 +105,17 @@ namespace Analysis.Cci
             }
             else
             {
-                var exprs = (from pre in targetContract.Preconditions
+                var exprs = (from pre in targetContract.Preconditions.Where(x => !contractDependencyAnalyzer.PredicatesAboutParameter(x))
                     select pre.Condition).ToList();
 
                 var post = new Postcondition
                 {
-                    Condition = new LogicalNot
+                    /*Condition = new LogicalNot
                     {
                         Type = host.PlatformType.SystemBoolean,
                         Operand = Helper.JoinWithLogicalAnd(host, exprs, true)
-                    },
+                    }*/
+                    Condition = Helper.LogicalNotAfterJoinWithLogicalAnd(host, exprs, true),
                     OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(Helper.JoinWithLogicalAnd(host, exprs, true)),
                     Description = new CompileTimeConstant { Value = "Target negated precondition", Type = host.PlatformType.SystemString }
                 };

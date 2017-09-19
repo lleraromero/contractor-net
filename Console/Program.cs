@@ -12,10 +12,12 @@ using Analyzer.Corral;
 using CommandLine;
 using Contractor.Core;
 using Contractor.Core.Model;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Contractor.Console
 {
-    internal class Program
+    public class Program
     {
         public static int Main(string[] args)
         {
@@ -41,9 +43,13 @@ namespace Contractor.Console
             };
 #endif
             var options = new Options();
-            if (!Parser.Default.ParseArgumentsStrict(args, options))
+            System.Action myact = () =>
             {
-                throw new FormatException("Args parsing error!");
+            };
+            if (!Parser.Default.ParseArgumentsStrict(args, options, myact))
+            {
+                System.Console.WriteLine("Args parsing error!");
+                return -1;
             }
 
             System.Console.WriteLine(options.InputAssembly);
@@ -80,11 +86,25 @@ namespace Contractor.Console
         {
             System.Console.WriteLine("Starting analysis for type {0}", typeToAnalyze);
 
+            Log.MyLogger.LogStartAnalysis(options.TypeToAnalyze);
             var cancellationSource = new CancellationTokenSource();
 
             var workingDir = CreateOrCleanupWorkingDirectory();
 
-            var queryGenerator = new CciQueryGenerator();
+            List<string> errorList = new List<string>();
+            errorList.Add("Ok");
+            if (options.ErrorList.Equals("All"))
+            {
+                ImplementedExceptions.AddAllExceptionsTo(errorList);
+                //errorList.Add("Exception");
+                errorList.Add("System.Exception");
+            }
+            else
+            {
+                errorList.AddRange(options.ErrorList.Split(';'));
+            }
+            var queryGenerator = new CciQueryGenerator(errorList.Select(x => x.Split('.').Last()).ToList());
+            //var queryGenerator = new CciQueryGenerator(errorList);
 
             IAnalyzerFactory analyzerFactory;
             switch (options.Backend)
@@ -114,29 +134,82 @@ namespace Contractor.Console
                     Contract.Assert(corralDefaultArgs != null);
                     analyzerFactory = new CorralAnalyzerFactory(corralDefaultArgs, workingDir, queryGenerator, inputAssembly,
                         options.InputAssembly, typeToAnalyze, cancellationSource.Token);
+                        options.InputAssembly, typeToAnalyze, cancellationSource.Token, errorList);
                     break;
                 default:
                     throw new NotSupportedException();
             }
 
-            var generator = new EpaGenerator(analyzerFactory, options.Cutter);
-
-            var epaBuilder = new EpaBuilder(typeToAnalyze);
-
-            var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
-            epaBuilderObservable.TransitionAdded += OnTransitionAdded;
-            TypeAnalysisResult analysisResult;
-            if (!options.Methods.Equals("All"))
+            if (options.Query!=null)
             {
+                var analysisTimer = Stopwatch.StartNew();
+
+                var helper = new QueryHelper(analyzer, typeToAnalyze, errorList);
                 var selectedMethods = options.Methods.Split(';');
-                analysisResult = generator.GenerateEpa(typeToAnalyze, selectedMethods, epaBuilderObservable).Result;
+                var transition = helper.computeQuery(options.Query, selectedMethods);
+                var transitions = new List<Transition>();
+                if (transition != null)
+                {
+                    transitions.Add(transition);
+                }
+                var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
+                var epa = new Epa(typeDefinition, transitions);
+                
+                analysisTimer.Stop();
+                return new TypeAnalysisResult(epa, analysisTimer.Elapsed, analyzer.GetUsageStatistics());
+            }
+
+            var oc = options.OutputConditions.Split(',');
+            if (options.OutputConditions.Equals("none") || !oc.Contains("exitCode"))
+            {
+                var generator = new EpaGenerator(analyzer, options.Cutter);
+
+                var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
+                var epaBuilder = new EpaBuilder(typeDefinition);
+
+                //OnInitialStateAdded(this, epaBuilder);
+                var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
+                epaBuilderObservable.TransitionAdded += OnTransitionAdded;
+                TypeAnalysisResult analysisResult;
+                if (!options.Methods.Equals("All"))
+                {
+                    var selectedMethods = options.Methods.Split(';');
+                    analysisResult = generator.GenerateEpa(typeDefinition, selectedMethods, epaBuilderObservable).Result;
+                }
+                else
+                {
+                    analysisResult = generator.GenerateEpa(typeDefinition, epaBuilderObservable).Result;
+                }
+                return analysisResult;
             }
             else
             {
-                analysisResult = generator.GenerateEpa(typeToAnalyze, epaBuilderObservable).Result;
+                //if (oc.Contains("exitCode"))
+                //{
+                errorList = errorList.Select(x => x.Split('.').Last()).ToList();
+                var generator = new EpaOGenerator(analyzer, options.Cutter, errorList);
+
+                    var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
+                    var epaBuilder = new EpaBuilder(typeDefinition);
+
+                    //OnInitialStateAdded(this, epaBuilder);
+                    var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
+                    epaBuilderObservable.TransitionAdded += OnTransitionAdded;
+                    TypeAnalysisResult analysisResult;
+                    if (!options.Methods.Equals("All"))
+                    {
+                        var selectedMethods = options.Methods.Split(';');
+                        analysisResult = generator.GenerateEpa(typeDefinition, selectedMethods, epaBuilderObservable, methodsInfo).Result;
+                    }
+                    else
+                    {
+                        analysisResult = generator.GenerateEpa(typeDefinition, epaBuilderObservable, methodsInfo).Result;
+                    }
+                    return analysisResult;
+                //}
             }
 
-            return analysisResult;
+            
         }
 
         protected static DirectoryInfo CreateOrCleanupWorkingDirectory()
@@ -163,6 +236,13 @@ namespace Contractor.Console
             Contract.Requires(epa != null);
             Contract.Requires(outputDir != null);
 
+            var typeName = epa.Type.ToString().Replace('.', '_');
+            typeName = typeName.Replace('<', '_');
+            typeName = typeName.Replace('>', '_');
+            using (var stream = File.Create(string.Format("{0}\\{1}.png", outputDir.FullName, typeName)))
+            {
+                new EpaBinarySerializer().Serialize(stream, epa);
+            }
             SaveEpaAs<EpaBinarySerializer>(epa, outputDir, "png");
         }
 

@@ -4,6 +4,7 @@ using Contractor.Core.Model;
 using Microsoft.Cci.Contracts;
 using Microsoft.Cci.MutableCodeModel;
 using Microsoft.Cci.MutableContracts;
+using System.Collections.Generic;
 
 namespace Analysis.Cci
 {
@@ -11,13 +12,14 @@ namespace Analysis.Cci
     {
         protected const string MethodNameDelimiter = "~";
 
-        public CciPositiveActionQueryGenerator(IContractAwareHost host) : base(host)
+        public CciPositiveActionQueryGenerator(IContractAwareHost host, List<string> listOfExceptions)
+            : base(host,listOfExceptions)
         {
         }
 
-        public override ActionQuery CreateQuery(State state, Action action, Action actionUnderTest)
+        public override ActionQuery CreateQuery(State state, Action action, Action actionUnderTest,string expectedExitCode)
         {
-            return new ActionQuery(GenerateQuery(state, action, actionUnderTest), QueryType.Positive, actionUnderTest);
+            return new ActionQuery(GenerateQuery(state, action, actionUnderTest,expectedExitCode), QueryType.Positive, actionUnderTest);
         }
 
         protected override string CreateQueryName(State state, Action action, Action actionUnderTest)
@@ -32,6 +34,7 @@ namespace Analysis.Cci
         {
             var queryContract = new MethodContract();
             var targetContract = target.Contract;
+            var contractDependencyAnalyzer = new CciContractDependenciesAnalyzer(new ContractProvider(new ContractMethods(host), null));
 
             // Add preconditions of enabled actions
             foreach (var a in state.EnabledActions)
@@ -50,7 +53,7 @@ namespace Analysis.Cci
                         },
                         OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(p.Condition)
                     };
-                queryContract.Preconditions.AddRange(preconditions);
+                queryContract.Preconditions.AddRange(preconditions.Where(x => !contractDependencyAnalyzer.PredicatesAboutParameter(x)));
             }
 
             // Add negated preconditions of disabled actions
@@ -59,13 +62,14 @@ namespace Analysis.Cci
                 var actionContract = a.Contract;
                 if (actionContract == null || !actionContract.Preconditions.Any()) continue;
 
-                var preconditions = from p in actionContract.Preconditions
+                var preconditions = from p in actionContract.Preconditions.Where(x => !contractDependencyAnalyzer.PredicatesAboutParameter(x))
                     select p.Condition;
-                var joinedPreconditions = new LogicalNot
+                var joinedPreconditions = Helper.LogicalNotAfterJoinWithLogicalAnd(host, preconditions.ToList(), true);
+                /*var joinedPreconditions = new LogicalNot
                 {
                     Type = host.PlatformType.SystemBoolean,
                     Operand = Helper.JoinWithLogicalAnd(host, preconditions.ToList(), true)
-                };
+                };*/
                 var compactPrecondition = new Precondition
                 {
                     Condition = joinedPreconditions,
@@ -84,7 +88,7 @@ namespace Analysis.Cci
             // Now the postconditions
             if (targetContract != null && targetContract.Preconditions.Any())
             {
-                var targetPreconditions = from pre in targetContract.Preconditions
+                var targetPreconditions = from pre in targetContract.Preconditions.Where(x => !contractDependencyAnalyzer.PredicatesAboutParameter(x))
                     select new Postcondition
                     {
                         Condition = pre.Condition,

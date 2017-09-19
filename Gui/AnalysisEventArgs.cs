@@ -11,16 +11,21 @@ namespace Contractor.Gui
         protected IEnumerable<Action> selectedMethods;
         protected ITypeDefinition typeToAnalyze;
         protected string engine;
+        protected string conditions;
+        protected string exceptions;
 
-        public AnalysisEventArgs(ITypeDefinition typeDefinition, IEnumerable<Action> selectedMethods, string engine)
+        public AnalysisEventArgs(ITypeDefinition typeDefinition, IEnumerable<Action> selectedMethods, string engine, string conditions, string exceptions)
         {
             Contract.Requires(typeDefinition != null);
             Contract.Requires(selectedMethods != null);
             Contract.Requires(!string.IsNullOrEmpty(engine));
+            Contract.Requires(!string.IsNullOrEmpty(conditions));
 
             this.typeToAnalyze = typeDefinition;
             this.selectedMethods = selectedMethods;
             this.engine = engine;
+            this.conditions = conditions;
+            this.exceptions = exceptions;
         }
 
         public ITypeDefinition TypeToAnalyze
@@ -36,6 +41,16 @@ namespace Contractor.Gui
         public string Engine
         {
             get { return engine; }
+        }
+
+        public string Conditions
+        { 
+            get { return conditions; } 
+        }
+
+        public string Exceptions
+        {
+            get { return exceptions; }
         }
     }
 }

@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<SlicerConf>
+  <!--
+<Solution File="C:\code\Pragma_Dynamic_Output-Based_Slicing\trunk\ImplSamples\ShowMe\ShowMe.sln" ProjectRef="ShowMe" />
+  <Solution File="C:\code\Pragma_Dynamic_Output-Based_Slicing\trunk\PDP SUBCONJUNTO sprint 3 todo instrumentado\Subconjunto.sln" ProjectRef="DesktopClient" />
+  <Solution File="C:\Visual Studio sources\PDP SUBCONJUNTO sprint 3 todo instrumentado\Subconjunto.sln" ProjectRef="DesktopClient" />
+  <Solution File="C:\code\Pragma_Dynamic_Output-Based_Slicing\trunk\ImplSamples\TesteaLista\TesteaLista.sln" ProjectRef="TesteaLista" />
+  <Solution File="C:\Visual Studio sources\Ejemplos\Sumatoria new\Sumatoria new.sln" ProjectRef="Sumatoria new" />
+  <Solution File="C:\code\Pragma_Dynamic_Output-Based_Slicing\trunk\Ejemplos\AnalisisPDP\SubconjuntoPDPSprint3TodoInstrumentado\Subconjunto.sln" ProjectRef="DesktopClient" />
+  <Solution File="C:\Users\crusso\Documents\Visual Studio 2013\Projects\PartialTest\PartialTest.sln" ProjectRef="PartialTest" />
+  <Solution File="C:\Users\crusso\Desktop\BobBuilder\BobBuilder.sln" ProjectRef="BobBuilder" />
+  <Solution File="C:\Users\crusso\Documents\Visual Studio 2013\Projects\SimpleTests\SimpleTests.sln" ProjectRef="SimpleTests" />
+  <Solution File="C:\Users\crusso\Desktop\Sistema\Proyecto\Class\Class.sln" ProjectRef="Class" />
+  -->
+  <!--<Solution File="C:\Users\Camilo\Desktop\Slicer\SliceBrowserTest\SliceBrowserTest.sln" ProjectRef="SliceBrowserTest" />-->
+  <Solution File="C:\Users\Administrador\Desktop\FiniteStack.sln\FiniteStack.sln\FiniteStack.sln" ProjectRef="FiniteStack" />
+  <Criteria File="Program.cs" LineOfCode="292929" />
+  <CompilationOutput Dir="C:\temp\compilation" />
+  <MSBuildCompilation />
+ 
+  <FileTraceInput />
+  <TraceInput File="C:\temp\trace.txt" />
+
+</SlicerConf>
+<!--
+
+
+
+  <Solution File="C:\code\Pragma_Dynamic_Output-Based_Slicing\trunk\PDP SUBCONJUNTO sprint 3 todo instrumentado\Subconjunto.sln" ProjectRef="DesktopClient" />
+-->
+<!--
+<SlicerConf>
+  <Solution File="C:\code\Demo1905\ObjectHandling\ObjectHandling.sln" ProjectRef="ObjectHandling" />
+  <Criteria File="ObjectHandling\Program.cs" LineOfCode="27" />
+  <CompilationOutput Dir="C:\temp\compilation" />
+</SlicerConf>
+-->

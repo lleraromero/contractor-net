@@ -97,6 +97,10 @@
       <Project>{ebedd305-0975-416b-a4e5-4c8f5eadb304}</Project>
       <Name>Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ErrorInstrumentator\ErrorInstrumentator.csproj">
+      <Project>{b3247fa5-373e-46fa-8931-c189c522ca58}</Project>
+      <Name>ErrorInstrumentator</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

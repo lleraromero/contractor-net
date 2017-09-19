@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Contractor.Core.Model;
 using Log;
 using Action = Contractor.Core.Model.Action;
-
 namespace Contractor.Core
 {
     /*TODO (lleraromero): me parece que vale la pena separar EpaGenerator de un potencial TypeAnalyzer.
@@ -40,9 +39,9 @@ namespace Contractor.Core
         {
             Contract.Requires(typeToAnalyze != null);
             Contract.Requires(selectedMethods != null);
-
-            var constructors = new HashSet<Action>(typeToAnalyze.Constructors().Where(a => selectedMethods.Contains(a.ToString())));
-            var actions = new HashSet<Action>(typeToAnalyze.Actions().Where(a => selectedMethods.Contains(a.ToString())));
+            selectedMethods = selectedMethods.Select(a => a.Replace(" ", ""));
+            var constructors = new HashSet<Action>(typeToAnalyze.Constructors().Where(a => selectedMethods.Contains(a.ToString().Replace(" ", ""))));
+            var actions = new HashSet<Action>(typeToAnalyze.Actions().Where(a => selectedMethods.Contains(a.ToString().Replace(" ", ""))));
 
             return GenerateEpaAndStatistics(constructors, actions, epaBuilder);
         }
@@ -65,16 +64,24 @@ namespace Contractor.Core
         ///     Method to create an EPA of a particular type considering only the subset 'methods'
         /// </summary>
         /// <see cref="http://publicaciones.dc.uba.ar/Publications/2011/DBGU11/paper-icse-2011.pdf">Algorithm 1</see>
-        protected Epa GenerateEpa(ISet<Action> constructors, ISet<Action> actions, IEpaBuilder epaBuilder)
+        protected Epa GenerateEpa(ISet<Action> constructors, ISet<Action> actions, IEpaBuilder epaBuilder, Dictionary<string,ErrorInstrumentator.MethodInfo> methods = null)
         {
             Contract.Requires(constructors != null);
             Contract.Requires(actions != null);
             Contract.Requires(epaBuilder != null);
-
+            lock (analyzer)
+            {
+                analyzer.ComputeDependencies(actions);
+            }
             var initialState = new State(constructors, new HashSet<Action>());
             var statesToVisit = new Queue<State>();
             var visitedStates = new HashSet<State>();
             statesToVisit.Enqueue(initialState);
+
+            if (methods == null)
+            {
+                methods = new Dictionary<string,ErrorInstrumentator.MethodInfo>();
+            }
 
             while (statesToVisit.Count > 0)
             {
@@ -96,6 +103,7 @@ namespace Contractor.Core
                                 "Suspicious state! Only a state with a unsatisfiable invariant can lead to every action being enabled and disabled at the same time. It can also mean a bug in our code.");
                             return;
                         }
+                    MyLogger.LogAction(action.Name, "NOSE", source.Name);
 
                         Contract.Assert(!actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).Any(), "Results should be consistent");
                         if (!actionsResult.EnabledActions.Any() && !actionsResult.DisabledActions.Any())

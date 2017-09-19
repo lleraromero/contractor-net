@@ -1,0 +1,66 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Slicer", "Slicer\Slicer.csproj", "{54730CC5-81D9-4E08-B491-4B52DCF09E4D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CDE77532-E6A4-485F-8618-0D424A79C15D} = {CDE77532-E6A4-485F-8618-0D424A79C15D}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tracer", "Tracer\Tracer.csproj", "{CDE77532-E6A4-485F-8618-0D424A79C15D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{71EC7489-5F23-480B-BEB5-AE829045B8B2}"
+	ProjectSection(SolutionItems) = preProject
+		SlicerConf.xml = SlicerConf.xml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SourceCodeTests", "SourceCodeTests\SourceCodeTests.csproj", "{E47A0713-964B-44B0-AD26-0895EB056144}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{54730CC5-81D9-4E08-B491-4B52DCF09E4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54730CC5-81D9-4E08-B491-4B52DCF09E4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54730CC5-81D9-4E08-B491-4B52DCF09E4D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{54730CC5-81D9-4E08-B491-4B52DCF09E4D}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{54730CC5-81D9-4E08-B491-4B52DCF09E4D}.Debug|x86.ActiveCfg = Debug|x86
+		{54730CC5-81D9-4E08-B491-4B52DCF09E4D}.Debug|x86.Build.0 = Debug|x86
+		{54730CC5-81D9-4E08-B491-4B52DCF09E4D}.Release|Any CPU.ActiveCfg = Release|x86
+		{54730CC5-81D9-4E08-B491-4B52DCF09E4D}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{54730CC5-81D9-4E08-B491-4B52DCF09E4D}.Release|Mixed Platforms.Build.0 = Release|x86
+		{54730CC5-81D9-4E08-B491-4B52DCF09E4D}.Release|x86.ActiveCfg = Release|x86
+		{54730CC5-81D9-4E08-B491-4B52DCF09E4D}.Release|x86.Build.0 = Release|x86
+		{CDE77532-E6A4-485F-8618-0D424A79C15D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDE77532-E6A4-485F-8618-0D424A79C15D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDE77532-E6A4-485F-8618-0D424A79C15D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{CDE77532-E6A4-485F-8618-0D424A79C15D}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{CDE77532-E6A4-485F-8618-0D424A79C15D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CDE77532-E6A4-485F-8618-0D424A79C15D}.Debug|x86.Build.0 = Debug|Any CPU
+		{CDE77532-E6A4-485F-8618-0D424A79C15D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDE77532-E6A4-485F-8618-0D424A79C15D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDE77532-E6A4-485F-8618-0D424A79C15D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{CDE77532-E6A4-485F-8618-0D424A79C15D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{CDE77532-E6A4-485F-8618-0D424A79C15D}.Release|x86.ActiveCfg = Release|Any CPU
+		{E47A0713-964B-44B0-AD26-0895EB056144}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E47A0713-964B-44B0-AD26-0895EB056144}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E47A0713-964B-44B0-AD26-0895EB056144}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E47A0713-964B-44B0-AD26-0895EB056144}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E47A0713-964B-44B0-AD26-0895EB056144}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E47A0713-964B-44B0-AD26-0895EB056144}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E47A0713-964B-44B0-AD26-0895EB056144}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E47A0713-964B-44B0-AD26-0895EB056144}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E47A0713-964B-44B0-AD26-0895EB056144}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E47A0713-964B-44B0-AD26-0895EB056144}.Release|x86.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

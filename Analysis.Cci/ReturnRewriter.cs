@@ -8,6 +8,8 @@ namespace Analysis.Cci
     {
         protected readonly ILabeledStatement target;
         protected readonly ILocalDeclarationStatement local;
+        //public string expectedExitCode;
+        protected TargetExpression targetExpression;
 
         public ReturnRewriter(IMetadataHost host, ILabeledStatement target, ILocalDeclarationStatement local)
             : base(host)
@@ -15,8 +17,26 @@ namespace Analysis.Cci
             Contract.Requires(host != null && target != null);
             this.target = target;
             this.local = local;
+            if(local!=null)
+                this.targetExpression = new TargetExpression { Definition = local.LocalVariable, Instance = null, Type = local.LocalVariable.Type };
         }
-
+        
+        /*
+         * public override Microsoft.Cci.IExpression Rewrite(Microsoft.Cci.IAssignment assignment)
+        {
+            var newAssignment = (Microsoft.Cci.IAssignment)base.Rewrite(assignment);
+            if (newAssignment.Target.Definition.ToString().Contains("expectedExitCode") && this.expectedExitCode!=null)
+            {
+                Assignment ass = new Assignment(newAssignment);
+                CompileTimeConstant con = new CompileTimeConstant((ICompileTimeConstant)ass.Source);
+                con.Value = this.expectedExitCode;
+                ass.Source = con;
+                newAssignment = ass;
+            }
+            return newAssignment;
+        }
+         * */
+                
         /// <summary>
         ///     Rewrites the return statement.
         /// </summary>
@@ -34,7 +54,7 @@ namespace Analysis.Cci
                 {
                     Expression = new Assignment
                     {
-                        Target = new TargetExpression { Definition = local.LocalVariable, Instance = null, Type = local.LocalVariable.Type },
+                        Target = targetExpression,
                         Source = Rewrite(returnStatement.Expression),
                         Type = returnStatement.Expression.Type
                     }
