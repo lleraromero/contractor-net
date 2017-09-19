@@ -28,9 +28,14 @@ namespace Analyzer.Corral
         }
 
         public void hardcodeExceptionsToFile(string file){
-            this.full_path_to_boogie_file=file;
-            hardcodeExceptionEqualsToNullToQueries();
-            hardcodeSubtypeAxioms();
+            if (file.Equals(this.full_path_to_boogie_file)) return;
+            lock (file)
+            {
+                this.full_path_to_boogie_file = file;
+                hardcodeExceptionEqualsToNullToQueries();
+                hardcodeSubtypeAxioms();
+                SolveConstUniqueProblem();
+            }
         }
         
         public void SolveConstUniqueProblem(){
@@ -185,15 +190,13 @@ namespace Analyzer.Corral
         private void hardcodeExceptionEqualsToNullToQueries()
         {
             string lineToAdd = "$Exception := null;";
-
             var input = File.ReadAllText(this.full_path_to_boogie_file);
 
-            string query_pattern = @"(^implementation(.*)STATE(.*)\n\{\r\n(\s\svar(.*)\n)*)";//"(implementation(.*)STATE(.)*\n{\n(.*var.*;\n)*)";
-            string replacement = "$1\n"+lineToAdd+"\n";
-            Regex rgx = new Regex(query_pattern,RegexOptions.Multiline);
-            string result = rgx.Replace(input, replacement);
-
-            File.WriteAllText(this.full_path_to_boogie_file, result);
+                string query_pattern = @"(^implementation(.*)STATE(.*)\n\{\r\n(\s\svar(.*)\n)*)";//"(implementation(.*)STATE(.)*\n{\n(.*var.*;\n)*)";
+                string replacement = "$1\n"+lineToAdd+"\n";
+                Regex rgx = new Regex(query_pattern,RegexOptions.Multiline);
+                string result = rgx.Replace(input, replacement);
+                File.WriteAllText(this.full_path_to_boogie_file, result);
         }
     }
 }

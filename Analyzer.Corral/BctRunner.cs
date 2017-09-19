@@ -15,7 +15,7 @@ namespace Analyzer.Corral
             var tmpDir = Path.GetDirectoryName(args[0]);
             Contract.Assert(!string.IsNullOrEmpty(tmpDir) && Directory.Exists(tmpDir));
 
-            MyLogger.LogBCT(string.Join(" ", args));
+            //MyLogger.LogBCT(string.Join(" ", args));
 
             using (var bct = new Process())
             {

@@ -12,7 +12,6 @@ using Analyzer.Corral;
 using CommandLine;
 using Contractor.Core;
 using Contractor.Core.Model;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Contractor.Console
@@ -133,8 +132,7 @@ namespace Contractor.Console
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
                     Contract.Assert(corralDefaultArgs != null);
                     analyzerFactory = new CorralAnalyzerFactory(corralDefaultArgs, workingDir, queryGenerator, inputAssembly,
-                        options.InputAssembly, typeToAnalyze, cancellationSource.Token);
-                        options.InputAssembly, typeToAnalyze, cancellationSource.Token, errorList);
+                        options.InputAssembly, typeToAnalyze, cancellationSource.Token,errorList);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -143,7 +141,7 @@ namespace Contractor.Console
             if (options.Query!=null)
             {
                 var analysisTimer = Stopwatch.StartNew();
-
+                var analyzer = analyzerFactory.CreateAnalyzer();
                 var helper = new QueryHelper(analyzer, typeToAnalyze, errorList);
                 var selectedMethods = options.Methods.Split(';');
                 var transition = helper.computeQuery(options.Query, selectedMethods);
@@ -156,13 +154,13 @@ namespace Contractor.Console
                 var epa = new Epa(typeDefinition, transitions);
                 
                 analysisTimer.Stop();
-                return new TypeAnalysisResult(epa, analysisTimer.Elapsed, analyzer.GetUsageStatistics());
+                return new TypeAnalysisResult(epa, analysisTimer.Elapsed, analyzerFactory.GeneratedQueriesCount, analyzerFactory.UnprovenQueriesCount);
             }
 
             var oc = options.OutputConditions.Split(',');
             if (options.OutputConditions.Equals("none") || !oc.Contains("exitCode"))
             {
-                var generator = new EpaGenerator(analyzer, options.Cutter);
+                var generator = new EpaGenerator(analyzerFactory, options.Cutter);
 
                 var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
                 var epaBuilder = new EpaBuilder(typeDefinition);
@@ -187,7 +185,7 @@ namespace Contractor.Console
                 //if (oc.Contains("exitCode"))
                 //{
                 errorList = errorList.Select(x => x.Split('.').Last()).ToList();
-                var generator = new EpaOGenerator(analyzer, options.Cutter, errorList);
+                var generator = new EpaOGenerator(analyzerFactory.CreateAnalyzer(), options.Cutter, errorList); //>>>>>>>>> CAMBIAR ACA Y PASAR EL FACTORY
 
                     var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
                     var epaBuilder = new EpaBuilder(typeDefinition);
@@ -199,11 +197,11 @@ namespace Contractor.Console
                     if (!options.Methods.Equals("All"))
                     {
                         var selectedMethods = options.Methods.Split(';');
-                        analysisResult = generator.GenerateEpa(typeDefinition, selectedMethods, epaBuilderObservable, methodsInfo).Result;
+                        analysisResult = generator.GenerateEpa(typeDefinition, selectedMethods, epaBuilderObservable).Result;
                     }
                     else
                     {
-                        analysisResult = generator.GenerateEpa(typeDefinition, epaBuilderObservable, methodsInfo).Result;
+                        analysisResult = generator.GenerateEpa(typeDefinition, epaBuilderObservable).Result;
                     }
                     return analysisResult;
                 //}

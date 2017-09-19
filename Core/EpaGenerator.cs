@@ -69,10 +69,7 @@ namespace Contractor.Core
             Contract.Requires(constructors != null);
             Contract.Requires(actions != null);
             Contract.Requires(epaBuilder != null);
-            lock (analyzer)
-            {
-                analyzer.ComputeDependencies(actions);
-            }
+            analyzerFactory.CreateAnalyzer().ComputeDependencies(actions);
             var initialState = new State(constructors, new HashSet<Action>());
             var statesToVisit = new Queue<State>();
             var visitedStates = new HashSet<State>();
@@ -103,7 +100,7 @@ namespace Contractor.Core
                                 "Suspicious state! Only a state with a unsatisfiable invariant can lead to every action being enabled and disabled at the same time. It can also mean a bug in our code.");
                             return;
                         }
-                    MyLogger.LogAction(action.Name, "NOSE", source.Name);
+                        //MyLogger.LogAction(action.Name, "NOSE", source.Name);
 
                         Contract.Assert(!actionsResult.EnabledActions.Intersect(actionsResult.DisabledActions).Any(), "Results should be consistent");
                         if (!actionsResult.EnabledActions.Any() && !actionsResult.DisabledActions.Any())

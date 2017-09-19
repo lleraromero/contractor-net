@@ -4,7 +4,7 @@ using CommandLine.Text;
 
 namespace Contractor.Console
 {
-    internal class Options
+    public class Options
     {
         [Option('i', "input", Required = true, HelpText = "Input assembly to analyze.")]
         public string InputAssembly { get; set; }

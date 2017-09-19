@@ -28,12 +28,12 @@ namespace Analyzer.Corral
             var args = string.Format("{0} /main:{1} {2}", queryAssembly.FullName, BctMethodNamer.CreateUniqueMethodName(query), corralArguments);
             var output = new StringBuilder();
 
-            MyLogger.LogCorral(args);
+            //MyLogger.LogCorral(args);
 
             //THIS SHOULD BE NOT HERE.  
             //var boogieHarcoder = new BoggieHardcoderForExceptionSupport();
             this.boogieHarcoder.hardcodeExceptionsToFile(queryAssembly.FullName);
-            this.boogieHarcoder.SolveConstUniqueProblem();
+            //this.boogieHarcoder.SolveConstUniqueProblem();
             //--
             using (var corral = new Process())
             {
@@ -68,7 +68,7 @@ namespace Analyzer.Corral
             }
 
             Directory.Delete(tmpDir, true);
-            MyLogger.LogCorralOutput(output.ToString());
+            //MyLogger.LogCorralOutput(output.ToString());
             return ParseResultKind(output.ToString(), query);
         }
 

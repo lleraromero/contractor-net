@@ -3,6 +3,7 @@ using System.Threading;
 using Analysis.Cci;
 using Contractor.Core;
 using Contractor.Core.Model;
+using System.Collections.Generic;
 
 namespace Analyzer.Corral
 {
@@ -18,9 +19,10 @@ namespace Analyzer.Corral
 
         protected int generatedQueriesCount;
         protected int unprovenQueriesCount;
+        private List<string> errorList;
 
         public CorralAnalyzerFactory(string defaultArgs, DirectoryInfo workingDir, CciQueryGenerator queryGenerator, CciAssembly inputAssembly,
-            string inputFileName, ITypeDefinition typeToAnalyze, CancellationToken token)
+            string inputFileName, ITypeDefinition typeToAnalyze, CancellationToken token, List<string> errorList)
         {
             this.defaultArgs = defaultArgs;
             this.workingDir = workingDir;
@@ -29,7 +31,7 @@ namespace Analyzer.Corral
             this.inputFileName = inputFileName;
             this.typeToAnalyze = typeToAnalyze;
             this.token = token;
-
+            this.errorList = errorList;
             generatedQueriesCount = 0;
             unprovenQueriesCount = 0;
         }
@@ -61,7 +63,7 @@ namespace Analyzer.Corral
         public IAnalyzer CreateAnalyzer()
         {
             return new CorralAnalyzer(defaultArgs, workingDir, queryGenerator, inputAssembly, inputFileName,
-                typeToAnalyze, token);
+                typeToAnalyze, token,errorList);
         }
     }
 }

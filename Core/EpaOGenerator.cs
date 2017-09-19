@@ -54,9 +54,9 @@ namespace Contractor.Core
 
             analysisTimer.Stop();
 
-            var analysisResult = new TypeAnalysisResult(epaBuilder.Build(), analysisTimer.Elapsed, analyzer.GetUsageStatistics());
+            //var analysisResult = new TypeAnalysisResult(epaBuilder.Build(), analysisTimer.Elapsed, analyzer.GeneratedQueriesCount,analyzer.UnprovenQueriesCount);
 
-            return analysisResult;
+            return null;//analysisResult;
         }
 
         /// <summary>

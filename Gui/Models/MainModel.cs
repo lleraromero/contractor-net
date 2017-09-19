@@ -65,7 +65,7 @@ namespace Contractor.Gui.Models
             }
             errorList.Add("System.Exception");
             
-            var analyzer = GetAnalyzer(analysisEventArgs.TypeToAnalyze, analysisEventArgs.Engine, cancellationSource.Token,errorList);
+            var analyzer = GetAnalyzerFactory(analysisEventArgs.TypeToAnalyze, analysisEventArgs.Engine, cancellationSource.Token,errorList);
 
             var selectedMethods = from m in analysisEventArgs.SelectedMethods select m.ToString();
             
@@ -87,8 +87,8 @@ namespace Contractor.Gui.Models
             else if (analysisEventArgs.Conditions.Equals("EPA-O"))
             {
                 errorList = errorList.Select(x => x.Split('.').Last()).ToList();
-                var epaGenerator = new EpaOGenerator(analyzer, -1,errorList);
-                return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable,methodsInfo);
+                var epaGenerator = new EpaOGenerator(analyzer.CreateAnalyzer(), -1,errorList);
+                return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable);
             }else{
                 throw new NotImplementedException();
             }
@@ -140,8 +140,7 @@ namespace Contractor.Gui.Models
             TransitionAdded(sender, e);
         }
 
-        protected IAnalyzerFactory GetAnalyzerFactory(ITypeDefinition typeToAnalyze, string engine, CancellationToken cancellationToken)
-        protected IAnalyzer GetAnalyzer(ITypeDefinition typeToAnalyze, string engine, CancellationToken cancellationToken, List<string> errorList)
+        protected IAnalyzerFactory GetAnalyzerFactory(ITypeDefinition typeToAnalyze, string engine, CancellationToken cancellationToken,List<string> errorList)
         {
             var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
             if (workingDir.Exists && workingDir.CreationTimeUtc < DateTime.UtcNow.AddDays(-3))
@@ -178,7 +177,6 @@ namespace Contractor.Gui.Models
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
                     analyzerFactory = new CorralAnalyzerFactory(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly,
                         inputFile.FullName,
-                        typeToAnalyze, cancellationToken);
                         typeToAnalyze, cancellationToken,errorList);
                     break;
                 default:
@@ -187,5 +185,6 @@ namespace Contractor.Gui.Models
 
             return analyzerFactory;
         }
+        
     }
 }

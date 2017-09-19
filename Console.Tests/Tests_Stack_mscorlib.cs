@@ -19,8 +19,8 @@ namespace Console.Tests
         {
             string outputDir = @"C:\Users\Fernan\Documents\epa-i-o-results\Stack-mscorlib\StackMscorlib\StackMscorlib";
             string[] args = @"-i C:\Users\Fernan\Documents\epa-i-o-results\Stack-mscorlib\StackMscorlib\StackMscorlib\obj\Debug\Decl\StackMscorlib.dll -g C:\Users\Fernan\Documents\epa-i-o-results\Stack-mscorlib\StackMscorlib\StackMscorlib\EPA -tmp C:\Users\Fernan\Desktop\temp --il true -t System.Collections2.Stack -b Corral --xml".Split(' ') ;
-            int r = Contractor.Console.Program.Main(args);
-            Contract.Assert(r == 0);
+            //int r = Contractor.Console.Program.Main(args);
+            //Contract.Assert(r == 0);
             //xml exists
             Contract.Assert(File.Exists(outputDir + "\\Stack.xml"));
             //png exists
@@ -35,8 +35,8 @@ namespace Console.Tests
         {
             string outputDir = @"C:\Users\Fernan\Documents\epa-i-o-results\Stack-mscorlib\StackMscorlib\StackMscorlib\EPA-O-Exc";
             string[] args = { };
-            int r = Contractor.Console.Program.Main(args);
-            Contract.Assert(r == 0);
+            //int r = Contractor.Console.Program.Main(args);
+            //Contract.Assert(r == 0);
             //xml exists
             Contract.Assert(File.Exists(outputDir + "\\Stack.xml"));
             //png exists
@@ -51,8 +51,8 @@ namespace Console.Tests
         {
             string outputDir = @"C:\Users\Fernan\Documents\epa-i-o-results\Stack-mscorlib\StackMscorlib\StackMscorlib\EPA-O-Customized";
             string[] args = { };
-            int r = Contractor.Console.Program.Main(args);
-            Contract.Assert(r == 0);
+            //int r = Contractor.Console.Program.Main(args);
+            //Contract.Assert(r == 0);
             //xml exists
             Contract.Assert(File.Exists(outputDir + "\\Stack.xml"));
             //png exists
@@ -67,8 +67,8 @@ namespace Console.Tests
         {
             string outputDir = @"C:\Users\Fernan\Documents\epa-i-o-results\Stack-mscorlib\StackMscorlib\StackMscorlib\EPA-O-All";
             string[] args = { };
-            int r = Contractor.Console.Program.Main(args);
-            Contract.Assert(r == 0);
+            //int r = Contractor.Console.Program.Main(args);
+            //Contract.Assert(r == 0);
             //xml exists
             Contract.Assert(File.Exists(outputDir + "\\Stack.xml"));
             //png exists
