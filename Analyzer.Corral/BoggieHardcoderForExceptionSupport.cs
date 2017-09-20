@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Contractor.Core;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,12 +17,7 @@ namespace Analyzer.Corral
         {
             full_path_to_boogie_file = "";
             errorList = new List<string>();
-            string[] lines = System.IO.File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + @"..\..\..\Analyzer.Corral\Exceptions.txt");
-            foreach (string line in lines)
-            {
-                if (!line.Equals("") && !line.Contains("//"))
-                    errorList.Add(line);
-            }
+            ImplementedExceptions.AddAllExceptionsTo(errorList);
         }
 
         public BoggieHardcoderForExceptionSupport(List<string> errorList)
