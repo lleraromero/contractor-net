@@ -27,7 +27,7 @@ namespace Analyzer.Corral
 
         public void hardcodeExceptionsToFile(string file)
         {
-            if (file.Equals(this.full_path_to_boogie_file)) return;
+            if (file.Equals(this.full_path_to_boogie_file)) return; //Aviod instrument boogie file more than once.
             lock (this.full_path_to_boogie_file)
             {
                 this.full_path_to_boogie_file = file;
