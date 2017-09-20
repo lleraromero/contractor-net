@@ -21,9 +21,11 @@ namespace Analyzer.Corral
         protected ITypeDefinition typeToAnalyze;
         protected CancellationToken token;
         protected DirectoryInfo workingDir;
+        // shared between all analyzers to reuse information
         protected static Dictionary<Tuple<State, Action, IEnumerable<Action>>, ActionAnalysisResults> map;
         protected static Dictionary<Action, ISet<Action>> enabled_dependencies;
         protected static Dictionary<Action, ISet<Action>> disabled_dependencies;
+        //---
         protected int generatedQueriesCount;
         protected int unprovenQueriesCount;
         //protected static BoggieHardcoderForExceptionSupport exceptionHarcoder;
