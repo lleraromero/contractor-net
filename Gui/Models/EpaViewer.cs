@@ -55,8 +55,9 @@ namespace Contractor.Gui.Models
         public void AddTransition(Transition transition)
         {
             var exitCode = transition.ExitCode;
+            string finalExitCode = exitCode;
             if (!transition.ReturnType.Equals(""))
-                exitCode += " && result is "+ transition.ReturnType;
+                finalExitCode += " && result is " + transition.ReturnType;
             var label = transition.Action.ToString();
             var createEdge = true;
             var lineStyle = transition.IsUnproven ? Style.Dashed : Style.Solid;
@@ -79,7 +80,7 @@ namespace Contractor.Gui.Models
                     if(exitCode.Equals("NOSE")){
                         ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
                     }else{
-                        ed.LabelText = string.Format("{0}{1}{2}:{3}", ed.LabelText, Environment.NewLine, label, exitCode);
+                        ed.LabelText = string.Format("{0}{1}{2}:{3}", ed.LabelText, Environment.NewLine, label, finalExitCode);
                     }
                     
                     createEdge = false;
@@ -96,7 +97,7 @@ namespace Contractor.Gui.Models
                 }
                 else
                 {
-                    edge = graph.AddEdge(transition.SourceState.Name, label + ":" + exitCode, transition.TargetState.Name);
+                    edge = graph.AddEdge(transition.SourceState.Name, label + ":" + finalExitCode, transition.TargetState.Name);
                 }
                 edge.Label.FontName = "Cambria";
                 edge.Label.FontSize = 6;
