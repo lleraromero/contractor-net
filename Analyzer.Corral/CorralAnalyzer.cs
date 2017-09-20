@@ -78,7 +78,7 @@ namespace Analyzer.Corral
 
         private ISet<Action> GetMustBeDisabledActionsDependencies(Action action, ISet<Action> actions, ISolver corralRunner)
         {
-            if (enabled_dependencies.ContainsKey(action))
+            if (disabled_dependencies.ContainsKey(action))
             {
                 actions = new HashSet<Action>(actions.Except<Action>(disabled_dependencies[action]));
             }
@@ -87,7 +87,7 @@ namespace Analyzer.Corral
             var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries);
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
             var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
-            if (enabled_dependencies.ContainsKey(action))
+            if (disabled_dependencies.ContainsKey(action))
             {
                 disabledActions.UnionWith(disabled_dependencies[action]);
             }
@@ -116,22 +116,10 @@ namespace Analyzer.Corral
 
         public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
         {
-            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir, exceptionHarcoder);
-
-            if (action.IsPure)
-            {
-                return new ActionAnalysisResults(new HashSet<Action>(source.EnabledActions), new HashSet<Action>(source.DisabledActions));
-            }
-
-            var enabledActions = GetMustBeEnabledActions(source, action, actions, corralRunner);
-            var disabledActions = GetMustBeDisabledActions(source, action, actions, corralRunner);
-
-            Contract.Assert(!enabledActions.Intersect(disabledActions).Any());
-
-            return new ActionAnalysisResults(enabledActions, disabledActions);
+            return AnalyzeActions(source, action,actions,null);
         }
 
-        public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions,string expectedExitCode)
+        public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions,string expectedExitCode=null)
         {
             ISolver corralRunner = new CorralRunner(defaultArgs, workingDir, exceptionHarcoder);
 
@@ -161,7 +149,7 @@ namespace Analyzer.Corral
         public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
             ISolver corralRunner = new CorralRunner(defaultArgs, workingDir, exceptionHarcoder);
-            Log.MyLogger.LogMsg("---- #TARGETS "+targets.Count()+"----");
+            //Log.MyLogger.LogMsg("---- #TARGETS "+targets.Count()+"----");
             var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets);
             var queryAssembly = CreateBoogieQueryAssembly(transitionQueries);
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);

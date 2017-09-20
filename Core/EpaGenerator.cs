@@ -64,7 +64,7 @@ namespace Contractor.Core
         ///     Method to create an EPA of a particular type considering only the subset 'methods'
         /// </summary>
         /// <see cref="http://publicaciones.dc.uba.ar/Publications/2011/DBGU11/paper-icse-2011.pdf">Algorithm 1</see>
-        protected Epa GenerateEpa(ISet<Action> constructors, ISet<Action> actions, IEpaBuilder epaBuilder, Dictionary<string,ErrorInstrumentator.MethodInfo> methods = null)
+        protected Epa GenerateEpa(ISet<Action> constructors, ISet<Action> actions, IEpaBuilder epaBuilder)
         {
             Contract.Requires(constructors != null);
             Contract.Requires(actions != null);
@@ -74,11 +74,6 @@ namespace Contractor.Core
             var statesToVisit = new Queue<State>();
             var visitedStates = new HashSet<State>();
             statesToVisit.Enqueue(initialState);
-
-            if (methods == null)
-            {
-                methods = new Dictionary<string,ErrorInstrumentator.MethodInfo>();
-            }
 
             while (statesToVisit.Count > 0)
             {
