@@ -87,7 +87,7 @@ namespace Contractor.Gui.Models
             else if (analysisEventArgs.Conditions.Equals("EPA-O"))
             {
                 errorList = errorList.Select(x => x.Split('.').Last()).ToList();
-                var epaGenerator = new EpaOGenerator(analyzer.CreateAnalyzer(), -1,errorList);
+                var epaGenerator = new EpaOGenerator(analyzer, -1,errorList);
                 return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable);
             }else{
                 throw new NotImplementedException();

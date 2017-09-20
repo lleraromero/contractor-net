@@ -185,7 +185,7 @@ namespace Contractor.Console
                 //if (oc.Contains("exitCode"))
                 //{
                 errorList = errorList.Select(x => x.Split('.').Last()).ToList();
-                var generator = new EpaOGenerator(analyzerFactory.CreateAnalyzer(), options.Cutter, errorList); //>>>>>>>>> CAMBIAR ACA Y PASAR EL FACTORY
+                var generator = new EpaOGenerator(analyzerFactory, options.Cutter, errorList); //>>>>>>>>> CAMBIAR ACA Y PASAR EL FACTORY
 
                     var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
                     var epaBuilder = new EpaBuilder(typeDefinition);
