@@ -8,6 +8,7 @@ using Analysis.Cci;
 using Contractor.Core;
 using Contractor.Core.Model;
 using Action = Contractor.Core.Model.Action;
+using System.Threading.Tasks;
 
 namespace Analyzer.Corral
 {
@@ -25,7 +26,7 @@ namespace Analyzer.Corral
         protected static Dictionary<Action, ISet<Action>> disabled_dependencies;
         protected int generatedQueriesCount;
         protected int unprovenQueriesCount;
-        protected BoggieHardcoderForExceptionSupport exceptionHarcoder;
+        //protected static BoggieHardcoderForExceptionSupport exceptionHarcoder;
 
         public CorralAnalyzer(string defaultArgs, DirectoryInfo workingDir, CciQueryGenerator queryGenerator, CciAssembly inputAssembly,
             string inputFileName, ITypeDefinition typeToAnalyze,
@@ -38,8 +39,6 @@ namespace Analyzer.Corral
             this.typeToAnalyze = typeToAnalyze;
             this.inputFileName = inputFileName;
             this.token = token;
-            
-            this.exceptionHarcoder = new BoggieHardcoderForExceptionSupport();
 
             generatedQueriesCount = 0;
             unprovenQueriesCount = 0;
@@ -50,16 +49,17 @@ namespace Analyzer.Corral
             map = new Dictionary<Tuple<State, Action, IEnumerable<Action>>, ActionAnalysisResults>();
             enabled_dependencies = new Dictionary<Action, ISet<Action>>();
             disabled_dependencies = new Dictionary<Action, ISet<Action>>();
-
-            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir, exceptionHarcoder);
-            int i=1;
-            foreach (var action in actions.Where(a=>!a.IsPure))
+            
+            //int i=1;
+            //foreach (var action in actions.Where(a=>!a.IsPure))
+            Parallel.ForEach(actions.Where(a => !a.IsPure), new ParallelOptions(), action =>
             {
+                ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
                 var enabledActions = GetMustBeEnabledActionsDependencies(action, actions, corralRunner);
                 var disabledActions = GetMustBeDisabledActionsDependencies(action, actions, corralRunner);
                 enabled_dependencies.Add(action, enabledActions);
                 disabled_dependencies.Add(action, disabledActions);
-                Console.WriteLine("DEP ACT " + i + ": " + action.Name + " ENA:" + enabledActions.Count + " DIS:" + disabledActions.Count);
+                /*Console.WriteLine("DEP ACT " + i + ": " + action.Name + " ENA:" + enabledActions.Count + " DIS:" + disabledActions.Count);
                 Console.Write("enabled={ ");
                 foreach (var act in enabledActions)
                 {
@@ -72,8 +72,8 @@ namespace Analyzer.Corral
                     Console.Write(act.Name + " ");
                 }
                 Console.WriteLine("}");
-                i++;
-            }
+                i++;*/
+            });
         }
 
         private ISet<Action> GetMustBeDisabledActionsDependencies(Action action, ISet<Action> actions, ISolver corralRunner)
@@ -105,7 +105,7 @@ namespace Analyzer.Corral
 
         public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions,string expectedExitCode=null)
         {
-            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir, exceptionHarcoder);
+            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
 
             if (action.IsPure)
             {
@@ -132,7 +132,7 @@ namespace Analyzer.Corral
 
         public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
-            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir, exceptionHarcoder);
+            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
             //Log.MyLogger.LogMsg("---- #TARGETS "+targets.Count()+"----");
             var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets);
             var queryAssembly = CreateBoogieQueryAssembly(transitionQueries);
@@ -145,7 +145,7 @@ namespace Analyzer.Corral
 
         public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string expectedExitCode)
         {
-            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir, exceptionHarcoder);
+            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
             
             var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets,expectedExitCode);
             var queryAssembly = CreateBoogieQueryAssembly(transitionQueries,expectedExitCode);
@@ -158,7 +158,7 @@ namespace Analyzer.Corral
 
         public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string expectedExitCode, string condition)
         {
-            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir, exceptionHarcoder);
+            ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
 
             var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets, expectedExitCode,condition);
             var queryAssembly = CreateBoogieQueryAssembly(transitionQueries, expectedExitCode);

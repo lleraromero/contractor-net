@@ -13,11 +13,11 @@ namespace Analyzer.Corral
         protected readonly DirectoryInfo workingDir;
         protected BoggieHardcoderForExceptionSupport boogieHarcoder;
 
-        public CorralRunner(string defaultArgs, DirectoryInfo workingDir, BoggieHardcoderForExceptionSupport boogieHarcoder)
+        public CorralRunner(string defaultArgs, DirectoryInfo workingDir)
         {
             corralArguments = defaultArgs;
             this.workingDir = workingDir;
-            this.boogieHarcoder = boogieHarcoder;
+            this.boogieHarcoder = new BoggieHardcoderForExceptionSupport(); ;
         }
 
         public QueryResult Execute(FileInfo queryAssembly, Query query)
