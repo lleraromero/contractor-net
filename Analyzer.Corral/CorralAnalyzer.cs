@@ -20,9 +20,9 @@ namespace Analyzer.Corral
         protected ITypeDefinition typeToAnalyze;
         protected CancellationToken token;
         protected DirectoryInfo workingDir;
-        protected Dictionary<Tuple<State, Action, IEnumerable<Action>>, ActionAnalysisResults> map;
-        protected Dictionary<Action, ISet<Action>> enabled_dependencies;
-        protected Dictionary<Action, ISet<Action>> disabled_dependencies;
+        protected static Dictionary<Tuple<State, Action, IEnumerable<Action>>, ActionAnalysisResults> map;
+        protected static Dictionary<Action, ISet<Action>> enabled_dependencies;
+        protected static Dictionary<Action, ISet<Action>> disabled_dependencies;
         protected int generatedQueriesCount;
         protected int unprovenQueriesCount;
         protected BoggieHardcoderForExceptionSupport exceptionHarcoder;
@@ -38,10 +38,6 @@ namespace Analyzer.Corral
             this.typeToAnalyze = typeToAnalyze;
             this.inputFileName = inputFileName;
             this.token = token;
-
-            this.map = new Dictionary<Tuple<State, Action, IEnumerable<Action>>, ActionAnalysisResults>();
-            this.enabled_dependencies = new Dictionary<Action,ISet<Action>>();
-            this.disabled_dependencies = new Dictionary<Action, ISet<Action>>();
             
             this.exceptionHarcoder = new BoggieHardcoderForExceptionSupport();
 
@@ -51,6 +47,10 @@ namespace Analyzer.Corral
 
         public void ComputeDependencies(ISet<Action> actions)
         {
+            map = new Dictionary<Tuple<State, Action, IEnumerable<Action>>, ActionAnalysisResults>();
+            enabled_dependencies = new Dictionary<Action, ISet<Action>>();
+            disabled_dependencies = new Dictionary<Action, ISet<Action>>();
+
             ISolver corralRunner = new CorralRunner(defaultArgs, workingDir, exceptionHarcoder);
             int i=1;
             foreach (var action in actions.Where(a=>!a.IsPure))
@@ -78,38 +78,22 @@ namespace Analyzer.Corral
 
         private ISet<Action> GetMustBeDisabledActionsDependencies(Action action, ISet<Action> actions, ISolver corralRunner)
         {
-            if (disabled_dependencies.ContainsKey(action))
-            {
-                actions = new HashSet<Action>(actions.Except<Action>(disabled_dependencies[action]));
-            }
             var targetNegatedPreconditionQueries = queryGenerator.CreateNegativeQueries(action, actions);
             generatedQueriesCount += targetNegatedPreconditionQueries.Count;
             var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries);
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
             var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
-            if (disabled_dependencies.ContainsKey(action))
-            {
-                disabledActions.UnionWith(disabled_dependencies[action]);
-            }
             unprovenQueriesCount += evaluator.UnprovenQueries;
             return disabledActions;
         }
 
         private ISet<Action> GetMustBeEnabledActionsDependencies(Action action, ISet<Action> actions, ISolver corralRunner)
         {
-            if (enabled_dependencies.ContainsKey(action))
-            {
-                actions = new HashSet<Action>(actions.Except<Action>(enabled_dependencies[action]));
-            }
             var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(action, actions);
             generatedQueriesCount += targetPreconditionQueries.Count;
             var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries);
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
             var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
-            if (enabled_dependencies.ContainsKey(action))
-            {
-                enabledActions.UnionWith(disabled_dependencies[action]);
-            }
             unprovenQueriesCount += evaluator.UnprovenQueries;
             return enabledActions;
         }
@@ -201,6 +185,10 @@ namespace Analyzer.Corral
             Contract.Requires(action != null);
             Contract.Requires(actions.Any());
             Contract.Requires(corralRunner != null);
+            if (disabled_dependencies.ContainsKey(action))
+            {
+                actions = new HashSet<Action>(actions.Except<Action>(disabled_dependencies[action]));
+            }
             if (expectedExitCode != null){
                 var targetNegatedPreconditionQueries = queryGenerator.CreateNegativeQueries(source, action, actions,expectedExitCode);
                 generatedQueriesCount += targetNegatedPreconditionQueries.Count;
@@ -208,6 +196,10 @@ namespace Analyzer.Corral
                 var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
                 var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
                 unprovenQueriesCount += evaluator.UnprovenQueries;
+                if (disabled_dependencies.ContainsKey(action))
+                {
+                    disabledActions.UnionWith(disabled_dependencies[action]);
+                }
                 return disabledActions;
             
             }else{
@@ -217,6 +209,10 @@ namespace Analyzer.Corral
                 var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
                 var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
                 unprovenQueriesCount += evaluator.UnprovenQueries;
+                if (disabled_dependencies.ContainsKey(action))
+                {
+                    disabledActions.UnionWith(disabled_dependencies[action]);
+                }
                 return disabledActions;
             }
         }
@@ -227,6 +223,10 @@ namespace Analyzer.Corral
             Contract.Requires(action != null);
             Contract.Requires(actions.Any());
             Contract.Requires(corralRunner != null);
+            if (enabled_dependencies.ContainsKey(action))
+            {
+                actions = new HashSet<Action>(actions.Except<Action>(enabled_dependencies[action]));
+            }
             if(expectedExitCode!=null){
                 var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(source, action, actions,expectedExitCode);
                 generatedQueriesCount += targetPreconditionQueries.Count;
@@ -234,6 +234,10 @@ namespace Analyzer.Corral
                 var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
                 var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
                 unprovenQueriesCount += evaluator.UnprovenQueries;
+                if (enabled_dependencies.ContainsKey(action))
+                {
+                    enabledActions.UnionWith(enabled_dependencies[action]);
+                }
                 return enabledActions;
             }else{
                 var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(source, action, actions);
@@ -242,6 +246,10 @@ namespace Analyzer.Corral
                 var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
                 var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
                 unprovenQueriesCount += evaluator.UnprovenQueries;
+                if (enabled_dependencies.ContainsKey(action))
+                {
+                    enabledActions.UnionWith(enabled_dependencies[action]);
+                }
                 return enabledActions;
             }
             
