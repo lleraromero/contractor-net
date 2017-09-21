@@ -21,25 +21,25 @@ namespace Contractor.Console
         public static int Main(string[] args)
         {
 #if DEBUG
-            var tempPath = ConfigurationManager.AppSettings["WorkingDir"];
-            var graphPath = @"C:\Users\lean\Desktop\EPAs";
-            if (!Directory.Exists(graphPath))
-            {
-                Directory.CreateDirectory(graphPath);
-            }
+            //var tempPath = ConfigurationManager.AppSettings["WorkingDir"];
+            //var graphPath = @"C:\Users\lean\Desktop\EPAs";
+            //if (!Directory.Exists(graphPath))
+            //{
+            //    Directory.CreateDirectory(graphPath);
+            //}
 
-            var examplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\Examples\obj\Debug\Decl\Examples.dll"));
+            //var examplesPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\Examples\obj\Debug\Decl\Examples.dll"));
 
-            args = new[]
-            {
-                "-i", examplesPath,
-                "-g", graphPath,
-                "--tmp", tempPath,
-                "-t", "Examples.Door",
-                "-b", "Corral",
-                "--ga",
-                "-o", @"C:\Users\lean\Desktop\EPAs\strengthenedAssembly.dll",
-            };
+            //args = new[]
+            //{
+            //    "-i", examplesPath,
+            //    "-g", graphPath,
+            //    "--tmp", tempPath,
+            //    "-t", "Examples.Door",
+            //    "-b", "Corral",
+            //    "--ga",
+            //    "-o", @"C:\Users\lean\Desktop\EPAs\strengthenedAssembly.dll",
+            //};
 #endif
             var options = new Options();
             System.Action myact = () =>
