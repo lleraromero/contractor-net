@@ -96,7 +96,7 @@ namespace Contractor.Core
                         {
                             //MyLogger.LogAction(action.Name, exitCode, source.Name);                    
 
-                            actionsResult = analyzer.AnalyzeActions(source, action, actions);
+                            actionsResult = analyzer.AnalyzeActions(source, action, actions,exitCode);
                             if (actionsResult.EnabledActions.Count.Equals(actions.Count) && actionsResult.DisabledActions.Count.Equals(actions.Count()))
                             {
                                 Logger.Log(LogLevel.Warn,
@@ -117,7 +117,7 @@ namespace Contractor.Core
 
                             Contract.Assert(possibleTargets.Any(), "There is always at least one target to reach");
 
-                            var transitionsResults = analyzer.AnalyzeTransitions(source, action, possibleTargets);
+                            var transitionsResults = analyzer.AnalyzeTransitions(source, action, possibleTargets,exitCode);
 
                             //Contract.Assert(transitionsResults.Count > 0, "There is always at least one transition to traverse");
                             if (!(transitionsResults.Count > 0))
@@ -142,10 +142,10 @@ namespace Contractor.Core
                 {
                     foreach (var ex in e.InnerExceptions)
                     {
-                        if (ex.GetType() == typeof(OperationCanceledException))
-                        {
+                    //    if (ex.GetType() == typeof(OperationCanceledException))
+                    //    {
                             throw ex;
-                        }
+                    //    }
                     }
                 }
             }
