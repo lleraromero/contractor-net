@@ -30,7 +30,7 @@ namespace Contractor.Core
             errorList.Add("System.RankException");
             errorList.Add("AssertFailedException");
           * */
-            errorList = new List<string>();
+            //errorList = new List<string>();
             string[] lines = System.IO.File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + @"..\..\..\Analyzer.Corral\Exceptions.txt");
             foreach (string line in lines)
             {

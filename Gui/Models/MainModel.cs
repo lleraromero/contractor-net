@@ -63,7 +63,10 @@ namespace Contractor.Gui.Models
             {
                 ImplementedExceptions.AddAllExceptionsTo(errorList);
             }
-            errorList.Add("System.Exception");
+            else
+            {
+                errorList.Add("System.Exception");
+            }
             
             var analyzer = GetAnalyzerFactory(analysisEventArgs.TypeToAnalyze, analysisEventArgs.Engine, cancellationSource.Token,errorList);
 
