@@ -7,8 +7,8 @@ System.InvalidCastException
 
 //Argument Exceptions
 System.ArgumentNullException
-System.ArgumentException
 System.ArgumentOutOfRangeException
+System.ArgumentException
 
 //IOExceptions
 System.IO.FileNotFoundException
@@ -17,22 +17,23 @@ System.IO.PathTooLongException
 System.IO.EndOfStreamException
 System.IO.IOException
 
-//Ad-hoc Exceptions for Java examples
-System.IllegalStateException
-System.ConcurrentModificationException
-System.NoSuchElementException
+System.ObjectDisposedException
 
 //Incorrect method execution exceptions
 System.InvalidOperationException
 System.NotSupportedException
 
+//Ad-hoc Exceptions for Java examples
+System.IllegalStateException
+System.ConcurrentModificationException
+System.NoSuchElementException
+
+//Special Ad-hoc Exception for Assert calls
+System.AssertFailedException
+
 //System Exceptions
-System.ObjectDisposedException
 System.UnauthorizedAccessException
 System.NotImplementedException
 System.RankException
 System.TimeoutException
 System.Exception
-
-//Special Ad-hoc Exception for Assert calls
-System.AssertFailedException
