@@ -13,6 +13,7 @@ namespace Analyzer.Corral
     {
         private List<string> errorList;
         private string full_path_to_boogie_file;
+        private bool ready;
         public BoggieHardcoderForExceptionSupport()
         {
             full_path_to_boogie_file = "";
@@ -27,26 +28,28 @@ namespace Analyzer.Corral
 
         public void hardcodeExceptionsToFile(string file)
         {
-            if (file.Equals(this.full_path_to_boogie_file)) return; //Aviod instrument boogie file more than once.
+            if (file.Equals(this.full_path_to_boogie_file)) return; //Avoid instrumenting boogie file more than once.
             lock (this.full_path_to_boogie_file)
             {
+                ready = false;
                 this.full_path_to_boogie_file = file;
                 var input = File.ReadAllText(this.full_path_to_boogie_file);
-                hardcodeExceptionEqualsToNullToQueries(input);
+                input = hardcodeExceptionEqualsToNullToQueries(input);
+                input = SolveConstUniqueProblem(input);
                 hardcodeSubtypeAxioms(input);
-                SolveConstUniqueProblem(input);
+                ready = true;
             }
                
         }
 
-        public void SolveConstUniqueProblem(string input)
+        public string SolveConstUniqueProblem(string input)
         {
             string pattern = "const unique System.Collections.Generic.IArraySortHelper: Ref;";
             string replacement = "//const unique System.Collections.Generic.IArraySortHelper: Ref;";
             Regex rgx = new Regex(Regex.Escape(pattern));
             string result = rgx.Replace(input, replacement, rgx.Matches(input).Count - 1);
-            File.WriteAllText(this.full_path_to_boogie_file, result);
-            
+            //File.WriteAllText(this.full_path_to_boogie_file, result);
+            return result;
         }
 
 
@@ -187,15 +190,20 @@ namespace Analyzer.Corral
             //stringBuilder.AppendLine("axiom !$Subtype(T$System.OverflowException(), T$System.NullReferenceException());");
             //stringBuilder.AppendLine("axiom !$Subtype(T$System.NullReferenceException(), T$System.OverflowException());");
         }
-        private void hardcodeExceptionEqualsToNullToQueries(string input)
+        private string hardcodeExceptionEqualsToNullToQueries(string input)
         {
             string lineToAdd = "$Exception := null;";
             string query_pattern = @"(^implementation(.*)STATE(.*)\n\{\r\n(\s\svar(.*)\n)*)";//"(implementation(.*)STATE(.)*\n{\n(.*var.*;\n)*)";
             string replacement = "$1\n" + lineToAdd + "\n";
             Regex rgx = new Regex(query_pattern, RegexOptions.Multiline);
             string result = rgx.Replace(input, replacement);
-            File.WriteAllText(this.full_path_to_boogie_file, result);
-           
+            //File.WriteAllText(this.full_path_to_boogie_file, result);
+            return result;
+        }
+
+        internal bool Ready()
+        {
+            return this.ready;
         }
     }
 }
