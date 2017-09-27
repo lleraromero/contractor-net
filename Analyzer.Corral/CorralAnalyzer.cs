@@ -82,7 +82,7 @@ namespace Analyzer.Corral
         {
             var targetNegatedPreconditionQueries = queryGenerator.CreateNegativeQueries(action, actions);
             generatedQueriesCount += targetNegatedPreconditionQueries.Count;
-            var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries);
+            var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries, CreateQueriesContextStringForPath(action, actions, "NOSE"));
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
             var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
             unprovenQueriesCount += evaluator.UnprovenQueries;
@@ -93,7 +93,7 @@ namespace Analyzer.Corral
         {
             var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(action, actions);
             generatedQueriesCount += targetPreconditionQueries.Count;
-            var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries);
+            var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries, CreateQueriesContextStringForPath(action, actions, "NOSE"));
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
             var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
             unprovenQueriesCount += evaluator.UnprovenQueries;
@@ -137,7 +137,7 @@ namespace Analyzer.Corral
             ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
             //Log.MyLogger.LogMsg("---- #TARGETS "+targets.Count()+"----");
             var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets);
-            var queryAssembly = CreateBoogieQueryAssembly(transitionQueries);
+            var queryAssembly = CreateBoogieQueryAssembly(transitionQueries, CreateQueriesContextStringForPath(source, action, targets, "NOSE"));
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
             var feasibleTransitions = evaluator.GetFeasibleTransitions(transitionQueries);
             unprovenQueriesCount += evaluator.UnprovenQueries;
@@ -150,7 +150,7 @@ namespace Analyzer.Corral
             ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
             
             var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets,expectedExitCode);
-            var queryAssembly = CreateBoogieQueryAssembly(transitionQueries,expectedExitCode);
+            var queryAssembly = CreateBoogieQueryAssembly(transitionQueries, CreateQueriesContextStringForPath(source, action, targets, expectedExitCode));
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
             var feasibleTransitions = evaluator.GetFeasibleTransitions(transitionQueries,expectedExitCode);
             unprovenQueriesCount += evaluator.UnprovenQueries;
@@ -158,12 +158,47 @@ namespace Analyzer.Corral
             return feasibleTransitions;
         }
 
+        private string CreateQueriesContextStringForPath(Action action, ISet<Action> actions, string expectedExitCode)
+        {
+            var result="ACTION_"+action.Name + "_"+"ACTIONS_";
+            //foreach (var act in actions)
+            //{
+            //    result += "_" + act.Name;
+            //}
+            result += "EXITCODE_"+expectedExitCode;
+            return result;
+        }
+
+        private string CreateQueriesContextStringForPath(State source, Action action, IEnumerable<Action> actions, string expectedExitCode)
+        {
+            //SOURCE??????
+            var result = "ACTION_" + action.Name + "_" + "ACTIONS_";
+            //foreach (var act in actions)
+            //{
+            //    result += "_" + act.Name;
+            //}
+            result += "EXITCODE_" + expectedExitCode;
+            return result;
+        }
+
+        private string CreateQueriesContextStringForPath(State source, Action action, IEnumerable<State> targets, string expectedExitCode)
+        {
+            //SOURCE??????
+            var result = "ACTION_" + action.Name + "_" + "TARGETS_";
+            //foreach (var tar in targets)
+            //{
+            //    result += "_" + tar.Name;
+            //}
+            result += "EXITCODE_" + expectedExitCode;
+            return result;
+        }
+
         public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string expectedExitCode, string condition)
         {
             ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
 
             var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets, expectedExitCode,condition);
-            var queryAssembly = CreateBoogieQueryAssembly(transitionQueries, expectedExitCode);
+            var queryAssembly = CreateBoogieQueryAssembly(transitionQueries, CreateQueriesContextStringForPath(source, action, targets, expectedExitCode));
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
             var feasibleTransitions = evaluator.GetFeasibleTransitions(transitionQueries, expectedExitCode,condition);
             unprovenQueriesCount += evaluator.UnprovenQueries;
@@ -194,7 +229,7 @@ namespace Analyzer.Corral
             if (expectedExitCode != null){
                 var targetNegatedPreconditionQueries = queryGenerator.CreateNegativeQueries(source, action, actions,expectedExitCode);
                 generatedQueriesCount += targetNegatedPreconditionQueries.Count;
-                var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries, expectedExitCode);
+                var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries, CreateQueriesContextStringForPath(source, action, actions, expectedExitCode));
                 var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
                 var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
                 unprovenQueriesCount += evaluator.UnprovenQueries;
@@ -207,7 +242,7 @@ namespace Analyzer.Corral
             }else{
                 var targetNegatedPreconditionQueries = queryGenerator.CreateNegativeQueries(source, action, actions);
                 generatedQueriesCount += targetNegatedPreconditionQueries.Count;
-                var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries, "Ok");
+                var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries, CreateQueriesContextStringForPath(source, action, actions, "NOSE"));
                 var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
                 var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
                 unprovenQueriesCount += evaluator.UnprovenQueries;
@@ -232,7 +267,7 @@ namespace Analyzer.Corral
             if(expectedExitCode!=null){
                 var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(source, action, actions,expectedExitCode);
                 generatedQueriesCount += targetPreconditionQueries.Count;
-                var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries, expectedExitCode);
+                var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries, CreateQueriesContextStringForPath(source, action, actions, expectedExitCode));
                 var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
                 var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
                 unprovenQueriesCount += evaluator.UnprovenQueries;
@@ -244,7 +279,7 @@ namespace Analyzer.Corral
             }else{
                 var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(source, action, actions);
                 generatedQueriesCount += targetPreconditionQueries.Count;
-                var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries, "Ok");
+                var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries, CreateQueriesContextStringForPath(source, action, actions, "NOSE"));
                 var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
                 var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
                 unprovenQueriesCount += evaluator.UnprovenQueries;
@@ -257,7 +292,7 @@ namespace Analyzer.Corral
             
         }
 
-        protected FileInfo CreateBoogieQueryAssembly(IReadOnlyCollection<Query> queries)
+        /*protected FileInfo CreateBoogieQueryAssembly(IReadOnlyCollection<Query> queries)
         {
             Contract.Requires(queries.Any());
 
@@ -275,15 +310,15 @@ namespace Analyzer.Corral
             new CciAssemblyPersister().Save(queryAssembly, queryFilePath);
 
             return TranslateCSharpToBoogie(queryFilePath);
-        }
+        }*/
 
-        protected FileInfo CreateBoogieQueryAssembly(IReadOnlyCollection<Query> queries, string expectedExitCode="Ok")
+        protected FileInfo CreateBoogieQueryAssembly(IReadOnlyCollection<Query> queries, string path)
         {
             Contract.Requires(queries.Any());
-
+            
             var queryAssembly = new CciQueryAssembly(inputAssembly, typeToAnalyze, queries);
 
-            var queryFilePath = Path.Combine(workingDir.FullName, Guid.NewGuid().ToString(), Path.GetFileName(inputFileName));
+            var queryFilePath = Path.Combine(workingDir.FullName, path, Guid.NewGuid().ToString(), Path.GetFileName(inputFileName));
             Contract.Assert(!Directory.Exists(Path.GetDirectoryName(queryFilePath)));
             Directory.CreateDirectory(Path.GetDirectoryName(queryFilePath));
 
