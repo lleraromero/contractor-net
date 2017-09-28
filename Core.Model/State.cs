@@ -9,6 +9,7 @@ namespace Contractor.Core.Model
     public class State : IEquatable<State>
     {
         protected static int id_counter=1;
+        protected static Dictionary<string, int> states = new Dictionary<string, int>();
         protected HashSet<Action> enabledActions;
         protected HashSet<Action> disabledActions;
         protected int id;
@@ -24,8 +25,18 @@ namespace Contractor.Core.Model
 
             this.enabledActions =  new HashSet<Action>(enabledActions);
             this.disabledActions = new HashSet<Action>(disabledActions);
-            this.id = id_counter++;
+            var name= this.Name;
+            if(states.TryGetValue(Name, out this.id)){
+                
+            }
+            else
+            {
+                this.id = id_counter++;
+                states.Add(name, this.id);
+            }
+            
         }
+
         public int Id
         {
             get
