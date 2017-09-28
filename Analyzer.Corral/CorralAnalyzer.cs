@@ -171,8 +171,7 @@ namespace Analyzer.Corral
 
         private string CreateQueriesContextStringForPath(State source, Action action, IEnumerable<Action> actions, string expectedExitCode)
         {
-            //SOURCE??????
-            var result = "ACTION_" + action.Name + "_" + "ACTIONS_";
+            var result = "SOURCE_S"+source.Id+"_ACTION_" + action.Name + "_" + "ACTIONS_";
             //foreach (var act in actions)
             //{
             //    result += "_" + act.Name;
@@ -183,13 +182,12 @@ namespace Analyzer.Corral
 
         private string CreateQueriesContextStringForPath(State source, Action action, IEnumerable<State> targets, string expectedExitCode)
         {
-            //SOURCE??????
-            var result = "ACTION_" + action.Name + "_" + "TARGETS_";
-            //foreach (var tar in targets)
-            //{
-            //    result += "_" + tar.Name;
-            //}
-            result += "EXITCODE_" + expectedExitCode;
+            var result = "SOURCE_S"+source.Id+"_ACTION_" + action.Name + "_" + "TARGETS_";
+            foreach (var tar in targets)
+            {
+                result += "_S" + tar.Id;
+            }
+            result += "_EXITCODE_" + expectedExitCode;
             return result;
         }
 
