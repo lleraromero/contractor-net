@@ -8,8 +8,10 @@ namespace Contractor.Core.Model
 {
     public class State : IEquatable<State>
     {
+        protected static int id_counter=1;
         protected HashSet<Action> enabledActions;
         protected HashSet<Action> disabledActions;
+        protected int id;
 
         public IImmutableSet<Action> EnabledActions { get { return enabledActions.ToImmutableHashSet<Action>(); } }
         public IImmutableSet<Action> DisabledActions { get { return disabledActions.ToImmutableHashSet<Action>(); } }
@@ -22,8 +24,15 @@ namespace Contractor.Core.Model
 
             this.enabledActions =  new HashSet<Action>(enabledActions);
             this.disabledActions = new HashSet<Action>(disabledActions);
+            this.id = id_counter++;
         }
-
+        public int Id
+        {
+            get
+            {
+                return this.id;
+            }
+        }
         public string Name
         {
             get
