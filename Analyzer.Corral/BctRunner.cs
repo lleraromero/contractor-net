@@ -14,8 +14,8 @@ namespace Analyzer.Corral
 
             var tmpDir = Path.GetDirectoryName(args[0]);
             Contract.Assert(!string.IsNullOrEmpty(tmpDir) && Directory.Exists(tmpDir));
-
-            //MyLogger.LogBCT(string.Join(" ", args));
+            Logger.Log(LogLevel.Debug, "BCT: " + string.Join(" ", args));
+            
 
             using (var bct = new Process())
             {
@@ -32,7 +32,7 @@ namespace Analyzer.Corral
                     UseShellExecute = false
                 };
 
-                bct.OutputDataReceived += (sender, e) => { Logger.Log(LogLevel.Debug, "BCT: " + e.Data); };
+                bct.OutputDataReceived += (sender, e) => { };//Logger.Log(LogLevel.Debug, "BCT: " + e.Data); };
                 bct.ErrorDataReceived += (sender, e) => { Logger.Log(LogLevel.Fatal, "BCT: " + e.Data); };
                 //Console.WriteLine(string.Join(" ", args));
                 //Console.WriteLine(tmpDir);
@@ -43,13 +43,14 @@ namespace Analyzer.Corral
 
                 if (bct.ExitCode != 0)
                 {
-                    Logger.Log(LogLevel.Fatal, "BCT: Error translating the query assembly to boogie");
+                    Logger.Log(LogLevel.Fatal, string.Format("BCT: Error translating the query assembly to boogie: args: {0}, {1}", args));
 
                     MyLogger.LogBCTBreakingQuery(string.Join(" ", string.Join(" ", args)));
 
-                    Logger.Log(LogLevel.Info, string.Format("BCT: args: {0}, {1}", args));
-                    throw new Exception("BCT: Error translating the query assembly to boogie");
+                    //Logger.Log(LogLevel.Info, string.Format("BCT: args: {0}, {1}", args));
+                    throw new Exception(string.Format("BCT: Error translating the query assembly to boogie: args: {0}, {1}", args));
                 }
+                
             }
         }
     }

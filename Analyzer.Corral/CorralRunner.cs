@@ -57,7 +57,7 @@ namespace Analyzer.Corral
                 corral.OutputDataReceived += (sender, e) =>
                 {
                     output.AppendLine(e.Data);
-                    Logger.Log(LogLevel.Debug, e.Data);
+                    //Logger.Log(LogLevel.Debug, e.Data);
                 };
                 corral.ErrorDataReceived += (sender, e) => { Logger.Log(LogLevel.Fatal, e.Data); };
                 corral.Start();
@@ -67,11 +67,13 @@ namespace Analyzer.Corral
 
                 if (corral.ExitCode != 0)
                 {
-                    throw new Exception("Error executing corral");
+                    Logger.Log(LogLevel.Fatal, string.Format("Error executing corral: args: {0}",args));
+                    throw new Exception(string.Format("Error executing corral: args: {0}", args));
                 }
             }
 
             Directory.Delete(tmpDir, true);
+            Logger.Log(LogLevel.Debug, string.Format("CORRAL args:{0}\n{1}",args,output.ToString()));
             //MyLogger.LogCorralOutput(output.ToString());
             return ParseResultKind(output.ToString(), query);
         }
