@@ -33,6 +33,7 @@ namespace Contractor.Core.Model
             {
                 this.id = id_counter++;
                 states.Add(name, this.id);
+                Log.Logger.Log(Log.LogLevel.Info,string.Format("STATE S{0}={1}", this.id, this.Name));
             }
             
         }
