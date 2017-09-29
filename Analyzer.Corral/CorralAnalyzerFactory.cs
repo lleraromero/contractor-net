@@ -10,7 +10,6 @@ namespace Analyzer.Corral
     public class CorralAnalyzerFactory : IAnalyzerFactory
     {
         protected string defaultArgs;
-        protected CciQueryGenerator queryGenerator;
         protected CciAssembly inputAssembly;
         protected string inputFileName;
         protected ITypeDefinition typeToAnalyze;
@@ -20,17 +19,18 @@ namespace Analyzer.Corral
         protected int generatedQueriesCount;
         protected int unprovenQueriesCount;
         private List<string> errorList;
+        private List<string> errorListForQueryGenerator;
 
-        public CorralAnalyzerFactory(string defaultArgs, DirectoryInfo workingDir, CciQueryGenerator queryGenerator, CciAssembly inputAssembly,
+        public CorralAnalyzerFactory(string defaultArgs, DirectoryInfo workingDir, List<string> errorListForQueryGenerator, CciAssembly inputAssembly,
             string inputFileName, ITypeDefinition typeToAnalyze, CancellationToken token, List<string> errorList)
         {
             this.defaultArgs = defaultArgs;
             this.workingDir = workingDir;
-            this.queryGenerator = queryGenerator;
             this.inputAssembly = inputAssembly;
             this.inputFileName = inputFileName;
             this.typeToAnalyze = typeToAnalyze;
             this.token = token;
+            this.errorListForQueryGenerator = errorListForQueryGenerator;
             this.errorList = errorList;
             generatedQueriesCount = 0;
             unprovenQueriesCount = 0;
@@ -62,6 +62,7 @@ namespace Analyzer.Corral
 
         public IAnalyzer CreateAnalyzer()
         {
+            var queryGenerator = new CciQueryGenerator(this.errorListForQueryGenerator);
             return new CorralAnalyzer(defaultArgs, workingDir, queryGenerator, inputAssembly, inputFileName,
                 typeToAnalyze, token,errorList);
         }

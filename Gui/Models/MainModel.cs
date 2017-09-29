@@ -152,7 +152,7 @@ namespace Contractor.Gui.Models
             }
             workingDir.Create();
 
-            var queryGenerator = new CciQueryGenerator(errorList.Select(x => x.Split('.').Last()).ToList());
+            //var queryGenerator = new CciQueryGenerator(errorList.Select(x => x.Split('.').Last()).ToList());
 
             IAnalyzerFactory analyzerFactory;
             switch (engine)
@@ -172,13 +172,13 @@ namespace Contractor.Gui.Models
                     Contract.Assert(cccheckArgs != null);
                     var cccheck = new FileInfo(ConfigurationManager.AppSettings["CccheckFullName"]);
                     Contract.Assert(cccheck.Exists);
-                    analyzerFactory = new CodeContractsAnalyzerFactory(workingDir, cccheckArgs, string.Empty, queryGenerator,
+                    analyzerFactory = new CodeContractsAnalyzerFactory(workingDir, cccheckArgs, string.Empty, errorList.Select(x => x.Split('.').Last()).ToList(),
                         inputAssembly as CciAssembly, inputFile.FullName,
                         typeToAnalyze, cancellationToken);
                     break;
                 case "Corral":
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
-                    analyzerFactory = new CorralAnalyzerFactory(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly,
+                    analyzerFactory = new CorralAnalyzerFactory(corralDefaultArgs, workingDir, errorList.Select(x => x.Split('.').Last()).ToList(), inputAssembly as CciAssembly,
                         inputFile.FullName,
                         typeToAnalyze, cancellationToken,errorList);
                     break;

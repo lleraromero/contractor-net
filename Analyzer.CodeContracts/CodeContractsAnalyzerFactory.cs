@@ -3,6 +3,7 @@ using System.Threading;
 using Analysis.Cci;
 using Contractor.Core;
 using Contractor.Core.Model;
+using System.Collections.Generic;
 
 namespace Analyzer.CodeContracts
 {
@@ -19,18 +20,18 @@ namespace Analyzer.CodeContracts
 
         protected int generatedQueriesCount;
         protected int unprovenQueriesCount;
-
-        public CodeContractsAnalyzerFactory(DirectoryInfo workingDir, string ccCheckDefaultArgs, string libPaths, CciQueryGenerator queryGenerator,
+        protected List<string> errorListForQueryGenerator;
+        public CodeContractsAnalyzerFactory(DirectoryInfo workingDir, string ccCheckDefaultArgs, string libPaths, List<string> errorListForQueryGenerator,
             CciAssembly inputAssembly, string inputFileName, ITypeDefinition typeToAnalyze, CancellationToken token)
         {
             this.workingDir = workingDir;
             this.ccCheckDefaultArgs = ccCheckDefaultArgs;
             this.libPaths = libPaths;
-            this.queryGenerator = queryGenerator;
             this.inputAssembly = inputAssembly;
             this.typeToAnalyze = typeToAnalyze;
             this.inputFileName = inputFileName;
             this.token = token;
+            this.errorListForQueryGenerator = errorListForQueryGenerator;
 
             generatedQueriesCount = 0;
             unprovenQueriesCount = 0;
@@ -62,6 +63,7 @@ namespace Analyzer.CodeContracts
 
         public IAnalyzer CreateAnalyzer()
         {
+            var queryGenerator = new CciQueryGenerator(this.errorListForQueryGenerator);
             return new CodeContractsAnalyzer(workingDir, ccCheckDefaultArgs, libPaths, queryGenerator, inputAssembly, inputFileName, typeToAnalyze,
                 token);
         }
