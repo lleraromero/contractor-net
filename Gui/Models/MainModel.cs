@@ -84,13 +84,13 @@ namespace Contractor.Gui.Models
             epaBuilderObservable.TransitionAdded += OnTransitionAdded;
             
             if(analysisEventArgs.Conditions.Equals("EPA")){
-                var epaGenerator = new EpaGenerator(analyzer, -1);
+                var epaGenerator = new EpaGenerator(analyzer, -1,true);
                 return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable);
             }
             else if (analysisEventArgs.Conditions.Equals("EPA-O"))
             {
                 errorList = errorList.Select(x => x.Split('.').Last()).ToList();
-                var epaGenerator = new EpaOGenerator(analyzer, -1,errorList);
+                var epaGenerator = new EpaOGenerator(analyzer, -1,errorList,true);
                 return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable);
             }else{
                 throw new NotImplementedException();

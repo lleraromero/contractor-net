@@ -17,12 +17,15 @@ namespace Contractor.Core
     {
         protected IAnalyzerFactory analyzerFactory;
         protected int cutter;
+        private bool computeDependencies;
 
-        public EpaGenerator(IAnalyzerFactory analyzerFactory, int cutter)
+        public EpaGenerator(IAnalyzerFactory analyzerFactory, int cutter, bool computeDependencies)
         {
             Contract.Requires(analyzerFactory != null);
             this.analyzerFactory = analyzerFactory;
             this.cutter = cutter;
+            this.computeDependencies = computeDependencies;
+
         }
 
         public Task<TypeAnalysisResult> GenerateEpa(ITypeDefinition typeToAnalyze, IEpaBuilder epaBuilder)
@@ -69,7 +72,10 @@ namespace Contractor.Core
             Contract.Requires(constructors != null);
             Contract.Requires(actions != null);
             Contract.Requires(epaBuilder != null);
-            analyzerFactory.CreateAnalyzer().ComputeDependencies(actions);
+            
+            if (this.computeDependencies)
+                analyzerFactory.CreateAnalyzer().ComputeDependencies(actions);
+            
             var initialState = new State(constructors, new HashSet<Action>());
             var statesToVisit = new Queue<State>();
             var visitedStates = new HashSet<State>();

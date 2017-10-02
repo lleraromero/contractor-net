@@ -160,7 +160,7 @@ namespace Contractor.Console
             var oc = options.OutputConditions.Split(',');
             if (options.OutputConditions.Equals("none") || !oc.Contains("exitCode"))
             {
-                var generator = new EpaGenerator(analyzerFactory, options.Cutter);
+                var generator = new EpaGenerator(analyzerFactory, options.Cutter,options.Dependencies);
 
                 var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
                 var epaBuilder = new EpaBuilder(typeDefinition);
@@ -185,7 +185,7 @@ namespace Contractor.Console
                 //if (oc.Contains("exitCode"))
                 //{
                 errorList = errorList.Select(x => x.Split('.').Last()).ToList();
-                var generator = new EpaOGenerator(analyzerFactory, options.Cutter, errorList); //>>>>>>>>> CAMBIAR ACA Y PASAR EL FACTORY
+                var generator = new EpaOGenerator(analyzerFactory, options.Cutter, errorList,options.Dependencies); //>>>>>>>>> CAMBIAR ACA Y PASAR EL FACTORY
 
                     var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
                     var epaBuilder = new EpaBuilder(typeDefinition);

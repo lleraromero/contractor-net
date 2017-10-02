@@ -68,6 +68,9 @@ namespace Contractor.Console
         [Option("query", HelpText = "format: STATE$enabledActions$ ACTION$action$ STATE$enabledActions$ EXITCODE$Ok/Exception$ CONDITIONS$c1;c2$", DefaultValue = null)]
         public String Query { get; set; }
 
+        [Option("dependencies", HelpText = "Compute method dependencies.", DefaultValue = true)]
+        public bool Dependencies { get; set; }
+
         [HelpOption]
         public string GetUsage()
         {
