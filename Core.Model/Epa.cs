@@ -9,6 +9,7 @@ namespace Contractor.Core.Model
     {
         protected readonly ITypeDefinition type;
         protected Dictionary<State, ISet<Transition>> graph;
+        private IEnumerable<Action> constructors;
 
         public Epa(ITypeDefinition typeDefinition, IReadOnlyCollection<Transition> transitions)
         {
@@ -23,8 +24,12 @@ namespace Contractor.Core.Model
                 }
                 graph[t.SourceState].Add(t);
             }
+            this.constructors = type.Constructors();
         }
-
+        public Epa(ITypeDefinition typeDefinition, IReadOnlyCollection<Transition> transitions,IEnumerable<Action> constructors) : this(typeDefinition,transitions)
+        {
+            this.constructors= constructors;
+        }
         public ITypeDefinition Type
         {
             get { return type; }
@@ -32,7 +37,7 @@ namespace Contractor.Core.Model
 
         public State Initial
         {
-            get { return new State(type.Constructors(), new HashSet<Action>()); }
+            get { return new State(new HashSet<Action>(constructors), new HashSet<Action>()); }
         }
 
         public IImmutableSet<State> States
@@ -42,7 +47,7 @@ namespace Contractor.Core.Model
                 var states = new HashSet<State>();
 
                 // The state with constructors is always available
-                states.Add(new State(type.Constructors(), new HashSet<Action>()));
+                states.Add(new State(new HashSet<Action>(constructors), new HashSet<Action>()));
 
                 foreach (var t in Transitions)
                 {

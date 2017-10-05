@@ -12,12 +12,22 @@ namespace Contractor.Core
     {
         protected readonly ITypeDefinition typeDefinition;
         protected ISet<Transition> transitions;
+        private IEnumerable<Action> selectedMethods;
 
         public EpaBuilder(ITypeDefinition typeDefinition)
         {
             Contract.Requires(typeDefinition != null);
 
             this.typeDefinition = typeDefinition;
+            transitions = new HashSet<Transition>();
+        }
+
+        public EpaBuilder(ITypeDefinition typeDefinition, IEnumerable<Contractor.Core.Model.Action> selectedMethods)
+        {
+            Contract.Requires(typeDefinition != null);
+
+            this.typeDefinition = typeDefinition;
+            this.selectedMethods = selectedMethods;
             transitions = new HashSet<Transition>();
         }
 
@@ -35,7 +45,7 @@ namespace Contractor.Core
             lock (transitions)
             {
                 // TODO: Y si hay varias compoenentes conexas? Resolver.
-                return new Epa(typeDefinition, transitions.ToList());
+                return new Epa(typeDefinition, transitions.ToList(), typeDefinition.Constructors().Intersect(selectedMethods));
             }
         }
 
@@ -47,7 +57,16 @@ namespace Contractor.Core
                 lock (transitions)
                 {
                     states = new HashSet<State>();
-                    states.Add(new State(typeDefinition.Constructors(), new HashSet<Action>()));
+                    if (selectedMethods!=null)
+                    {
+                        var constructors = typeDefinition.Constructors().Intersect(selectedMethods);
+                        var initialState = new State(new HashSet<Core.Model.Action>(constructors), new HashSet<Core.Model.Action>());
+                        states.Add(initialState);
+                    }
+                    else
+                    {
+                        states.Add(new State(typeDefinition.Constructors(), new HashSet<Core.Model.Action>()));
+                    }
                     states.UnionWith(transitions.Select(t => t.SourceState));
                     states.UnionWith(transitions.Select(t => t.TargetState));
                 }

@@ -77,7 +77,7 @@ namespace Contractor.Console
             }
             
             System.Console.WriteLine("Done!");
-            System.Console.ReadLine();
+            //System.Console.ReadLine();
             return 0;
         }
 
@@ -163,19 +163,27 @@ namespace Contractor.Console
                 var generator = new EpaGenerator(analyzerFactory, options.Cutter,options.Dependencies);
 
                 var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
-                var epaBuilder = new EpaBuilder(typeDefinition);
-
-                //OnInitialStateAdded(this, epaBuilder);
-                var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
-                epaBuilderObservable.TransitionAdded += OnTransitionAdded;
+                
                 TypeAnalysisResult analysisResult;
                 if (!options.Methods.Equals("All"))
                 {
                     var selectedMethods = options.Methods.Split(';');
+                    var selectedActions = typeDefinition.Constructors().Where(c => selectedMethods.Contains(c.Name) );
+                    var epaBuilder = new EpaBuilder(typeDefinition, selectedActions);
+
+                    //OnInitialStateAdded(this, epaBuilder);
+                    var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
+                    epaBuilderObservable.TransitionAdded += OnTransitionAdded;
+
                     analysisResult = generator.GenerateEpa(typeDefinition, selectedMethods, epaBuilderObservable).Result;
                 }
                 else
                 {
+                    var epaBuilder = new EpaBuilder(typeDefinition);
+
+                    //OnInitialStateAdded(this, epaBuilder);
+                    var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
+                    epaBuilderObservable.TransitionAdded += OnTransitionAdded;
                     analysisResult = generator.GenerateEpa(typeDefinition, epaBuilderObservable).Result;
                 }
                 return analysisResult;
@@ -186,19 +194,34 @@ namespace Contractor.Console
                 var generator = new EpaOGenerator(analyzerFactory, options.Cutter, errorList,options.Dependencies);
 
                     var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
-                    var epaBuilder = new EpaBuilder(typeDefinition);
-
-                    //OnInitialStateAdded(this, epaBuilder);
-                    var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
-                    epaBuilderObservable.TransitionAdded += OnTransitionAdded;
+                    
                     TypeAnalysisResult analysisResult;
                     if (!options.Methods.Equals("All"))
                     {
-                        var selectedMethods = options.Methods.Split(';');
+                        string[] selectedMethods = options.Methods.Split(';');
+                        IEnumerable<string> sel = new List<string>(selectedMethods);
+                        //var selectedActions = new List<Contractor.Core.Model.Action>();
+                        //foreach (var c in typeDefinition.Constructors())
+                        //{
+                        //    if (sel.Contains(c.Method.ToString()))
+                        //        selectedActions.Add(c);
+                        //}
+                        sel = sel.Select(a => a.Replace(" ", ""));
+                        var selectedActions = typeDefinition.Constructors().Where(c => sel.Contains(c.ToString().Replace(" ", "")));
+                        var epaBuilder = new EpaBuilder(typeDefinition, selectedActions);
+
+                        //OnInitialStateAdded(this, epaBuilder);
+                        var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
+                        epaBuilderObservable.TransitionAdded += OnTransitionAdded;
                         analysisResult = generator.GenerateEpa(typeDefinition, selectedMethods, epaBuilderObservable).Result;
                     }
                     else
                     {
+                        var epaBuilder = new EpaBuilder(typeDefinition);
+
+                        //OnInitialStateAdded(this, epaBuilder);
+                        var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
+                        epaBuilderObservable.TransitionAdded += OnTransitionAdded;
                         analysisResult = generator.GenerateEpa(typeDefinition, epaBuilderObservable).Result;
                     }
                     return analysisResult;
