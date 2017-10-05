@@ -87,7 +87,7 @@ namespace Contractor.Core
 
                     // Change ParallelOptions.MaxDegreeOfParallelism to 1 to make the loop sequential.
                     var opt = new ParallelOptions();
-                    
+                    opt.MaxDegreeOfParallelism = 8;
                     Parallel.ForEach(source.EnabledActions, opt, action =>
                     {
 
