@@ -167,8 +167,10 @@ namespace Contractor.Console
                 TypeAnalysisResult analysisResult;
                 if (!options.Methods.Equals("All"))
                 {
-                    var selectedMethods = options.Methods.Split(';');
-                    var selectedActions = typeDefinition.Constructors().Where(c => selectedMethods.Contains(c.Name) );
+                    string[] selectedMethods = options.Methods.Split(';');
+                    IEnumerable<string> sel = new List<string>(selectedMethods);
+                    sel = sel.Select(a => a.Replace(" ", ""));
+                    var selectedActions = typeDefinition.Constructors().Where(c => sel.Contains(c.ToString().Replace(" ", "")));
                     var epaBuilder = new EpaBuilder(typeDefinition, selectedActions);
 
                     //OnInitialStateAdded(this, epaBuilder);
@@ -200,12 +202,6 @@ namespace Contractor.Console
                     {
                         string[] selectedMethods = options.Methods.Split(';');
                         IEnumerable<string> sel = new List<string>(selectedMethods);
-                        //var selectedActions = new List<Contractor.Core.Model.Action>();
-                        //foreach (var c in typeDefinition.Constructors())
-                        //{
-                        //    if (sel.Contains(c.Method.ToString()))
-                        //        selectedActions.Add(c);
-                        //}
                         sel = sel.Select(a => a.Replace(" ", ""));
                         var selectedActions = typeDefinition.Constructors().Where(c => sel.Contains(c.ToString().Replace(" ", "")));
                         var epaBuilder = new EpaBuilder(typeDefinition, selectedActions);
