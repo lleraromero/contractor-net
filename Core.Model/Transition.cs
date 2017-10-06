@@ -68,7 +68,7 @@ namespace Contractor.Core.Model
 
         public override string ToString()
         {
-            return string.Format("{0} -- {1} exitCode: {3} return-value-expr: {4} --> {2}", this.sourceState, this.action, this.targetState,this.exitCode,this.returnType);
+            return string.Format("{0} -- {1} exitCode: {3} return-value-expr: {4} isUnproven: {5} --> {2}", this.sourceState, this.action, this.targetState, this.exitCode, this.returnType, this.isUnproven);
         }
 
         public string ExitCode { get { return exitCode;}  }
