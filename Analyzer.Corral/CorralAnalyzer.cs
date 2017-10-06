@@ -28,11 +28,12 @@ namespace Analyzer.Corral
         //---
         protected int generatedQueriesCount;
         protected int unprovenQueriesCount;
+        private int maxDegreeOfParallelism;
         //protected static BoggieHardcoderForExceptionSupport exceptionHarcoder;
 
         public CorralAnalyzer(string defaultArgs, DirectoryInfo workingDir, CciQueryGenerator queryGenerator, CciAssembly inputAssembly,
             string inputFileName, ITypeDefinition typeToAnalyze,
-            CancellationToken token, List<string> errorList)
+            CancellationToken token, List<string> errorList,int maxDegreeOfParallelism)
         {
             this.defaultArgs = defaultArgs;
             this.workingDir = workingDir;
@@ -41,6 +42,7 @@ namespace Analyzer.Corral
             this.typeToAnalyze = typeToAnalyze;
             this.inputFileName = inputFileName;
             this.token = token;
+            this.maxDegreeOfParallelism=maxDegreeOfParallelism;
 
             generatedQueriesCount = 0;
             unprovenQueriesCount = 0;
@@ -55,7 +57,7 @@ namespace Analyzer.Corral
             //int i=1;
             //foreach (var action in actions.Where(a=>!a.IsPure))
             var opt = new ParallelOptions();
-            opt.MaxDegreeOfParallelism = 8;
+            opt.MaxDegreeOfParallelism = maxDegreeOfParallelism;
             Parallel.ForEach(actions.Where(a => !a.IsPure), opt, action =>
             {
                 ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
@@ -85,7 +87,7 @@ namespace Analyzer.Corral
             var targetNegatedPreconditionQueries = queryGenerator.CreateNegativeQueries(action, actions);
             generatedQueriesCount += targetNegatedPreconditionQueries.Count;
             var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries, CreateQueriesContextStringForPath(action, actions, "NOSE"));
-            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var evaluator = new QueryEvaluator(corralRunner, queryAssembly, maxDegreeOfParallelism);
             var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
             unprovenQueriesCount += evaluator.UnprovenQueries;
             return disabledActions;
@@ -96,7 +98,7 @@ namespace Analyzer.Corral
             var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(action, actions);
             generatedQueriesCount += targetPreconditionQueries.Count;
             var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries, CreateQueriesContextStringForPath(action, actions, "NOSE"));
-            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var evaluator = new QueryEvaluator(corralRunner, queryAssembly, maxDegreeOfParallelism);
             var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
             unprovenQueriesCount += evaluator.UnprovenQueries;
             return enabledActions;
@@ -140,7 +142,7 @@ namespace Analyzer.Corral
             //Log.MyLogger.LogMsg("---- #TARGETS "+targets.Count()+"----");
             var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets);
             var queryAssembly = CreateBoogieQueryAssembly(transitionQueries, CreateQueriesContextStringForPath(source, action, targets, "NOSE"));
-            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var evaluator = new QueryEvaluator(corralRunner, queryAssembly, maxDegreeOfParallelism);
             var feasibleTransitions = evaluator.GetFeasibleTransitions(transitionQueries);
             unprovenQueriesCount += evaluator.UnprovenQueries;
 
@@ -153,7 +155,7 @@ namespace Analyzer.Corral
             
             var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets,expectedExitCode);
             var queryAssembly = CreateBoogieQueryAssembly(transitionQueries, CreateQueriesContextStringForPath(source, action, targets, expectedExitCode));
-            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var evaluator = new QueryEvaluator(corralRunner, queryAssembly, maxDegreeOfParallelism);
             var feasibleTransitions = evaluator.GetFeasibleTransitions(transitionQueries,expectedExitCode);
             unprovenQueriesCount += evaluator.UnprovenQueries;
 
@@ -202,7 +204,7 @@ namespace Analyzer.Corral
 
             var transitionQueries = queryGenerator.CreateTransitionQueries(source, action, targets, expectedExitCode,condition);
             var queryAssembly = CreateBoogieQueryAssembly(transitionQueries, CreateQueriesContextStringForPath(source, action, targets, expectedExitCode));
-            var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+            var evaluator = new QueryEvaluator(corralRunner, queryAssembly, maxDegreeOfParallelism);
             var feasibleTransitions = evaluator.GetFeasibleTransitions(transitionQueries, expectedExitCode,condition);
             unprovenQueriesCount += evaluator.UnprovenQueries;
 
@@ -233,7 +235,7 @@ namespace Analyzer.Corral
                 var targetNegatedPreconditionQueries = queryGenerator.CreateNegativeQueries(source, action, actions,expectedExitCode);
                 generatedQueriesCount += targetNegatedPreconditionQueries.Count;
                 var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries, CreateQueriesContextStringForPath(source, action, actions, expectedExitCode));
-                var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+                var evaluator = new QueryEvaluator(corralRunner, queryAssembly, maxDegreeOfParallelism);
                 var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
                 unprovenQueriesCount += evaluator.UnprovenQueries;
                 if (disabled_dependencies.ContainsKey(action))
@@ -246,7 +248,7 @@ namespace Analyzer.Corral
                 var targetNegatedPreconditionQueries = queryGenerator.CreateNegativeQueries(source, action, actions);
                 generatedQueriesCount += targetNegatedPreconditionQueries.Count;
                 var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries, CreateQueriesContextStringForPath(source, action, actions, "NOSE"));
-                var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+                var evaluator = new QueryEvaluator(corralRunner, queryAssembly, maxDegreeOfParallelism);
                 var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
                 unprovenQueriesCount += evaluator.UnprovenQueries;
                 if (disabled_dependencies.ContainsKey(action))
@@ -271,7 +273,7 @@ namespace Analyzer.Corral
                 var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(source, action, actions,expectedExitCode);
                 generatedQueriesCount += targetPreconditionQueries.Count;
                 var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries, CreateQueriesContextStringForPath(source, action, actions, expectedExitCode));
-                var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+                var evaluator = new QueryEvaluator(corralRunner, queryAssembly, maxDegreeOfParallelism);
                 var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
                 unprovenQueriesCount += evaluator.UnprovenQueries;
                 if (enabled_dependencies.ContainsKey(action))
@@ -283,7 +285,7 @@ namespace Analyzer.Corral
                 var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(source, action, actions);
                 generatedQueriesCount += targetPreconditionQueries.Count;
                 var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries, CreateQueriesContextStringForPath(source, action, actions, "NOSE"));
-                var evaluator = new QueryEvaluator(corralRunner, queryAssembly);
+                var evaluator = new QueryEvaluator(corralRunner, queryAssembly, maxDegreeOfParallelism);
                 var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
                 unprovenQueriesCount += evaluator.UnprovenQueries;
                 if (enabled_dependencies.ContainsKey(action))

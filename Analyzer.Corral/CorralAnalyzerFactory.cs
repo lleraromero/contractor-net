@@ -20,9 +20,10 @@ namespace Analyzer.Corral
         protected int unprovenQueriesCount;
         private List<string> errorList;
         private List<string> errorListForQueryGenerator;
+        private int maxDegreeOfParallelism;
 
         public CorralAnalyzerFactory(string defaultArgs, DirectoryInfo workingDir, List<string> errorListForQueryGenerator, CciAssembly inputAssembly,
-            string inputFileName, ITypeDefinition typeToAnalyze, CancellationToken token, List<string> errorList)
+            string inputFileName, ITypeDefinition typeToAnalyze, CancellationToken token, List<string> errorList, int maxDegreeOfParallelism)
         {
             this.defaultArgs = defaultArgs;
             this.workingDir = workingDir;
@@ -34,6 +35,7 @@ namespace Analyzer.Corral
             this.errorList = errorList;
             generatedQueriesCount = 0;
             unprovenQueriesCount = 0;
+            this.maxDegreeOfParallelism = maxDegreeOfParallelism;
         }
 
         public int GeneratedQueriesCount
@@ -64,7 +66,7 @@ namespace Analyzer.Corral
         {
             var queryGenerator = new CciQueryGenerator(this.errorListForQueryGenerator);
             return new CorralAnalyzer(defaultArgs, workingDir, queryGenerator, inputAssembly, inputFileName,
-                typeToAnalyze, token,errorList);
+                typeToAnalyze, token, errorList, maxDegreeOfParallelism);
         }
     }
 }

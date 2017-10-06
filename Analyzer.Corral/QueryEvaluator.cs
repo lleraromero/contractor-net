@@ -15,8 +15,9 @@ namespace Analyzer.Corral
         protected ISolver solver;
         protected FileInfo queryAssembly;
         protected int unprovenQueries;
+        private int maxDegreeOfParallelism;
 
-        public QueryEvaluator(ISolver solver, FileInfo queryAssembly)
+        public QueryEvaluator(ISolver solver, FileInfo queryAssembly, int maxDegreeOfParallelism)
         {
             Contract.Requires(solver != null);
             Contract.Requires(queryAssembly.Exists);
@@ -24,6 +25,7 @@ namespace Analyzer.Corral
             this.solver = solver;
             this.queryAssembly = queryAssembly;
             unprovenQueries = 0;
+            this.maxDegreeOfParallelism = maxDegreeOfParallelism;
         }
 
         public int UnprovenQueries
@@ -45,7 +47,9 @@ namespace Analyzer.Corral
 
             // TODO: Make ParallelOptions a singleton?
             // Change ParallelOptions.MaxDegreeOfParallelism to 1 to make the loop sequential.
-            Parallel.ForEach(actionQueries, new ParallelOptions(), query =>
+            var opt = new ParallelOptions();
+            opt.MaxDegreeOfParallelism = maxDegreeOfParallelism;
+            Parallel.ForEach(actionQueries, opt, query =>
             {
                 var result = solver.Execute(queryAssembly, query);
                 switch (result)
@@ -80,7 +84,9 @@ namespace Analyzer.Corral
             var feasibleTransitions = new List<Transition>();
 
             // Change ParallelOptions.MaxDegreeOfParallelism to 1 to make the loop sequential.
-            Parallel.ForEach(transitionQueries, new ParallelOptions(), query =>
+            var opt = new ParallelOptions();
+            opt.MaxDegreeOfParallelism = maxDegreeOfParallelism;
+            Parallel.ForEach(transitionQueries, opt, query =>
             {
                 var result = solver.Execute(queryAssembly, query);
                 var resultInfo = "";

@@ -71,6 +71,9 @@ namespace Contractor.Console
         [Option("dependencies", HelpText = "Compute method dependencies.", DefaultValue = true)]
         public bool Dependencies { get; set; }
 
+        [Option("max-parallelism", HelpText = "Max degree of parallelism. To avoid out of memory problems with big examples use values near to the number of machine cores.", DefaultValue = 4)]
+        public int MaxDegreeOfParallelism { get; set; }
+        
         [HelpOption]
         public string GetUsage()
         {

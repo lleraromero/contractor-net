@@ -29,7 +29,7 @@ namespace Analyzer.Corral.Tests
 
         public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
         {
-            var evaluator = new QueryEvaluator(new CorralMock(), new FileInfo(@"C:\Windows\notepad.exe"));
+            var evaluator = new QueryEvaluator(new CorralMock(), new FileInfo(@"C:\Windows\notepad.exe"),4);
 
             var negativeQueries = CreateNegativeQueries(source, action, actions);
             var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(negativeQueries));
@@ -44,7 +44,7 @@ namespace Analyzer.Corral.Tests
 
         public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions, string exitCode)
         {
-            var evaluator = new QueryEvaluator(new CorralMock(), new FileInfo(@"C:\Windows\notepad.exe"));
+            var evaluator = new QueryEvaluator(new CorralMock(), new FileInfo(@"C:\Windows\notepad.exe"),4);
 
             var negativeQueries = CreateNegativeQueries(source, action, actions);
             var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(negativeQueries));
@@ -59,7 +59,7 @@ namespace Analyzer.Corral.Tests
 
         public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
-            var evaluator = new QueryEvaluator(new CorralMock(), new FileInfo(@"C:\Windows\notepad.exe"));
+            var evaluator = new QueryEvaluator(new CorralMock(), new FileInfo(@"C:\Windows\notepad.exe"),4);
 
             var transitionQueries = CreateTransitionQueries(source, action, targets);
             return evaluator.GetFeasibleTransitions(transitionQueries);
@@ -67,7 +67,7 @@ namespace Analyzer.Corral.Tests
 
         public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets,string exitCode)
         {
-            var evaluator = new QueryEvaluator(new CorralMock(), new FileInfo(@"C:\Windows\notepad.exe"));
+            var evaluator = new QueryEvaluator(new CorralMock(), new FileInfo(@"C:\Windows\notepad.exe"),4);
 
             var transitionQueries = CreateTransitionQueries(source, action, targets);
             return evaluator.GetFeasibleTransitions(transitionQueries);

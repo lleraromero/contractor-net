@@ -16,14 +16,16 @@ namespace Contractor.Core
         protected int cutter;
         protected List<string> errorList;
         private bool computeDependencies;
+        private int maxDegreeOfParallelism;
 
-        public EpaOGenerator(IAnalyzerFactory analyzerFactory, int cutter, List<string> errorList, bool computeDependencies)
+        public EpaOGenerator(IAnalyzerFactory analyzerFactory, int cutter, List<string> errorList, bool computeDependencies,int maxDegreeOfParallelism)
         {
             Contract.Requires(analyzerFactory != null);
             this.analyzerFactory = analyzerFactory;
             this.cutter = cutter;
             this.errorList = errorList;
             this.computeDependencies = computeDependencies;
+            this.maxDegreeOfParallelism = maxDegreeOfParallelism;
         }
 
         public Task<TypeAnalysisResult> GenerateEpa(ITypeDefinition typeToAnalyze, IEpaBuilder epaBuilder)
@@ -87,7 +89,7 @@ namespace Contractor.Core
 
                     // Change ParallelOptions.MaxDegreeOfParallelism to 1 to make the loop sequential.
                     var opt = new ParallelOptions();
-                    opt.MaxDegreeOfParallelism = 8;
+                    opt.MaxDegreeOfParallelism = maxDegreeOfParallelism;
                     Parallel.ForEach(source.EnabledActions, opt, action =>
                     {
 

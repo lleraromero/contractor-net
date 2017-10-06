@@ -27,6 +27,7 @@ namespace Contractor.Gui.Models
         protected CancellationTokenSource cancellationSource;
         protected CciAssemblyPersister assemblyPersister;
         protected Epa generatedEpa;
+        protected const int maxDegreeOfParallelism=4;
 
         public MainModel()
         {
@@ -77,20 +78,20 @@ namespace Contractor.Gui.Models
                 foreach(var m in selectedMethods)
                     writer.Write(m+";");
             }*/
-
+            
             var epaBuilder = new EpaBuilder(analysisEventArgs.TypeToAnalyze);
             OnInitialStateAdded(this, epaBuilder,analysisEventArgs.SelectedMethods);
             var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
             epaBuilderObservable.TransitionAdded += OnTransitionAdded;
             
             if(analysisEventArgs.Conditions.Equals("EPA")){
-                var epaGenerator = new EpaGenerator(analyzer, -1,true);
+                var epaGenerator = new EpaGenerator(analyzer, -1, true, maxDegreeOfParallelism);
                 return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable);
             }
             else if (analysisEventArgs.Conditions.Equals("EPA-O"))
             {
                 errorList = errorList.Select(x => x.Split('.').Last()).ToList();
-                var epaGenerator = new EpaOGenerator(analyzer, -1,errorList,true);
+                var epaGenerator = new EpaOGenerator(analyzer, -1, errorList, true, maxDegreeOfParallelism);
                 return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable);
             }else{
                 throw new NotImplementedException();
@@ -180,7 +181,7 @@ namespace Contractor.Gui.Models
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
                     analyzerFactory = new CorralAnalyzerFactory(corralDefaultArgs, workingDir, errorList.Select(x => x.Split('.').Last()).ToList(), inputAssembly as CciAssembly,
                         inputFile.FullName,
-                        typeToAnalyze, cancellationToken,errorList);
+                        typeToAnalyze, cancellationToken, errorList, maxDegreeOfParallelism);
                     break;
                 default:
                     throw new NotSupportedException();

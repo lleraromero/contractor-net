@@ -132,7 +132,7 @@ namespace Contractor.Console
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
                     Contract.Assert(corralDefaultArgs != null);
                     analyzerFactory = new CorralAnalyzerFactory(corralDefaultArgs, workingDir, errorList.Select(x => x.Split('.').Last()).ToList(), inputAssembly,
-                        options.InputAssembly, typeToAnalyze, cancellationSource.Token,errorList);
+                        options.InputAssembly, typeToAnalyze, cancellationSource.Token, errorList, options.MaxDegreeOfParallelism);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -160,7 +160,7 @@ namespace Contractor.Console
             var oc = options.OutputConditions.Split(',');
             if (options.OutputConditions.Equals("none") || !oc.Contains("exitCode"))
             {
-                var generator = new EpaGenerator(analyzerFactory, options.Cutter,options.Dependencies);
+                var generator = new EpaGenerator(analyzerFactory, options.Cutter,options.Dependencies,options.MaxDegreeOfParallelism);
 
                 var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
                 
@@ -193,7 +193,7 @@ namespace Contractor.Console
             else
             {
                 errorList = errorList.Select(x => x.Split('.').Last()).ToList();
-                var generator = new EpaOGenerator(analyzerFactory, options.Cutter, errorList,options.Dependencies);
+                var generator = new EpaOGenerator(analyzerFactory, options.Cutter, errorList, options.Dependencies, options.MaxDegreeOfParallelism);
 
                     var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
                     
