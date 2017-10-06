@@ -162,7 +162,8 @@ namespace Analyzer.Corral
 
         private string CreateQueriesContextStringForPath(Action action, ISet<Action> actions, string expectedExitCode)
         {
-            var result="ACTION_"+action.Name + "_"+"ACTIONS_";
+            string name = !String.IsNullOrWhiteSpace(action.Name) && action.Name.Length >= 50 ? action.Name.Substring(0, 50) : action.Name;
+            var result="ACTION_"+name + "_"+"ACTIONS_";
             //foreach (var act in actions)
             //{
             //    result += "_" + act.Name;
@@ -173,7 +174,8 @@ namespace Analyzer.Corral
 
         private string CreateQueriesContextStringForPath(State source, Action action, IEnumerable<Action> actions, string expectedExitCode)
         {
-            var result = "SOURCE_S"+source.Id+"_ACTION_" + action.Name + "_" + "ACTIONS_";
+            string name = !String.IsNullOrWhiteSpace(action.Name) && action.Name.Length >= 50 ? action.Name.Substring(0, 50) : action.Name;
+            var result = "SOURCE_S"+source.Id+"_ACTION_" + name + "_" + "ACTIONS_";
             //foreach (var act in actions)
             //{
             //    result += "_" + act.Name;
@@ -184,7 +186,8 @@ namespace Analyzer.Corral
 
         private string CreateQueriesContextStringForPath(State source, Action action, IEnumerable<State> targets, string expectedExitCode)
         {
-            var result = "SOURCE_S"+source.Id+"_ACTION_" + action.Name + "_" + "TARGETS_";
+            string name = !String.IsNullOrWhiteSpace(action.Name) && action.Name.Length >= 50 ? action.Name.Substring(0, 50) : action.Name;
+            var result = "SOURCE_S"+source.Id+"_ACTION_" + name + "_" + "TARGETS_";
             foreach (var tar in targets)
             {
                 result += "_S" + tar.Id;
