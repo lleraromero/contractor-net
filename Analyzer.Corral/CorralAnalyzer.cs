@@ -54,7 +54,9 @@ namespace Analyzer.Corral
             
             //int i=1;
             //foreach (var action in actions.Where(a=>!a.IsPure))
-            Parallel.ForEach(actions.Where(a => !a.IsPure), new ParallelOptions(), action =>
+            var opt = new ParallelOptions();
+            opt.MaxDegreeOfParallelism = 8;
+            Parallel.ForEach(actions.Where(a => !a.IsPure), opt, action =>
             {
                 ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
                 var enabledActions = GetMustBeEnabledActionsDependencies(action, actions, corralRunner);
