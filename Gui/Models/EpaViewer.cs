@@ -56,7 +56,7 @@ namespace Contractor.Gui.Models
         {
             var exitCode = transition.ExitCode;
             string finalExitCode = exitCode;
-            if (!transition.ReturnType.Equals(""))
+            if (!transition.ReturnType.Equals("")&&exitCode.Equals("Ok"))
                 finalExitCode += " && result is " + transition.ReturnType;
             var label = transition.Action.ToString();
             var createEdge = true;
