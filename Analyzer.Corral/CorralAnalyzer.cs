@@ -231,13 +231,17 @@ namespace Analyzer.Corral
             {
                 actions = new HashSet<Action>(actions.Except<Action>(disabled_dependencies[action]));
             }
+            var disabledActions = new HashSet<Action>();
             if (expectedExitCode != null){
                 var targetNegatedPreconditionQueries = queryGenerator.CreateNegativeQueries(source, action, actions,expectedExitCode);
                 generatedQueriesCount += targetNegatedPreconditionQueries.Count;
-                var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries, CreateQueriesContextStringForPath(source, action, actions, expectedExitCode));
-                var evaluator = new QueryEvaluator(corralRunner, queryAssembly, maxDegreeOfParallelism);
-                var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
-                unprovenQueriesCount += evaluator.UnprovenQueries;
+                if (targetNegatedPreconditionQueries.Count>0)
+                {
+                    var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries, CreateQueriesContextStringForPath(source, action, actions, expectedExitCode));
+                    var evaluator = new QueryEvaluator(corralRunner, queryAssembly, maxDegreeOfParallelism);
+                    disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
+                    unprovenQueriesCount += evaluator.UnprovenQueries;
+                }
                 if (disabled_dependencies.ContainsKey(action))
                 {
                     disabledActions.UnionWith(disabled_dependencies[action]);
@@ -247,10 +251,13 @@ namespace Analyzer.Corral
             }else{
                 var targetNegatedPreconditionQueries = queryGenerator.CreateNegativeQueries(source, action, actions);
                 generatedQueriesCount += targetNegatedPreconditionQueries.Count;
-                var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries, CreateQueriesContextStringForPath(source, action, actions, "NOSE"));
-                var evaluator = new QueryEvaluator(corralRunner, queryAssembly, maxDegreeOfParallelism);
-                var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
-                unprovenQueriesCount += evaluator.UnprovenQueries;
+                if (targetNegatedPreconditionQueries.Count > 0)
+                {
+                    var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries, CreateQueriesContextStringForPath(source, action, actions, "NOSE"));
+                    var evaluator = new QueryEvaluator(corralRunner, queryAssembly, maxDegreeOfParallelism);
+                    disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
+                    unprovenQueriesCount += evaluator.UnprovenQueries;
+                }
                 if (disabled_dependencies.ContainsKey(action))
                 {
                     disabledActions.UnionWith(disabled_dependencies[action]);
@@ -269,13 +276,17 @@ namespace Analyzer.Corral
             {
                 actions = new HashSet<Action>(actions.Except<Action>(enabled_dependencies[action]));
             }
+            var enabledActions = new HashSet<Action>();
             if(expectedExitCode!=null){
                 var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(source, action, actions,expectedExitCode);
                 generatedQueriesCount += targetPreconditionQueries.Count;
-                var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries, CreateQueriesContextStringForPath(source, action, actions, expectedExitCode));
-                var evaluator = new QueryEvaluator(corralRunner, queryAssembly, maxDegreeOfParallelism);
-                var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
-                unprovenQueriesCount += evaluator.UnprovenQueries;
+                if (targetPreconditionQueries.Count > 0)
+                {
+                    var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries, CreateQueriesContextStringForPath(source, action, actions, expectedExitCode));
+                    var evaluator = new QueryEvaluator(corralRunner, queryAssembly, maxDegreeOfParallelism);
+                    enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
+                    unprovenQueriesCount += evaluator.UnprovenQueries;
+                }
                 if (enabled_dependencies.ContainsKey(action))
                 {
                     enabledActions.UnionWith(enabled_dependencies[action]);
@@ -284,10 +295,13 @@ namespace Analyzer.Corral
             }else{
                 var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(source, action, actions);
                 generatedQueriesCount += targetPreconditionQueries.Count;
-                var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries, CreateQueriesContextStringForPath(source, action, actions, "NOSE"));
-                var evaluator = new QueryEvaluator(corralRunner, queryAssembly, maxDegreeOfParallelism);
-                var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
-                unprovenQueriesCount += evaluator.UnprovenQueries;
+                if (targetPreconditionQueries.Count > 0)
+                {
+                    var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries, CreateQueriesContextStringForPath(source, action, actions, "NOSE"));
+                    var evaluator = new QueryEvaluator(corralRunner, queryAssembly, maxDegreeOfParallelism);
+                    enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
+                    unprovenQueriesCount += evaluator.UnprovenQueries;
+                }
                 if (enabled_dependencies.ContainsKey(action))
                 {
                     enabledActions.UnionWith(enabled_dependencies[action]);
