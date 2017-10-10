@@ -45,7 +45,14 @@ namespace Contractor.Core
             lock (transitions)
             {
                 // TODO: Y si hay varias compoenentes conexas? Resolver.
-                return new Epa(typeDefinition, transitions.ToList(), typeDefinition.Constructors().Intersect(selectedMethods));
+                if (selectedMethods != null)
+                {
+                    return new Epa(typeDefinition, transitions.ToList(), typeDefinition.Constructors().Intersect(selectedMethods));
+                }
+                else
+                {
+                    return new Epa(typeDefinition, transitions.ToList(), typeDefinition.Constructors());
+                }
             }
         }
 
