@@ -32,6 +32,7 @@ System.NoSuchElementException
 System.AssertFailedException
 
 //System Exceptions
+System.OperationCanceledException
 System.UnauthorizedAccessException
 System.NotImplementedException
 System.RankException
