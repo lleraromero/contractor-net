@@ -190,10 +190,10 @@ namespace Analyzer.Corral
         {
             string name = !String.IsNullOrWhiteSpace(action.Name) && action.Name.Length >= 50 ? action.Name.Substring(0, 50) : action.Name;
             var result = "SOURCE_S"+source.Id+"_ACTION_" + name + "_" + "TARGETS_";
-            foreach (var tar in targets)
-            {
-                result += "_S" + tar.Id;
-            }
+            //foreach (var tar in targets)
+            //{
+            //    result += "_S" + tar.Id;
+            //}
             result += "_EXITCODE_" + expectedExitCode;
             return result;
         }
