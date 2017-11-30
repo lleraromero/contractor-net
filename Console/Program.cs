@@ -75,6 +75,10 @@ namespace Contractor.Console
                 methodList.Remove(methodList.Length-1,1);
                 methodList.Append(@"""");
                 System.Console.WriteLine(methodList.ToString());
+                System.Console.WriteLine("#constructors: "+typeToAnalyze.Constructors().Count());
+                System.Console.WriteLine("#methods: " + typeToAnalyze.Actions().Count());
+                System.Console.WriteLine("#total: " + (typeToAnalyze.Constructors().Count() + typeToAnalyze.Actions().Count()));
+                System.Console.WriteLine("#maybe async: " + (typeToAnalyze.Actions().Where(a => a.ToString().Contains("Async") || a.ToString().Contains("Begin") || a.ToString().Contains("End"))).Count());
                 return 0;
             }
 
