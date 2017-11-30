@@ -72,7 +72,7 @@ namespace Contractor.Console
                     methodList.Append(action.ToString().Replace(" ", ""));
                     methodList.Append(@",");
                 }
-                methodList.Remove(methodList.Length,1);
+                methodList.Remove(methodList.Length-1,1);
                 methodList.Append(@"""");
                 System.Console.WriteLine(methodList.ToString());
                 return 0;
