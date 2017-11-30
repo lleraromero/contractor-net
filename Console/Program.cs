@@ -57,6 +57,27 @@ namespace Contractor.Console
             var inputAssembly = decompiler.Load(options.InputAssembly, null);
             var typeToAnalyze = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
 
+            if (options.PrintMethodList)
+            {
+                var methodList= new StringBuilder();
+                methodList.Append(@"""");
+
+                foreach (var constructor in typeToAnalyze.Constructors()){
+                    methodList.Append(constructor.ToString().Replace(" ", ""));
+                    methodList.Append(@",");
+                }
+
+                foreach (var action in typeToAnalyze.Actions())
+                {
+                    methodList.Append(action.ToString().Replace(" ", ""));
+                    methodList.Append(@",");
+                }
+                methodList.Remove(methodList.Length,1);
+                methodList.Append(@"""");
+                System.Console.WriteLine(methodList.ToString());
+                return 0;
+            }
+
             var analysisResult = GenerateEpa(inputAssembly, typeToAnalyze, options);
 
             System.Console.WriteLine(analysisResult.ToString());

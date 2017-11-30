@@ -73,6 +73,9 @@ namespace Contractor.Console
 
         [Option("max-parallelism", HelpText = "Max degree of parallelism. To avoid out of memory problems with big examples use values near to the number of machine cores.", DefaultValue = 4)]
         public int MaxDegreeOfParallelism { get; set; }
+
+        [Option("print-methods", HelpText = "Just print the public API method list.", DefaultValue = false)]
+        public bool PrintMethodList { get; set; }
         
         [HelpOption]
         public string GetUsage()
