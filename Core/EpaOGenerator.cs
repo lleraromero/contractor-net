@@ -144,6 +144,10 @@ namespace Contractor.Core
                                 }
                                 epaBuilder.Add(transition);
                             }
+
+                            analyzerFactory.GeneratedQueriesCount += analyzer.GeneratedQueriesCount();
+                            analyzerFactory.UnprovenQueriesCount += analyzer.UnprovenQueriesCount();
+
                             //END PARA CADA Em
                         }
 
