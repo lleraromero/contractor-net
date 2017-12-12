@@ -20,6 +20,8 @@ namespace Analyzer.CodeContracts
 
         protected int generatedQueriesCount;
         protected int unprovenQueriesCount;
+        protected int dependencyQueriesCount;
+
         protected List<string> errorListForQueryGenerator;
         public CodeContractsAnalyzerFactory(DirectoryInfo workingDir, string ccCheckDefaultArgs, string libPaths, List<string> errorListForQueryGenerator,
             CciAssembly inputAssembly, string inputFileName, ITypeDefinition typeToAnalyze, CancellationToken token)
@@ -35,6 +37,7 @@ namespace Analyzer.CodeContracts
 
             generatedQueriesCount = 0;
             unprovenQueriesCount = 0;
+            dependencyQueriesCount = 0;
         }
 
         public int GeneratedQueriesCount
@@ -57,6 +60,18 @@ namespace Analyzer.CodeContracts
                 lock (this)
                 {
                     unprovenQueriesCount = value;
+                }
+            }
+        }
+
+        public int DependencyQueriesCount
+        {
+            get { return dependencyQueriesCount; }
+            set
+            {
+                lock (this)
+                {
+                    dependencyQueriesCount = value;
                 }
             }
         }

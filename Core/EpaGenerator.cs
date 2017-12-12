@@ -59,7 +59,7 @@ namespace Contractor.Core
             analysisTimer.Stop();
 
             var analysisResult = new TypeAnalysisResult(epaBuilder.Build(), analysisTimer.Elapsed, analyzerFactory.GeneratedQueriesCount,
-                analyzerFactory.UnprovenQueriesCount);
+                analyzerFactory.UnprovenQueriesCount, analyzerFactory.DependencyQueriesCount);
 
             return analysisResult;
         }
@@ -75,7 +75,11 @@ namespace Contractor.Core
             Contract.Requires(epaBuilder != null);
             
             if (this.computeDependencies)
-                analyzerFactory.CreateAnalyzer().ComputeDependencies(actions);
+            {
+                var analyzer = analyzerFactory.CreateAnalyzer();
+                analyzer.ComputeDependencies(actions);
+                analyzerFactory.DependencyQueriesCount += analyzer.DependencyQueriesCount();
+            }
             
             var initialState = new State(constructors, new HashSet<Action>());
             var statesToVisit = new Queue<State>();

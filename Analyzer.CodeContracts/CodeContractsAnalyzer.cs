@@ -25,6 +25,7 @@ namespace Analyzer.CodeContracts
 
         protected int generatedQueriesCount;
         protected int unprovenQueriesCount;
+        protected int dependencyQueriesCount;
 
         public CodeContractsAnalyzer(DirectoryInfo workingDir, string ccCheckDefaultArgs, string libPaths, CciQueryGenerator queryGenerator,
             CciAssembly inputAssembly, string inputFileName, ITypeDefinition typeToAnalyze, CancellationToken token)
@@ -40,6 +41,7 @@ namespace Analyzer.CodeContracts
 
             generatedQueriesCount = 0;
             unprovenQueriesCount = 0;
+            dependencyQueriesCount = 0;
         }
 
         public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
@@ -131,6 +133,11 @@ namespace Analyzer.CodeContracts
         public int UnprovenQueriesCount()
         {
             return unprovenQueriesCount;
+        }
+
+        public int DependencyQueriesCount()
+        {
+            return dependencyQueriesCount;
         }
 
         protected ISet<Action> ActionsThatAreAlwaysDisabled(State source, Action action, IEnumerable<Action> actions,

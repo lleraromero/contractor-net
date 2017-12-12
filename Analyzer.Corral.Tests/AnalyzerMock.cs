@@ -27,6 +27,11 @@ namespace Analyzer.Corral.Tests
             return 0;
         }
 
+        public int DependencyQueriesCount()
+        {
+            return 0;
+        }
+
         public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
         {
             var evaluator = new QueryEvaluator(new CorralMock(), new FileInfo(@"C:\Windows\notepad.exe"),4);

@@ -14,6 +14,7 @@ namespace Contractor.Core
         IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets);
         int GeneratedQueriesCount();
         int UnprovenQueriesCount();
+        int DependencyQueriesCount();
         ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions, string exitCode);
         IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string exitCode);
         IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string exitCode, string condition);
@@ -82,6 +83,11 @@ namespace Contractor.Core
         }
 
         public int UnprovenQueriesCount()
+        {
+            throw new NotImplementedException();
+        }
+
+        public int DependencyQueriesCount()
         {
             throw new NotImplementedException();
         }

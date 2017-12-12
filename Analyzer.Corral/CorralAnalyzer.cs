@@ -225,6 +225,11 @@ namespace Analyzer.Corral
             return unprovenQueriesCount;
         }
 
+        public int DependencyQueriesCount()
+        {
+            return dependencyQueriesCount;
+        }
+
         protected ISet<Action> GetMustBeDisabledActions(State source, Action action, IEnumerable<Action> actions, ISolver corralRunner, string expectedExitCode=null)
         {
             Contract.Requires(source != null);

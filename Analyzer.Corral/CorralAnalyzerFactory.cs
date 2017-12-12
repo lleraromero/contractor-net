@@ -18,9 +18,12 @@ namespace Analyzer.Corral
 
         protected int generatedQueriesCount;
         protected int unprovenQueriesCount;
+        protected int dependencyQueriesCount;
+
         private List<string> errorList;
         private List<string> errorListForQueryGenerator;
         private int maxDegreeOfParallelism;
+        
 
         public CorralAnalyzerFactory(string defaultArgs, DirectoryInfo workingDir, List<string> errorListForQueryGenerator, CciAssembly inputAssembly,
             string inputFileName, ITypeDefinition typeToAnalyze, CancellationToken token, List<string> errorList, int maxDegreeOfParallelism)
@@ -35,6 +38,7 @@ namespace Analyzer.Corral
             this.errorList = errorList;
             generatedQueriesCount = 0;
             unprovenQueriesCount = 0;
+            dependencyQueriesCount = 0;
             this.maxDegreeOfParallelism = maxDegreeOfParallelism;
         }
 
@@ -58,6 +62,18 @@ namespace Analyzer.Corral
                 lock (this)
                 {
                     unprovenQueriesCount = value;
+                }
+            }
+        }
+
+        public int DependencyQueriesCount
+        {
+            get { return dependencyQueriesCount; }
+            set
+            {
+                lock (this)
+                {
+                    dependencyQueriesCount = value;
                 }
             }
         }

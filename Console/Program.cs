@@ -179,7 +179,7 @@ namespace Contractor.Console
                 var epa = new Epa(typeDefinition, transitions);
                 
                 analysisTimer.Stop();
-                return new TypeAnalysisResult(epa, analysisTimer.Elapsed, analyzerFactory.GeneratedQueriesCount, analyzerFactory.UnprovenQueriesCount);
+                return new TypeAnalysisResult(epa, analysisTimer.Elapsed, analyzerFactory.GeneratedQueriesCount, analyzerFactory.UnprovenQueriesCount, analyzerFactory.DependencyQueriesCount);
             }
 
             var oc = options.OutputConditions.Split(',');

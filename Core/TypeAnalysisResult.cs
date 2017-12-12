@@ -13,8 +13,9 @@ namespace Contractor.Core
         protected TimeSpan totalTime;
         protected int generatedQueriesCount;
         protected int unprovenQueriesCount;
+        protected int dependencyQueriesCount;
 
-        public TypeAnalysisResult(Epa epa, TimeSpan totalTime, int generatedQueriesCount, int unprovenQueriesCount)
+        public TypeAnalysisResult(Epa epa, TimeSpan totalTime, int generatedQueriesCount, int unprovenQueriesCount, int dependencyQueriesCount)
         {
             Contract.Requires(epa != null);
             Contract.Requires(totalTime != null);
@@ -26,6 +27,7 @@ namespace Contractor.Core
             this.totalTime = totalTime;
             this.generatedQueriesCount = generatedQueriesCount;
             this.unprovenQueriesCount = unprovenQueriesCount;
+            this.dependencyQueriesCount = dependencyQueriesCount;
         }
 
         public Epa Epa
@@ -51,6 +53,7 @@ namespace Contractor.Core
             sb.AppendFormat(@"Transitions:         {0} ({1} unproven)", transitionsCount, unprovenTransitionsCount).AppendLine();
 
             sb.AppendFormat(@"Generated queries:   {0} ({1} unproven)", generatedQueriesCount, unprovenQueriesCount).AppendLine();
+            sb.AppendFormat(@"Dependency queries:   {0}", dependencyQueriesCount).AppendLine();
             var precision = 100 - Math.Ceiling((double)unprovenQueriesCount * 100 / generatedQueriesCount);
             sb.AppendFormat(@"Analysis precision:  {0}%", precision).AppendLine();
             sb.AppendLine(statistics);
