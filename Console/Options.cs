@@ -76,6 +76,9 @@ namespace Contractor.Console
 
         [Option("print-methods", HelpText = "Just print the public API method list.", DefaultValue = false)]
         public bool PrintMethodList { get; set; }
+
+        [Option("break", HelpText = "Break point for debuging.", DefaultValue = false)]
+        public bool Break { get; set; }
         
         [HelpOption]
         public string GetUsage()

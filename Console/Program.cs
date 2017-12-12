@@ -53,6 +53,11 @@ namespace Contractor.Console
 
             System.Console.WriteLine(options.InputAssembly);
 
+            if (options.Break)
+            {
+                Debugger.Break();
+            }
+
             var decompiler = new CciAssemblyPersister();
             var inputAssembly = decompiler.Load(options.InputAssembly, null);
             var typeToAnalyze = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
