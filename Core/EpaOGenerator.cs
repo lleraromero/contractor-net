@@ -71,8 +71,11 @@ namespace Contractor.Core
             Contract.Requires(constructors != null);
             Contract.Requires(actions != null);
             Contract.Requires(epaBuilder != null);
-            if(this.computeDependencies)
+            if (this.computeDependencies)
+            {
                 analyzerFactory.CreateAnalyzer().ComputeDependencies(actions);
+                //analyzerFactory.DependencyQueriesCount += analyzer.DependencyQueriesCount();
+            }
 
             var initialState = new State(constructors, new HashSet<Action>());
             var statesToVisit = new Queue<State>();
@@ -147,7 +150,6 @@ namespace Contractor.Core
 
                             analyzerFactory.GeneratedQueriesCount += analyzer.GeneratedQueriesCount();
                             analyzerFactory.UnprovenQueriesCount += analyzer.UnprovenQueriesCount();
-
                             //END PARA CADA Em
                         }
 

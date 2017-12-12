@@ -29,6 +29,7 @@ namespace Analyzer.Corral
         protected int generatedQueriesCount;
         protected int unprovenQueriesCount;
         private int maxDegreeOfParallelism;
+        private int dependencyQueriesCount;
         //protected static BoggieHardcoderForExceptionSupport exceptionHarcoder;
 
         public CorralAnalyzer(string defaultArgs, DirectoryInfo workingDir, CciQueryGenerator queryGenerator, CciAssembly inputAssembly,
@@ -46,6 +47,7 @@ namespace Analyzer.Corral
 
             generatedQueriesCount = 0;
             unprovenQueriesCount = 0;
+            dependencyQueriesCount = 0;
         }
 
         public void ComputeDependencies(ISet<Action> actions)
@@ -86,6 +88,7 @@ namespace Analyzer.Corral
         {
             var targetNegatedPreconditionQueries = queryGenerator.CreateNegativeQueries(action, actions);
             generatedQueriesCount += targetNegatedPreconditionQueries.Count;
+            dependencyQueriesCount += targetNegatedPreconditionQueries.Count;
             var queryAssembly = CreateBoogieQueryAssembly(targetNegatedPreconditionQueries, CreateQueriesContextStringForPath(action, actions, "NOSE"));
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly, maxDegreeOfParallelism);
             var disabledActions = new HashSet<Action>(evaluator.GetDisabledActions(targetNegatedPreconditionQueries));
@@ -97,6 +100,7 @@ namespace Analyzer.Corral
         {
             var targetPreconditionQueries = queryGenerator.CreatePositiveQueries(action, actions);
             generatedQueriesCount += targetPreconditionQueries.Count;
+            dependencyQueriesCount += targetPreconditionQueries.Count;
             var queryAssembly = CreateBoogieQueryAssembly(targetPreconditionQueries, CreateQueriesContextStringForPath(action, actions, "NOSE"));
             var evaluator = new QueryEvaluator(corralRunner, queryAssembly, maxDegreeOfParallelism);
             var enabledActions = new HashSet<Action>(evaluator.GetEnabledActions(targetPreconditionQueries));
