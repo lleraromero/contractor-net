@@ -58,11 +58,25 @@ namespace Contractor.Gui.Models
         public async Task<TypeAnalysisResult> Start(AnalysisEventArgs analysisEventArgs)
         {
             cancellationSource = new CancellationTokenSource();
+            var selectedMethods = from m in analysisEventArgs.SelectedMethods select m.ToString();
+
+            var exceptionExtractor = new ExceptionExtractor(inputFile.FullName);
+            //process all methods to analyze
+            //foreach (var m in analysisEventArgs.SelectedMethods.Select(sm=>sm.Method)){
+            //    exceptionExtractor.Process(m);
+            //}
+            exceptionExtractor.Process(analysisEventArgs.SelectedMethods);
+            var allExceptions = exceptionExtractor.GetAllExceptions;
+            var exceptionsByMethod = exceptionExtractor.GetExceptionsByMethods;
+
+            ImplementedExceptions.CreateInstance(allExceptions);
+
             List<string> errorList = new List<string>();
             errorList.Add("Ok");
             if (analysisEventArgs.Exceptions.Equals("All"))
             {
-                ImplementedExceptions.AddAllExceptionsTo(errorList);
+                //ImplementedExceptions.AddAllExceptionsTo(errorList);
+                errorList.AddRange(allExceptions);
             }
             else
             {
@@ -70,24 +84,12 @@ namespace Contractor.Gui.Models
             }
             
             var analyzer = GetAnalyzerFactory(analysisEventArgs.TypeToAnalyze, analysisEventArgs.Engine, cancellationSource.Token,errorList);
-
-            var selectedMethods = from m in analysisEventArgs.SelectedMethods select m.ToString();
             
             /*using (StreamWriter writer = new StreamWriter("selectedMethods.txt", true))
             {
                 foreach(var m in selectedMethods)
                     writer.Write(m+";");
-            }*/
-            
-            var exceptionExtractor = new ExceptionExtractor(inputFile.FullName);
-            //process all methods to analyze
-            //foreach (var m in analysisEventArgs.SelectedMethods.Select(sm=>sm.Method)){
-            //    exceptionExtractor.Process(m);
-            //}
-            exceptionExtractor.Process(analysisEventArgs.SelectedMethods);
-            
-            var allExceptions = exceptionExtractor.GetAllExceptions;
-            var exceptionsByMethod = exceptionExtractor.GetExceptionsByMethods; 
+            }*/ 
 
             var epaBuilder = new EpaBuilder(analysisEventArgs.TypeToAnalyze);
             OnInitialStateAdded(this, epaBuilder,analysisEventArgs.SelectedMethods);
