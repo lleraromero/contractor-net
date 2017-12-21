@@ -79,6 +79,16 @@ namespace Contractor.Gui.Models
                     writer.Write(m+";");
             }*/
             
+            var exceptionExtractor = new ExceptionExtractor(inputFile.FullName);
+            //process all methods to analyze
+            //foreach (var m in analysisEventArgs.SelectedMethods.Select(sm=>sm.Method)){
+            //    exceptionExtractor.Process(m);
+            //}
+            exceptionExtractor.Process(analysisEventArgs.SelectedMethods);
+            
+            var allExceptions = exceptionExtractor.GetAllExceptions;
+            var exceptionsByMethod = exceptionExtractor.GetExceptionsByMethods; 
+
             var epaBuilder = new EpaBuilder(analysisEventArgs.TypeToAnalyze);
             OnInitialStateAdded(this, epaBuilder,analysisEventArgs.SelectedMethods);
             var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);

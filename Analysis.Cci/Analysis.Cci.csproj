@@ -75,6 +75,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Backend">
+      <HintPath>..\Dependencies\Analysis-net\Backend.dll</HintPath>
+    </Reference>
     <Reference Include="CCI1CodeProvider">
       <HintPath>..\Dependencies\CodeContracts\CCI1CodeProvider.dll</HintPath>
     </Reference>
@@ -187,6 +190,7 @@
     <Compile Include="ContractRewriter.cs" />
     <Compile Include="DummyQueryDecorator.cs" />
     <Compile Include="ExceptionEncoder.cs" />
+    <Compile Include="ExceptionExtractor.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="IResultDecorator.cs" />
