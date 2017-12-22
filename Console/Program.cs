@@ -121,7 +121,9 @@ namespace Contractor.Console
             var workingDir = CreateOrCleanupWorkingDirectory();
 
             string[] selectedMethodNames = options.Methods.Split(';');
-            var selectedMethods = typeToAnalyze.Actions().Where(a => selectedMethodNames.Contains(a.ToString().Replace(" ", "")));
+            var selectedMethods = new HashSet<Contractor.Core.Model.Action>();
+            selectedMethods.UnionWith(typeToAnalyze.Actions().Where(a => selectedMethodNames.Contains(a.ToString().Replace(" ", ""))));
+            selectedMethods.UnionWith(typeToAnalyze.Constructors().Where(a => selectedMethodNames.Contains(a.ToString().Replace(" ", ""))));
 
             var exceptionExtractor = new ExceptionExtractor(options.InputAssembly);
             //process all methods to analyze
@@ -236,7 +238,7 @@ namespace Contractor.Console
             else
             {
                 errorList = errorList.Select(x => x.Split('.').Last()).ToList();
-                var generator = new EpaOGenerator(analyzerFactory, options.Cutter, errorList, options.Dependencies, options.MaxDegreeOfParallelism);
+                var generator = new EpaOGenerator(analyzerFactory, options.Cutter, errorList, options.Dependencies, options.MaxDegreeOfParallelism, exceptionsByMethod);
 
                     var typeDefinition = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
                     

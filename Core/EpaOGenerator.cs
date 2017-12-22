@@ -17,8 +17,9 @@ namespace Contractor.Core
         protected List<string> errorList;
         private bool computeDependencies;
         private int maxDegreeOfParallelism;
+        private Dictionary<Microsoft.Cci.IMethodDefinition, List<string>> exceptionsByMethod;
 
-        public EpaOGenerator(IAnalyzerFactory analyzerFactory, int cutter, List<string> errorList, bool computeDependencies,int maxDegreeOfParallelism)
+        public EpaOGenerator(IAnalyzerFactory analyzerFactory, int cutter, List<string> errorList, bool computeDependencies, int maxDegreeOfParallelism, Dictionary<Microsoft.Cci.IMethodDefinition, List<string>> exceptionsByMethod)
         {
             Contract.Requires(analyzerFactory != null);
             this.analyzerFactory = analyzerFactory;
@@ -26,6 +27,7 @@ namespace Contractor.Core
             this.errorList = errorList;
             this.computeDependencies = computeDependencies;
             this.maxDegreeOfParallelism = maxDegreeOfParallelism;
+            this.exceptionsByMethod=exceptionsByMethod;
         }
 
         public Task<TypeAnalysisResult> GenerateEpa(ITypeDefinition typeToAnalyze, IEpaBuilder epaBuilder)
@@ -102,7 +104,11 @@ namespace Contractor.Core
                         var analyzer = analyzerFactory.CreateAnalyzer();
 
                         // PARA CADA Em:
-                        foreach (string exitCode in errorList)
+                        var optimizedErrorList = new HashSet<string>();
+                        optimizedErrorList.UnionWith(errorList);
+                        optimizedErrorList.IntersectWith(exceptionsByMethod[action.Method].Select(x => x.Split('.').Last()).ToList());
+                        optimizedErrorList.Add("Ok");
+                        foreach (string exitCode in optimizedErrorList)
                         {
                             //MyLogger.LogAction(action.Name, exitCode, source.Name);                    
 
