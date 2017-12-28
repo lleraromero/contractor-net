@@ -122,8 +122,16 @@ namespace Contractor.Console
 
             string[] selectedMethodNames = options.Methods.Split(';');
             var selectedMethods = new HashSet<Contractor.Core.Model.Action>();
-            selectedMethods.UnionWith(typeToAnalyze.Actions().Where(a => selectedMethodNames.Contains(a.ToString().Replace(" ", ""))));
-            selectedMethods.UnionWith(typeToAnalyze.Constructors().Where(a => selectedMethodNames.Contains(a.ToString().Replace(" ", ""))));
+            if (!options.Methods.Equals("All"))
+            {
+                selectedMethods.UnionWith(typeToAnalyze.Actions().Where(a => selectedMethodNames.Contains(a.ToString().Replace(" ", ""))));
+                selectedMethods.UnionWith(typeToAnalyze.Constructors().Where(a => selectedMethodNames.Contains(a.ToString().Replace(" ", ""))));
+            }
+            else
+            {
+                selectedMethods.UnionWith(typeToAnalyze.Actions());
+                selectedMethods.UnionWith(typeToAnalyze.Constructors());
+            }
 
             var exceptionExtractor = new ExceptionExtractor(options.InputAssembly);
             //process all methods to analyze
