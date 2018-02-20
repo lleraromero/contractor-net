@@ -65,7 +65,7 @@ namespace Analyzer.CodeContracts
 
         public static string parseCondition(string message)
         {
-            if (message.Contains("Suggested requires: "))
+            if (message.Contains("Suggested requires: ") || message.Contains("Suggested assume: "))
             {
                 string condition = message.Substring(message.IndexOf('('));
                 condition = condition.Substring(0, condition.Length - 1);

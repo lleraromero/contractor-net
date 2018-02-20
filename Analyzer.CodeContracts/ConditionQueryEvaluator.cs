@@ -34,7 +34,7 @@ namespace Analyzer.CodeContracts
                 {
                     result = results[query];
                 }
-                catch(Exception e){
+                catch(Exception){
                     result = null;
                 }
                 resultTransitions.Add(new Transition(query.Action, query.SourceState, query.TargetState, false, CSGenerator.generateCS(result)));

@@ -126,16 +126,16 @@ namespace Contractor.Gui.Models
                     }
                     else
                     {
-                        analyzer = new Analyzer.CodeContracts.AnalyzerWithCondition(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly as CciAssembly, inputFile.FullName,
-                        typeToAnalyze, cancellationToken);
+                        //analyzer = new Analyzer.CodeContracts.AnalyzerWithCondition(workingDir, cccheckArgs, string.Empty, queryGenerator, inputAssembly as CciAssembly, inputFile.FullName,
+                        //typeToAnalyze, cancellationToken);
                     }
                     break;
                 case "Corral":
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
                     if (/*!options.TransitionsWithConditions*/false)
                     {
-                        analyzer = new CorralAnalyzer(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly, inputFile.FullName,
-                        typeToAnalyze, cancellationToken);
+                        //analyzer = new CorralAnalyzer(corralDefaultArgs, workingDir, queryGenerator, inputAssembly as CciAssembly, inputFile.FullName,
+                        //typeToAnalyze, cancellationToken);
                     }
                     else
                     {
