@@ -179,7 +179,7 @@ namespace Analyzer.CodeContracts
                 return ResultKind.ValidEnsures;
             }
 
-            if (message.Contains("Suggested requires: ") || message.Contains("Suggested assume: "))
+            if (message.Contains("Suggested requires: ") /*|| message.Contains("Suggested assume: ")*/)
             {
                 return ResultKind.SuggestedRequires;
             }

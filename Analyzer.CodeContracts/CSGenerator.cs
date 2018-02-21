@@ -65,10 +65,16 @@ namespace Analyzer.CodeContracts
 
         public static string parseCondition(string message)
         {
-            if (message.Contains("Suggested requires: ") || message.Contains("Suggested assume: "))
+            if (message.Contains("Suggested requires: "))
             {
                 string condition = message.Substring(message.IndexOf('('));
                 condition = condition.Substring(0, condition.Length - 1);
+                return condition;
+            }
+            else if (message.Contains("Suggested assume: "))
+            {
+                string condition = message.Substring(message.LastIndexOf(':')+3);
+                //condition = condition.Substring(0, condition.Length - 1);
                 return condition;
             }
             else if (message.Contains("Missing precondition in an externally visible method"))
