@@ -180,11 +180,15 @@ namespace Analyzer.CodeContracts
 
             // CciAttributeAdder will tell cccheck to analyze only the query methods. The rest will be assumed as already verified.
             var queryAssembly = new CciAttributeAdder(inputAssembly, typeToAnalyze, queries);
-
             var queryFilePath = Path.Combine(workingDir.FullName, Guid.NewGuid().ToString(), Path.GetFileName(inputFileName));
             Directory.CreateDirectory(Path.GetDirectoryName(queryFilePath));
+            lock (CciAssemblyPersister.turnstile)
+            {
+                var rewriter = new CciContractRewriter();
+                //rewriter.expectedExitCode=expectedExitCode;
+                rewriter.Rewrite(queryAssembly);
+            }
             new CciAssemblyPersister().Save(queryAssembly, queryFilePath);
-
             return new FileInfo(queryFilePath);
         }
     }
