@@ -9,7 +9,7 @@ namespace Contractor.Core.Model
         protected State sourceState;
         protected State targetState;
         protected bool isUnproven;
-        protected string exitCode, returnType; 
+        protected string condition, exitCode, returnType; 
 
         public Action Action { get { return action; } }
         public State SourceState { get { return sourceState; } }
@@ -28,8 +28,42 @@ namespace Contractor.Core.Model
             this.sourceState = source;
             this.targetState = target;
             this.isUnproven = isUnproven;
+            this.condition = "NOSE";
             this.exitCode = exitCode;
             this.returnType = returnType;
+        }
+
+        public Transition(Action action, State source, State target, bool isUnproven,string condition ,string exitCode, string returnType)
+        {
+            Contract.Requires(action != null);
+            Contract.Requires(source != null);
+            Contract.Requires(target != null);
+            Contract.Requires(condition != null);
+            Contract.Requires(exitCode != null);
+            Contract.Requires(returnType != null);
+
+            this.action = action;
+            this.sourceState = source;
+            this.targetState = target;
+            this.isUnproven = isUnproven;
+            this.condition = condition;
+            this.exitCode = exitCode;
+            this.returnType = returnType;
+        }
+        public Transition(Action action, State source, State target, bool isUnproven, string condition)
+        {
+            Contract.Requires(action != null);
+            Contract.Requires(source != null);
+            Contract.Requires(target != null);
+            Contract.Requires(condition != null);
+
+            this.action = action;
+            this.sourceState = source;
+            this.targetState = target;
+            this.isUnproven = isUnproven;
+            this.condition = condition;
+            this.exitCode = "NOSE";
+            this.returnType = "NOSE";
         }
         public Transition(Action action, State source, State target, bool isUnproven)
         {
@@ -41,7 +75,9 @@ namespace Contractor.Core.Model
             this.sourceState = source;
             this.targetState = target;
             this.isUnproven = isUnproven;
-           
+            this.condition = "NOSE";
+            this.exitCode = "NOSE";
+            this.returnType = "NOSE";
         }
         #region IEquatable
         public override bool Equals(object obj)
@@ -68,9 +104,10 @@ namespace Contractor.Core.Model
 
         public override string ToString()
         {
-            return string.Format("{0} -- {1} exitCode: {3} return-value-expr: {4} isUnproven: {5} --> {2}", this.sourceState, this.action, this.targetState, this.exitCode, this.returnType, this.isUnproven);
+            return string.Format("{0} -- {1} wp:{6} exitCode: {3} return-value-expr: {4} isUnproven: {5} --> {2}", this.sourceState, this.action, this.targetState, this.exitCode, this.returnType, this.isUnproven,this.condition);
         }
 
+        public string Condition { get { return condition; } }
         public string ExitCode { get { return exitCode;}  }
 
         public string ReturnType { get { return returnType;} }

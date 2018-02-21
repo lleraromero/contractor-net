@@ -82,8 +82,8 @@ namespace Contractor.Gui.Models
             {
                 errorList.Add("System.Exception");
             }
-            
-            var analyzer = GetAnalyzerFactory(analysisEventArgs.TypeToAnalyze, analysisEventArgs.Engine, cancellationSource.Token,errorList);
+
+            var analyzer = GetAnalyzerFactory(analysisEventArgs.TypeToAnalyze, analysisEventArgs.Engine, cancellationSource.Token, errorList, analysisEventArgs.Conditions.Contains("I"));
             
             /*using (StreamWriter writer = new StreamWriter("selectedMethods.txt", true))
             {
@@ -95,18 +95,19 @@ namespace Contractor.Gui.Models
             OnInitialStateAdded(this, epaBuilder,analysisEventArgs.SelectedMethods);
             var epaBuilderObservable = new ObservableEpaBuilder(epaBuilder);
             epaBuilderObservable.TransitionAdded += OnTransitionAdded;
-            
-            if(analysisEventArgs.Conditions.Equals("EPA")){
+
+            if (analysisEventArgs.Conditions.Equals("EPA") || analysisEventArgs.Conditions.Equals("EPA-I"))
+            {
                 var epaGenerator = new EpaGenerator(analyzer, -1, true, maxDegreeOfParallelism);
                 return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable);
             }
-            else if (analysisEventArgs.Conditions.Equals("EPA-O"))
+            else if (analysisEventArgs.Conditions.Equals("EPA-O") || analysisEventArgs.Conditions.Equals("EPA-I/O"))
             {
                 errorList = errorList.Select(x => x.Split('.').Last()).ToList();
                 var epaGenerator = new EpaOGenerator(analyzer, -1, errorList, true, maxDegreeOfParallelism, exceptionsByMethod);
                 return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable);
             }else{
-                throw new NotImplementedException();
+                throw new NotImplementedException("Unknown abstraction level option");
             }
         }
 
@@ -156,7 +157,7 @@ namespace Contractor.Gui.Models
             TransitionAdded(sender, e);
         }
 
-        protected IAnalyzerFactory GetAnalyzerFactory(ITypeDefinition typeToAnalyze, string engine, CancellationToken cancellationToken,List<string> errorList)
+        protected IAnalyzerFactory GetAnalyzerFactory(ITypeDefinition typeToAnalyze, string engine, CancellationToken cancellationToken,List<string> errorList,bool inputConditionOption)
         {
             var workingDir = new DirectoryInfo(ConfigurationManager.AppSettings["WorkingDir"]);
             if (workingDir.Exists && workingDir.CreationTimeUtc < DateTime.UtcNow.AddDays(-3))
@@ -171,35 +172,65 @@ namespace Contractor.Gui.Models
             switch (engine)
             {
                 case "CodeContracts":
-                    var codeContracts = Environment.GetEnvironmentVariable("CodeContractsInstallDir");
-                    if (string.IsNullOrEmpty(codeContracts))
+                    var cccheckArgs = CheckCodeContractsExists();
+                    if (!inputConditionOption)
                     {
-                        var msg = new StringBuilder();
-                        msg.AppendLine("The environment variable %CodeContractsInstallDir% does not exist.");
-                        msg.AppendLine("Please make sure that Code Contracts is installed correctly.");
-                        msg.AppendLine("This might be because the system was not restarted after Code Contracts installation.");
-
-                        throw new DirectoryNotFoundException(msg.ToString());
+                        analyzerFactory = new CodeContractsAnalyzerFactory(workingDir, cccheckArgs, string.Empty, errorList.Select(x => x.Split('.').Last()).ToList(),
+                            inputAssembly as CciAssembly, inputFile.FullName,
+                            typeToAnalyze, cancellationToken);
                     }
-                    var cccheckArgs = ConfigurationManager.AppSettings["CccheckArgs"];
-                    Contract.Assert(cccheckArgs != null);
-                    var cccheck = new FileInfo(ConfigurationManager.AppSettings["CccheckFullName"]);
-                    Contract.Assert(cccheck.Exists);
-                    analyzerFactory = new CodeContractsAnalyzerFactory(workingDir, cccheckArgs, string.Empty, errorList.Select(x => x.Split('.').Last()).ToList(),
-                        inputAssembly as CciAssembly, inputFile.FullName,
-                        typeToAnalyze, cancellationToken);
+                    else
+                    {
+                        analyzerFactory = new CodeContractsWithConditionsAnalyzerFactory(workingDir, cccheckArgs, string.Empty, errorList.Select(x => x.Split('.').Last()).ToList(),
+                            inputAssembly as CciAssembly, inputFile.FullName,
+                            typeToAnalyze, cancellationToken);
+                    }
                     break;
                 case "Corral":
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
-                    analyzerFactory = new CorralAnalyzerFactory(corralDefaultArgs, workingDir, errorList.Select(x => x.Split('.').Last()).ToList(), inputAssembly as CciAssembly,
-                        inputFile.FullName,
-                        typeToAnalyze, cancellationToken, errorList, maxDegreeOfParallelism);
+                    if (!inputConditionOption)
+                    {
+                        analyzerFactory = new CorralAnalyzerFactory(corralDefaultArgs, workingDir, errorList.Select(x => x.Split('.').Last()).ToList(), inputAssembly as CciAssembly,
+                            inputFile.FullName,
+                            typeToAnalyze, cancellationToken, errorList, maxDegreeOfParallelism);
+                    }
+                    else
+                    {
+                        analyzerFactory = new CorralAnalyzerWithConditionsFactory(corralDefaultArgs, workingDir, errorList.Select(x => x.Split('.').Last()).ToList(), inputAssembly as CciAssembly,
+                            inputFile.FullName,
+                            typeToAnalyze, cancellationToken, errorList, maxDegreeOfParallelism);
+                        cccheckArgs = CheckCodeContractsExists();
+                        var csCheckeFac=new CodeContractsWithConditionsAnalyzerFactory(workingDir, cccheckArgs, string.Empty, errorList.Select(x => x.Split('.').Last()).ToList(),
+                            inputAssembly as CciAssembly, inputFile.FullName,
+                            typeToAnalyze, cancellationToken);
+                        var csChecker = csCheckeFac.CreateAnalyzer();
+                        var csGenerator = CSGenerator.Instance((Analyzer.CodeContracts.AnalyzerWithCondition)csChecker);
+                    }
                     break;
                 default:
                     throw new NotSupportedException();
             }
 
             return analyzerFactory;
+        }
+
+        private static string CheckCodeContractsExists()
+        {
+            var codeContracts = Environment.GetEnvironmentVariable("CodeContractsInstallDir");
+            if (string.IsNullOrEmpty(codeContracts))
+            {
+                var msg = new StringBuilder();
+                msg.AppendLine("The environment variable %CodeContractsInstallDir% does not exist.");
+                msg.AppendLine("Please make sure that Code Contracts is installed correctly.");
+                msg.AppendLine("This might be because the system was not restarted after Code Contracts installation.");
+
+                throw new DirectoryNotFoundException(msg.ToString());
+            }
+            var cccheckArgs = ConfigurationManager.AppSettings["CccheckArgs"];
+            Contract.Assert(cccheckArgs != null);
+            var cccheck = new FileInfo(ConfigurationManager.AppSettings["CccheckFullName"]);
+            Contract.Assert(cccheck.Exists);
+            return cccheckArgs;
         }
         
     }

@@ -44,7 +44,7 @@ namespace Analyzer.CodeContracts
             dependencyQueriesCount = 0;
         }
 
-        public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
+        public virtual ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
         {
             var codeContractsRunner = new CodeContractsRunner(workingDir, ccCheckDefaultArgs, libPaths, typeToAnalyze);
 
@@ -65,7 +65,7 @@ namespace Analyzer.CodeContracts
 
             return new ActionAnalysisResults(enabledActions, disabledActions);
         }
-        public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions, string exitCode)
+        public virtual ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions, string exitCode)
         {
             var codeContractsRunner = new CodeContractsRunner(workingDir, ccCheckDefaultArgs, libPaths, typeToAnalyze);
 
@@ -90,7 +90,7 @@ namespace Analyzer.CodeContracts
 
             return new ActionAnalysisResults(enabledActions, disabledActions);
         }
-        public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
+        public virtual IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
             var codeContractsRunner = new CodeContractsRunner(workingDir, ccCheckDefaultArgs, libPaths, typeToAnalyze);
 
@@ -102,7 +102,7 @@ namespace Analyzer.CodeContracts
 
             return feasibleTransitions;
         }
-        public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string exitCode)
+        public virtual IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string exitCode)
         {
             var codeContractsRunner = new CodeContractsRunner(workingDir, ccCheckDefaultArgs, libPaths, typeToAnalyze);
 
@@ -115,7 +115,7 @@ namespace Analyzer.CodeContracts
             return feasibleTransitions;
         }
 
-        public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string exitCode, string condition)
+        public virtual IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string exitCode, string condition)
         {
             throw new NotImplementedException("CodeContractsAnalyzer does not implement condition queries yet");
         }

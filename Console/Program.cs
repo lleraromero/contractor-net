@@ -178,16 +178,33 @@ namespace Contractor.Console
                     Contract.Assert(cccheckArgs != null);
                     var cccheck = new FileInfo(ConfigurationManager.AppSettings["CccheckFullName"]);
                     Contract.Assert(cccheck.Exists);
-                    analyzerFactory = new CodeContractsAnalyzerFactory(workingDir, cccheckArgs, string.Empty, errorList.Select(x => x.Split('.').Last()).ToList(), inputAssembly,
-                        options.InputAssembly,
-                        typeToAnalyze, cancellationSource.Token);
+                    if (!options.TransitionsWithConditions)
+                    {
+                        analyzerFactory = new CodeContractsAnalyzerFactory(workingDir, cccheckArgs, string.Empty, errorList.Select(x => x.Split('.').Last()).ToList(), inputAssembly,
+                            options.InputAssembly,
+                            typeToAnalyze, cancellationSource.Token);
+                    }
+                    else
+                    {
+                        analyzerFactory = new CodeContractsWithConditionsAnalyzerFactory(workingDir, cccheckArgs, string.Empty, errorList.Select(x => x.Split('.').Last()).ToList(), inputAssembly,
+                            options.InputAssembly,
+                            typeToAnalyze, cancellationSource.Token);
+                    }
                     break;
 
                 case "Corral":
                     var corralDefaultArgs = ConfigurationManager.AppSettings["CorralDefaultArgs"];
                     Contract.Assert(corralDefaultArgs != null);
-                    analyzerFactory = new CorralAnalyzerFactory(corralDefaultArgs, workingDir, errorList.Select(x => x.Split('.').Last()).ToList(), inputAssembly,
-                        options.InputAssembly, typeToAnalyze, cancellationSource.Token, errorList, options.MaxDegreeOfParallelism);
+                    if (!options.TransitionsWithConditions)
+                    {
+                        analyzerFactory = new CorralAnalyzerFactory(corralDefaultArgs, workingDir, errorList.Select(x => x.Split('.').Last()).ToList(), inputAssembly,
+                            options.InputAssembly, typeToAnalyze, cancellationSource.Token, errorList, options.MaxDegreeOfParallelism);
+                    }
+                    else
+                    {
+                        analyzerFactory = new CorralAnalyzerWithConditionsFactory(corralDefaultArgs, workingDir, errorList.Select(x => x.Split('.').Last()).ToList(), inputAssembly,
+                            options.InputAssembly, typeToAnalyze, cancellationSource.Token, errorList, options.MaxDegreeOfParallelism);
+                    }
                     break;
                 default:
                     throw new NotSupportedException();

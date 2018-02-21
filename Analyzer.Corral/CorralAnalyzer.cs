@@ -108,12 +108,12 @@ namespace Analyzer.Corral
             return enabledActions;
         }
 
-        public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
+        public virtual ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions)
         {
             return AnalyzeActions(source, action,actions,null);
         }
 
-        public ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions,string expectedExitCode=null)
+        public virtual ActionAnalysisResults AnalyzeActions(State source, Action action, IEnumerable<Action> actions, string expectedExitCode = null)
         {
             ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
 
@@ -140,7 +140,7 @@ namespace Analyzer.Corral
             return result;
         }
 
-        public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
+        public virtual IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
             ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
             //Log.MyLogger.LogMsg("---- #TARGETS "+targets.Count()+"----");
@@ -153,7 +153,7 @@ namespace Analyzer.Corral
             return feasibleTransitions;
         }
 
-        public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string expectedExitCode)
+        public virtual IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string expectedExitCode)
         {
             ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
             
@@ -202,7 +202,7 @@ namespace Analyzer.Corral
             return result;
         }
 
-        public IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string expectedExitCode, string condition)
+        public virtual IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string expectedExitCode, string condition)
         {
             ISolver corralRunner = new CorralRunner(defaultArgs, workingDir);
 

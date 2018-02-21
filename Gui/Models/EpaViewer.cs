@@ -56,11 +56,25 @@ namespace Contractor.Gui.Models
         {
             var exitCode = transition.ExitCode;
             string finalExitCode = exitCode;
-            if (!transition.ReturnType.Equals("")&&exitCode.Equals("Ok"))
+            if (!transition.ReturnType.Equals("") && !transition.ReturnType.Equals("NOSE") && exitCode.Equals("Ok"))
                 finalExitCode += " && result is " + transition.ReturnType;
             var label = transition.Action.ToString();
             var createEdge = true;
             var lineStyle = transition.IsUnproven ? Style.Dashed : Style.Solid;
+
+            string cs = transition.Condition;
+            if (cs.Equals(""))
+            {
+                cs = "NC: #ERROR#";
+            }
+            else if (cs.Equals("True"))
+            {
+                cs = "";
+            }
+            else
+            {
+                cs = "NC: " + cs + "-- ";
+            }
 
             AddState(transition.TargetState);
             var n = AddState(transition.SourceState);
@@ -77,9 +91,23 @@ namespace Contractor.Gui.Models
             {
                 if (ed.Target == transition.TargetState.Name && ed.Attr.Styles.Contains(lineStyle))
                 {
-                    if(exitCode.Equals("NOSE")){
+                    if(exitCode.Equals("NOSE") && transition.Condition.Equals("NOSE")){
+                        //EPA
                         ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
-                    }else{
+                    }
+                    else if (exitCode.Equals("NOSE") && !transition.Condition.Equals("NOSE"))
+                    {
+                        //EPA-I
+                        ed.LabelText = string.Format("{0}{1}{3}{2}", ed.LabelText, Environment.NewLine, label, cs);
+                    }
+                    else if (!exitCode.Equals("NOSE") && !transition.Condition.Equals("NOSE"))
+                    {
+                        //EPA-I/O
+                        ed.LabelText = string.Format("{0}{1}{3}{2}:{4}", ed.LabelText, Environment.NewLine, label, cs, finalExitCode);
+                    }
+                    else
+                    {
+                        //EPA-O
                         ed.LabelText = string.Format("{0}{1}{2}:{3}", ed.LabelText, Environment.NewLine, label, finalExitCode);
                     }
                     
@@ -91,14 +119,27 @@ namespace Contractor.Gui.Models
             if (createEdge)
             {
                 Microsoft.Msagl.Drawing.Edge edge = null;
-                if (exitCode.Equals("NOSE"))
+                if (exitCode.Equals("NOSE") && transition.Condition.Equals("NOSE"))
                 {
+                    //EPA
                     edge = graph.AddEdge(transition.SourceState.Name, label, transition.TargetState.Name);
+                }
+                else if (exitCode.Equals("NOSE") && !transition.Condition.Equals("NOSE"))
+                {
+                    //EPA-I
+                    edge = graph.AddEdge(transition.SourceState.Name, cs+label, transition.TargetState.Name);
+                }
+                else if (!exitCode.Equals("NOSE") && !transition.Condition.Equals("NOSE"))
+                {
+                    //EPA-I/O
+                    edge = graph.AddEdge(transition.SourceState.Name, cs+label+":"+finalExitCode, transition.TargetState.Name);
                 }
                 else
                 {
+                    //EPA-O
                     edge = graph.AddEdge(transition.SourceState.Name, label + ":" + finalExitCode, transition.TargetState.Name);
                 }
+                
                 edge.Label.FontName = "Cambria";
                 edge.Label.FontSize = 6;
                 edge.Attr.AddStyle(lineStyle);
