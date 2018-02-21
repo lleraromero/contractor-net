@@ -509,13 +509,14 @@ namespace Analysis.Cci
             var methodName = string.Format("{1}{0}{2}{0}{3}", MethodNameDelimiter, stateName, actionName, targetName);
 
             var method = CreateQueryMethod(state, methodName, action, target);
-            var queryContract = CreateQueryContractCS(state, target);
+            var queryContract = CreateQueryContractCS(state, target, method);
 
             return new CciAction(method, queryContract);
         }
-        private MethodContract CreateQueryContractCS(State state, State target)
+        private MethodContract CreateQueryContractCS(State state, State target, MethodDefinition method)
         {
             var contracts = new MethodContract();
+            var contractDependencyAnalyzer = new CciContractDependenciesAnalyzer(new ContractProvider(new ContractMethods(host), null));
 
             // Source state invariant as a precondition
             var stateInv = Helper.GenerateStateInvariant(host, state);
@@ -527,11 +528,12 @@ namespace Analysis.Cci
                                     OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(condition),
                                     Description = new CompileTimeConstant { Value = "Source state invariant", Type = host.PlatformType.SystemString }
                                 };
-            contracts.Preconditions.AddRange(preconditions);
+
+            contracts.Preconditions.AddRange(preconditions.Where(x => !contractDependencyAnalyzer.PredicatesAboutParameter(x)));
 
             // Add a redundant postcondition for only those conditions that predicate ONLY about parameters and not the instance. 
             // These postconditions will be translated as assumes in the ContractRewriter.cs
-            var contractDependencyAnalyzer = new CciContractDependenciesAnalyzer(new ContractProvider(new ContractMethods(host), null));
+
             foreach (var action in target.EnabledActions.Union(target.DisabledActions))
             {
                 if (action.Contract != null)
@@ -560,22 +562,80 @@ namespace Analysis.Cci
                 }
             }
 
+
             // Negated target state invariant as a postcondition
             var targetInv = Helper.GenerateStateInvariant(host, target);
 
-            IExpression joinedTargetInv = Helper.JoinWithLogicalAnd(host, targetInv, true);
-            /*IExpression joinedTargetInv = new LogicalNot
+            // -----------
+            IBlockStatement actionBodyBlock = null;
+            if (method.Body is Microsoft.Cci.ILToCodeModel.SourceMethodBody)
             {
-                Type = host.PlatformType.SystemBoolean,
-                Operand = Helper.JoinWithLogicalAnd(host, targetInv, true)
-            };*/
+                var actionBody = method.Body as Microsoft.Cci.ILToCodeModel.SourceMethodBody;
+                actionBodyBlock = actionBody.Block;
+            }
+            else if (method.Body is SourceMethodBody)
+            {
+                var actionBody = method.Body as SourceMethodBody;
+                actionBodyBlock = actionBody.Block;
+            }
+            //******************************************************************
+            var unit = this.host.LoadedUnits.First();
+            var assembly = unit as Microsoft.Cci.IAssembly;
+            var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
+            var localVars = new List<Microsoft.Cci.IExpression>();
 
-            var postcondition = new Postcondition
+            var bst = InsertLabeledStatement(actionBodyBlock, "begin");
+            var condRewriter = new ConditionalRewriter(host, method, actionBodyBlock);
+
+            // for each expr we should generate a localDeclAssign and then use it
+            foreach (var expr in targetInv)
             {
-                Condition = joinedTargetInv,
-                OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(joinedTargetInv),
-                Description = new CompileTimeConstant { Value = "Target state invariant", Type = host.PlatformType.SystemString }
-            };
+                var localVar = condRewriter.Rewrite(expr);
+
+                localVars.Add(localVar);
+            }
+            // ---------
+            IExpression joinedTargetInv = condRewriter.Rewrite(Helper.JoinWithLogicalAnd(host, localVars, true));
+
+            bst = InsertLabeledStatement(actionBodyBlock, "end");
+
+            //******************************************************************
+            Postcondition postcondition = null;
+            if (expectedExitCode != null)
+            {
+
+                GenerateEqualityExprForExitCode();
+
+                //IExpression notExitCode = new LogicalNot
+                //{
+                //    Type = host.PlatformType.SystemBoolean,
+                //    Operand = exitCode_eq_expected
+                //};
+
+                List<IExpression> listWithExitCodeAndPost = new List<IExpression>();
+                listWithExitCodeAndPost.Add(exitCode_eq_expected);
+                listWithExitCodeAndPost.Add(joinedTargetInv);
+
+                IExpression notExitCodeOrNotPost = Helper.JoinWithLogicalAnd(host, listWithExitCodeAndPost, false);
+
+                postcondition = new Postcondition
+                {
+                    Condition = notExitCodeOrNotPost,
+                    OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(notExitCodeOrNotPost),
+                    Description = new CompileTimeConstant { Value = "target state invariant", Type = host.PlatformType.SystemString }
+                };
+            }
+            else
+            {
+                postcondition = new Postcondition
+                {
+                    Condition = joinedTargetInv,
+                    OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(joinedTargetInv),
+                    Description = new CompileTimeConstant { Value = "target state invariant", Type = host.PlatformType.SystemString }
+                };
+            }
+
+            contracts.Postconditions.Clear();
             contracts.Postconditions.Add(postcondition);
 
             return contracts;
