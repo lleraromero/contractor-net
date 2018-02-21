@@ -194,6 +194,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalyzerWithCondition.cs" />
+    <Compile Include="CciContractRewriter.cs" />
     <Compile Include="CodeContractsAnalyzer.cs" />
     <Compile Include="CodeContractsAnalyzerFactory.cs" />
     <Compile Include="CodeContractsRunner.cs" />
