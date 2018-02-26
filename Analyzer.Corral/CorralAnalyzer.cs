@@ -48,6 +48,14 @@ namespace Analyzer.Corral
             generatedQueriesCount = 0;
             unprovenQueriesCount = 0;
             dependencyQueriesCount = 0;
+
+            if (enabled_dependencies==null)
+            {
+                map = new Dictionary<Tuple<State, Action, IEnumerable<Action>>, ActionAnalysisResults>();
+                enabled_dependencies = new Dictionary<Action, ISet<Action>>();
+                disabled_dependencies = new Dictionary<Action, ISet<Action>>();
+            }
+
         }
 
         public void ComputeDependencies(ISet<Action> actions)
