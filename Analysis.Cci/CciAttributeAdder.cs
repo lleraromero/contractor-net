@@ -44,7 +44,7 @@ namespace Analysis.Cci
                 {
                     tmp.Attributes = new List<ICustomAttribute>();
                 }
-                tmp.Attributes.Add(disableVerifier);
+                //tmp.Attributes.Add(disableVerifier);
             }
         }
 
