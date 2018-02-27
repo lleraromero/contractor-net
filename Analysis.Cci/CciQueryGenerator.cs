@@ -376,8 +376,8 @@ namespace Analysis.Cci
             condRewriter.actionBodyBlock = block;
 
             var mc = action.Contract;
-            /*
-            if (mc != null && mc.Preconditions.Any())
+            
+            if (expectedExitCode==null && mc != null && mc.Preconditions.Any())
             {
                 var asserts = from pre in mc.Preconditions
                               select new AssumeStatement
@@ -388,7 +388,7 @@ namespace Analysis.Cci
                               };
 
                 block.Statements.AddRange(asserts);
-            }*/
+            }
 
             IBlockStatement actionBodyBlock = null;
             
