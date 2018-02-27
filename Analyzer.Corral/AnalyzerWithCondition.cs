@@ -29,20 +29,35 @@ namespace Analyzer.Corral
         public override IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
             var transitions = base.AnalyzeTransitions(source, action, targets);
-            CSGenerator checker= CSGenerator.Instance(null);
-            return checker.generateConditions(transitions);
+            if (transitions.Count > 0)
+            {
+                CSGenerator checker = CSGenerator.Instance(null);
+                return checker.generateConditions(transitions);
+            }
+            else
+            {
+                return transitions;
+            }
         }
 
         public override IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string exitCode)
         {
             var transitions = base.AnalyzeTransitions(source, action, targets,exitCode);
-            CSGenerator checker = CSGenerator.Instance(null);
-            var transitionsWithConditions= checker.generateConditions(transitions);
-            var result= new List<Transition>();
-            foreach (var t in transitionsWithConditions){
-                result.Add(new Transition(t.Action,t.SourceState,t.TargetState,t.IsUnproven,t.Condition,exitCode,"NOSE"));    
+            if (transitions.Count > 0)
+            {
+                CSGenerator checker = CSGenerator.Instance(null);
+                var transitionsWithConditions = checker.generateConditions(transitions,exitCode);
+                var result = new List<Transition>();
+                foreach (var t in transitionsWithConditions)
+                {
+                    result.Add(new Transition(t.Action, t.SourceState, t.TargetState, t.IsUnproven, t.Condition, exitCode, "NOSE"));
+                }
+                return result;
             }
-            return result;
+            else
+            {
+                return transitions;
+            }
         }
     }
 }

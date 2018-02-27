@@ -27,11 +27,30 @@ namespace Analyzer.CodeContracts
         public override IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets)
         {
             var transitions = base.AnalyzeTransitions(source, action, targets);
-        
-            return GenerateConditions(transitions);
+            if (transitions.Count > 0)
+            {
+                return GenerateConditions(transitions);
+            }
+            else
+            {
+                return transitions;
+            }
         }
 
-        public IReadOnlyCollection<Transition> GenerateConditions(IReadOnlyCollection<Transition> transitions)
+        public override IReadOnlyCollection<Transition> AnalyzeTransitions(State source, Action action, IEnumerable<State> targets, string exitCode)
+        {
+            var transitions = base.AnalyzeTransitions(source, action, targets,exitCode);
+            if (transitions.Count > 0)
+            {
+                return GenerateConditions(transitions,exitCode);
+            }
+            else
+            {
+                return transitions;
+            }
+        }
+
+        public IReadOnlyCollection<Transition> GenerateConditions(IReadOnlyCollection<Transition> transitions,string exitCode=null)
         {
             var codeContractsRunner = new CodeContractsRunner(workingDir, ccCheckDefaultArgs, libPaths, typeToAnalyze);
             var transitionQueries = queryGenerator.CreateTransitionQueries(transitions);

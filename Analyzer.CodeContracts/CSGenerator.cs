@@ -34,9 +34,9 @@ namespace Analyzer.CodeContracts
         }
 
 
-        public IReadOnlyCollection<Transition> generateConditions(IReadOnlyCollection<Transition> transitions)
+        public IReadOnlyCollection<Transition> generateConditions(IReadOnlyCollection<Transition> transitions, string exitCode = null)
         {
-            return checker.GenerateConditions(transitions);
+            return checker.GenerateConditions(transitions,exitCode);
         }
 
         
