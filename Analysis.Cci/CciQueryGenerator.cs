@@ -282,6 +282,7 @@ namespace Analysis.Cci
                 CallingConvention = CallingConvention.HasThis,
                 InternFactory = host.InternFactory,
                 IsStatic = false,
+                ContainingTypeDefinition = action.Method.ContainingTypeDefinition,
                 Name = host.NameTable.GetNameFor(name),
                 Type = action.Method.Type,
                 Visibility = TypeMemberVisibility.Public,
@@ -589,15 +590,17 @@ namespace Analysis.Cci
             var condRewriter = new ConditionalRewriter(host, method, actionBodyBlock);
 
             // for each expr we should generate a localDeclAssign and then use it
-            foreach (var expr in targetInv)
+            /*foreach (var expr in targetInv)
             {
                 var localVar = condRewriter.Rewrite(expr);
 
                 localVars.Add(localVar);
             }
             // ---------
-            IExpression joinedTargetInv = condRewriter.Rewrite(Helper.JoinWithLogicalAnd(host, localVars, true));
-
+            IExpression joinedTargetInv = condRewriter.Rewrite(Helper.LogicalNotAfterJoinWithLogicalAnd(host, localVars, true));
+            */
+            //IExpression joinedTargetInv = Helper.LogicalNotAfterJoinWithLogicalAnd(host, localVars, true);
+            var joinedTargetInv = Helper.JoinWithLogicalAnd(host, targetInv, true); ;
             bst = InsertLabeledStatement(actionBodyBlock, "end");
 
             //******************************************************************
@@ -607,22 +610,16 @@ namespace Analysis.Cci
 
                 GenerateEqualityExprForExitCode();
 
-                //IExpression notExitCode = new LogicalNot
-                //{
-                //    Type = host.PlatformType.SystemBoolean,
-                //    Operand = exitCode_eq_expected
-                //};
-
                 List<IExpression> listWithExitCodeAndPost = new List<IExpression>();
                 listWithExitCodeAndPost.Add(exitCode_eq_expected);
                 listWithExitCodeAndPost.Add(joinedTargetInv);
 
-                IExpression notExitCodeOrNotPost = Helper.JoinWithLogicalAnd(host, listWithExitCodeAndPost, false);
+                IExpression ExitCodeAndPost = Helper.JoinWithLogicalAnd(host, listWithExitCodeAndPost, true);
 
                 postcondition = new Postcondition
                 {
-                    Condition = notExitCodeOrNotPost,
-                    OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(notExitCodeOrNotPost),
+                    Condition = ExitCodeAndPost,
+                    OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(ExitCodeAndPost),
                     Description = new CompileTimeConstant { Value = "target state invariant", Type = host.PlatformType.SystemString }
                 };
             }
