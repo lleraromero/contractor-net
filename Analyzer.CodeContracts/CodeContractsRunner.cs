@@ -229,7 +229,14 @@ namespace Analyzer.CodeContracts
                 
             */
             //var args = new StringBuilder(ccCheckDefaultArgs);
-            var args = new StringBuilder();
+            //var args = new StringBuilder();
+            //*******
+            var argF = "-stats=!! -remote -show=errors,validations -nobox -nologo -nopex -assemblyMode=standard -suggest=!! -warninglevel full -wp -adaptive -arithmetic -bounds -enum -nonnull -sortwarns=false -typeNameSelect=@typeNameSelect -libPaths:@libPaths @assembly -nobox -nologo -nopex -remote  -suggest=!! -premode combined -suggest codefixes -framework:v4.0 -warninglevel full  -maxwarnings 100000 -nonnull -bounds: -arrays -wp=true -bounds:type=subpolyhedra,reduction=simplex,diseq=false  -arrays -adaptive -arithmetic -enum -check assumptions -suggest asserttocontracts -check conditionsvalidity -missingPublicRequiresAreErrors -missingPublicEnsuresAreErrors  -suggest calleeassumes -suggest assumes -suggest requires -infer autopropertiesensures -suggest necessaryensures -suggest objectinvariants -suggest readonlyfields  -infer requires -infer methodensures -infer objectinvariants";
+            argF = argF.Replace("@typeNameSelect", typeToAnalyze.Name);
+            argF = argF.Replace("@assembly", queryAssembly.FullName);
+            argF = argF.Replace("@libPaths", "\""+libPaths+"\"");
+            //args=argF;
+            /*********
             args.AppendFormat("-typeNameSelect={0}", typeToAnalyze.Name);
             //args.AppendFormat(" -libPaths:\"{0}\"", libPaths);
             //args.AppendFormat(" \"{0}\"", queryAssembly.FullName);
@@ -237,6 +244,7 @@ namespace Analyzer.CodeContracts
             args.AppendFormat(" {0}", queryAssembly.FullName);
             //args.Append(" -nobox -nologo -nopex -suggest=!! -premode combined -suggest codefixes -warninglevel full -framework:v4.0 -maxwarnings 100000 -nonnull -bounds: -arrays -wp=true -bounds:type=subpolyhedra,reduction=simplex,diseq=false -arrays -adaptive -arithmetic -enum -check assumptions -suggest asserttocontracts -check conditionsvalidity -missingPublicRequiresAreErrors -missingPublicEnsuresAreErrors  -suggest calleeassumes -suggest assumes -suggest requires -infer autopropertiesensures -suggest necessaryensures -suggest objectinvariants -suggest readonlyfields  -infer requires -infer methodensures -infer objectinvariants");
             args.Append(" -remote -nobox -nologo -nopex -suggest=!! -premode combined -suggest codefixes -framework:v4.0 -warninglevel full -maxwarnings 100000 -nonnull -bounds: -arrays -wp=true -bounds:type=subpolyhedra,reduction=simplex,diseq=false -arrays -adaptive -arithmetic -enum -check assumptions -suggest asserttocontracts -check conditionsvalidity -missingPublicRequiresAreErrors -missingPublicEnsuresAreErrors -suggest calleeassumes -suggest assumes -suggest requires -infer autopropertiesensures -suggest necessaryensures -suggest objectinvariants -suggest readonlyfields  -infer requires -infer methodensures -infer objectinvariants");
+            *///**************************************************************************************************************
             /**************************************************************************************************************
             var output = new StringBuilder();
 
@@ -291,7 +299,9 @@ namespace Analyzer.CodeContracts
 
                     IOutputFullResultsFactory<System.Compiler.Method, System.Compiler.AssemblyNode> outputFactory =
                         new FullTextWriterOutputFactory<System.Compiler.Method, System.Compiler.AssemblyNode>(output);
-                    var argsToCCCheck = args.ToString().Split(' ');
+                    //var argsToCCCheck = args.ToString().Split(' ');
+                    var argsToCCCheck = argF.Split(' ');
+                    Logger.Log(LogLevel.Debug, "CCCheckArgs: " + string.Join(" ", argsToCCCheck));
                     var errorCode = Clousot.ClousotMain(argsToCCCheck, CCIMDDecoder.Value, CCIContractDecoder.Value, new Hashtable(), outputFactory);
 
                     //cccheckTime.Stop();
@@ -307,6 +317,7 @@ namespace Analyzer.CodeContracts
                 //}
 
                 outputString = output.ToString();
+                Logger.Log(LogLevel.Debug, "CCCheck Output: " + outputString);
                 //Contract.Assert(output.Length > 11, "It seems that Code Contracts didn't analyze any methods");
             }
 
@@ -331,13 +342,14 @@ namespace Analyzer.CodeContracts
 
                     var message = ccMessage.Substring(ccMessage.IndexOf(':') + 1).Trim();
                     var conclusion = ParseResultKind(message);
-
+                    Logger.Log(LogLevel.Debug, "CCCheck Conclusion: " + conclusion);
                     if (conclusion == ResultKind.SuggestedRequires || conclusion == ResultKind.MissingRequires)
                     {
                         if (!result.ContainsKey(currentQuery))
                             result.Add(currentQuery, new List<string>());
                         var condition = CSGenerator.parseCondition(message);
                         result[currentQuery].Add(condition);
+                        Logger.Log(LogLevel.Debug, "CCCheck NC: " + condition);
                     }
                 }
             }
