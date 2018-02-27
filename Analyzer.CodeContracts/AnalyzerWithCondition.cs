@@ -53,7 +53,7 @@ namespace Analyzer.CodeContracts
         public IReadOnlyCollection<Transition> GenerateConditions(IReadOnlyCollection<Transition> transitions,string exitCode=null)
         {
             var codeContractsRunner = new CodeContractsRunner(workingDir, ccCheckDefaultArgs, libPaths, typeToAnalyze);
-            var transitionQueries = queryGenerator.CreateTransitionQueries(transitions);
+            var transitionQueries = queryGenerator.CreateTransitionQueries(transitions,exitCode);
             var queryAssembly = CreateQueryAssembly(transitionQueries);
             var evaluator = new ConditionQueryEvaluator(codeContractsRunner, queryAssembly);
             var transitionsWithConditions = evaluator.GetTransitionsWithConditions(transitions,transitionQueries);

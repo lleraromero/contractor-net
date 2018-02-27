@@ -492,8 +492,9 @@ namespace Analysis.Cci
             return queries;
         }
 
-        public IReadOnlyCollection<TransitionQuery> CreateTransitionQueries(IReadOnlyCollection<Transition> transitions)
+        public IReadOnlyCollection<TransitionQuery> CreateTransitionQueries(IReadOnlyCollection<Transition> transitions,string exitCode)
         {
+            this.expectedExitCode = exitCode;
             HashSet<TransitionQuery> result = new HashSet<TransitionQuery>();
             foreach (Transition transition in transitions)
             {
