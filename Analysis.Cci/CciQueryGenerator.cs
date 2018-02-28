@@ -72,7 +72,7 @@ namespace Analysis.Cci
             var targetName = target.Name;
             var methodName = string.Format("{1}{0}{2}{0}{3}", MethodNameDelimiter, stateName, actionName, targetName);
 
-            var method = CreateQueryMethod(state, methodName, action, target);
+            var method = CreateQueryMethod(state, methodName, action, target,false);
             var queryContract = CreateQueryContract(state, target, method);
 
             return new CciAction(method, queryContract);
@@ -253,11 +253,11 @@ namespace Analysis.Cci
             return bst;
         }
 
-        private MethodDefinition CreateQueryMethod(State state, string name, Action action, State target)
+        private MethodDefinition CreateQueryMethod(State state, string name, Action action, State target, bool forCS)
         {
             var parameters = new HashSet<IParameterDefinition>(action.Method.Parameters);
             
-            return CreateMethod(name, action, parameters);
+            return CreateMethod(name, action, parameters, forCS);
         }
 
         private HashSet<IParameterDefinition> GetStateParameters(State state)
@@ -275,7 +275,7 @@ namespace Analysis.Cci
             return parameters;
         }
 
-        private MethodDefinition CreateMethod(string name, Action action, HashSet<IParameterDefinition> parameters)
+        private MethodDefinition CreateMethod(string name, Action action, HashSet<IParameterDefinition> parameters,bool forCS)
         {
             var method = new MethodDefinition
             {
@@ -298,7 +298,7 @@ namespace Analysis.Cci
             //block = CallMethod(action);
             var condRewriter = new ConditionalRewriter(host,method,null);
 
-            block = InlineMethodBody(action,condRewriter);
+            block = InlineMethodBody(action,condRewriter,forCS);
             //}
             //else
             //{
@@ -370,7 +370,7 @@ namespace Analysis.Cci
             return block;
         }
 
-        private BlockStatement InlineMethodBody(Action action,ConditionalRewriter condRewriter)
+        private BlockStatement InlineMethodBody(Action action,ConditionalRewriter condRewriter, bool forCS)
         {
             var block = new BlockStatement();
             condRewriter.actionBodyBlock = block;
@@ -414,18 +414,21 @@ namespace Analysis.Cci
                 var assembly = unit as Microsoft.Cci.IAssembly;
                 var coreAssembly = this.host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
 
-                var try_catch_gen = new CciTryCatchGenerator(listOfExceptions);
+                
+                var try_catch_gen = new CciTryCatchGenerator(listOfExceptions, forCS);
 
                 localDefExitCode = try_catch_gen.CreateLocalInt(action, coreAssembly, 0);
 
                 localDefExpectedExitCode = try_catch_gen.CreateLocalInt(action, coreAssembly, exceptionEncoder.ExceptionToInt(expectedExitCode));
+                GenerateEqualityExprForExitCode();
+                try_catch_gen.SetEquality(exitCode_eq_expected);
 
                 block.Statements.Add(localDefExitCode);
                 block.Statements.Add(localDefExpectedExitCode);
 
                 //***************************************************** armamos el TRY-CATCH
 
-                var tryStmt = try_catch_gen.GenerateTryStatement(action, actionBodyBlock, assembly, coreAssembly, localDefExitCode);
+                var tryStmt = try_catch_gen.GenerateTryStatement(action, actionBodyBlock, this.host, localDefExitCode);
 
                 block.Statements.Add(tryStmt);
                 //*****************************************************
@@ -510,7 +513,7 @@ namespace Analysis.Cci
             var targetName = target.Name;
             var methodName = string.Format("{1}{0}{2}{0}{3}", MethodNameDelimiter, stateName, actionName, targetName);
 
-            var method = CreateQueryMethod(state, methodName, action, target);
+            var method = CreateQueryMethod(state, methodName, action, target,true);
             var queryContract = CreateQueryContractCS(state, target, method);
 
             return new CciAction(method, queryContract);

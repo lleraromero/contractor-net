@@ -120,11 +120,11 @@ namespace Analysis.Cci
                 var skipCount = action.Method.IsConstructor ? 1 : 0;
                 tryBlock.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));
                 */
-                var try_catch_gen = new CciTryCatchGenerator(listOfExceptions);
+                var try_catch_gen = new CciTryCatchGenerator(listOfExceptions,false);
 
                 var localDefExitCode = try_catch_gen.CreateLocalInt(action, coreAssembly, 0);
 
-                var tryStmt = try_catch_gen.GenerateTryStatement(action, actionBodyBlock, assembly, coreAssembly, localDefExitCode);
+                var tryStmt = try_catch_gen.GenerateTryStatement(action, actionBodyBlock, host, localDefExitCode);
 
                 /*
                 var catchClauses = new List<ICatchClause>();

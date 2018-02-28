@@ -17,21 +17,47 @@ namespace Analysis.Cci
     {
         private List<string> listOfExceptions;
         protected ExceptionEncoder exceptionEncoder;
+        private bool forCS;
+        private IExpression exitCode_eq_expected;
 
-        public CciTryCatchGenerator(List<string> listOfExceptions)
+        public CciTryCatchGenerator(List<string> listOfExceptions, bool forCS)
         {
             this.listOfExceptions = listOfExceptions;
             this.exceptionEncoder = new ExceptionEncoder(listOfExceptions);
+            this.forCS = forCS;
+            //this.exitCode_eq_expected = exitCode_eq_expected;
         }
-        public TryCatchFinallyStatement GenerateTryStatement(Action action, IBlockStatement actionBodyBlock, Microsoft.Cci.IAssembly assembly, Microsoft.Cci.IAssembly coreAssembly,LocalDeclarationStatement localDefExitCode)
+        public TryCatchFinallyStatement GenerateTryStatement(Action action, IBlockStatement actionBodyBlock, IContractAwareHost host, LocalDeclarationStatement localDefExitCode)
         {
+            var unit = host.LoadedUnits.First();
+            var assembly = unit as Microsoft.Cci.IAssembly;
+            var coreAssembly = host.FindAssembly(unit.CoreAssemblySymbolicIdentity);
+
             //AGREGAR LOS STATEMENT DEL ACTION AL TRYBLOCK EN VEZ DE AL BLOCK
             var tryBlock = new BlockStatement();
 
             //Por tratarse de un constructor skipeamos
             //el primer statement porque es base..ctor();
             var skipCount = action.Method.IsConstructor ? 1 : 0;
-            tryBlock.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));//*******************************************************Rewrite
+
+            if (forCS)
+            {
+                var throwRewiter = new ThrowExceptionRewriter(host, listOfExceptions, localDefExitCode, exitCode_eq_expected);
+                var newSt = new List<IStatement>();
+                foreach (var st in actionBodyBlock.Statements.Skip(skipCount))
+                {
+                    throwRewiter.Visit(st);
+                    newSt.Add(throwRewiter.LastThrowStatement);
+                }
+                tryBlock.Statements.AddRange(newSt);
+            }
+            else
+            {
+                tryBlock.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));
+            }
+            
+            
+            //tryBlock.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));//*******************************************************Rewrite
 
             var catchClauses = GenerateCatchClauses(action, assembly, coreAssembly, localDefExitCode);
 
@@ -125,6 +151,11 @@ namespace Analysis.Cci
                 }
             };
             return local;
+        }
+
+        internal void SetEquality(IExpression exitCode_eq_expected)
+        {
+            this.exitCode_eq_expected = exitCode_eq_expected;
         }
     }
 }
