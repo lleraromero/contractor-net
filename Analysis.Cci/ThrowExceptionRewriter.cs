@@ -19,7 +19,7 @@ namespace Analysis.Cci
         private IContractAwareHost host;
         private IStatement lastThrowStatement;
 
-        public IStatement LastThrowStatement { get => lastThrowStatement; set => lastThrowStatement = value; }
+        public IStatement LastThrowStatement { get { return lastThrowStatement; } set { lastThrowStatement = value; } }
 
         public ThrowExceptionRewriter(IContractAwareHost host, List<string> listOfExceptions, LocalDeclarationStatement localDefExitCode, IExpression exitCode_eq_expected)
             //: base()
