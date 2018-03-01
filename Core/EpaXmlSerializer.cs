@@ -88,7 +88,9 @@ namespace Contractor.Core
                 writer.WriteAttributeString("destination", t.TargetState.Name);
                 writer.WriteAttributeString("label", t.Action.Name);
                 writer.WriteAttributeString("uncertain", t.IsUnproven.ToString().ToLower());
+                writer.WriteAttributeString("nc", t.Condition);
                 writer.WriteAttributeString("exitCode", t.ExitCode);
+                writer.WriteAttributeString("returnType", t.ReturnType);
                 writer.WriteAttributeString("violates_invariant", "false"); //Contractor.NET does not support this attribute
                 writer.WriteEndElement();
             }
@@ -150,7 +152,7 @@ namespace Contractor.Core
                 {
                     foreach (var transition in state.Value)
                     {
-                        epaBuilder.Add(new Transition(transition.Item2, translator[transition.Item1], translator[transition.Item3], transition.Item4));
+                        epaBuilder.Add(new Transition(transition.Item2, translator[transition.Item1], translator[transition.Item3], transition.Item4, transition.Item6, transition.Item5, transition.Item7));
                     }
                 }
             }
@@ -215,9 +217,9 @@ namespace Contractor.Core
             return new Tuple<IReadOnlyCollection<Action>, IReadOnlyCollection<Action>>(actions, actionsNames);
         }
 
-        protected Dictionary<string, List<Tuple<string, Action, string, bool>>> DeserializeStates(XmlTextReader reader)
-        {   
-            var states = new Dictionary<string, List<Tuple<string, Action, string, bool>>>();
+        protected Dictionary<string, List<Tuple<string, Action, string, bool, string, string, string>>> DeserializeStates(XmlTextReader reader)
+        {
+            var states = new Dictionary<string, List<Tuple<string, Action, string, bool, string, string, string>>>();
             string name = null;
             do
             {
@@ -228,7 +230,7 @@ namespace Contractor.Core
                     {
                         case "state":
                             name = reader.GetAttribute("name");
-                            states[name] = new List<Tuple<string, Action, string, bool>>();
+                            states[name] = new List<Tuple<string, Action, string, bool, string, string, string>>();
                             break;
                         case "enabled_label":
                             break;
@@ -237,8 +239,10 @@ namespace Contractor.Core
                             var targetState = reader.GetAttribute("destination");
                             var isUnproven = bool.Parse(reader.GetAttribute("uncertain"));
                             var action = new StringAction(reader.GetAttribute("label"));
-                            //var exitCode  = reader.GetAttribute("exitCode")];
-                            states[name].Add(new Tuple<string, Action, string, bool>(sourceState, action, targetState, isUnproven));
+                            var exitCode  = reader.GetAttribute("exitCode");
+                            var condition  = reader.GetAttribute("cs");
+                            var retType  = reader.GetAttribute("returnType");
+                            states[name].Add(new Tuple<string, Action, string, bool, string, string, string>(sourceState, action, targetState, isUnproven, exitCode, condition, retType));
                             break;
                     }
                 }
