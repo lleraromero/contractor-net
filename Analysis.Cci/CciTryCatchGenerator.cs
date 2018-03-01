@@ -41,13 +41,14 @@ namespace Analysis.Cci
             var skipCount = action.Method.IsConstructor ? 1 : 0;
 
             if (forCS)
-            {
+            {               
                 var throwRewiter = new ThrowExceptionRewriter(host, listOfExceptions, localDefExitCode, exitCode_eq_expected);
                 var newSt = new List<IStatement>();
-                foreach (var st in actionBodyBlock.Statements.Skip(skipCount))
+                var statements= new List<IStatement>(actionBodyBlock.Statements.Skip(skipCount));
+                foreach (var st in statements)
                 {
-                    throwRewiter.Visit(st);
-                    newSt.Add(throwRewiter.LastThrowStatement);
+                    var copy = new CodeDeepCopier(host).Copy(st);
+                    newSt.Add(throwRewiter.Rewrite(copy));
                 }
                 tryBlock.Statements.AddRange(newSt);
             }
@@ -55,9 +56,6 @@ namespace Analysis.Cci
             {
                 tryBlock.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));
             }
-            
-            
-            //tryBlock.Statements.AddRange(actionBodyBlock.Statements.Skip(skipCount));//*******************************************************Rewrite
 
             var catchClauses = GenerateCatchClauses(action, assembly, coreAssembly, localDefExitCode);
 
