@@ -98,13 +98,13 @@ namespace Contractor.Gui.Models
 
             if (analysisEventArgs.Conditions.Equals("EPA") || analysisEventArgs.Conditions.Equals("EPA-I"))
             {
-                var epaGenerator = new EpaGenerator(analyzer, -1, true, maxDegreeOfParallelism);
+                var epaGenerator = new EpaGenerator(analyzer, -1, false, maxDegreeOfParallelism);
                 return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable);
             }
             else if (analysisEventArgs.Conditions.Equals("EPA-O") || analysisEventArgs.Conditions.Equals("EPA-I/O"))
             {
                 errorList = errorList.Select(x => x.Split('.').Last()).ToList();
-                var epaGenerator = new EpaOGenerator(analyzer, -1, errorList, true, maxDegreeOfParallelism, exceptionsByMethod);
+                var epaGenerator = new EpaOGenerator(analyzer, -1, errorList, false, maxDegreeOfParallelism, exceptionsByMethod);
                 return await epaGenerator.GenerateEpa(analysisEventArgs.TypeToAnalyze, selectedMethods, epaBuilderObservable);
             }else{
                 throw new NotImplementedException("Unknown abstraction level option");
