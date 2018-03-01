@@ -150,9 +150,26 @@ namespace Contractor.Core
         private void AddTransition(Transition t, Graph graph)
         {
             var exitCode = t.ExitCode;
+            string finalExitCode = exitCode;
+            if (!t.ReturnType.Equals("") && !t.ReturnType.Equals("NOSE") && exitCode.Equals("Ok"))
+                finalExitCode += " && result is " + t.ReturnType;
             var label = t.Action.ToString();
             var createEdge = true;
             var lineStyle = t.IsUnproven ? Style.Dashed : Style.Solid;
+
+            string cs = t.Condition;
+            if (cs.Equals(""))
+            {
+                cs = "NC: #ERROR#";
+            }
+            else if (cs.Equals("True"))
+            {
+                cs = "";
+            }
+            else
+            {
+                cs = "NC: " + cs + "-- ";
+            }
 
             var n = graph.FindNode(t.SourceState.Name);
             Contract.Assert(n != null);
@@ -168,17 +185,27 @@ namespace Contractor.Core
             {
                 if (ed.Target == t.TargetState.Name && ed.Attr.Styles.Contains(lineStyle))
                 {
-                    //ed.LabelText = string.Format("{0}{1}{2}:{3}", ed.LabelText, Environment.NewLine, label, exitCode);
-                    if (exitCode.Equals("NOSE"))
+                    if (exitCode.Equals("NOSE") && t.Condition.Equals("NOSE"))
                     {
+                        //EPA
                         ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
+                    }
+                    else if (exitCode.Equals("NOSE") && !t.Condition.Equals("NOSE"))
+                    {
+                        //EPA-I
+                        ed.LabelText = string.Format("{0}{1}{3}{2}", ed.LabelText, Environment.NewLine, label, cs);
+                    }
+                    else if (!exitCode.Equals("NOSE") && !t.Condition.Equals("NOSE"))
+                    {
+                        //EPA-I/O
+                        ed.LabelText = string.Format("{0}{1}{3}{2}:{4}", ed.LabelText, Environment.NewLine, label, cs, finalExitCode);
                     }
                     else
                     {
-                        ed.LabelText = string.Format("{0}{1}{2}:{3}", ed.LabelText, Environment.NewLine, label, exitCode);
-                    } 
+                        //EPA-O
+                        ed.LabelText = string.Format("{0}{1}{2}:{3}", ed.LabelText, Environment.NewLine, label, finalExitCode);
+                    }
 
-                    //ed.LabelText = string.Format("{0}{1}{2}", ed.LabelText, Environment.NewLine, label);
                     createEdge = false;
                     break;
                 }
@@ -189,14 +216,26 @@ namespace Contractor.Core
                 //var edge = graph.AddEdge(t.SourceState.Name, label, t.TargetState.Name);
                 //var edge = graph.AddEdge(t.SourceState.Name, label + ":" + exitCode, t.TargetState.Name);
                 Microsoft.Msagl.Drawing.Edge edge = null;
-                if (exitCode.Equals("NOSE"))
+                if (exitCode.Equals("NOSE") && t.Condition.Equals("NOSE"))
                 {
+                    //EPA
                     edge = graph.AddEdge(t.SourceState.Name, label, t.TargetState.Name);
+                }
+                else if (exitCode.Equals("NOSE") && !t.Condition.Equals("NOSE"))
+                {
+                    //EPA-I
+                    edge = graph.AddEdge(t.SourceState.Name, cs + label, t.TargetState.Name);
+                }
+                else if (!exitCode.Equals("NOSE") && !t.Condition.Equals("NOSE"))
+                {
+                    //EPA-I/O
+                    edge = graph.AddEdge(t.SourceState.Name, cs + label + ":" + finalExitCode, t.TargetState.Name);
                 }
                 else
                 {
-                    edge = graph.AddEdge(t.SourceState.Name, label + ":" + exitCode, t.TargetState.Name);
-                } 
+                    //EPA-O
+                    edge = graph.AddEdge(t.SourceState.Name, label + ":" + finalExitCode, t.TargetState.Name);
+                }
 
                 edge.Label.FontName = "Cambria";
                 edge.Label.FontSize = 6;
