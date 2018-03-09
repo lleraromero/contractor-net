@@ -533,6 +533,8 @@
             TODO: This is necessary only because the base rewriter for things like TargetExpression call
             this method and its definition in the base rewriter is to not visit it, but to just return it.
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteReference(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="localDefinition != null" vb="localDefinition &lt;&gt; Nothing">localDefinition != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteReference(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.MutableContracts.ContractHelper.RewriteContractInNewContext.RewriteChildren(Microsoft.Cci.MutableCodeModel.MethodCall)">
       <summary>
@@ -597,6 +599,7 @@
             Rewrites the children of the specified local definition.
             </summary>
       <param name="localDefinition" />
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteChildren(Microsoft.Cci.MutableCodeModel.LocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="localDefinition != null" vb="localDefinition &lt;&gt; Nothing">localDefinition != null</requires>
     </member>
     <member name="M:Microsoft.Cci.MutableContracts.BetaReducer.Rewrite(Microsoft.Cci.IThisReference)">
       <summary>
@@ -637,6 +640,8 @@
             </summary>
       <param name="genericMethodParameterReference" />
       <returns />
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IGenericMethodParameterReference)" inheritedFromTypeName="MetadataRewriter" csharp="genericMethodParameterReference != null" vb="genericMethodParameterReference &lt;&gt; Nothing">genericMethodParameterReference != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IGenericMethodParameterReference)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.MutableContracts.CodeSpecializer.Rewrite(Microsoft.Cci.IGenericTypeParameterReference)">
       <summary>
@@ -644,29 +649,39 @@
             </summary>
       <param name="genericTypeParameterReference" />
       <returns />
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IGenericTypeParameterReference)" inheritedFromTypeName="MetadataRewriter" csharp="genericTypeParameterReference != null" vb="genericTypeParameterReference &lt;&gt; Nothing">genericTypeParameterReference != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IGenericTypeParameterReference)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.MutableContracts.CodeSpecializer.RewriteChildren(Microsoft.Cci.MutableCodeModel.SpecializedFieldReference)">
       <summary>
             Rewrites the given specialized field reference.
             </summary>
       <param name="fieldReference" />
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteChildren(Microsoft.Cci.MutableCodeModel.SpecializedFieldReference)" inheritedFromTypeName="MetadataRewriter" csharp="specializedFieldReference != null" vb="specializedFieldReference &lt;&gt; Nothing">specializedFieldReference != null</requires>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteChildren(Microsoft.Cci.MutableCodeModel.SpecializedFieldReference)" inheritedFromTypeName="MetadataRewriter" csharp="!specializedFieldReference.IsFrozen" vb="Not specializedFieldReference.IsFrozen">!specializedFieldReference.IsFrozen</requires>
     </member>
     <member name="M:Microsoft.Cci.MutableContracts.CodeSpecializer.RewriteChildren(Microsoft.Cci.MutableCodeModel.SpecializedMethodReference)">
       <summary>
             Rewrites the given specialized method reference.
             </summary>
       <param name="specializedMethodReference" />
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteChildren(Microsoft.Cci.MutableCodeModel.SpecializedMethodReference)" inheritedFromTypeName="MetadataRewriter" csharp="specializedMethodReference != null" vb="specializedMethodReference &lt;&gt; Nothing">specializedMethodReference != null</requires>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteChildren(Microsoft.Cci.MutableCodeModel.SpecializedMethodReference)" inheritedFromTypeName="MetadataRewriter" csharp="!specializedMethodReference.IsFrozen" vb="Not specializedMethodReference.IsFrozen">!specializedMethodReference.IsFrozen</requires>
     </member>
     <member name="M:Microsoft.Cci.MutableContracts.CodeSpecializer.RewriteChildren(Microsoft.Cci.MutableCodeModel.SpecializedNestedTypeReference)">
       <summary>
             Rewrites the given specialized nested type reference.
             </summary>
       <param name="specializedNestedTypeReference" />
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteChildren(Microsoft.Cci.MutableCodeModel.SpecializedNestedTypeReference)" inheritedFromTypeName="MetadataRewriter" csharp="specializedNestedTypeReference != null" vb="specializedNestedTypeReference &lt;&gt; Nothing">specializedNestedTypeReference != null</requires>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteChildren(Microsoft.Cci.MutableCodeModel.SpecializedNestedTypeReference)" inheritedFromTypeName="MetadataRewriter" csharp="!specializedNestedTypeReference.IsFrozen" vb="Not specializedNestedTypeReference.IsFrozen">!specializedNestedTypeReference.IsFrozen</requires>
     </member>
     <member name="M:Microsoft.Cci.MutableContracts.CodeSpecializer.RewriteReference(Microsoft.Cci.ILocalDefinition)">
       <summary>
             Base rewriter doesn't go into the type of the local.
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteReference(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="localDefinition != null" vb="localDefinition &lt;&gt; Nothing">localDefinition != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteReference(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="T:Microsoft.Cci.MutableContracts.TypeContractSpecializer">
       <summary>
@@ -685,6 +700,8 @@
             </summary>
       <param name="typeReference" />
       <returns />
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.ITypeReference)" inheritedFromTypeName="MetadataRewriter" csharp="typeReference != null" vb="typeReference &lt;&gt; Nothing">typeReference != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.ITypeReference)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.MutableContracts.TypeContractSpecializer.Rewrite(Microsoft.Cci.IMethodDefinition)">
       <summary>
@@ -694,6 +711,8 @@
             </summary>
       <param name="methodDefinition" />
       <returns />
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IMethodDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="methodDefinition != null" vb="methodDefinition &lt;&gt; Nothing">methodDefinition != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IMethodDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.MutableContracts.SimpleHostEnvironment.LoadUnitFrom(System.String)">
       <summary>
@@ -702,6 +721,8 @@
             </summary>
       <param name="location" />
       <returns />
+      <requires inheritedFrom="M:Microsoft.Cci.IMetadataHost.LoadUnitFrom(System.String)" inheritedFromTypeName="IMetadataHost" csharp="location != null" vb="location &lt;&gt; Nothing">location != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.IMetadataHost.LoadUnitFrom(System.String)" inheritedFromTypeName="IMetadataHost" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="P:Microsoft.Cci.MutableContracts.SimpleHostEnvironment.PreserveILLocations">
       <summary>
@@ -820,6 +841,8 @@
             identity might have nothing to do with the identity of the contract assembly since we match
             them based only on name.
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.MetadataHostEnvironment.Probe(System.String,Microsoft.Cci.AssemblyIdentity)" inheritedFromTypeName="MetadataHostEnvironment" csharp="probeDir != null" vb="probeDir &lt;&gt; Nothing">probeDir != null</requires>
+      <requires inheritedFrom="M:Microsoft.Cci.MetadataHostEnvironment.Probe(System.String,Microsoft.Cci.AssemblyIdentity)" inheritedFromTypeName="MetadataHostEnvironment" csharp="referencedAssembly != null" vb="referencedAssembly &lt;&gt; Nothing">referencedAssembly != null</requires>
     </member>
     <member name="M:Microsoft.Cci.MutableContracts.CodeContractAwareHostEnvironment.ProbeAssemblyReference(Microsoft.Cci.IUnit,Microsoft.Cci.AssemblyIdentity)">
       <summary>
@@ -836,11 +859,16 @@
             An assembly identity that matches the given referenced assembly identity, but which includes a location.
             If the probe failed to find the location of the referenced assembly, the location will be "unknown://location".
             </returns>
+      <requires inheritedFrom="M:Microsoft.Cci.IMetadataHost.ProbeAssemblyReference(Microsoft.Cci.IUnit,Microsoft.Cci.AssemblyIdentity)" inheritedFromTypeName="IMetadataHost" csharp="referringUnit != null" vb="referringUnit &lt;&gt; Nothing">referringUnit != null</requires>
+      <requires inheritedFrom="M:Microsoft.Cci.IMetadataHost.ProbeAssemblyReference(Microsoft.Cci.IUnit,Microsoft.Cci.AssemblyIdentity)" inheritedFromTypeName="IMetadataHost" csharp="referencedAssembly != null" vb="referencedAssembly &lt;&gt; Nothing">referencedAssembly != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.IMetadataHost.ProbeAssemblyReference(Microsoft.Cci.IUnit,Microsoft.Cci.AssemblyIdentity)" inheritedFromTypeName="IMetadataHost" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.MutableContracts.CodeContractAwareHostEnvironment.LoadUnitFrom(System.String)">
       <summary>
             Returns the unit that is stored at the given location, or a dummy unit if no unit exists at that location or if the unit at that location is not accessible.
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.IMetadataHost.LoadUnitFrom(System.String)" inheritedFromTypeName="IMetadataHost" csharp="location != null" vb="location &lt;&gt; Nothing">location != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.IMetadataHost.LoadUnitFrom(System.String)" inheritedFromTypeName="IMetadataHost" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.MutableContracts.CodeContractAwareHostEnvironment.UnloadPreviouslyLoadedUnitIfLocationIsNewer(System.String)">
       <summary>
@@ -965,12 +993,16 @@
             Need to have this override because the base class doesn't visit down into local definitions
             (and besides, this is where this visitor is doing its work anyway).
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="localDefinition != null" vb="localDefinition &lt;&gt; Nothing">localDefinition != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.MutableContracts.LocalBinder.RewriteReference(Microsoft.Cci.ILocalDefinition)">
       <summary>
             TODO: This is necessary only because the base rewriter for things like TargetExpression call
             this method and its definition in the base rewriter is to not visit it, but to just return it.
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteReference(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="localDefinition != null" vb="localDefinition &lt;&gt; Nothing">localDefinition != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteReference(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="T:Microsoft.Cci.Contracts.CodeContractsContractExtractor">
       <summary>
@@ -1077,6 +1109,8 @@
             Need this override because when a GenericTypeInstanceReference is rewritten, its GenericType is visited
             as an INamespaceTypeReference and so the above override is never executed.
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.INamespaceTypeReference)" inheritedFromTypeName="MetadataRewriter" csharp="namespaceTypeReference != null" vb="namespaceTypeReference &lt;&gt; Nothing">namespaceTypeReference != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.INamespaceTypeReference)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.Contracts.CodeContractsContractExtractor.ConvertContractClassContract.RewriteChildren(Microsoft.Cci.MutableCodeModel.MethodCall)">
       <summary>
@@ -1224,6 +1258,8 @@
             </summary>
       <param name="moduleReference" />
       <returns />
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IModuleReference)" inheritedFromTypeName="MetadataRewriter" csharp="moduleReference != null" vb="moduleReference &lt;&gt; Nothing">moduleReference != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IModuleReference)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.Contracts.MappingMutator.Reparenter.Rewrite(Microsoft.Cci.IAssemblyReference)">
       <summary>
@@ -1231,6 +1267,8 @@
             </summary>
       <param name="assemblyReference" />
       <returns />
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IAssemblyReference)" inheritedFromTypeName="MetadataRewriter" csharp="assemblyReference != null" vb="assemblyReference &lt;&gt; Nothing">assemblyReference != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IAssemblyReference)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="T:Microsoft.Cci.Contracts.AggregatingContractExtractor">
       <summary>
@@ -1380,6 +1418,8 @@
             TODO: This is necessary only because the base rewriter for things like TargetExpression call
             this method and its definition in the base rewriter is to not visit it, but to just return it.
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteReference(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="localDefinition != null" vb="localDefinition &lt;&gt; Nothing">localDefinition != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteReference(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.MutableContracts.IteratorContracts.HermansAlwaysRight.Rewrite(System.Collections.Generic.List{Microsoft.Cci.IStatement})">
       <summary>
@@ -1449,12 +1489,25 @@
             This is necessary only because the base rewriter for things like TargetExpression call
             this method and its definition in the base rewriter is to not visit it, but to just return it.
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteReference(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="localDefinition != null" vb="localDefinition &lt;&gt; Nothing">localDefinition != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteReference(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.Contracts.Visibility.TraverseChildren(Microsoft.Cci.IBoundExpression)">
       <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IBoundExpression)" inheritedFromTypeName="CodeTraverser" csharp="boundExpression != null" vb="boundExpression &lt;&gt; Nothing">boundExpression != null</requires>
     </member>
+    <member name="M:Microsoft.Cci.Contracts.CodeContractsContractExtractor.ConvertContractClassContract.Rewrite(Microsoft.Cci.ITypeReference)">
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.ITypeReference)" inheritedFromTypeName="MetadataRewriter" csharp="typeReference != null" vb="typeReference &lt;&gt; Nothing">typeReference != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.ITypeReference)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.MutableContracts.ReparentLocals.RewriteChildren(Microsoft.Cci.MutableCodeModel.LocalDefinition)">
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteChildren(Microsoft.Cci.MutableCodeModel.LocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="localDefinition != null" vb="localDefinition &lt;&gt; Nothing">localDefinition != null</requires>
+    </member>
     <member name="M:Microsoft.Cci.MutableContracts.IteratorContracts.Replacer.RewriteChildren(Microsoft.Cci.MutableCodeModel.AddressableExpression)">
       <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.CodeRewriter.RewriteChildren(Microsoft.Cci.MutableCodeModel.AddressableExpression)" inheritedFromTypeName="CodeRewriter" csharp="addressableExpression != null" vb="addressableExpression &lt;&gt; Nothing">addressableExpression != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.MutableContracts.IteratorContracts.Replacer.Rewrite(Microsoft.Cci.ILocalDefinition)">
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="localDefinition != null" vb="localDefinition &lt;&gt; Nothing">localDefinition != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.MutableContracts.IteratorContracts.Replacer.RewriteChildren(Microsoft.Cci.MutableContracts.ContractElement)">
       <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.Contracts.CodeAndContractRewriter.RewriteChildren(Microsoft.Cci.MutableContracts.ContractElement)" inheritedFromTypeName="CodeAndContractRewriter" csharp="contractElement != null" vb="contractElement &lt;&gt; Nothing">contractElement != null</requires>
@@ -1472,14 +1525,51 @@
     <member name="M:Microsoft.Cci.MutableContracts.FindModelMembers.TraverseChildren(Microsoft.Cci.IMethodCall)">
       <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IMethodCall)" inheritedFromTypeName="CodeTraverser" csharp="methodCall != null" vb="methodCall &lt;&gt; Nothing">methodCall != null</requires>
     </member>
+    <member name="M:Microsoft.Cci.MutableContracts.GenericMethodParameterMapper.Rewrite(Microsoft.Cci.IGenericMethodParameterReference)">
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IGenericMethodParameterReference)" inheritedFromTypeName="MetadataRewriter" csharp="genericMethodParameterReference != null" vb="genericMethodParameterReference &lt;&gt; Nothing">genericMethodParameterReference != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IGenericMethodParameterReference)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.MutableContracts.GenericMethodParameterMapper.Rewrite(Microsoft.Cci.IGenericTypeParameterReference)">
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IGenericTypeParameterReference)" inheritedFromTypeName="MetadataRewriter" csharp="genericTypeParameterReference != null" vb="genericTypeParameterReference &lt;&gt; Nothing">genericTypeParameterReference != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IGenericTypeParameterReference)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
     <member name="M:Microsoft.Cci.MutableContracts.ContractHelper.ContractOption(Microsoft.Cci.ICustomAttribute,System.String,System.String)">
       <pure />
     </member>
     <member name="M:Microsoft.Cci.MutableContracts.ContractHelper.ContractOption(System.Collections.Generic.IEnumerable{Microsoft.Cci.ICustomAttribute},System.String,System.String)">
       <pure />
     </member>
+    <member name="M:Microsoft.Cci.MutableContracts.ContractHelper.ContractCallInjector.Rewrite(Microsoft.Cci.INamespaceTypeDefinition)">
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.INamespaceTypeDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="namespaceTypeDefinition != null" vb="namespaceTypeDefinition &lt;&gt; Nothing">namespaceTypeDefinition != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.INamespaceTypeDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.MutableContracts.ContractHelper.ContractCallInjector.Rewrite(Microsoft.Cci.INestedTypeDefinition)">
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.INestedTypeDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="nestedTypeDefinition != null" vb="nestedTypeDefinition &lt;&gt; Nothing">nestedTypeDefinition != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.INestedTypeDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.MutableContracts.ContractHelper.ContractCallInjector.RewriteChildren(Microsoft.Cci.MutableCodeModel.MethodDefinition)">
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteChildren(Microsoft.Cci.MutableCodeModel.MethodDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="method != null" vb="method &lt;&gt; Nothing">method != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.MutableContracts.ContractHelper.SeparateContractsFromCode.TraverseChildren(Microsoft.Cci.ITypeDefinition)">
+      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.ITypeDefinition)" inheritedFromTypeName="MetadataTraverser" csharp="typeDefinition != null" vb="typeDefinition &lt;&gt; Nothing">typeDefinition != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.MutableContracts.ContractHelper.RewriteContractInNewContext.Rewrite(Microsoft.Cci.ILocalDefinition)">
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="localDefinition != null" vb="localDefinition &lt;&gt; Nothing">localDefinition != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.MutableContracts.ContractHelper.RewriteContractInNewContext.Rewrite(Microsoft.Cci.IParameterDefinition)">
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IParameterDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="parameterDefinition != null" vb="parameterDefinition &lt;&gt; Nothing">parameterDefinition != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IParameterDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.MutableContracts.ContractHelper.RewriteContractInNewContext.RewriteReference(Microsoft.Cci.IParameterDefinition)">
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteReference(Microsoft.Cci.IParameterDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="parameterDefinition != null" vb="parameterDefinition &lt;&gt; Nothing">parameterDefinition != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteReference(Microsoft.Cci.IParameterDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
     <member name="M:Microsoft.Cci.MutableContracts.ContractHelper.RewriteContractInNewContext.RewriteChildren(Microsoft.Cci.MutableCodeModel.ThisReference)">
       <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.CodeRewriter.RewriteChildren(Microsoft.Cci.MutableCodeModel.ThisReference)" inheritedFromTypeName="CodeRewriter" csharp="thisReference != null" vb="thisReference &lt;&gt; Nothing">thisReference != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.MutableContracts.ContractHelper.MemberFinder.TraverseChildren(Microsoft.Cci.IMethodReference)">
+      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IMethodReference)" inheritedFromTypeName="MetadataTraverser" csharp="methodReference != null" vb="methodReference &lt;&gt; Nothing">methodReference != null</requires>
     </member>
     <member name="M:Microsoft.Cci.MutableContracts.ContractHelper.ReplaceAutoPropGetter.Rewrite(Microsoft.Cci.IMethodCall)">
       <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.CodeRewriter.Rewrite(Microsoft.Cci.IMethodCall)" inheritedFromTypeName="CodeRewriter" csharp="methodCall != null" vb="methodCall &lt;&gt; Nothing">methodCall != null</requires>
@@ -1501,6 +1591,9 @@
     </member>
     <member name="M:Microsoft.Cci.MutableContracts.ContractExtractor.UndeclaredLocalFinder.TraverseChildren(Microsoft.Cci.ILocalDeclarationStatement)">
       <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ILocalDeclarationStatement)" inheritedFromTypeName="CodeTraverser" csharp="localDeclarationStatement != null" vb="localDeclarationStatement &lt;&gt; Nothing">localDeclarationStatement != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.MutableContracts.ContractExtractor.UndeclaredLocalFinder.TraverseChildren(Microsoft.Cci.ILocalDefinition)">
+      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataTraverser" csharp="localDefinition != null" vb="localDefinition &lt;&gt; Nothing">localDefinition != null</requires>
     </member>
     <member name="M:Microsoft.Cci.MutableContracts.LocalBinder.RewriteChildren(Microsoft.Cci.MutableCodeModel.LocalDeclarationStatement)">
       <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.CodeRewriter.RewriteChildren(Microsoft.Cci.MutableCodeModel.LocalDeclarationStatement)" inheritedFromTypeName="CodeRewriter" csharp="localDeclarationStatement != null" vb="localDeclarationStatement &lt;&gt; Nothing">localDeclarationStatement != null</requires>

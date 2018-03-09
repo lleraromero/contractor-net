@@ -3818,6 +3818,7 @@
       <summary>
             Traverses the the given method body.
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.Traverse(Microsoft.Cci.IMethodBody)" inheritedFromTypeName="MetadataTraverser" csharp="methodBody != null" vb="methodBody &lt;&gt; Nothing">methodBody != null</requires>
     </member>
     <member name="M:Microsoft.Cci.CodeTraverser.Traverse(Microsoft.Cci.IMethodCall)">
       <summary>
@@ -4856,6 +4857,7 @@
             Traverses the given custom attribute.
             </summary>
       <param name="customAttribute" />
+      <requires inheritedFrom="M:Microsoft.Cci.IMetadataVisitor.Visit(Microsoft.Cci.ICustomAttribute)" inheritedFromTypeName="IMetadataVisitor" csharp="customAttribute != null" vb="customAttribute &lt;&gt; Nothing">customAttribute != null</requires>
     </member>
     <member name="M:Microsoft.Cci.BaseCodeTraverser.Visit(Microsoft.Cci.IDefaultValue)">
       <summary>
@@ -5069,12 +5071,14 @@
             Traverses the given method definition.
             </summary>
       <param name="method" />
+      <requires inheritedFrom="M:Microsoft.Cci.IMetadataVisitor.Visit(Microsoft.Cci.IMethodDefinition)" inheritedFromTypeName="IMetadataVisitor" csharp="method != null" vb="method &lt;&gt; Nothing">method != null</requires>
     </member>
     <member name="M:Microsoft.Cci.BaseCodeTraverser.Visit(Microsoft.Cci.IMethodBody)">
       <summary>
             Traverses the given method body.
             </summary>
       <param name="methodBody" />
+      <requires inheritedFrom="M:Microsoft.Cci.IMetadataVisitor.Visit(Microsoft.Cci.IMethodBody)" inheritedFromTypeName="IMetadataVisitor" csharp="methodBody != null" vb="methodBody &lt;&gt; Nothing">methodBody != null</requires>
     </member>
     <member name="M:Microsoft.Cci.BaseCodeTraverser.Visit(Microsoft.Cci.IMethodCall)">
       <summary>
@@ -6286,6 +6290,7 @@
       <summary>
             Traverses the children of the method definition.
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IMethodDefinition)" inheritedFromTypeName="MetadataTraverser" csharp="method != null" vb="method &lt;&gt; Nothing">method != null</requires>
     </member>
     <member name="M:Microsoft.Cci.Contracts.CodeAndContractTraverser.TraverseChildren(Microsoft.Cci.Contracts.IPostcondition)">
       <summary>
@@ -6321,6 +6326,7 @@
       <summary>
             Traverses the children of the type definition.
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.ITypeDefinition)" inheritedFromTypeName="MetadataTraverser" csharp="typeDefinition != null" vb="typeDefinition &lt;&gt; Nothing">typeDefinition != null</requires>
     </member>
     <member name="M:Microsoft.Cci.Contracts.CodeAndContractTraverser.TraverseChildren(Microsoft.Cci.Contracts.ITypeInvariant)">
       <summary>
@@ -6450,6 +6456,7 @@
       <summary>
             Traverses the given method definition.
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.IMetadataVisitor.Visit(Microsoft.Cci.IMethodDefinition)" inheritedFromTypeName="IMetadataVisitor" csharp="method != null" vb="method &lt;&gt; Nothing">method != null</requires>
     </member>
     <member name="M:Microsoft.Cci.Contracts.BaseCodeAndContractTraverser.Visit(Microsoft.Cci.ITypeDefinition)">
       <summary>
@@ -6522,6 +6529,12 @@
     <member name="M:Microsoft.Cci.DummyBlock.Dispatch(Microsoft.Cci.ICodeVisitor)">
       <requires inheritedFrom="M:Microsoft.Cci.IStatement.Dispatch(Microsoft.Cci.ICodeVisitor)" inheritedFromTypeName="IStatement" csharp="visitor != null" vb="visitor &lt;&gt; Nothing">visitor != null</requires>
     </member>
+    <member name="P:Microsoft.Cci.DummyBlock.Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
     <member name="M:Microsoft.Cci.DummyLabeledStatement.Dispatch(Microsoft.Cci.ICodeVisitor)">
       <requires inheritedFrom="M:Microsoft.Cci.IStatement.Dispatch(Microsoft.Cci.ICodeVisitor)" inheritedFromTypeName="IStatement" csharp="visitor != null" vb="visitor &lt;&gt; Nothing">visitor != null</requires>
     </member>
@@ -6535,8 +6548,20 @@
         <ensures inheritedFrom="M:Microsoft.Cci.ILabeledStatement.get_Statement" inheritedFromTypeName="ILabeledStatement" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
+    <member name="P:Microsoft.Cci.DummyLabeledStatement.Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
     <member name="M:Microsoft.Cci.DummyExpression.Dispatch(Microsoft.Cci.ICodeVisitor)">
       <requires inheritedFrom="M:Microsoft.Cci.IExpression.Dispatch(Microsoft.Cci.ICodeVisitor)" inheritedFromTypeName="IExpression" csharp="visitor != null" vb="visitor &lt;&gt; Nothing">visitor != null</requires>
+    </member>
+    <member name="P:Microsoft.Cci.DummyExpression.Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
     </member>
     <member name="P:Microsoft.Cci.DummyExpression.Type">
       <getter>
@@ -6577,6 +6602,12 @@
         <ensures inheritedFrom="M:Microsoft.Cci.IMethodCall.get_ThisArgument" inheritedFromTypeName="IMethodCall" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
+    <member name="P:Microsoft.Cci.DummyMethodCall.Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
     <member name="P:Microsoft.Cci.DummyMethodCall.Type">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.IExpression.get_Type" inheritedFromTypeName="IExpression" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
@@ -6595,6 +6626,12 @@
         <ensures inheritedFrom="M:Microsoft.Cci.IAssignment.get_Target" inheritedFromTypeName="IAssignment" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
+    <member name="P:Microsoft.Cci.DummyAssignment.Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
     <member name="P:Microsoft.Cci.DummyAssignment.Type">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.IExpression.get_Type" inheritedFromTypeName="IExpression" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
@@ -6602,6 +6639,12 @@
     </member>
     <member name="M:Microsoft.Cci.DummyCompileTimeConstant.Dispatch(Microsoft.Cci.ICodeVisitor)">
       <requires inheritedFrom="M:Microsoft.Cci.IExpression.Dispatch(Microsoft.Cci.ICodeVisitor)" inheritedFromTypeName="IExpression" csharp="visitor != null" vb="visitor &lt;&gt; Nothing">visitor != null</requires>
+    </member>
+    <member name="P:Microsoft.Cci.DummyCompileTimeConstant.Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
     </member>
     <member name="P:Microsoft.Cci.DummyCompileTimeConstant.Type">
       <getter>
@@ -6614,6 +6657,18 @@
     <member name="P:Microsoft.Cci.DummyGotoStatement.TargetStatement">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.IGotoStatement.get_TargetStatement" inheritedFromTypeName="IGotoStatement" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.DummyGotoStatement.Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.Contracts.DummyPostcondition.Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
       </getter>
     </member>
     <member name="P:Microsoft.Cci.Contracts.DummyMethodContract.Allocates">
@@ -6661,6 +6716,12 @@
         <ensures inheritedFrom="M:Microsoft.Cci.Contracts.IMethodContract.get_Variants" inheritedFromTypeName="IMethodContract" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
+    <member name="P:Microsoft.Cci.Contracts.DummyMethodContract.Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
     <member name="M:Microsoft.Cci.Contracts.CodeAndContractTraverser.ContractElementDispatcher.Visit(Microsoft.Cci.Contracts.ILoopInvariant)">
       <requires inheritedFrom="M:Microsoft.Cci.Contracts.ICodeAndContractVisitor.Visit(Microsoft.Cci.Contracts.ILoopInvariant)" inheritedFromTypeName="ICodeAndContractVisitor" csharp="loopInvariant != null" vb="loopInvariant &lt;&gt; Nothing">loopInvariant != null</requires>
     </member>
@@ -6685,12 +6746,24 @@
     <member name="M:Microsoft.Cci.Contracts.CodeAndContractTraverser.ContractElementDispatcher.Visit(Microsoft.Cci.Contracts.ITypeContract)">
       <requires inheritedFrom="M:Microsoft.Cci.Contracts.ICodeAndContractVisitor.Visit(Microsoft.Cci.Contracts.ITypeContract)" inheritedFromTypeName="ICodeAndContractVisitor" csharp="typeContract != null" vb="typeContract &lt;&gt; Nothing">typeContract != null</requires>
     </member>
+    <member name="P:Microsoft.Cci.Contracts.DummyTypeContract.Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
     <member name="M:Microsoft.Cci.DummyAddressableExpression.Dispatch(Microsoft.Cci.ICodeVisitor)">
       <requires inheritedFrom="M:Microsoft.Cci.IExpression.Dispatch(Microsoft.Cci.ICodeVisitor)" inheritedFromTypeName="IExpression" csharp="visitor != null" vb="visitor &lt;&gt; Nothing">visitor != null</requires>
     </member>
     <member name="P:Microsoft.Cci.DummyAddressableExpression.Definition">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.IAddressableExpression.get_Definition" inheritedFromTypeName="IAddressableExpression" csharp="result is Microsoft.Cci.ILocalDefinition || result is Microsoft.Cci.IParameterDefinition || result is Microsoft.Cci.IFieldReference || result is Microsoft.Cci.IMethodReference || result is Microsoft.Cci.IExpression" vb="result Is Microsoft.Cci.ILocalDefinition OrElse result Is Microsoft.Cci.IParameterDefinition OrElse result Is Microsoft.Cci.IFieldReference OrElse result Is Microsoft.Cci.IMethodReference OrElse result Is Microsoft.Cci.IExpression">result is Microsoft.Cci.ILocalDefinition || result is Microsoft.Cci.IParameterDefinition || result is Microsoft.Cci.IFieldReference || result is Microsoft.Cci.IMethodReference || result is Microsoft.Cci.IExpression</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.DummyAddressableExpression.Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
       </getter>
     </member>
     <member name="P:Microsoft.Cci.DummyAddressableExpression.Type">
@@ -6700,6 +6773,12 @@
     </member>
     <member name="M:Microsoft.Cci.DummySwitchStatement.Dispatch(Microsoft.Cci.ICodeVisitor)">
       <requires inheritedFrom="M:Microsoft.Cci.IStatement.Dispatch(Microsoft.Cci.ICodeVisitor)" inheritedFromTypeName="IStatement" csharp="visitor != null" vb="visitor &lt;&gt; Nothing">visitor != null</requires>
+    </member>
+    <member name="P:Microsoft.Cci.DummySwitchStatement.Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
     </member>
     <member name="M:Microsoft.Cci.DummyTargetExpression.Dispatch(Microsoft.Cci.ICodeVisitor)">
       <requires inheritedFrom="M:Microsoft.Cci.IExpression.Dispatch(Microsoft.Cci.ICodeVisitor)" inheritedFromTypeName="IExpression" csharp="visitor != null" vb="visitor &lt;&gt; Nothing">visitor != null</requires>
@@ -6717,9 +6796,21 @@
         <ensures inheritedFrom="M:Microsoft.Cci.ITargetExpression.get_Definition" inheritedFromTypeName="ITargetExpression" csharp="result is Microsoft.Cci.IPropertyDefinition ⇒ (Microsoft.Cci.IPropertyDefinition)result.Setter != null" vb="result Is Microsoft.Cci.IPropertyDefinition Implies ((Microsoft.Cci.IPropertyDefinition)result).Setter &lt;&gt; Nothing">!(result is Microsoft.Cci.IPropertyDefinition) || (Microsoft.Cci.IPropertyDefinition)result.Setter != null</ensures>
       </getter>
     </member>
+    <member name="P:Microsoft.Cci.DummyTargetExpression.Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
     <member name="P:Microsoft.Cci.DummyTargetExpression.Type">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.IExpression.get_Type" inheritedFromTypeName="IExpression" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.DummySwitchCase.Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
       </getter>
     </member>
     <member name="M:Microsoft.Cci.CodeTraverser.Dispatcher.Visit(Microsoft.Cci.IAddition)">
@@ -7012,6 +7103,12 @@
     <member name="P:Microsoft.Cci.DummyCreateArray.Sizes">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ICreateArray.get_Sizes" inheritedFromTypeName="ICreateArray" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.DummyCreateArray.Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
       </getter>
     </member>
     <member name="P:Microsoft.Cci.DummyCreateArray.Type">

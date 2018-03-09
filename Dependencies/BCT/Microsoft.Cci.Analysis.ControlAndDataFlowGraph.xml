@@ -642,6 +642,14 @@
       <requires csharp="(object)instruction != null" vb="((Object)instruction) &lt;&gt; Nothing">(object)instruction != null</requires>
       <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
+    <member name="M:Microsoft.Cci.Analysis.InitialParameterAssignment.Microsoft#Cci#IOperation#get_Location">
+      <ensures inheritedFrom="M:Microsoft.Cci.IOperation.get_Location" inheritedFromTypeName="IOperation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.Analysis.InitialParameterAssignment.Microsoft#Cci#IOperation#Location">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IOperation.get_Location" inheritedFromTypeName="IOperation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
     <member name="M:Microsoft.Cci.Analysis.HandlerInferencer`2.PopPushHandlers(`0,Microsoft.Cci.UtilityDataStructures.FList{Microsoft.Cci.IOperationExceptionInformation},Microsoft.Cci.IOperationExceptionInformation[],Microsoft.Cci.UtilityDataStructures.FList{Microsoft.Cci.IOperationExceptionInformation}@)">
       <requires csharp="(object)block != null" vb="((Object)block) &lt;&gt; Nothing">(object)block != null</requires>
       <requires csharp="handlers != null" vb="handlers &lt;&gt; Nothing">handlers != null</requires>
@@ -656,6 +664,14 @@
     <member name="M:Microsoft.Cci.Analysis.Instruction.AppendFlowFrom(Microsoft.Cci.Analysis.Instruction,System.Text.StringBuilder)">
       <requires csharp="instruction != null" vb="instruction &lt;&gt; Nothing">instruction != null</requires>
       <requires csharp="stringBuilder != null" vb="stringBuilder &lt;&gt; Nothing">stringBuilder != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.Analysis.CallByRefAssignment.Microsoft#Cci#IOperation#get_Location">
+      <ensures inheritedFrom="M:Microsoft.Cci.IOperation.get_Location" inheritedFromTypeName="IOperation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.Analysis.CallByRefAssignment.Microsoft#Cci#IOperation#Location">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IOperation.get_Location" inheritedFromTypeName="IOperation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
     </member>
   </members>
 </doc>

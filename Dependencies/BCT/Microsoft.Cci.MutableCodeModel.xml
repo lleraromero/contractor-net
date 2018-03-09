@@ -2010,6 +2010,10 @@
       <summary>
             Returns a deep copy of the given method body.
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataDeepCopier.CopyMethodBody(Microsoft.Cci.IMethodBody,Microsoft.Cci.IMethodDefinition)" inheritedFromTypeName="MetadataDeepCopier" csharp="methodBody != null" vb="methodBody &lt;&gt; Nothing">methodBody != null</requires>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataDeepCopier.CopyMethodBody(Microsoft.Cci.IMethodBody,Microsoft.Cci.IMethodDefinition)" inheritedFromTypeName="MetadataDeepCopier" csharp="method != null" vb="method &lt;&gt; Nothing">method != null</requires>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataDeepCopier.CopyMethodBody(Microsoft.Cci.IMethodBody,Microsoft.Cci.IMethodDefinition)" inheritedFromTypeName="MetadataDeepCopier" csharp="!(methodBody is Microsoft.Cci.Dummy)" vb="Not methodBody Is Microsoft.Cci.Dummy">!(methodBody is Microsoft.Cci.Dummy)</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataDeepCopier.CopyMethodBody(Microsoft.Cci.IMethodBody,Microsoft.Cci.IMethodDefinition)" inheritedFromTypeName="MetadataDeepCopier" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.MutableCodeModel.CodeDeepCopier.GetExistingCopyIfInsideCone(Microsoft.Cci.ILocalDefinition)">
       <summary>
@@ -4061,6 +4065,10 @@
       <summary>
             True if the enclosed method does not require an instance of its declaring type as its first argument.
             </summary>
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_IsStatic" inheritedFromTypeName="ISignature" csharp="result ⇒ (this.CallingConvention &amp; 32) == (Microsoft.Cci.CallingConvention)0" vb="result Implies (Me.CallingConvention And 32) = ((Microsoft.Cci.CallingConvention)0)">!result || (this.CallingConvention &amp; 32) == (Microsoft.Cci.CallingConvention)0</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_IsStatic" inheritedFromTypeName="ISignature" csharp="result || (this.CallingConvention &amp; 32) != (Microsoft.Cci.CallingConvention)0" vb="result OrElse (Me.CallingConvention And 32) &lt;&gt; ((Microsoft.Cci.CallingConvention)0)">result || (this.CallingConvention &amp; 32) != (Microsoft.Cci.CallingConvention)0</ensures>
+      </getter>
     </member>
     <member name="P:Microsoft.Cci.MutableCodeModel.AnonymousDelegate.Parameters">
       <summary>
@@ -4433,6 +4441,7 @@
       <summary>
             Calls the visitor.Visit(IMetadataConstant) method.
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.IMetadataExpression.Dispatch(Microsoft.Cci.IMetadataVisitor)" inheritedFromTypeName="IMetadataExpression" csharp="visitor != null" vb="visitor &lt;&gt; Nothing">visitor != null</requires>
     </member>
     <member name="M:Microsoft.Cci.MutableCodeModel.CompileTimeConstant.ToString">
       <summary>
@@ -4558,6 +4567,7 @@
       <summary>
             Calls the visitor.Visit(IMetadataCreateArray) method.
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.IMetadataExpression.Dispatch(Microsoft.Cci.IMetadataVisitor)" inheritedFromTypeName="IMetadataExpression" csharp="visitor != null" vb="visitor &lt;&gt; Nothing">visitor != null</requires>
     </member>
     <member name="P:Microsoft.Cci.MutableCodeModel.CreateArray.ElementType">
       <summary>
@@ -4566,6 +4576,7 @@
       <value />
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ICreateArray.get_ElementType" inheritedFromTypeName="ICreateArray" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMetadataCreateArray.get_ElementType" inheritedFromTypeName="IMetadataCreateArray" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
       <setter>
         <requires csharp="value != null" vb="value &lt;&gt; Nothing">value != null</requires>
@@ -4602,6 +4613,7 @@
       <value />
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ICreateArray.get_Rank" inheritedFromTypeName="ICreateArray" csharp="result &gt; uint0" vb="result &gt; UInteger 0">result &gt; uint0</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMetadataCreateArray.get_Rank" inheritedFromTypeName="IMetadataCreateArray" csharp="result &gt; uint0" vb="result &gt; UInteger 0">result &gt; uint0</ensures>
       </getter>
     </member>
     <member name="P:Microsoft.Cci.MutableCodeModel.CreateArray.Sizes">
@@ -5111,6 +5123,7 @@
       <value />
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.INamedArgument.get_ArgumentName" inheritedFromTypeName="INamedArgument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMetadataNamedArgument.get_ArgumentName" inheritedFromTypeName="IMetadataNamedArgument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
     <member name="P:Microsoft.Cci.MutableCodeModel.NamedArgument.ArgumentValue">
@@ -5128,6 +5141,7 @@
             </summary>
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.INamedArgument.get_ResolvedDefinition" inheritedFromTypeName="INamedArgument" csharp="result == default(object) || result is Microsoft.Cci.IParameterDefinition || result is Microsoft.Cci.IPropertyDefinition || result is Microsoft.Cci.IFieldDefinition" vb="result = Nothing OrElse result Is Microsoft.Cci.IParameterDefinition OrElse result Is Microsoft.Cci.IPropertyDefinition OrElse result Is Microsoft.Cci.IFieldDefinition">result == default(object) || result is Microsoft.Cci.IParameterDefinition || result is Microsoft.Cci.IPropertyDefinition || result is Microsoft.Cci.IFieldDefinition</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMetadataNamedArgument.get_ResolvedDefinition" inheritedFromTypeName="IMetadataNamedArgument" csharp="(!(result != default(object) &amp;&amp; this.IsField ⇒ !(result is Microsoft.Cci.IFieldDefinition)) || !this.IsField &amp;&amp; result is Microsoft.Cci.IPropertyDefinition) != 0" vb="(result &lt;&gt; Nothing AndAlso Me.IsField Implies Not result Is Microsoft.Cci.IFieldDefinition AndAlso Not (Not Me.IsField AndAlso result Is Microsoft.Cci.IPropertyDefinition)) &lt;&gt; 0">(!(result != default(object) &amp;&amp; (!this.IsField || !(result is Microsoft.Cci.IFieldDefinition))) || !this.IsField &amp;&amp; result is Microsoft.Cci.IPropertyDefinition) != 0</ensures>
       </getter>
     </member>
     <member name="P:Microsoft.Cci.MutableCodeModel.NamedArgument.GetterIsVirtual">
@@ -5666,6 +5680,7 @@
             is desired, the implementations of the Visit methods should do the subsequent dispatching.
             </summary>
       <param name="visitor" />
+      <requires inheritedFrom="M:Microsoft.Cci.IMethodBody.Dispatch(Microsoft.Cci.IMetadataVisitor)" inheritedFromTypeName="IMethodBody" csharp="visitor != null" vb="visitor &lt;&gt; Nothing">visitor != null</requires>
     </member>
     <member name="P:Microsoft.Cci.MutableCodeModel.SourceMethodBody.Block">
       <summary>
@@ -5719,6 +5734,10 @@
             The local variables of the method.
             </summary>
       <value />
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_LocalVariables" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_LocalVariables" inheritedFromTypeName="IMethodBody" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
     </member>
     <member name="P:Microsoft.Cci.MutableCodeModel.SourceMethodBody.MaxStack">
       <summary>
@@ -5731,6 +5750,9 @@
             If this is the body of an event or property accessor, this will hold the corresponding adder/remover/setter or getter method.
             </summary>
       <remarks>The setter should only be called once, to complete the two phase initialization of this object.</remarks>
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_MethodDefinition" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
     </member>
     <member name="P:Microsoft.Cci.MutableCodeModel.SourceMethodBody.NamespaceScopes">
       <summary>
@@ -5744,12 +5766,20 @@
       <summary>
             A list CLR IL operations that implement this method body.
             </summary>
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_Operations" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_Operations" inheritedFromTypeName="IMethodBody" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
     </member>
     <member name="P:Microsoft.Cci.MutableCodeModel.SourceMethodBody.OperationExceptionInformation">
       <summary>
             A list exception data within the method body IL.
             </summary>
       <value />
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_OperationExceptionInformation" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_OperationExceptionInformation" inheritedFromTypeName="IMethodBody" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
     </member>
     <member name="P:Microsoft.Cci.MutableCodeModel.SourceMethodBody.PrivateHelperTypes">
       <summary>
@@ -6248,6 +6278,8 @@
             </summary>
       <param name="methodBody" />
       <ensures csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IMethodBody)" inheritedFromTypeName="MetadataRewriter" csharp="methodBody != null" vb="methodBody &lt;&gt; Nothing">methodBody != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IMethodBody)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.MutableCodeModel.CodeRewriter.Rewrite(Microsoft.Cci.IMethodCall)">
       <summary>
@@ -10110,11 +10142,16 @@
       <summary>
             Rewrites the given method definition.
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IMethodDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="methodDefinition != null" vb="methodDefinition &lt;&gt; Nothing">methodDefinition != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IMethodDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.MutableCodeModel.Contracts.CodeAndContractRewriter.Rewrite(Microsoft.Cci.ITypeDefinition)">
       <summary>
             Rewrites the given type definition.
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.ITypeDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="typeDefinition != null" vb="typeDefinition &lt;&gt; Nothing">typeDefinition != null</requires>
+      <requires description="Generic type instances should be reconstructed, not rewritten." inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.ITypeDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="!(typeDefinition is Microsoft.Cci.IGenericTypeInstance)" vb="Not typeDefinition Is Microsoft.Cci.IGenericTypeInstance">!(typeDefinition is Microsoft.Cci.IGenericTypeInstance)</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.ITypeDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.MutableCodeModel.Contracts.CodeAndContractRewriter.Rewrite(System.Collections.Generic.List{Microsoft.Cci.IAddressableExpression})">
       <summary>
@@ -10956,11 +10993,15 @@
       <summary>
             Rewrites the children of the given generic method instance reference.
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteChildren(Microsoft.Cci.MutableCodeModel.GenericMethodInstanceReference)" inheritedFromTypeName="MetadataRewriter" csharp="genericMethodInstanceReference != null" vb="genericMethodInstanceReference &lt;&gt; Nothing">genericMethodInstanceReference != null</requires>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteChildren(Microsoft.Cci.MutableCodeModel.GenericMethodInstanceReference)" inheritedFromTypeName="MetadataRewriter" csharp="!genericMethodInstanceReference.IsFrozen" vb="Not genericMethodInstanceReference.IsFrozen">!genericMethodInstanceReference.IsFrozen</requires>
     </member>
     <member name="M:Microsoft.Cci.MutableCodeModel.AnonymousDelegateRemover.Rewrite(Microsoft.Cci.IGenericMethodParameterReference)">
       <summary>
             Rewrites the given generic method parameter reference.
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IGenericMethodParameterReference)" inheritedFromTypeName="MetadataRewriter" csharp="genericMethodParameterReference != null" vb="genericMethodParameterReference &lt;&gt; Nothing">genericMethodParameterReference != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IGenericMethodParameterReference)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.MutableCodeModel.AnonymousDelegateRemover.Rewrite(Microsoft.Cci.ILocalDeclarationStatement)">
       <summary>
@@ -10991,6 +11032,8 @@
       <summary>
             Rewrites the children of the given generic method instance reference.
             </summary>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteChildren(Microsoft.Cci.MutableCodeModel.GenericMethodInstanceReference)" inheritedFromTypeName="MetadataRewriter" csharp="genericMethodInstanceReference != null" vb="genericMethodInstanceReference &lt;&gt; Nothing">genericMethodInstanceReference != null</requires>
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteChildren(Microsoft.Cci.MutableCodeModel.GenericMethodInstanceReference)" inheritedFromTypeName="MetadataRewriter" csharp="!genericMethodInstanceReference.IsFrozen" vb="Not genericMethodInstanceReference.IsFrozen">!genericMethodInstanceReference.IsFrozen</requires>
     </member>
     <member name="T:Microsoft.Cci.MutableCodeModel.ScopesWithCapturedLocalsFinder">
       <summary>
@@ -12813,6 +12856,27 @@
             </summary>
       <value />
     </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.TypeOf.Microsoft#Cci#IMetadataExpression#Dispatch(Microsoft.Cci.IMetadataVisitor)">
+      <requires inheritedFrom="M:Microsoft.Cci.IMetadataExpression.Dispatch(Microsoft.Cci.IMetadataVisitor)" inheritedFromTypeName="IMetadataExpression" csharp="visitor != null" vb="visitor &lt;&gt; Nothing">visitor != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.TypeOf.Microsoft#Cci#IMetadataExpression#get_Type">
+      <ensures inheritedFrom="M:Microsoft.Cci.IMetadataExpression.get_Type" inheritedFromTypeName="IMetadataExpression" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.MutableCodeModel.TypeOf.Microsoft#Cci#IMetadataExpression#Type">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMetadataExpression.get_Type" inheritedFromTypeName="IMetadataExpression" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.Expression.Microsoft#Cci#IObjectWithLocations#get_Locations">
+      <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.MutableCodeModel.Expression.Microsoft#Cci#IObjectWithLocations#Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
     <member name="M:Microsoft.Cci.MutableCodeModel.Contracts.CodeAndContractShallowCopier.ContractElementDispatcher.Visit(Microsoft.Cci.Contracts.ILoopInvariant)">
       <requires inheritedFrom="M:Microsoft.Cci.Contracts.ICodeAndContractVisitor.Visit(Microsoft.Cci.Contracts.ILoopInvariant)" inheritedFromTypeName="ICodeAndContractVisitor" csharp="loopInvariant != null" vb="loopInvariant &lt;&gt; Nothing">loopInvariant != null</requires>
     </member>
@@ -13207,6 +13271,10 @@
       <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.CodeRewriter.Rewrite(Microsoft.Cci.ILocalDeclarationStatement)" inheritedFromTypeName="CodeRewriter" csharp="localDeclarationStatement != null" vb="localDeclarationStatement &lt;&gt; Nothing">localDeclarationStatement != null</requires>
       <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.CodeRewriter.Rewrite(Microsoft.Cci.ILocalDeclarationStatement)" inheritedFromTypeName="CodeRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.RewriteAsMoveNext.Rewrite(Microsoft.Cci.IGenericMethodParameterReference)">
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IGenericMethodParameterReference)" inheritedFromTypeName="MetadataRewriter" csharp="genericMethodParameterReference != null" vb="genericMethodParameterReference &lt;&gt; Nothing">genericMethodParameterReference != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IGenericMethodParameterReference)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
     <member name="M:Microsoft.Cci.MutableCodeModel.CreateObjectInstance.Microsoft#Cci#ICreateObjectInstance#get_Arguments">
       <ensures inheritedFrom="M:Microsoft.Cci.ICreateObjectInstance.get_Arguments" inheritedFromTypeName="ICreateObjectInstance" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
@@ -13232,6 +13300,18 @@
     <member name="M:Microsoft.Cci.MutableCodeModel.CreateArray.Microsoft#Cci#ICreateArray#get_Sizes">
       <ensures inheritedFrom="M:Microsoft.Cci.ICreateArray.get_Sizes" inheritedFromTypeName="ICreateArray" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.CreateArray.Microsoft#Cci#IMetadataCreateArray#get_Initializers">
+      <ensures inheritedFrom="M:Microsoft.Cci.IMetadataCreateArray.get_Initializers" inheritedFromTypeName="IMetadataCreateArray" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.CreateArray.Microsoft#Cci#IMetadataCreateArray#get_LowerBounds">
+      <ensures inheritedFrom="M:Microsoft.Cci.IMetadataCreateArray.get_LowerBounds" inheritedFromTypeName="IMetadataCreateArray" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.CreateArray.Microsoft#Cci#IMetadataCreateArray#get_Sizes">
+      <ensures inheritedFrom="M:Microsoft.Cci.IMetadataCreateArray.get_Sizes" inheritedFromTypeName="IMetadataCreateArray" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.CreateArray.Microsoft#Cci#IMetadataExpression#get_Type">
+      <ensures inheritedFrom="M:Microsoft.Cci.IMetadataExpression.get_Type" inheritedFromTypeName="IMetadataExpression" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
     <member name="P:Microsoft.Cci.MutableCodeModel.CreateArray.Microsoft#Cci#ICreateArray#LowerBounds">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ICreateArray.get_LowerBounds" inheritedFromTypeName="ICreateArray" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
@@ -13242,6 +13322,26 @@
         <ensures inheritedFrom="M:Microsoft.Cci.ICreateArray.get_Sizes" inheritedFromTypeName="ICreateArray" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
+    <member name="P:Microsoft.Cci.MutableCodeModel.CreateArray.Microsoft#Cci#IMetadataCreateArray#Initializers">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMetadataCreateArray.get_Initializers" inheritedFromTypeName="IMetadataCreateArray" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.MutableCodeModel.CreateArray.Microsoft#Cci#IMetadataCreateArray#LowerBounds">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMetadataCreateArray.get_LowerBounds" inheritedFromTypeName="IMetadataCreateArray" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.MutableCodeModel.CreateArray.Microsoft#Cci#IMetadataCreateArray#Sizes">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMetadataCreateArray.get_Sizes" inheritedFromTypeName="IMetadataCreateArray" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.MutableCodeModel.CreateArray.Microsoft#Cci#IMetadataExpression#Type">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMetadataExpression.get_Type" inheritedFromTypeName="IMetadataExpression" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
     <member name="M:Microsoft.Cci.MutableCodeModel.ClosureFinder.TraverseChildren(Microsoft.Cci.ILocalDeclarationStatement)">
       <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ILocalDeclarationStatement)" inheritedFromTypeName="CodeTraverser" csharp="localDeclarationStatement != null" vb="localDeclarationStatement &lt;&gt; Nothing">localDeclarationStatement != null</requires>
     </member>
@@ -13250,6 +13350,14 @@
     </member>
     <member name="M:Microsoft.Cci.MutableCodeModel.ClosureFinder.TraverseChildren(Microsoft.Cci.IYieldReturnStatement)">
       <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IYieldReturnStatement)" inheritedFromTypeName="CodeTraverser" csharp="yieldReturnStatement != null" vb="yieldReturnStatement &lt;&gt; Nothing">yieldReturnStatement != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.CompileTimeConstant.Microsoft#Cci#IMetadataExpression#get_Type">
+      <ensures inheritedFrom="M:Microsoft.Cci.IMetadataExpression.get_Type" inheritedFromTypeName="IMetadataExpression" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.MutableCodeModel.CompileTimeConstant.Microsoft#Cci#IMetadataExpression#Type">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMetadataExpression.get_Type" inheritedFromTypeName="IMetadataExpression" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
     </member>
     <member name="M:Microsoft.Cci.MutableCodeModel.ScopesWithCapturedLocalsFinder.TraverseChildren(Microsoft.Cci.IBlockExpression)">
       <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IBlockExpression)" inheritedFromTypeName="CodeTraverser" csharp="blockExpression != null" vb="blockExpression &lt;&gt; Nothing">blockExpression != null</requires>
@@ -13266,12 +13374,69 @@
     <member name="M:Microsoft.Cci.MutableCodeModel.ScopesWithCapturedLocalsFinder.TraverseChildren(Microsoft.Cci.ILocalDeclarationStatement)">
       <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.ILocalDeclarationStatement)" inheritedFromTypeName="CodeTraverser" csharp="localDeclarationStatement != null" vb="localDeclarationStatement &lt;&gt; Nothing">localDeclarationStatement != null</requires>
     </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.NamedArgument.Microsoft#Cci#IMetadataNamedArgument#get_ArgumentValue">
+      <ensures inheritedFrom="M:Microsoft.Cci.IMetadataNamedArgument.get_ArgumentValue" inheritedFromTypeName="IMetadataNamedArgument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.NamedArgument.Microsoft#Cci#IMetadataExpression#Dispatch(Microsoft.Cci.IMetadataVisitor)">
+      <requires inheritedFrom="M:Microsoft.Cci.IMetadataExpression.Dispatch(Microsoft.Cci.IMetadataVisitor)" inheritedFromTypeName="IMetadataExpression" csharp="visitor != null" vb="visitor &lt;&gt; Nothing">visitor != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.NamedArgument.Microsoft#Cci#IMetadataExpression#get_Type">
+      <ensures inheritedFrom="M:Microsoft.Cci.IMetadataExpression.get_Type" inheritedFromTypeName="IMetadataExpression" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.MutableCodeModel.NamedArgument.Microsoft#Cci#IMetadataNamedArgument#ArgumentValue">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMetadataNamedArgument.get_ArgumentValue" inheritedFromTypeName="IMetadataNamedArgument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.MutableCodeModel.NamedArgument.Microsoft#Cci#IMetadataExpression#Type">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMetadataExpression.get_Type" inheritedFromTypeName="IMetadataExpression" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
     <member name="M:Microsoft.Cci.MutableCodeModel.ArrayIndexer.Microsoft#Cci#IArrayIndexer#get_Indices">
       <ensures inheritedFrom="M:Microsoft.Cci.IArrayIndexer.get_Indices" inheritedFromTypeName="IArrayIndexer" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="P:Microsoft.Cci.MutableCodeModel.ArrayIndexer.Microsoft#Cci#IArrayIndexer#Indices">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.IArrayIndexer.get_Indices" inheritedFromTypeName="IArrayIndexer" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.AnonymousDelegate.Microsoft#Cci#ISignature#get_Parameters">
+      <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_Parameters" inheritedFromTypeName="ISignature" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_Parameters" inheritedFromTypeName="ISignature" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.AnonymousDelegate.Microsoft#Cci#ISignature#get_ReturnValueCustomModifiers">
+      <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_ReturnValueCustomModifiers" inheritedFromTypeName="ISignature" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_ReturnValueCustomModifiers" inheritedFromTypeName="ISignature" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.AnonymousDelegate.Microsoft#Cci#ISignature#get_Type">
+      <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_Type" inheritedFromTypeName="ISignature" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.MutableCodeModel.AnonymousDelegate.Microsoft#Cci#ISignature#Parameters">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_Parameters" inheritedFromTypeName="ISignature" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_Parameters" inheritedFromTypeName="ISignature" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.MutableCodeModel.AnonymousDelegate.Microsoft#Cci#ISignature#ReturnValueCustomModifiers">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_ReturnValueCustomModifiers" inheritedFromTypeName="ISignature" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_ReturnValueCustomModifiers" inheritedFromTypeName="ISignature" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.MutableCodeModel.AnonymousDelegate.Microsoft#Cci#ISignature#Type">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ISignature.get_Type" inheritedFromTypeName="ISignature" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.SourceMethodBody.Microsoft#Cci#IMethodBody#get_PrivateHelperTypes">
+      <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_PrivateHelperTypes" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_PrivateHelperTypes" inheritedFromTypeName="IMethodBody" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.MutableCodeModel.SourceMethodBody.Microsoft#Cci#IMethodBody#PrivateHelperTypes">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_PrivateHelperTypes" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_PrivateHelperTypes" inheritedFromTypeName="IMethodBody" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
       </getter>
     </member>
     <member name="M:Microsoft.Cci.MutableCodeModel.PointerCall.Microsoft#Cci#IPointerCall#get_Arguments">
@@ -13282,11 +13447,45 @@
         <ensures inheritedFrom="M:Microsoft.Cci.IPointerCall.get_Arguments" inheritedFromTypeName="IPointerCall" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.Statement.Microsoft#Cci#IObjectWithLocations#get_Locations">
+      <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.MutableCodeModel.Statement.Microsoft#Cci#IObjectWithLocations#Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.CatchClause.Microsoft#Cci#IObjectWithLocations#get_Locations">
+      <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.MutableCodeModel.CatchClause.Microsoft#Cci#IObjectWithLocations#Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
     <member name="M:Microsoft.Cci.MutableCodeModel.AnonymousDelegateRemover.GetOffsetOfFirstStatementAfterBaseOrThisConstructorCall(System.Collections.Generic.List{Microsoft.Cci.IStatement})">
       <requires csharp="list != null" vb="list &lt;&gt; Nothing">list != null</requires>
     </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.AnonymousDelegateRemover.GenericParameterRewriter.Rewrite(Microsoft.Cci.IGenericMethodParameterReference)">
+      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IGenericMethodParameterReference)" inheritedFromTypeName="MetadataRewriter" csharp="genericMethodParameterReference != null" vb="genericMethodParameterReference &lt;&gt; Nothing">genericMethodParameterReference != null</requires>
+      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IGenericMethodParameterReference)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
     <member name="M:Microsoft.Cci.MutableCodeModel.AnonymousDelegateRemover.PopFinder.TraverseChildren(Microsoft.Cci.IPopValue)">
       <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IPopValue)" inheritedFromTypeName="CodeTraverser" csharp="popValue != null" vb="popValue &lt;&gt; Nothing">popValue != null</requires>
+    </member>
+    <member name="M:Microsoft.Cci.MutableCodeModel.SwitchCase.Microsoft#Cci#IObjectWithLocations#get_Locations">
+      <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.MutableCodeModel.SwitchCase.Microsoft#Cci#IObjectWithLocations#Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
     </member>
     <member name="M:Microsoft.Cci.MutableCodeModel.CapturedParameterAndLocalFinder.TraverseChildren(Microsoft.Cci.IAnonymousDelegate)">
       <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IAnonymousDelegate)" inheritedFromTypeName="CodeTraverser" csharp="anonymousDelegate != null" vb="anonymousDelegate &lt;&gt; Nothing">anonymousDelegate != null</requires>
@@ -13883,6 +14082,10 @@
     <member name="M:Microsoft.Cci.MutableContracts.MethodContract.Microsoft#Cci#Contracts#IMethodContract#get_Writes">
       <ensures inheritedFrom="M:Microsoft.Cci.Contracts.IMethodContract.get_Writes" inheritedFromTypeName="IMethodContract" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
+    <member name="M:Microsoft.Cci.MutableContracts.MethodContract.Microsoft#Cci#IObjectWithLocations#get_Locations">
+      <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+    </member>
     <member name="P:Microsoft.Cci.MutableContracts.MethodContract.Microsoft#Cci#Contracts#IMethodContract#Allocates">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.Contracts.IMethodContract.get_Allocates" inheritedFromTypeName="IMethodContract" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
@@ -13926,6 +14129,52 @@
     <member name="P:Microsoft.Cci.MutableContracts.MethodContract.Microsoft#Cci#Contracts#IMethodContract#Writes">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.Contracts.IMethodContract.get_Writes" inheritedFromTypeName="IMethodContract" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.MutableContracts.MethodContract.Microsoft#Cci#IObjectWithLocations#Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.MutableContracts.TypeContract.Microsoft#Cci#IObjectWithLocations#get_Locations">
+      <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.MutableContracts.TypeContract.Microsoft#Cci#IObjectWithLocations#Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.MutableContracts.ContractElement.Microsoft#Cci#IObjectWithLocations#get_Locations">
+      <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.MutableContracts.ContractElement.Microsoft#Cci#IObjectWithLocations#Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.MutableContracts.LoopContract.Microsoft#Cci#IObjectWithLocations#get_Locations">
+      <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.MutableContracts.LoopContract.Microsoft#Cci#IObjectWithLocations#Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.MutableContracts.ThrownException.Microsoft#Cci#IObjectWithLocations#get_Locations">
+      <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.MutableContracts.ThrownException.Microsoft#Cci#IObjectWithLocations#Locations">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
       </getter>
     </member>
   </members>

@@ -775,11 +775,17 @@
       <summary>
             The object reporting the error. This can be used to filter out errors coming from non interesting sources.
             </summary>
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IErrorMessage.get_ErrorReporter" inheritedFromTypeName="IErrorMessage" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
     </member>
     <member name="P:Microsoft.Cci.ErrorMessage.ErrorReporterIdentifier">
       <summary>
             A short identifier for the reporter of the error, suitable for use in human interfaces. For example "CS" in the case of a C# language error.
             </summary>
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IErrorMessage.get_ErrorReporterIdentifier" inheritedFromTypeName="IErrorMessage" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
     </member>
     <member name="P:Microsoft.Cci.ErrorMessage.Code">
       <summary>
@@ -797,6 +803,9 @@
       <summary>
             A description of the error suitable for user interaction. Localized to the current culture.
             </summary>
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IErrorMessage.get_Message" inheritedFromTypeName="IErrorMessage" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
     </member>
     <member name="P:Microsoft.Cci.ErrorMessage.MessageKey">
       <summary>
@@ -810,6 +819,9 @@
       <summary>
             Zero ore more locations that are related to this error.
             </summary>
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IErrorMessage.get_RelatedLocations" inheritedFromTypeName="IErrorMessage" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
     </member>
     <member name="P:Microsoft.Cci.ErrorMessage.SourceLocation">
       <summary>
@@ -940,11 +952,17 @@
       <summary>
             The location where this document was found, or where it should be stored. 
             </summary>
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IDocument.get_Location" inheritedFromTypeName="IDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
     </member>
     <member name="P:Microsoft.Cci.SourceDocument.Name">
       <summary>
             The name of the document. For example the name of the file if the document corresponds to a file.
             </summary>
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IDocument.get_Name" inheritedFromTypeName="IDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
     </member>
     <member name="P:Microsoft.Cci.SourceDocument.SourceLanguage">
       <summary>
@@ -1151,6 +1169,9 @@
             The location where this document was found, or where it should be stored. 
             In this case, since the document is a composite of other documents, the result is always the empty string.
             </summary>
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IDocument.get_Location" inheritedFromTypeName="IDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
     </member>
     <member name="P:Microsoft.Cci.CompositeSourceDocument.SourceLocation">
       <summary>
@@ -1611,6 +1632,9 @@
       <summary>
             The location where this document was found, or where it should be stored. 
             </summary>
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IDocument.get_Location" inheritedFromTypeName="IDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
     </member>
     <member name="P:Microsoft.Cci.PrimarySourceDocument.SourceLocation">
       <summary>
@@ -1802,11 +1826,17 @@
             The location where this document was found, or where it should be stored.
             This will also uniquely identify the source docuement within an instance of compilation host.
             </summary>
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IDocument.get_Location" inheritedFromTypeName="IDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
     </member>
     <member name="P:Microsoft.Cci.SourceDocumentWithInclusion.Name">
       <summary>
             The name of the document. For example the name of the file if the document corresponds to a file.
             </summary>
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IDocument.get_Name" inheritedFromTypeName="IDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
     </member>
     <member name="T:Microsoft.Cci.SourceLocation">
       <summary>
@@ -2272,6 +2302,9 @@
       <summary>
             The document containing this location.
             </summary>
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
     </member>
     <member name="T:Microsoft.Cci.ContinuationLocation">
       <summary />
@@ -2289,6 +2322,9 @@
       <summary>
             The document containing this location.
             </summary>
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
     </member>
     <member name="T:Microsoft.Cci.EditEventArgs">
       <summary>
@@ -2779,6 +2815,9 @@
     <member name="M:Microsoft.Cci.IncludedSourceLocation.Microsoft#Cci#ISourceLocation#get_SourceDocument">
       <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_SourceDocument" inheritedFromTypeName="ISourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
+    <member name="M:Microsoft.Cci.IncludedSourceLocation.Microsoft#Cci#ILocation#get_Document">
+      <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
     <member name="P:Microsoft.Cci.IncludedSourceLocation.Microsoft#Cci#IPrimarySourceLocation#PrimarySourceDocument">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.IPrimarySourceLocation.get_PrimarySourceDocument" inheritedFromTypeName="IPrimarySourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
@@ -2787,6 +2826,11 @@
     <member name="P:Microsoft.Cci.IncludedSourceLocation.Microsoft#Cci#ISourceLocation#SourceDocument">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_SourceDocument" inheritedFromTypeName="ISourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.IncludedSourceLocation.Microsoft#Cci#ILocation#Document">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
     <member name="M:Microsoft.Cci.AggregatingLocalScopeProvider.GetProvider(Microsoft.Cci.IMethodDefinition)">
@@ -2835,6 +2879,11 @@
         <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_StartIndex" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
       </getter>
     </member>
+    <member name="P:Microsoft.Cci.DummySourceLocation.Document">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
     <member name="M:Microsoft.Cci.CompositeSourceDocument.Microsoft#Cci#IDerivedSourceDocument#get_DerivedSourceLocation">
       <ensures inheritedFrom="M:Microsoft.Cci.IDerivedSourceDocument.get_DerivedSourceLocation" inheritedFromTypeName="IDerivedSourceDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
@@ -2874,6 +2923,14 @@
     <member name="P:Microsoft.Cci.DummyCompilation.UnitSet">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ICompilation.get_UnitSet" inheritedFromTypeName="ICompilation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.SourceLocation.Microsoft#Cci#ILocation#get_Document">
+      <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.SourceLocation.Microsoft#Cci#ILocation#Document">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
     <member name="T:Microsoft.Cci.CopiedLocalScope">
@@ -2937,6 +2994,9 @@
     <member name="M:Microsoft.Cci.DummyPrimarySourceLocation.Microsoft#Cci#ISourceLocation#get_StartIndex">
       <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_StartIndex" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
     </member>
+    <member name="M:Microsoft.Cci.DummyPrimarySourceLocation.Microsoft#Cci#ILocation#get_Document">
+      <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
     <member name="P:Microsoft.Cci.DummyPrimarySourceLocation.Microsoft#Cci#IPrimarySourceLocation#EndColumn">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.IPrimarySourceLocation.get_EndColumn" inheritedFromTypeName="IPrimarySourceLocation" csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
@@ -2987,6 +3047,11 @@
     <member name="P:Microsoft.Cci.DummyPrimarySourceLocation.Microsoft#Cci#ISourceLocation#StartIndex">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_StartIndex" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.DummyPrimarySourceLocation.Microsoft#Cci#ILocation#Document">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
     <member name="M:Microsoft.Cci.ReadOnlyListEnumerator`1.MoveNext">
@@ -3066,6 +3131,9 @@
     <member name="M:Microsoft.Cci.OriginalSourceLocation.Microsoft#Cci#ISourceLocation#get_StartIndex">
       <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_StartIndex" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
     </member>
+    <member name="M:Microsoft.Cci.OriginalSourceLocation.Microsoft#Cci#ILocation#get_Document">
+      <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
     <member name="P:Microsoft.Cci.OriginalSourceLocation.Microsoft#Cci#ISourceLocation#EndIndex">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_EndIndex" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0 &amp;&amp; !(result &gt; this.SourceDocument.Length)" vb="result &gt;= 0 AndAlso Not result &gt; Me.SourceDocument.Length">result &gt;= 0 &amp;&amp; !(result &gt; this.SourceDocument.Length)</ensures>
@@ -3093,6 +3161,11 @@
         <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_StartIndex" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
       </getter>
     </member>
+    <member name="P:Microsoft.Cci.OriginalSourceLocation.Microsoft#Cci#ILocation#Document">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
     <member name="M:Microsoft.Cci.PrimarySourceDocument.GetOwnStreamReaderAndReadAhead(System.IO.StreamReader)">
       <requires csharp="streamReader != null" vb="streamReader &lt;&gt; Nothing">streamReader != null</requires>
     </member>
@@ -3110,6 +3183,14 @@
     <member name="P:Microsoft.Cci.DerivedSourceLocation.Microsoft#Cci#IDerivedSourceLocation#PrimarySourceLocations">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.IDerivedSourceLocation.get_PrimarySourceLocations" inheritedFromTypeName="IDerivedSourceLocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="M:Microsoft.Cci.ErrorMessage.Microsoft#Cci#IErrorMessage#get_Location">
+      <ensures inheritedFrom="M:Microsoft.Cci.IErrorMessage.get_Location" inheritedFromTypeName="IErrorMessage" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="P:Microsoft.Cci.ErrorMessage.Microsoft#Cci#IErrorMessage#Location">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IErrorMessage.get_Location" inheritedFromTypeName="IErrorMessage" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
     <member name="M:Microsoft.Cci.SourceDocument.Microsoft#Cci#ISourceDocument#get_SourceLocation">
@@ -3164,9 +3245,19 @@
     <member name="M:Microsoft.Cci.DummySourceDocument.IsUpdatedVersionOf(Microsoft.Cci.ISourceDocument)">
       <requires inheritedFrom="M:Microsoft.Cci.ISourceDocument.IsUpdatedVersionOf(Microsoft.Cci.ISourceDocument)" inheritedFromTypeName="ISourceDocument" csharp="sourceDocument != null" vb="sourceDocument &lt;&gt; Nothing">sourceDocument != null</requires>
     </member>
+    <member name="P:Microsoft.Cci.DummySourceDocument.Location">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IDocument.get_Location" inheritedFromTypeName="IDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
     <member name="P:Microsoft.Cci.DummySourceDocument.Length">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ISourceDocument.get_Length" inheritedFromTypeName="ISourceDocument" csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.DummySourceDocument.Name">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IDocument.get_Name" inheritedFromTypeName="IDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
     <member name="P:Microsoft.Cci.DummySourceDocument.SourceLanguage">
@@ -3339,6 +3430,12 @@
     <member name="M:Microsoft.Cci.DummyPrimarySourceDocument.Microsoft#Cci#ISourceDocument#get_SourceLocation">
       <ensures inheritedFrom="M:Microsoft.Cci.ISourceDocument.get_SourceLocation" inheritedFromTypeName="ISourceDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
+    <member name="M:Microsoft.Cci.DummyPrimarySourceDocument.Microsoft#Cci#IDocument#get_Location">
+      <ensures inheritedFrom="M:Microsoft.Cci.IDocument.get_Location" inheritedFromTypeName="IDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
+    <member name="M:Microsoft.Cci.DummyPrimarySourceDocument.Microsoft#Cci#IDocument#get_Name">
+      <ensures inheritedFrom="M:Microsoft.Cci.IDocument.get_Name" inheritedFromTypeName="IDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
     <member name="P:Microsoft.Cci.DummyPrimarySourceDocument.Microsoft#Cci#IPrimarySourceDocument#PrimarySourceLocation">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.IPrimarySourceDocument.get_PrimarySourceLocation" inheritedFromTypeName="IPrimarySourceDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
@@ -3357,6 +3454,16 @@
     <member name="P:Microsoft.Cci.DummyPrimarySourceDocument.Microsoft#Cci#ISourceDocument#SourceLocation">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ISourceDocument.get_SourceLocation" inheritedFromTypeName="ISourceDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.DummyPrimarySourceDocument.Microsoft#Cci#IDocument#Location">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IDocument.get_Location" inheritedFromTypeName="IDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.DummyPrimarySourceDocument.Microsoft#Cci#IDocument#Name">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.IDocument.get_Name" inheritedFromTypeName="IDocument" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
     <member name="M:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#Contains(Microsoft.Cci.ISourceLocation)">
@@ -3389,6 +3496,9 @@
     <member name="M:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#get_StartIndex">
       <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_StartIndex" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
     </member>
+    <member name="M:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ILocation#get_Document">
+      <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
+    </member>
     <member name="P:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#EndIndex">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_EndIndex" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0 &amp;&amp; !(result &gt; this.SourceDocument.Length)" vb="result &gt;= 0 AndAlso Not result &gt; Me.SourceDocument.Length">result &gt;= 0 &amp;&amp; !(result &gt; this.SourceDocument.Length)</ensures>
@@ -3414,6 +3524,11 @@
     <member name="P:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ISourceLocation#StartIndex">
       <getter>
         <ensures inheritedFrom="M:Microsoft.Cci.ISourceLocation.get_StartIndex" inheritedFromTypeName="ISourceLocation" csharp="result &gt;= 0" vb="result &gt;= 0">result &gt;= 0</ensures>
+      </getter>
+    </member>
+    <member name="P:Microsoft.Cci.SourceLocationBuilder.Microsoft#Cci#ILocation#Document">
+      <getter>
+        <ensures inheritedFrom="M:Microsoft.Cci.ILocation.get_Document" inheritedFromTypeName="ILocation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
       </getter>
     </member>
   </members>
