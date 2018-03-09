@@ -259,7 +259,6 @@
             Replaces the body of the given method with an equivalent instance of SourceMethod body, which in addition also implements ISourceMethodBody,
             which has the additional property, Block, which represents the corresponding Code Model for the method body.
             </summary>
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IMethodDefinition)" inheritedFromTypeName="MetadataTraverser" csharp="method != null" vb="method &lt;&gt; Nothing">method != null</requires>
     </member>
     <member name="T:Microsoft.Cci.ILToCodeModel.HelperTypeFinder">
       <summary>
@@ -316,28 +315,24 @@
             Traverses only the namespace root of the given assembly, removing any type from the model that have the same
             interned key as one of the entries of this.typesToRemove.
             </summary>
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IModule)" inheritedFromTypeName="MetadataTraverser" csharp="module != null" vb="module &lt;&gt; Nothing">module != null</requires>
     </member>
     <member name="M:Microsoft.Cci.ILToCodeModel.HelperTypeFinder.TraverseChildren(Microsoft.Cci.INamedTypeDefinition)">
       <summary>
             Traverses only the nested types and methods and collects together all of the private helper types that are introduced by the compiler
             when methods that contain closures or iterators are compiled.
             </summary>
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.INamedTypeDefinition)" inheritedFromTypeName="MetadataTraverser" csharp="namedTypeDefinition != null" vb="namedTypeDefinition &lt;&gt; Nothing">namedTypeDefinition != null</requires>
     </member>
     <member name="M:Microsoft.Cci.ILToCodeModel.HelperTypeFinder.TraverseChildren(Microsoft.Cci.IMethodDefinition)">
       <summary>
             Traverses only the (possibly missing) body of the method.
             </summary>
       <param name="method" />
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IMethodDefinition)" inheritedFromTypeName="MetadataTraverser" csharp="method != null" vb="method &lt;&gt; Nothing">method != null</requires>
     </member>
     <member name="M:Microsoft.Cci.ILToCodeModel.HelperTypeFinder.TraverseChildren(Microsoft.Cci.IMethodBody)">
       <summary>
             Records all of the helper types of the method body into this.helperTypes.
             </summary>
       <param name="methodBody" />
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IMethodBody)" inheritedFromTypeName="MetadataTraverser" csharp="methodBody != null" vb="methodBody &lt;&gt; Nothing">methodBody != null</requires>
     </member>
     <member name="T:Microsoft.Cci.ILToCodeModel.RemoveUnnecessaryTypes">
       <summary>
@@ -384,14 +379,12 @@
             Traverses only the namespace root of the given assembly, removing any type from the model that have the same
             interned key as one of the entries of this.typesToRemove.
             </summary>
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IModule)" inheritedFromTypeName="MetadataTraverser" csharp="module != null" vb="module &lt;&gt; Nothing">module != null</requires>
     </member>
     <member name="M:Microsoft.Cci.ILToCodeModel.RemoveUnnecessaryTypes.TraverseChildren(Microsoft.Cci.INamedTypeDefinition)">
       <summary>
             Traverses the specified type definition, removing any nested types that are compiler introduced private helper types
             for maintaining the state of closures and anonymous delegates.
             </summary>
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.INamedTypeDefinition)" inheritedFromTypeName="MetadataTraverser" csharp="namedTypeDefinition != null" vb="namedTypeDefinition &lt;&gt; Nothing">namedTypeDefinition != null</requires>
     </member>
     <member name="T:Microsoft.Cci.ILToCodeModel.DecompiledBlock">
       <summary>
@@ -585,9 +578,6 @@
       <requires csharp="s != null" vb="s &lt;&gt; Nothing">s != null</requires>
       <requires csharp="local != null" vb="local &lt;&gt; Nothing">local != null</requires>
     </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.LocalFinder.TraverseChildren(Microsoft.Cci.ILocalDefinition)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataTraverser" csharp="localDefinition != null" vb="localDefinition &lt;&gt; Nothing">localDefinition != null</requires>
-    </member>
     <member name="T:Microsoft.Cci.ILToCodeModel.ForLoopReplacer">
       <invariant>this.host != null</invariant>
       <invariant>this.gotosThatTarget != null</invariant>
@@ -737,14 +727,6 @@
     <member name="M:Microsoft.Cci.ILToCodeModel.MapGenericTypeParameters.Rewrite(Microsoft.Cci.IBlockStatement)">
       <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.CodeRewriter.Rewrite(Microsoft.Cci.IBlockStatement)" inheritedFromTypeName="CodeRewriter" csharp="block != null" vb="block &lt;&gt; Nothing">block != null</requires>
       <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.CodeRewriter.Rewrite(Microsoft.Cci.IBlockStatement)" inheritedFromTypeName="CodeRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.MapGenericTypeParameters.Rewrite(Microsoft.Cci.IGenericTypeParameterReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IGenericTypeParameterReference)" inheritedFromTypeName="MetadataRewriter" csharp="genericTypeParameterReference != null" vb="genericTypeParameterReference &lt;&gt; Nothing">genericTypeParameterReference != null</requires>
-      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IGenericTypeParameterReference)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.MapGenericTypeParameters.Rewrite(Microsoft.Cci.ILocalDefinition)">
-      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="localDefinition != null" vb="localDefinition &lt;&gt; Nothing">localDefinition != null</requires>
-      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="T:Microsoft.Cci.ILToCodeModel.SwitchReplacer">
       <invariant>this.host != null</invariant>
@@ -1299,54 +1281,6 @@
     <member name="M:Microsoft.Cci.ILToCodeModel.SourceMethodBody.IsAssignmentOfLocalToLocal(Microsoft.Cci.IStatement,Microsoft.Cci.ILocalDefinition@)">
       <ensures csharp="result ⇒ local != null" vb="result Implies local &lt;&gt; Nothing">!result || local != null</ensures>
     </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.SourceMethodBody.Microsoft#Cci#IMethodBody#get_OperationExceptionInformation">
-      <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_OperationExceptionInformation" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_OperationExceptionInformation" inheritedFromTypeName="IMethodBody" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.SourceMethodBody.Microsoft#Cci#IMethodBody#get_LocalVariables">
-      <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_LocalVariables" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_LocalVariables" inheritedFromTypeName="IMethodBody" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.SourceMethodBody.Microsoft#Cci#IMethodBody#get_MethodDefinition">
-      <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_MethodDefinition" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.SourceMethodBody.Microsoft#Cci#IMethodBody#get_Operations">
-      <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_Operations" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_Operations" inheritedFromTypeName="IMethodBody" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.SourceMethodBody.Microsoft#Cci#IMethodBody#get_PrivateHelperTypes">
-      <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_PrivateHelperTypes" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_PrivateHelperTypes" inheritedFromTypeName="IMethodBody" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-    </member>
-    <member name="P:Microsoft.Cci.ILToCodeModel.SourceMethodBody.Microsoft#Cci#IMethodBody#OperationExceptionInformation">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_OperationExceptionInformation" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_OperationExceptionInformation" inheritedFromTypeName="IMethodBody" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.ILToCodeModel.SourceMethodBody.Microsoft#Cci#IMethodBody#LocalVariables">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_LocalVariables" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_LocalVariables" inheritedFromTypeName="IMethodBody" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.ILToCodeModel.SourceMethodBody.Microsoft#Cci#IMethodBody#MethodDefinition">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_MethodDefinition" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.ILToCodeModel.SourceMethodBody.Microsoft#Cci#IMethodBody#Operations">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_Operations" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_Operations" inheritedFromTypeName="IMethodBody" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.ILToCodeModel.SourceMethodBody.Microsoft#Cci#IMethodBody#PrivateHelperTypes">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_PrivateHelperTypes" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_PrivateHelperTypes" inheritedFromTypeName="IMethodBody" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-      </getter>
-    </member>
     <member name="T:Microsoft.Cci.ILToCodeModel.CompilationArtifactRemover">
       <invariant>this.numberOfAssignmentsToLocal != null</invariant>
       <invariant>this.numberOfReferencesToLocal != null</invariant>
@@ -1416,12 +1350,6 @@
     <member name="M:Microsoft.Cci.ILToCodeModel.SingleUseExpressionChecker.TraverseChildren(Microsoft.Cci.IDupValue)">
       <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IDupValue)" inheritedFromTypeName="CodeTraverser" csharp="dupValue != null" vb="dupValue &lt;&gt; Nothing">dupValue != null</requires>
     </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.SingleUseExpressionChecker.TraverseChildren(Microsoft.Cci.ILocalDefinition)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataTraverser" csharp="localDefinition != null" vb="localDefinition &lt;&gt; Nothing">localDefinition != null</requires>
-    </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.SingleUseExpressionChecker.TraverseChildren(Microsoft.Cci.IParameterDefinition)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IParameterDefinition)" inheritedFromTypeName="MetadataTraverser" csharp="parameterDefinition != null" vb="parameterDefinition &lt;&gt; Nothing">parameterDefinition != null</requires>
-    </member>
     <member name="M:Microsoft.Cci.ILToCodeModel.SingleUseExpressionChecker.TraverseChildren(Microsoft.Cci.IPopValue)">
       <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IPopValue)" inheritedFromTypeName="CodeTraverser" csharp="popValue != null" vb="popValue &lt;&gt; Nothing">popValue != null</requires>
     </member>
@@ -1461,18 +1389,6 @@
       <requires csharp="host != null" vb="host &lt;&gt; Nothing">host != null</requires>
       <requires csharp="genericMethodInstance != null" vb="genericMethodInstance &lt;&gt; Nothing">genericMethodInstance != null</requires>
     </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.MapGenericMethodParameters.Rewrite(Microsoft.Cci.ILocalDefinition)">
-      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="localDefinition != null" vb="localDefinition &lt;&gt; Nothing">localDefinition != null</requires>
-      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.ILocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.MapGenericMethodParameters.Rewrite(Microsoft.Cci.IGenericMethodParameterReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IGenericMethodParameterReference)" inheritedFromTypeName="MetadataRewriter" csharp="genericMethodParameterReference != null" vb="genericMethodParameterReference &lt;&gt; Nothing">genericMethodParameterReference != null</requires>
-      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IGenericMethodParameterReference)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.MapGenericMethodParameters.Rewrite(Microsoft.Cci.IMethodReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IMethodReference)" inheritedFromTypeName="MetadataRewriter" csharp="methodReference != null" vb="methodReference &lt;&gt; Nothing">methodReference != null</requires>
-      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IMethodReference)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
     <member name="T:Microsoft.Cci.ILToCodeModel.ReparentAnonymousDelegateParametersAndLocals">
       <invariant>this.method != null</invariant>
       <invariant>this.closureMethod != null</invariant>
@@ -1484,17 +1400,6 @@
       <requires csharp="method != null" vb="method &lt;&gt; Nothing">method != null</requires>
       <requires csharp="closureMethod != null" vb="closureMethod &lt;&gt; Nothing">closureMethod != null</requires>
       <requires csharp="anonymousDelegate != null" vb="anonymousDelegate &lt;&gt; Nothing">anonymousDelegate != null</requires>
-    </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.ReparentAnonymousDelegateParametersAndLocals.Rewrite(Microsoft.Cci.IParameterDefinition)">
-      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IParameterDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="parameterDefinition != null" vb="parameterDefinition &lt;&gt; Nothing">parameterDefinition != null</requires>
-      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.IParameterDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.ReparentAnonymousDelegateParametersAndLocals.RewriteReference(Microsoft.Cci.IParameterDefinition)">
-      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteReference(Microsoft.Cci.IParameterDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="parameterDefinition != null" vb="parameterDefinition &lt;&gt; Nothing">parameterDefinition != null</requires>
-      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteReference(Microsoft.Cci.IParameterDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.ReparentAnonymousDelegateParametersAndLocals.RewriteChildren(Microsoft.Cci.MutableCodeModel.LocalDefinition)">
-      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.RewriteChildren(Microsoft.Cci.MutableCodeModel.LocalDefinition)" inheritedFromTypeName="MetadataRewriter" csharp="localDefinition != null" vb="localDefinition &lt;&gt; Nothing">localDefinition != null</requires>
     </member>
     <member name="M:Microsoft.Cci.ILToCodeModel.ReparentAnonymousDelegateParametersAndLocals.RewriteChildren(Microsoft.Cci.MutableCodeModel.ThisReference)">
       <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.CodeRewriter.RewriteChildren(Microsoft.Cci.MutableCodeModel.ThisReference)" inheritedFromTypeName="CodeRewriter" csharp="thisReference != null" vb="thisReference &lt;&gt; Nothing">thisReference != null</requires>
@@ -1561,10 +1466,6 @@
     <member name="M:Microsoft.Cci.ILToCodeModel.AnonymousDelegateInserter.Rewrite(Microsoft.Cci.ICreateDelegateInstance)">
       <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.CodeRewriter.Rewrite(Microsoft.Cci.ICreateDelegateInstance)" inheritedFromTypeName="CodeRewriter" csharp="createDelegateInstance != null" vb="createDelegateInstance &lt;&gt; Nothing">createDelegateInstance != null</requires>
       <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.CodeRewriter.Rewrite(Microsoft.Cci.ICreateDelegateInstance)" inheritedFromTypeName="CodeRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.AnonymousDelegateInserter.Rewrite(Microsoft.Cci.ITypeReference)">
-      <requires inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.ITypeReference)" inheritedFromTypeName="MetadataRewriter" csharp="typeReference != null" vb="typeReference &lt;&gt; Nothing">typeReference != null</requires>
-      <ensures inheritedFrom="M:Microsoft.Cci.MutableCodeModel.MetadataRewriter.Rewrite(Microsoft.Cci.ITypeReference)" inheritedFromTypeName="MetadataRewriter" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
     </member>
     <member name="M:Microsoft.Cci.ILToCodeModel.AnonymousDelegateInserter.ConvertToAnonymousDelegate(Microsoft.Cci.IMethodDefinition,Microsoft.Cci.ITypeReference)">
       <requires csharp="closureMethod != null" vb="closureMethod &lt;&gt; Nothing">closureMethod != null</requires>
@@ -1712,18 +1613,6 @@
     </member>
     <member name="M:Microsoft.Cci.ILToCodeModel.TypeInferencer.TraverseChildren(Microsoft.Cci.IMakeTypedReference)">
       <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IMakeTypedReference)" inheritedFromTypeName="CodeTraverser" csharp="makeTypedReference != null" vb="makeTypedReference &lt;&gt; Nothing">makeTypedReference != null</requires>
-    </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.TypeInferencer.TraverseChildren(Microsoft.Cci.IMetadataCreateArray)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IMetadataCreateArray)" inheritedFromTypeName="MetadataTraverser" csharp="createArray != null" vb="createArray &lt;&gt; Nothing">createArray != null</requires>
-    </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.TypeInferencer.TraverseChildren(Microsoft.Cci.IMetadataConstant)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IMetadataConstant)" inheritedFromTypeName="MetadataTraverser" csharp="constant != null" vb="constant &lt;&gt; Nothing">constant != null</requires>
-    </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.TypeInferencer.TraverseChildren(Microsoft.Cci.IMetadataTypeOf)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IMetadataTypeOf)" inheritedFromTypeName="MetadataTraverser" csharp="typeOf != null" vb="typeOf &lt;&gt; Nothing">typeOf != null</requires>
-    </member>
-    <member name="M:Microsoft.Cci.ILToCodeModel.TypeInferencer.TraverseChildren(Microsoft.Cci.IMetadataNamedArgument)">
-      <requires inheritedFrom="M:Microsoft.Cci.MetadataTraverser.TraverseChildren(Microsoft.Cci.IMetadataNamedArgument)" inheritedFromTypeName="MetadataTraverser" csharp="namedArgument != null" vb="namedArgument &lt;&gt; Nothing">namedArgument != null</requires>
     </member>
     <member name="M:Microsoft.Cci.ILToCodeModel.TypeInferencer.TraverseChildren(Microsoft.Cci.IMethodCall)">
       <requires inheritedFrom="M:Microsoft.Cci.CodeTraverser.TraverseChildren(Microsoft.Cci.IMethodCall)" inheritedFromTypeName="CodeTraverser" csharp="methodCall != null" vb="methodCall &lt;&gt; Nothing">methodCall != null</requires>

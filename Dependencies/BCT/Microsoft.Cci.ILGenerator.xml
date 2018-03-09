@@ -627,10 +627,6 @@
             The compile time value of the definition, if it is a local constant.
             </summary>
       <value />
-      <getter>
-        <requires inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CompileTimeValue" inheritedFromTypeName="ILocalDefinition" csharp="this.IsConstant" vb="Me.IsConstant">this.IsConstant</requires>
-        <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CompileTimeValue" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
       <setter>
         <requires csharp="value != null" vb="value &lt;&gt; Nothing">value != null</requires>
       </setter>
@@ -679,9 +675,6 @@
             The name of the entity.
             </summary>
       <value />
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.INamedEntity.get_Name" inheritedFromTypeName="INamedEntity" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
       <setter>
         <requires csharp="value != null" vb="value &lt;&gt; Nothing">value != null</requires>
       </setter>
@@ -699,9 +692,6 @@
       <summary>
             The definition of the method in which this local is defined.
             </summary>
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_MethodDefinition" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
       <setter>
         <requires csharp="value != null" vb="value &lt;&gt; Nothing">value != null</requires>
       </setter>
@@ -711,9 +701,6 @@
             The type of the local.
             </summary>
       <value />
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_Type" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
       <setter>
         <requires csharp="value != null" vb="value &lt;&gt; Nothing">value != null</requires>
       </setter>
@@ -910,7 +897,6 @@
       <summary>
             Calls visitor.Visit(IMethodBody).
             </summary>
-      <requires inheritedFrom="M:Microsoft.Cci.IMethodBody.Dispatch(Microsoft.Cci.IMetadataVisitor)" inheritedFromTypeName="IMethodBody" csharp="visitor != null" vb="visitor &lt;&gt; Nothing">visitor != null</requires>
     </member>
     <member name="M:Microsoft.Cci.ILGeneratorMethodBody.GetIteratorScopes">
       <summary>
@@ -943,10 +929,6 @@
       <summary>
             A list exception data within the method body IL.
             </summary>
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_OperationExceptionInformation" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_OperationExceptionInformation" inheritedFromTypeName="IMethodBody" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-      </getter>
     </member>
     <member name="P:Microsoft.Cci.ILGeneratorMethodBody.LocalsAreZeroed">
       <summary>
@@ -957,28 +939,17 @@
       <summary>
             The local variables of the method.
             </summary>
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_LocalVariables" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_LocalVariables" inheritedFromTypeName="IMethodBody" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-      </getter>
     </member>
     <member name="P:Microsoft.Cci.ILGeneratorMethodBody.MethodDefinition">
       <summary>
             The definition of the method whose body this is.
             If this is the body of an event or property accessor, this will hold the corresponding adder/remover/setter or getter method.
             </summary>
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_MethodDefinition" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
     </member>
     <member name="P:Microsoft.Cci.ILGeneratorMethodBody.Operations">
       <summary>
             A list CLR IL operations that implement this method body.
             </summary>
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_Operations" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_Operations" inheritedFromTypeName="IMethodBody" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-      </getter>
     </member>
     <member name="P:Microsoft.Cci.ILGeneratorMethodBody.MaxStack">
       <summary>
@@ -992,10 +963,6 @@
             In case of instructions to AST decompilation this should ideally be list of all types
             which are local to method.
             </summary>
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_PrivateHelperTypes" inheritedFromTypeName="IMethodBody" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.IMethodBody.get_PrivateHelperTypes" inheritedFromTypeName="IMethodBody" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-      </getter>
     </member>
     <member name="P:Microsoft.Cci.ILGeneratorMethodBody.Size">
       <summary>
@@ -1158,62 +1125,10 @@
         <ensures inheritedFrom="M:System.Collections.IEnumerator.get_Current" inheritedFromTypeName="IEnumerator" csharp="result == this.get_Model[this.get_CurrentIndex]" vb="result = Me.get_Model(Me.get_CurrentIndex)">result == this.get_Model[this.get_CurrentIndex]</ensures>
       </getter>
     </member>
-    <member name="M:Microsoft.Cci.GeneratorLocal.Microsoft#Cci#ILocalDefinition#get_CustomModifiers">
-      <requires inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CustomModifiers" inheritedFromTypeName="ILocalDefinition" csharp="this.IsModified" vb="Me.IsModified">this.IsModified</requires>
-      <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CustomModifiers" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.GeneratorLocal.Microsoft#Cci#IObjectWithLocations#get_Locations">
-      <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-    </member>
-    <member name="P:Microsoft.Cci.GeneratorLocal.Microsoft#Cci#ILocalDefinition#CustomModifiers">
-      <getter>
-        <requires inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CustomModifiers" inheritedFromTypeName="ILocalDefinition" csharp="this.IsModified" vb="Me.IsModified">this.IsModified</requires>
-        <ensures inheritedFrom="M:Microsoft.Cci.ILocalDefinition.get_CustomModifiers" inheritedFromTypeName="ILocalDefinition" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.GeneratorLocal.Microsoft#Cci#IObjectWithLocations#Locations">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-        <ensures inheritedFrom="M:Microsoft.Cci.IObjectWithLocations.get_Locations" inheritedFromTypeName="IObjectWithLocations" csharp="for all x in result x != null" vb="for all x in result x &lt;&gt; Nothing">for all x in result x != null</ensures>
-      </getter>
-    </member>
     <member name="M:Microsoft.Cci.ILGeneratorScope.#ctor(Microsoft.Cci.ILGeneratorLabel,Microsoft.Cci.INameTable,Microsoft.Cci.IMethodDefinition)">
       <requires csharp="startLabel != null" vb="startLabel &lt;&gt; Nothing">startLabel != null</requires>
       <requires csharp="nameTable != null" vb="nameTable &lt;&gt; Nothing">nameTable != null</requires>
       <requires csharp="containingMethod != null" vb="containingMethod &lt;&gt; Nothing">containingMethod != null</requires>
-    </member>
-    <member name="M:Microsoft.Cci.ILGeneratorImplementation.ExceptionHandler.Microsoft#Cci#IOperationExceptionInformation#get_ExceptionType">
-      <ensures inheritedFrom="M:Microsoft.Cci.IOperationExceptionInformation.get_ExceptionType" inheritedFromTypeName="IOperationExceptionInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.ILGeneratorImplementation.ExceptionHandler.Microsoft#Cci#IOperationExceptionInformation#get_TryEndOffset">
-      <ensures inheritedFrom="M:Microsoft.Cci.IOperationExceptionInformation.get_TryEndOffset" inheritedFromTypeName="IOperationExceptionInformation" csharp="result &gt;= this.TryStartOffset" vb="result &gt;= Me.TryStartOffset">result &gt;= this.TryStartOffset</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.ILGeneratorImplementation.ExceptionHandler.Microsoft#Cci#IOperationExceptionInformation#get_HandlerStartOffset">
-      <ensures inheritedFrom="M:Microsoft.Cci.IOperationExceptionInformation.get_HandlerStartOffset" inheritedFromTypeName="IOperationExceptionInformation" csharp="result &gt; this.FilterDecisionStartOffset" vb="result &gt; Me.FilterDecisionStartOffset">result &gt; this.FilterDecisionStartOffset</ensures>
-    </member>
-    <member name="M:Microsoft.Cci.ILGeneratorImplementation.ExceptionHandler.Microsoft#Cci#IOperationExceptionInformation#get_HandlerEndOffset">
-      <ensures inheritedFrom="M:Microsoft.Cci.IOperationExceptionInformation.get_HandlerEndOffset" inheritedFromTypeName="IOperationExceptionInformation" csharp="result &gt;= this.HandlerStartOffset" vb="result &gt;= Me.HandlerStartOffset">result &gt;= this.HandlerStartOffset</ensures>
-    </member>
-    <member name="P:Microsoft.Cci.ILGeneratorImplementation.ExceptionHandler.Microsoft#Cci#IOperationExceptionInformation#ExceptionType">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IOperationExceptionInformation.get_ExceptionType" inheritedFromTypeName="IOperationExceptionInformation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.ILGeneratorImplementation.ExceptionHandler.Microsoft#Cci#IOperationExceptionInformation#TryEndOffset">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IOperationExceptionInformation.get_TryEndOffset" inheritedFromTypeName="IOperationExceptionInformation" csharp="result &gt;= this.TryStartOffset" vb="result &gt;= Me.TryStartOffset">result &gt;= this.TryStartOffset</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.ILGeneratorImplementation.ExceptionHandler.Microsoft#Cci#IOperationExceptionInformation#HandlerStartOffset">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IOperationExceptionInformation.get_HandlerStartOffset" inheritedFromTypeName="IOperationExceptionInformation" csharp="result &gt; this.FilterDecisionStartOffset" vb="result &gt; Me.FilterDecisionStartOffset">result &gt; this.FilterDecisionStartOffset</ensures>
-      </getter>
-    </member>
-    <member name="P:Microsoft.Cci.ILGeneratorImplementation.ExceptionHandler.Microsoft#Cci#IOperationExceptionInformation#HandlerEndOffset">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IOperationExceptionInformation.get_HandlerEndOffset" inheritedFromTypeName="IOperationExceptionInformation" csharp="result &gt;= this.HandlerStartOffset" vb="result &gt;= Me.HandlerStartOffset">result &gt;= this.HandlerStartOffset</ensures>
-      </getter>
     </member>
     <member name="T:Microsoft.Cci.ILGeneratorImplementation.Stack`1">
       <invariant>this.elements != null</invariant>
@@ -1236,11 +1151,6 @@
     </member>
     <member name="M:Microsoft.Cci.ILGeneratorImplementation.Operation.#ctor(Microsoft.Cci.OperationCode,System.UInt32,Microsoft.Cci.ILocation,System.Object)">
       <requires csharp="location != null" vb="location &lt;&gt; Nothing">location != null</requires>
-    </member>
-    <member name="P:Microsoft.Cci.ILGeneratorImplementation.Operation.Location">
-      <getter>
-        <ensures inheritedFrom="M:Microsoft.Cci.IOperation.get_Location" inheritedFromTypeName="IOperation" csharp="result != null" vb="result &lt;&gt; Nothing">result != null</ensures>
-      </getter>
     </member>
   </members>
 </doc>
