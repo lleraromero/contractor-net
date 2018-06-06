@@ -375,7 +375,7 @@ namespace Analyzer.Corral
             Contract.Requires(!string.IsNullOrEmpty(queryAssemblyPath));
 
             var bctRunner = new BctRunner();
-            var args = new[] { queryAssemblyPath, "/lib:" + Path.GetDirectoryName(inputFileName) };
+            var args = new[] { " -i ", queryAssemblyPath };
 
             token.ThrowIfCancellationRequested();
             bctRunner.Run(args);

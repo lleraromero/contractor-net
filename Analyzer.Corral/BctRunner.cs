@@ -12,7 +12,7 @@ namespace Analyzer.Corral
         {
             Contract.Requires(args.Length > 0);
 
-            var tmpDir = Path.GetDirectoryName(args[0]);
+            var tmpDir = Path.GetDirectoryName(args[1]);
             Contract.Assert(!string.IsNullOrEmpty(tmpDir) && Directory.Exists(tmpDir));
             Logger.Log(LogLevel.Debug, "BCT: " + string.Join(" ", args));
             
@@ -21,8 +21,8 @@ namespace Analyzer.Corral
             {
                 bct.StartInfo = new ProcessStartInfo
                 {
-                    FileName = AppDomain.CurrentDomain.BaseDirectory + @"..\..\..\Dependencies\BCT\BytecodeTranslator.exe",
-                    //FileName = @"C:\Users\Administrador\Documents\Visual Studio 2013\Projects\BCT\bytecodetranslator\Binaries\BytecodeTranslator.exe",
+                    //FileName = AppDomain.CurrentDomain.BaseDirectory + @"..\..\..\Dependencies\BCT\BytecodeTranslator.exe",
+                    FileName = @"C:\Users\Fernan\Documents\TinyBCT\TinyBCT\bin\Debug\TinyBCT.exe",
                     Arguments = string.Join(" ", args),
                     WorkingDirectory = tmpDir,
                     CreateNoWindow = true,
