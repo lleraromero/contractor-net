@@ -208,6 +208,58 @@ namespace Analysis.Cci
             LocalDeclarationStatement retLocal = null;
             if (TypeHelper.GetTypeName(methodDefinition.Type) != TypeHelper.GetTypeName(host.PlatformType.SystemVoid))
             {
+                var typeCode = TypeHelper.GetSytemTypeCodeFor(methodDefinition.Type.ResolvedType);
+                object value;
+                switch (typeCode)
+                {
+                    case System.TypeCode.Boolean:
+                        value = false;
+                        break;
+
+                    case System.TypeCode.Int16:
+                    case System.TypeCode.UInt16:
+                    case System.TypeCode.Int32:
+                    case System.TypeCode.UInt32:
+                    case System.TypeCode.Int64:
+                    case System.TypeCode.UInt64:
+                        value = 0;
+                        break;
+
+                    case System.TypeCode.Single:
+                    case System.TypeCode.Double:
+                    case System.TypeCode.Decimal:
+                        value = 0.0;
+                        break;
+
+                    case System.TypeCode.Object:
+                    case System.TypeCode.String:
+                    case System.TypeCode.DateTime:
+                        value = null;
+                        break;
+
+                    case System.TypeCode.Byte:
+                    case System.TypeCode.SByte:
+                        value = default(byte);
+                        break;
+
+                    case System.TypeCode.Char:
+                        value = default(char);
+                        break;
+
+                    default:
+                        throw new System.Exception("Default case");
+                }
+        /*
+         * DEFAULT CASE COULD INCLUDE:
+        Empty = 0,
+        
+        //
+        // Resumen:
+        //     Un valor de null (columna) de la base de datos.
+        DBNull = 2,
+ 
+        */      
+             
                 retLocal = new LocalDeclarationStatement
                 {
                     LocalVariable = new LocalDefinition
@@ -215,8 +267,8 @@ namespace Analysis.Cci
                         Name = host.NameTable.GetNameFor("retLocal"),
                         Type = methodDefinition.Type
                     },
-                    InitialValue = new CompileTimeConstant { Type = methodDefinition.Type, Value = null }
-                };
+                    InitialValue = new CompileTimeConstant { Type = methodDefinition.Type, Value = value }
+                }; 
                 newStatements.Add(retLocal);
             }
 
