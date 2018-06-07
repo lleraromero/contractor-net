@@ -21,8 +21,7 @@ namespace Analyzer.Corral
             {
                 bct.StartInfo = new ProcessStartInfo
                 {
-                    //FileName = AppDomain.CurrentDomain.BaseDirectory + @"..\..\..\Dependencies\BCT\BytecodeTranslator.exe",
-                    FileName = @"C:\Users\Fernan\Documents\TinyBCT\TinyBCT\bin\Debug\TinyBCT.exe",
+                    FileName = AppDomain.CurrentDomain.BaseDirectory + @"..\..\..\..\TinyBCT\TinyBCT\bin\Debug\TinyBCT.exe",
                     Arguments = string.Join(" ", args),
                     WorkingDirectory = tmpDir,
                     CreateNoWindow = true,
