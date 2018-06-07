@@ -13,33 +13,54 @@ namespace Analyzer.Corral
     {
         private List<string> errorList;
         private string full_path_to_boogie_file;
-        private bool ready;
+        private static Dictionary<string, bool> filesMap;
+        private static Dictionary<string, string> locksMap;
+
         public BoggieHardcoderForExceptionSupport()
         {
             full_path_to_boogie_file = "";
             errorList = new List<string>();
             ImplementedExceptions.AddAllExceptionsTo(errorList);
+            if (filesMap == null)
+            {
+                filesMap = new Dictionary<string, bool>();
+                locksMap = new Dictionary<string, string>();
+            }
         }
 
         public BoggieHardcoderForExceptionSupport(List<string> errorList)
         {
             this.errorList = errorList;
+            if (filesMap == null)
+            {
+                filesMap = new Dictionary<string, bool>();
+                locksMap = new Dictionary<string, string>();
+            }
         }
 
         public void hardcodeExceptionsToFile(string file)
         {
-            if (file.Equals(this.full_path_to_boogie_file)) return; //Avoid instrumenting boogie file more than once.
-            lock (this.full_path_to_boogie_file)
+            lock (filesMap)
             {
-                ready = false;
-                this.full_path_to_boogie_file = file;
-                var input = File.ReadAllText(this.full_path_to_boogie_file);
-                input = hardcodeExceptionEqualsToNullToQueries(input);
-                input = SolveConstUniqueProblem(input);
-                hardcodeSubtypeAxioms(input);
-                ready = true;
+                if (!filesMap.ContainsKey(file))
+                {
+                    filesMap.Add(file, false);
+                    locksMap.Add(file, file);
+                }
             }
-               
+                    
+            lock (locksMap[file])
+            {
+                if (!filesMap[file]) //Avoid instrumenting boogie file more than once.
+                {
+                    this.full_path_to_boogie_file = file;
+                    var input = File.ReadAllText(this.full_path_to_boogie_file);
+                    input = hardcodeExceptionEqualsToNullToQueries(input);
+                    input = SolveConstUniqueProblem(input);
+                    hardcodeSubtypeAxioms(input);
+                    filesMap[file] = true;
+                }
+            }
         }
 
         public string SolveConstUniqueProblem(string input)
@@ -201,9 +222,5 @@ namespace Analyzer.Corral
             return result;
         }
 
-        internal bool Ready()
-        {
-            return this.ready;
-        }
     }
 }
