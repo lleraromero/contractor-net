@@ -90,7 +90,19 @@ namespace Analyzer.Corral
                 string replacement = pattern + System.Environment.NewLine + stringBuilder.ToString();
                 Regex rgx = new Regex(Regex.Escape(pattern));
                 string result = rgx.Replace(input, replacement);
+
+                result= fixBCTBugWithGreaterThanNull(result);
+
                 File.WriteAllText(this.full_path_to_boogie_file, result);
+        }
+
+        private string fixBCTBugWithGreaterThanNull(string input)
+        {
+            string pattern = "> null";
+            string replacement = "!= null";
+            Regex rgx = new Regex(Regex.Escape(pattern));
+            string result = rgx.Replace(input, replacement);
+            return result;
         }
 
         private void harcodeSubtypeOfThemSelves(StringBuilder stringBuilder)
