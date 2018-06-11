@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Tracer.Poco;
 
 namespace DC.Slicer
 {
@@ -38,7 +37,7 @@ namespace DC.Slicer
         {
             return IsNullableOrReference(fieldSymbol.Type);
         }
-
+        /*
         public static bool IsStaticTrace(TraceType traceType)
         {
             return traceType == TraceType.EnterStaticConstructor || traceType == TraceType.EnterStaticMethod;
@@ -54,7 +53,7 @@ namespace DC.Slicer
             return traceType == TraceType.EnterMethod || traceType == TraceType.EnterStaticMethod ||
                 traceType == TraceType.EnterConstructor || traceType == TraceType.EnterStaticConstructor ||
                 traceType == TraceType.BeforeConstructor;
-        }
+        }*/
     }
 
     public static class IOperationExtensions

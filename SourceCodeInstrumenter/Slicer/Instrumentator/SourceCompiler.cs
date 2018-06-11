@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Tracer.Poco;
 using System.Xml;
 using Microsoft.Build.BuildEngine;
 using System.Xml.Linq;
@@ -60,7 +59,7 @@ namespace DC.Slicer
             instrumenter.pathToOutputFiles = Config.OutputDir;
 
             List<Type> typesList = new List<Type>();
-            typesList.Add(typeof(TraceType));
+            //typesList.Add(typeof(TraceType));
             typesList.Add(typeof(ProtoBuf.Serializer));
             foreach (Type additional in additionalTypes) typesList.Add(additional);
             foreach (var type in typesList)

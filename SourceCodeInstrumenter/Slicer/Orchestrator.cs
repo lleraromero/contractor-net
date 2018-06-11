@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
-using Tracer;
-using Tracer.Poco;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 
@@ -17,7 +15,7 @@ namespace DC.Slicer
         public InstrumentationResult InstrumentationResult { get; private set; }
         public bool ContinueReceiving { get; set; }
 
-        public ISet<Stmt> SlicedStmts { get; private set; }
+        //public ISet<Stmt> SlicedStmts { get; private set; }
 
         public bool UserInteraction { get; set; }
 

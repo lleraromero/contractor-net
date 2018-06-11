@@ -3,7 +3,6 @@ using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Tracer;
 using System.Threading;
 using System;
 using System.Linq;
@@ -36,7 +35,7 @@ namespace DC.Slicer
         {
             lastInstrumentedFileIdAssoc = new Dictionary<int, string>();
             var assemblyReferences = new List<MetadataReference>();
-            assemblyReferences.Add(MetadataReference.CreateFromFile(typeof(TraceSender).Assembly.Location));
+            //assemblyReferences.Add(MetadataReference.CreateFromFile(typeof(TraceSender).Assembly.Location));
             assemblyReferences.Add(MetadataReference.CreateFromFile(typeof(ProtoBuf.ProtoWriter).Assembly.Location));
             var modifiedCompilation = compilation.AddReferences(assemblyReferences);
 

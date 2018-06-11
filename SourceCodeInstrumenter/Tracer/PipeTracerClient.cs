@@ -1,5 +1,4 @@
-﻿using ProtoBuf;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
@@ -44,7 +43,7 @@ namespace Tracer.Poco
             }
         }
 
-        public void Trace(int fileId, int traceType, int spanStart, int spanEnd)
+        /*public void Trace(int fileId, int traceType, int spanStart, int spanEnd)
         {
             //Estas 2 lineas evitan que se necesite el backend para testear si funciona el programa instrumentado
             //Console.WriteLine("Trazando " + traceType);
@@ -79,6 +78,6 @@ namespace Tracer.Poco
                 AlreadyClosed = true;
                 pipeClient.Close();
             }
-        }
+        }*/
     }
 }
