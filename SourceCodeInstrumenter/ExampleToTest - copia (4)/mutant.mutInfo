@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DiagnosticMutant xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <StartLine>52</StartLine>
+  <EndLine>52</EndLine>
+  <MutFile>stack.cs</MutFile>
+  <MutMethod>Stack()</MutMethod>
+  <MutClass>Stack</MutClass>
+  <MutNamespace>System.Collections2</MutNamespace>
+  <Number>4</Number>
+  <Storage>LocalDisk</Storage>
+  <TimeEndProcess>2018-06-08T13:46:27.0129406-03:00</TimeEndProcess>
+  <Name>ASR</Name>
+  <TimeBegin>2018-06-08T13:46:25.7868704-03:00</TimeBegin>
+  <TimeEnd>2018-06-08T13:46:25.8758755-03:00</TimeEnd>
+  <IsAlive>false</IsAlive>
+  <IsCovered>true</IsCovered>
+  <IsEquivalent>false</IsEquivalent>
+</DiagnosticMutant>

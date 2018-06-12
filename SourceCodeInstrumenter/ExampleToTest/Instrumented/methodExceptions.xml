@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<methods>
+  <method name="Example" isPure="False" isProperty="False" return-type="Example">
+    <exceptions> DivideByZeroException </exceptions>
+  </method>
+  <method name="m" isPure="False" isProperty="False" return-type="void">
+    <exceptions> DivideByZeroException </exceptions>
+  </method>
+</methods>

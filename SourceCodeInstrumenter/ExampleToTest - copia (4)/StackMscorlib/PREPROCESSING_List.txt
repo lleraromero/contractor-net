@@ -1,0 +1,15 @@
+find
+Contract\.EndContractBlock\(\);
+replace
+//Contract\.EndContractBlock\(\);
+
+find
+ThrowHelper\.Throw(.*)Exception\(ExceptionArgument\.(.*)\);
+replace
+throw new $1Exception($2);
+
+
+find 
+ThrowHelper\.Throw(.*)Exception(.*)\(\);
+replace
+throw new $1Exception();
