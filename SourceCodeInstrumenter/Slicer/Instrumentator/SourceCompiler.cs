@@ -124,7 +124,7 @@ namespace DC.Slicer
                  *  - Aca el compiledAssemblyName es el outputFilePath del project que es donde los tira el
                  *    msbuild.
                  */
-                string msbuildExe = ToolLocationHelper.GetPathToBuildToolsFile("msbuild.exe", "12.0", DotNetFrameworkArchitecture.Bitness64);
+                string msbuildExe = ToolLocationHelper.GetPathToBuildToolsFile("msbuild.exe", "14.0", DotNetFrameworkArchitecture.Bitness64);
                 ProcessStartInfo startInfo = new ProcessStartInfo(msbuildExe);
                 startInfo.WindowStyle = ProcessWindowStyle.Hidden;
                 startInfo.Arguments = "/v:m /m " + newSolFile;

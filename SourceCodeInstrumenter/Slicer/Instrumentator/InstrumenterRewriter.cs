@@ -659,9 +659,9 @@ namespace DC.Slicer
                             var methodDecl = method as MethodDeclarationSyntax;
                             if(methodDecl==null){
                                 var methodConst = method as ConstructorDeclarationSyntax;
-                                addToDictionary(methodConst.Identifier.ToString(), "NullReferenceException");
+                                //addToDictionary(methodConst.Identifier.ToString(), "NullReferenceException");
                             }else{
-                                addToDictionary(methodDecl.Identifier.ToString(), "NullReferenceException");
+                                //addToDictionary(methodDecl.Identifier.ToString(), "NullReferenceException");
                             }
 
                             checkStmt = checkStmt.WithLeadingTrivia(statementOriginal.GetLeadingTrivia());
