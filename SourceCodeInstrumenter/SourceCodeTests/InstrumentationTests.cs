@@ -58,6 +58,51 @@ throw new DivideByZeroException();
         }
 
         [TestMethod]
+        public void DivideByZeroExample()
+        {
+            string fileToInstrument = @"
+using System;
+public class Example   
+{
+    private int _size;
+    public Example()
+	{
+        _size = 10/0;
+    }
+    public void m()
+    {
+        _size = 10/0;
+    }
+}
+            ";
+
+            string oracle = @"
+using System;
+public class Example   
+{
+    private int _size;
+    public Example()
+	{
+if(0 == 0 ){
+throw new DivideByZeroException();
+}
+        _size = 10/0;
+    }
+    public void m()
+	{
+if(0 == 0 ){
+throw new DivideByZeroException();
+}
+        _size = 10/0;
+    }
+}
+            ";
+
+            string instrumented = CallInstrumenter(fileToInstrument);
+            AssertEquals(ref oracle, ref instrumented);
+        }
+
+        [TestMethod]
         public void IndexOutOfRangeExample()
         {
             string fileToInstrument = @"
@@ -92,6 +137,84 @@ if(2 < 0 || 2 > array.Length)
 throw new IndexOutOfRange();
 }
         int i = array[2];
+    }
+}
+            ";
+
+            string instrumented = CallInstrumenter(fileToInstrument);
+            AssertEquals(ref oracle, ref instrumented);
+        }
+
+        [TestMethod]
+        public void StaticDereference()
+        {
+            string fileToInstrument = @"
+using System;
+public class Example   
+{
+    private int n;
+    public Example()
+	{
+        n=4;
+    }
+    public void m()
+    {
+        int j= Math.Abs(n);
+    }
+}
+            ";
+
+            string oracle = @"
+using System;
+public class Example   
+{
+    private int n;
+    public Example()
+	{
+        n=4;
+    }
+    public void m()
+    {
+        int j= Math.Abs(n);
+    }
+}
+            ";
+
+            string instrumented = CallInstrumenter(fileToInstrument);
+            AssertEquals(ref oracle, ref instrumented);
+        }
+
+        [TestMethod]
+        public void StaticDereferenceNotConsidered()
+        {
+            string fileToInstrument = @"
+using System;
+public class Example   
+{
+    private int n;
+    public Example()
+	{
+        n=4;
+    }
+    public void m()
+    {
+        System.Console.Beep();
+    }
+}
+            ";
+
+            string oracle = @"
+using System;
+public class Example   
+{
+    private int n;
+    public Example()
+	{
+        n=4;
+    }
+    public void m()
+    {
+        System.Console.Beep();
     }
 }
             ";
