@@ -116,7 +116,10 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="InstrumentationTests.cs" />
+    <Compile Include="ByZeroDivisionInstrumentationTests.cs" />
+    <Compile Include="DereferenceInstrumentationTests.cs" />
+    <Compile Include="TestUtil.cs" />
+    <Compile Include="IndexAccessInstrumentationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
