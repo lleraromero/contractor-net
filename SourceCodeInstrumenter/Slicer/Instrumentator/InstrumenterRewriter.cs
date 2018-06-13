@@ -355,7 +355,8 @@ namespace DC.Slicer
                 var arrayElemAcces= statementOriginal.DescendantNodesAndSelf().Where(x => x.IsKind(SyntaxKind.ElementAccessExpression));
                 foreach (SyntaxNode stmt in arrayElemAcces)
                 {
-                    var arrayName = (stmt.DescendantNodes().Where(x => x.IsKind(SyntaxKind.IdentifierName))).ToList().ElementAt(0);
+                    var ea= stmt as ElementAccessExpressionSyntax;
+                    var arrayName = ea.Expression.ToString();
                     var argument = stmt.DescendantNodes().Where(x => x.IsKind(SyntaxKind.Argument));
                     SyntaxNode argumentExpr = null;
                     bool preInc = false;
