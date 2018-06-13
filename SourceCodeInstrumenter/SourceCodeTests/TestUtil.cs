@@ -12,8 +12,8 @@ namespace SourceCodeTests
     {
         public static void AssertEquals(ref string oracle, ref string instrumented)
         {
-            oracle = oracle.Where(x => !x.Equals(" ") && !x.Equals("  ")).ToString();
-            instrumented = instrumented.Where(x => !x.Equals(" ") && !x.Equals("  ")).ToString();
+            oracle = oracle.Replace(" ", "").Replace(" ", "").Replace("\t","").Replace("\r", "").Replace("\n", "");
+            instrumented = instrumented.Replace(" ", "").Replace(" ", "").Replace("\t", "").Replace("\r", "").Replace("\n", "");
             Assert.AreEqual(oracle, instrumented);
         }
 
