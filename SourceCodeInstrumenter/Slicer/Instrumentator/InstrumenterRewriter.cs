@@ -639,7 +639,9 @@ namespace DC.Slicer
                     var ma =memberAccess.ToList().ElementAt(0) as MemberAccessExpressionSyntax;
                     var subject = ma.Expression;
                     var subjectSymbol = Model.GetSymbolInfo(subject).Symbol;
-                    var isStatic = subjectSymbol.ContainingSymbol.IsStatic;
+                    var isStatic = false;
+                    if (subjectSymbol!=null)
+                        isStatic = subjectSymbol.ContainingSymbol.IsStatic;
                     //var isStaticB =  ((IInvocationExpression)Model.GetOperation(memberAccess.First().Parent)).TargetMethod.IsStatic;
                     
                     foreach (SyntaxNodeOrToken stmt in memberAccessNodes)
