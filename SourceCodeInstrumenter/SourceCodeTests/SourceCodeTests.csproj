@@ -117,6 +117,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="ByZeroDivisionInstrumentationTests.cs" />
+    <Compile Include="DereferenceArrayAccessMixedInstrumentationTests.cs" />
     <Compile Include="DereferenceInstrumentationTests.cs" />
     <Compile Include="TestUtil.cs" />
     <Compile Include="IndexAccessInstrumentationTests.cs" />

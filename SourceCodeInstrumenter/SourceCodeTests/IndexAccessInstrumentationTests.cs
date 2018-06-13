@@ -43,10 +43,8 @@ public class Example
     }
     public void m()
     {
-if(2 < 0 || 2 > array.Length)
-{
-throw new IndexOutOfRange();
-}
+if((2) < 0 || (2) >= array.Length)
+throw new IndexOutOfRangeException();
         int i = array[2];
     }
 }
