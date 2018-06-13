@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis.Semantics;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -631,17 +632,23 @@ namespace DC.Slicer
                 }
                 //**************************************************************************************************************************************************
                 var memberAccess = statementOriginal.DescendantNodesAndSelf().Where(x => x.IsKind(SyntaxKind.SimpleMemberAccessExpression));
+
                 if (memberAccess.Count() != 0)
                 {
                     var memberAccessNodes = memberAccess.ToList().ElementAt(0).DescendantNodesAndTokens();
+                    var ma =memberAccess.ToList().ElementAt(0) as MemberAccessExpressionSyntax;
+                    var subject = ma.Expression;
+                    var subjectSymbol = Model.GetSymbolInfo(subject).Symbol;
+                    var isStatic = subjectSymbol.ContainingSymbol.IsStatic;
+                    //var isStaticB =  ((IInvocationExpression)Model.GetOperation(memberAccess.First().Parent)).TargetMethod.IsStatic;
+                    
                     foreach (SyntaxNodeOrToken stmt in memberAccessNodes)
                     {
-                        // fmartinelli: this is a patch for static methods 
-                        // TODO: do it generically.
-                        if (stmt.ToString().Equals("Contract") || stmt.ToString().Equals("Abs") || stmt.ToString().Equals("MyArray") || stmt.ToString().Equals("Array"))
+                       
+                        if (isStatic)
                         {
                             break;
-                        }//----------------------------------
+                        }
 
                         SyntaxNode throwStmt = SyntaxFactory.ParseStatement("throw new NullReferenceException();");
                         var method = getMethodDeclaration(block);
