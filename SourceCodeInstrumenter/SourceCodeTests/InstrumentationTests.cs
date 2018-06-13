@@ -53,8 +53,8 @@ throw new DivideByZeroException();
 }
             ";
 
-            string instrumented = CallInstrumenter(fileToInstrument);
-            AssertEquals(ref oracle, ref instrumented);
+            string instrumented = TestUtil.CallInstrumenter(fileToInstrument);
+            TestUtil.AssertEquals(ref oracle, ref instrumented);
         }
 
         [TestMethod]
@@ -98,8 +98,8 @@ throw new DivideByZeroException();
 }
             ";
 
-            string instrumented = CallInstrumenter(fileToInstrument);
-            AssertEquals(ref oracle, ref instrumented);
+            string instrumented = TestUtil.CallInstrumenter(fileToInstrument);
+            TestUtil.AssertEquals(ref oracle, ref instrumented);
         }
 
         [TestMethod]
@@ -141,8 +141,8 @@ throw new IndexOutOfRange();
 }
             ";
 
-            string instrumented = CallInstrumenter(fileToInstrument);
-            AssertEquals(ref oracle, ref instrumented);
+            string instrumented = TestUtil.CallInstrumenter(fileToInstrument);
+            TestUtil.AssertEquals(ref oracle, ref instrumented);
         }
 
         [TestMethod]
@@ -180,8 +180,8 @@ public class Example
 }
             ";
 
-            string instrumented = CallInstrumenter(fileToInstrument);
-            AssertEquals(ref oracle, ref instrumented);
+            string instrumented = TestUtil.CallInstrumenter(fileToInstrument);
+            TestUtil.AssertEquals(ref oracle, ref instrumented);
         }
 
         [TestMethod]
@@ -219,34 +219,8 @@ public class Example
 }
             ";
 
-            string instrumented = CallInstrumenter(fileToInstrument);
-            AssertEquals(ref oracle, ref instrumented);
-        }
-
-        private static void AssertEquals(ref string oracle, ref string instrumented)
-        {
-            oracle = oracle.Where(x => !x.Equals(" ") && !x.Equals("  ")).ToString();
-            instrumented = instrumented.Where(x => !x.Equals(" ") && !x.Equals("  ")).ToString();
-            Assert.AreEqual(oracle, instrumented);
-        }
-
-        private static string CallInstrumenter(string fileToInstrument)
-        {
-            //write test to file
-            string[] lines = { fileToInstrument };
-            File.WriteAllLines(@"../../../ExampleToTest/StackMscorlib/Example.cs", lines);
-
-            //call instrumenter
-            //string outputPath = "../../../ExampleToTest/Instrumented";
-            string outputPath = "C:\\Users\\Fernan\\Documents\\contractor-net\\SourceCodeInstrumenter\\ExampleToTest\\Instrumented";
-            //string[] args = { "../../../ExampleToTest/ExampleToTest.sln", "Test", outputPath, "Example.cs" };
-            string sln = "C:\\Users\\Fernan\\\\Documents\\contractor-net\\SourceCodeInstrumenter\\ExampleToTest\\ExampleToTest.sln";
-            string[] args = { sln, "StackMscorlib", outputPath, "Example.cs" };
-            DC.Slicer.Program.Main(args);
-
-            //get instrumented file
-            string instrumented = File.ReadAllText(@"../../../ExampleToTest/Instrumented/StackMscorlib/Example.cs");
-            return instrumented;
+            string instrumented = TestUtil.CallInstrumenter(fileToInstrument);
+            TestUtil.AssertEquals(ref oracle, ref instrumented);
         }
     }
 }
