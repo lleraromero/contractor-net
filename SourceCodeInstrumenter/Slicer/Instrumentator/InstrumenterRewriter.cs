@@ -661,7 +661,7 @@ namespace DC.Slicer
                             System.Environment.NewLine + throwStmt.ToString() + System.Environment.NewLine);
                         
 
-                        if (!statementOriginal.IsKind(SyntaxKind.ForStatement))
+                        if (!statementOriginal.IsKind(SyntaxKind.ForStatement) && !statementOriginal.IsKind(SyntaxKind.WhileStatement) && !statementOriginal.IsKind(SyntaxKind.IfStatement))
                         {
 
                             //var method = getMethodDeclaration(block);
