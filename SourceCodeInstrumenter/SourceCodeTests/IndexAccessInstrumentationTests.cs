@@ -54,6 +54,57 @@ throw new IndexOutOfRangeException();
             TestUtil.AssertEquals(ref oracle, ref instrumented);
         }
 
-        
+        [TestMethod]
+        public void NestedIndexOutOfRange()
+        {
+            string fileToInstrument = @"
+using System;
+public class Example   
+{
+    private int[] array;
+    public Example()
+	{
+        array = {1,2,3};
+    }
+    public void m()
+    {
+        int i=0;
+        while(i<3){
+            if(i!=0){
+                var j= array[i];
+            }
+            i++;
+        }
+    }
+}
+            ";
+
+            string oracle = @"
+using System;
+public class Example   
+{
+    private int[] array;
+    public Example()
+	{
+        array = {1,2,3};
+    }
+    public void m()
+    {
+        int i=0;
+        while(i<3){
+            if(i!=0){
+if((i) < 0 || (i) >= array.Length)
+throw new IndexOutOfRangeException();
+                var j= array[i];
+            }
+            i++;
+        }
+    }
+}
+            ";
+
+            string instrumented = TestUtil.CallInstrumenter(fileToInstrument);
+            TestUtil.AssertEquals(ref oracle, ref instrumented);
+        }
     }
 }

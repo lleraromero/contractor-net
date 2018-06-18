@@ -402,7 +402,7 @@ namespace DC.Slicer
                         + throwStmt.ToString() + System.Environment.NewLine + "}");
                     }
 
-                    if (!statementOriginal.IsKind(SyntaxKind.ForStatement))
+                    if (!statementOriginal.IsKind(SyntaxKind.ForStatement) && !statementOriginal.IsKind(SyntaxKind.WhileStatement) && !statementOriginal.IsKind(SyntaxKind.IfStatement))
                     {
 
                         //var method = getMethodDeclaration(block);
@@ -456,7 +456,7 @@ namespace DC.Slicer
                          throwStmt.ToString() + System.Environment.NewLine);
                     }
 
-                    if (!statementOriginal.IsKind(SyntaxKind.ForStatement))
+                    if (!statementOriginal.IsKind(SyntaxKind.ForStatement) && !statementOriginal.IsKind(SyntaxKind.WhileStatement) && !statementOriginal.IsKind(SyntaxKind.IfStatement))
                     {
                         var methodDecl = method as MethodDeclarationSyntax;
                         if(methodDecl==null){
@@ -495,7 +495,7 @@ namespace DC.Slicer
 
                         var checkStmt = SyntaxFactory.ParseStatement("if(" + stmt.ToString() + " == 0 )" + System.Environment.NewLine 
                             + throwStmt.ToString() + System.Environment.NewLine);
-                        if (!statementOriginal.IsKind(SyntaxKind.ForStatement))
+                        if (!statementOriginal.IsKind(SyntaxKind.ForStatement) && !statementOriginal.IsKind(SyntaxKind.WhileStatement) && !statementOriginal.IsKind(SyntaxKind.IfStatement))
                         {
                             //var method = getMethodDeclaration(block);
                             var methodDecl = method as MethodDeclarationSyntax;
@@ -536,7 +536,7 @@ namespace DC.Slicer
 
                         var checkStmt = SyntaxFactory.ParseStatement("if(" + stmt.ToString() + " == 0 )" + System.Environment.NewLine +
                              throwStmt.ToString() + System.Environment.NewLine);
-                        if (!statementOriginal.IsKind(SyntaxKind.ForStatement))
+                        if (!statementOriginal.IsKind(SyntaxKind.ForStatement) && !statementOriginal.IsKind(SyntaxKind.WhileStatement) && !statementOriginal.IsKind(SyntaxKind.IfStatement))
                         {
                             //var method = getMethodDeclaration(block);
                             var methodDecl = method as MethodDeclarationSyntax;
@@ -575,7 +575,7 @@ namespace DC.Slicer
 
                         var checkStmt = SyntaxFactory.ParseStatement("if(" + stmt.ToString() + " == 0 )" + System.Environment.NewLine +
                              throwStmt.ToString()  + System.Environment.NewLine);
-                        if (!statementOriginal.IsKind(SyntaxKind.ForStatement))
+                        if (!statementOriginal.IsKind(SyntaxKind.ForStatement) && !statementOriginal.IsKind(SyntaxKind.WhileStatement) && !statementOriginal.IsKind(SyntaxKind.IfStatement))
                         {
                             //var method = getMethodDeclaration(block);
                             var methodDecl = method as MethodDeclarationSyntax;
@@ -615,7 +615,7 @@ namespace DC.Slicer
 
                         var checkStmt = SyntaxFactory.ParseStatement("if(" + stmt.ToString() + " == 0 )" + System.Environment.NewLine + throwStmt.ToString()  
                             + System.Environment.NewLine);
-                        if (!statementOriginal.IsKind(SyntaxKind.ForStatement))
+                        if (!statementOriginal.IsKind(SyntaxKind.ForStatement) && !statementOriginal.IsKind(SyntaxKind.WhileStatement) && !statementOriginal.IsKind(SyntaxKind.IfStatement))
                         {
                             //var method = getMethodDeclaration(block);
                             var methodDecl = method as MethodDeclarationSyntax;
