@@ -8,9 +8,9 @@ namespace DC.Slicer
         {
             System.Threading.Tasks.Task<DC.Slicer.SlicerConfig> task;
             if(args.Length!=0){
-                task = SlicerConfig.FromXml(@"..\..\..\SlicerConf.xml", args[2], args[0], args[1],args[3]);
+                task = SlicerConfig.FromXml(AppDomain.CurrentDomain.BaseDirectory + @"..\..\..\SlicerConf.xml", args[2], args[0], args[1],args[3]);
             }else{
-                task = SlicerConfig.FromXml(@"..\..\..\SlicerConf.xml");
+                task = SlicerConfig.FromXml(AppDomain.CurrentDomain.BaseDirectory + @"..\..\..\SlicerConf.xml");
             }       
 
              task.Wait();
