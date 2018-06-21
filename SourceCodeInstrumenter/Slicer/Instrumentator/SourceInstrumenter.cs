@@ -163,7 +163,7 @@ namespace DC.Slicer
         {
             if (filePath.Contains("AssemblyInfo.cs")) return true;
             if (filePath.Contains("AssemblyAttributes.cs")) return true;
-            if (!filePath.Contains(Config.FileToRewrite)) return true;
+            //if (!filePath.Contains(Config.FileToRewrite)) return true;
             return false;
         }
 
