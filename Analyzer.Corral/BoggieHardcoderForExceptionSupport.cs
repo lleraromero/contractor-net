@@ -86,14 +86,39 @@ namespace Analyzer.Corral
 
         private void writeAxiomsToFile(string input,StringBuilder stringBuilder, string p)
         {
-                string pattern = "function $Subtype(Type, Type) : bool;";
-                string replacement = pattern + System.Environment.NewLine + stringBuilder.ToString();
-                Regex rgx = new Regex(Regex.Escape(pattern));
-                string result = rgx.Replace(input, replacement);
+            string pattern = "function $Subtype(Type, Type) : bool;";
+            string replacement = pattern + System.Environment.NewLine + stringBuilder.ToString();
+            Regex rgx = new Regex(Regex.Escape(pattern));
+            string result = rgx.Replace(input, replacement);
 
-                result= fixBCTBugWithGreaterThanNull(result);
+            result= fixBCTBugWithGreaterThanNull(result);
+            result = includeImplementationMathAbs(result);
 
-                File.WriteAllText(this.full_path_to_boogie_file, result);
+            File.WriteAllText(this.full_path_to_boogie_file, result);
+        }
+
+        private string includeImplementationMathAbs(string input)
+        {
+            string pattern = "procedure {:extern} System.Math.Abs$System.Int32(value$in: int) returns ($result: int);";
+            string replacement = @"procedure System.Math.Abs$System.Int32(value$in: int) returns ($result: int)
+{
+                var value: int;
+                value:= value$in;
+                if (value < 0)
+                {
+                    $result:= -1 * value;
+                    return;
+                }
+                else
+                {
+                    $result:= value;
+                    return;
+                }
+            }
+            ";
+            Regex rgx = new Regex(Regex.Escape(pattern));
+            string result = rgx.Replace(input, replacement);
+            return result;
         }
 
         private string fixBCTBugWithGreaterThanNull(string input)
