@@ -86,13 +86,13 @@ namespace Contractor.Console
                 System.Console.WriteLine("#maybe async: " + (typeToAnalyze.Actions().Where(a => a.ToString().Contains("Async") || a.ToString().Contains("Begin") || a.ToString().Contains("End"))).Count());
                 return 0;
             }
-
+            
             var analysisResult = GenerateEpa(inputAssembly, typeToAnalyze, options);
 
             System.Console.WriteLine(analysisResult.ToString());
 
             var epa = analysisResult.Epa;
-
+            
             SaveEpasAsImages(epa, new DirectoryInfo(options.GraphDirectory));
 
             if (options.XML)
@@ -342,7 +342,7 @@ namespace Contractor.Console
         protected static void SaveEpaAs<T>(Epa epa, DirectoryInfo outputDir, string fileNameExtension) where T : ISerializer, new()
         {
             var typeName = epa.Type.ToString().Replace('.', '_');
-            var safeFileName = GetSafeFilename(string.Format("{0}\\{1}.{2}", outputDir.FullName, typeName, fileNameExtension));
+            var safeFileName = string.Format("{0}\\{1}.{2}", outputDir.FullName, GetSafeFilename(typeName), fileNameExtension);
             using (var stream = File.Create(safeFileName))
             {
                 new T().Serialize(stream, epa);
