@@ -90,10 +90,10 @@ namespace Analyzer.Corral
             {
                 var result = solver.Execute(queryAssembly, query);
                 var resultInfo = "";
-                if (!query.Method.Method.Type.ToString().Equals("System.Void") && !condition.Equals("NOSE"))
+                /*if (!query.Method.Method.Type.ToString().Equals("System.Void") && !condition.Equals("NOSE"))
                     resultInfo = query.Method.Method.Type.ToString() + " && " + condition;
                 else if (!query.Method.Method.Type.ToString().Equals("System.Void"))
-                     resultInfo = query.Method.Method.Type.ToString();
+                     resultInfo = query.Method.Method.Type.ToString();*/
                 switch (result)
                 {
                     case QueryResult.Reachable:
