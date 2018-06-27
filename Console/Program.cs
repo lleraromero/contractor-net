@@ -57,58 +57,63 @@ namespace Contractor.Console
             {
                 Debugger.Break();
             }
+            try{
+                var decompiler = new CciAssemblyPersister();
+                var inputAssembly = decompiler.Load(options.InputAssembly, null);
+                var typeToAnalyze = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
 
-            var decompiler = new CciAssemblyPersister();
-            var inputAssembly = decompiler.Load(options.InputAssembly, null);
-            var typeToAnalyze = inputAssembly.Types().First(t => t.Name.Equals(options.TypeToAnalyze));
-
-            if (options.PrintMethodList)
-            {
-                var methodList= new StringBuilder();
-                methodList.Append(@"""");
-
-                foreach (var constructor in typeToAnalyze.Constructors()){
-                    methodList.Append(constructor.ToString().Replace(" ", ""));
-                    methodList.Append(@",");
-                }
-
-                foreach (var action in typeToAnalyze.Actions())
+                if (options.PrintMethodList)
                 {
-                    methodList.Append(action.ToString().Replace(" ", ""));
-                    methodList.Append(@",");
+                    var methodList= new StringBuilder();
+                    methodList.Append(@"""");
+
+                    foreach (var constructor in typeToAnalyze.Constructors()){
+                        methodList.Append(constructor.ToString().Replace(" ", ""));
+                        methodList.Append(@",");
+                    }
+
+                    foreach (var action in typeToAnalyze.Actions())
+                    {
+                        methodList.Append(action.ToString().Replace(" ", ""));
+                        methodList.Append(@",");
+                    }
+                    methodList.Remove(methodList.Length-1,1);
+                    methodList.Append(@"""");
+                    System.Console.WriteLine(methodList.ToString());
+                    System.Console.WriteLine("#constructors: "+typeToAnalyze.Constructors().Count());
+                    System.Console.WriteLine("#methods: " + typeToAnalyze.Actions().Count());
+                    System.Console.WriteLine("#total: " + (typeToAnalyze.Constructors().Count() + typeToAnalyze.Actions().Count()));
+                    System.Console.WriteLine("#maybe async: " + (typeToAnalyze.Actions().Where(a => a.ToString().Contains("Async") || a.ToString().Contains("Begin") || a.ToString().Contains("End"))).Count());
+                    return 0;
                 }
-                methodList.Remove(methodList.Length-1,1);
-                methodList.Append(@"""");
-                System.Console.WriteLine(methodList.ToString());
-                System.Console.WriteLine("#constructors: "+typeToAnalyze.Constructors().Count());
-                System.Console.WriteLine("#methods: " + typeToAnalyze.Actions().Count());
-                System.Console.WriteLine("#total: " + (typeToAnalyze.Constructors().Count() + typeToAnalyze.Actions().Count()));
-                System.Console.WriteLine("#maybe async: " + (typeToAnalyze.Actions().Where(a => a.ToString().Contains("Async") || a.ToString().Contains("Begin") || a.ToString().Contains("End"))).Count());
+            
+                var analysisResult = GenerateEpa(inputAssembly, typeToAnalyze, options);
+
+                System.Console.WriteLine(analysisResult.ToString());
+
+                var epa = analysisResult.Epa;
+            
+                SaveEpasAsImages(epa, new DirectoryInfo(options.GraphDirectory));
+
+                if (options.XML)
+                {
+                    SaveEpasAsXml(epa, new DirectoryInfo(options.GraphDirectory));
+                }
+
+                if (options.GenerateStrengthenedAssembly)
+                {
+                    var strengthenedAssembly = GenerateStrengthenedAssembly(epa, inputAssembly) as CciAssembly;
+                    decompiler.Save(strengthenedAssembly, options.OutputAssembly);
+                }
+            
+                System.Console.WriteLine("Done!");
+                //System.Console.ReadLine();
                 return 0;
             }
-            
-            var analysisResult = GenerateEpa(inputAssembly, typeToAnalyze, options);
-
-            System.Console.WriteLine(analysisResult.ToString());
-
-            var epa = analysisResult.Epa;
-            
-            SaveEpasAsImages(epa, new DirectoryInfo(options.GraphDirectory));
-
-            if (options.XML)
-            {
-                SaveEpasAsXml(epa, new DirectoryInfo(options.GraphDirectory));
+            catch (Exception e){
+                System.Console.WriteLine("Error ocurred: "+e);
+                return -1;
             }
-
-            if (options.GenerateStrengthenedAssembly)
-            {
-                var strengthenedAssembly = GenerateStrengthenedAssembly(epa, inputAssembly) as CciAssembly;
-                decompiler.Save(strengthenedAssembly, options.OutputAssembly);
-            }
-            
-            System.Console.WriteLine("Done!");
-            //System.Console.ReadLine();
-            return 0;
         }
 
         protected static TypeAnalysisResult GenerateEpa(CciAssembly inputAssembly, ITypeDefinition typeToAnalyze, Options options)
