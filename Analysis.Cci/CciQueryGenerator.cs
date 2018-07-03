@@ -603,7 +603,7 @@ namespace Analysis.Cci
             IExpression joinedTargetInv = condRewriter.Rewrite(Helper.LogicalNotAfterJoinWithLogicalAnd(host, localVars, true));
             */
             //IExpression joinedTargetInv = Helper.LogicalNotAfterJoinWithLogicalAnd(host, localVars, true);
-            var joinedTargetInv = Helper.JoinWithLogicalAnd(host, targetInv, true); ;
+            var joinedTargetInv = Helper.JoinWithLogicalAnd(host, targetInv, true); 
             bst = InsertLabeledStatement(actionBodyBlock, "end");
 
             //******************************************************************
