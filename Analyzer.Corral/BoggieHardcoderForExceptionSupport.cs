@@ -78,7 +78,7 @@ namespace Analyzer.Corral
         {
             StringBuilder stringBuilder = new StringBuilder();
             //hardcodeExceptionNotSubtypeOf(stringBuilder);
-            hardcodeAllNotSubtypeOf(stringBuilder);
+            //hardcodeAllNotSubtypeOf(stringBuilder);
             harcodeAllSubtypeOfException(stringBuilder);
             harcodeSubtypeOfThemSelves(stringBuilder);
             writeAxiomsToFile(input,stringBuilder, this.full_path_to_boogie_file);
