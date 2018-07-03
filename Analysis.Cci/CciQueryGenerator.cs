@@ -160,10 +160,12 @@ namespace Analysis.Cci
             }
             // ---------
             IExpression joinedTargetInv = condRewriter.Rewrite(Helper.LogicalNotAfterJoinWithLogicalAnd(host, localVars, true));
-            
-            bst = InsertLabeledStatement(actionBodyBlock, "end");
 
             //******************************************************************
+            var joinedTypeInv = GenerateNegatedTypeInvariantExpression(method, unit, condRewriter);
+
+            //******************************************************************
+            
             Postcondition postcondition = null;
             if (expectedExitCode != null)
             {
@@ -179,9 +181,10 @@ namespace Analysis.Cci
                 List<IExpression> listWithNotExitCodeAndPost = new List<IExpression>();
                 listWithNotExitCodeAndPost.Add(notExitCode);
                 listWithNotExitCodeAndPost.Add(joinedTargetInv);
+                listWithNotExitCodeAndPost.Add(joinedTypeInv);
 
-                IExpression notExitCodeOrNotPost = Helper.JoinWithLogicalOr(host, listWithNotExitCodeAndPost, false);
-
+                IExpression notExitCodeOrNotPost = condRewriter.Rewrite(Helper.JoinWithLogicalOr(host, listWithNotExitCodeAndPost, false));
+                bst = InsertLabeledStatement(actionBodyBlock, "end");
                 postcondition = new Postcondition
                 {
                     Condition = notExitCodeOrNotPost,
@@ -191,10 +194,16 @@ namespace Analysis.Cci
             }
             else
             {
+                List<IExpression> listWithNotExitCodeAndPost = new List<IExpression>();
+                listWithNotExitCodeAndPost.Add(joinedTargetInv);
+                listWithNotExitCodeAndPost.Add(joinedTypeInv);
+
+                IExpression notPostOrNotInv = condRewriter.Rewrite(Helper.JoinWithLogicalOr(host, listWithNotExitCodeAndPost, false));
+                bst = InsertLabeledStatement(actionBodyBlock, "end");
                 postcondition = new Postcondition
                 {
-                    Condition = joinedTargetInv,
-                    OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(joinedTargetInv),
+                    Condition = notPostOrNotInv,
+                    OriginalSource = new CciExpressionPrettyPrinter().PrintExpression(notPostOrNotInv),
                     Description = new CompileTimeConstant { Value = "Negated target state invariant", Type = host.PlatformType.SystemString }
                 };
             }
@@ -203,6 +212,33 @@ namespace Analysis.Cci
             contracts.Postconditions.Add(postcondition);
 
             return contracts;
+        }
+
+        private IExpression GenerateNegatedTypeInvariantExpression(MethodDefinition method, IUnit unit, ConditionalRewriter condRewriter)
+        {
+            var typeInv = new List<IExpression>();
+            var thereIsInvMethod = method.ContainingTypeDefinition.Methods.Where(x => x.ToString().Contains("Invariant")).Any();
+
+            if (thereIsInvMethod)
+            {
+                var invMethod = method.ContainingTypeDefinition.Methods.Where(x => x.ToString().Contains("Invariant")).First();
+                var md = invMethod as MethodDefinition;
+                var body = md.ResolvedMethod.Body as SourceMethodBody;
+                var bodyStatements = body.Block.Statements;
+                foreach (var invExpresion in bodyStatements)
+                {
+                    if (invExpresion is ExpressionStatement)
+                    {
+                        var exp = (invExpresion as ExpressionStatement).Expression;
+                        if (exp is MethodCall)
+                            foreach (var inv in (exp as MethodCall).Arguments)
+                                typeInv.Add(inv);
+                    }
+                }
+            }
+
+            var joinedTypeInv = condRewriter.Rewrite(Helper.LogicalNotAfterJoinWithLogicalAnd(host, typeInv, true));
+            return joinedTypeInv;
         }
 
         private void GenerateEqualityExprForExitCode()
@@ -616,6 +652,7 @@ namespace Analysis.Cci
                 List<IExpression> listWithExitCodeAndPost = new List<IExpression>();
                 listWithExitCodeAndPost.Add(exitCode_eq_expected);
                 listWithExitCodeAndPost.Add(joinedTargetInv);
+                
 
                 IExpression ExitCodeAndPost = Helper.JoinWithLogicalAnd(host, listWithExitCodeAndPost, true);
 
