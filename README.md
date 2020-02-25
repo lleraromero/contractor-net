@@ -17,13 +17,9 @@ In order to use the tool to analyse a class the tool needs the assembly which co
 Right now, we resort to contracts provided by the Diagnostics.Contracts namespace included in the .NET framework. Since Code Contracts puts those contracts in a separate file both assemblies are required to create the EPA. However, before removing the contracts a copy of the original is stored in the "$(PROJECTDIR)\obj\Debug\Decl" directory. It's recommended to use this assembly to avoid using two assemblies :).
 
 # Getting Contractor.NET
-
-The current release of Contractor.NET is available for download at 
-<https://bitbucket.org/lleraromero/contractor-net/get/master.zip>.
-
 To access the source code, use the bitbucket repository:
 
-```git clone https://lleraromero@bitbucket.org/lleraromero/contractor-net.git```
+```git clone https://github.com/lleraromero/contractor-net.git```
 
 By default, the application should work properly using the compiled Corral version included in this repository. It is currently Z3 x86 v4.3.1.
 
